@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "GXtTh563gWf3bztN21Vh7kh4x9m7H7hjP09siGtZhY1tkFTXSDghIgV03lufBGbQgb5kh/C6rddfSFC/L4IvFw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\thijm\\Documents\\Git Repositories\\WFC_Original_Gumin\\WaveFunctionCollapse.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\thijm\\.nuget\\packages\\microsoft.netcore.platforms\\2.0.0\\microsoft.netcore.platforms.2.0.0.nupkg.sha512",
+    "C:\\Users\\thijm\\.nuget\\packages\\microsoft.win32.systemevents\\4.5.0\\microsoft.win32.systemevents.4.5.0.nupkg.sha512",
+    "C:\\Users\\thijm\\.nuget\\packages\\system.drawing.common\\4.5.1\\system.drawing.common.4.5.1.nupkg.sha512"
+  ],
+  "logs": []
+}

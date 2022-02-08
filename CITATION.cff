@@ -1,0 +1,15 @@
+cff-version: 1.1.0
+message: "Please cite if you use WFC in your research."
+authors:
+  - family-names: Gumin
+    given-names: Maxim
+    email: ExUtumno@gmail.com
+title: Wave Function Collapse Algorithm
+version: 1.0
+date-released: 2016-09-30
+keywords:
+  - procedural generation
+  - texture synthesis
+  - machine learning
+  - constraint satisfaction
+url: https://github.com/mxgmn/WaveFunctionCollapse
