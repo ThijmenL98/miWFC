@@ -6,40 +6,46 @@ The above copyright notice and this permission notice shall be included in all c
 The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
 */
 
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Xml.Linq;
-using System.ComponentModel;
-using System.Collections.Generic;
 
-static class Helper
-{
-    public static int Random(this double[] weights, double r)
-    {
+internal static class Helper {
+    public static int Random(this double[] weights, double r) {
         double sum = 0;
-        for (int i = 0; i < weights.Length; i++) sum += weights[i];
+        for (int i = 0; i < weights.Length; i++) {
+            sum += weights[i];
+        }
+
         double threshold = r * sum;
 
         double partialSum = 0;
-        for (int i = 0; i < weights.Length; i++)
-        {
+        for (int i = 0; i < weights.Length; i++) {
             partialSum += weights[i];
-            if (partialSum >= threshold) return i;
+            if (partialSum >= threshold) {
+                return i;
+            }
         }
+
         return -1;
     }
 
-    public static long ToPower(this int a, int n)
-    {
+    public static long ToPower(this int a, int n) {
         long product = 1;
-        for (int i = 0; i < n; i++) product *= a;
+        for (int i = 0; i < n; i++) {
+            product *= a;
+        }
+
         return product;
     }
 
-    public static T Get<T>(this XElement xelem, string attribute, T defaultT = default)
-    {
+    public static T Get<T>(this XElement xelem, string attribute, T defaultT = default) {
         XAttribute a = xelem.Attribute(attribute);
-        return a == null ? defaultT : (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString(a.Value);
+        return a == null ? defaultT : (T) TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString(a.Value);
     }
 
-    public static IEnumerable<XElement> Elements(this XElement xelement, params string[] names) => xelement.Elements().Where(e => names.Any(n => n == e.Name));
+    public static IEnumerable<XElement> Elements(this XElement xelement, params string[] names) {
+        return xelement.Elements().Where(e => names.Any(n => n == e.Name));
+    }
 }

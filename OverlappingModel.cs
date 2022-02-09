@@ -7,217 +7,250 @@ The software is provided "as is", without warranty of any kind, express or impli
 */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
-class OverlappingModel : Model
-{
-    byte[][] patterns;
-    List<Color> colors;
-    int ground;
+namespace WFC4All {
+    internal class OverlappingModel : Model {
+        private readonly List<Color> colors;
+        private readonly int ground;
+        private readonly byte[][] patterns;
 
-    public OverlappingModel(string name, int N, int width, int height, bool periodicInput, bool periodic, int symmetry, int ground, Heuristic heuristic)
-        : base(width, height, N, periodic, heuristic)
-    {
-        var bitmap = new Bitmap($"samples/{name}.png");
-        int SX = bitmap.Width, SY = bitmap.Height;
-        byte[,] sample = new byte[SX, SY];
-        colors = new List<Color>();
+        public OverlappingModel(string name, int overlapTileDimension, int outputWidth, int outputHeight, bool periodicInput, bool periodic,
+            int symmetry, int ground, Heuristic heuristic, Form1 form)
+            : base(outputWidth, outputHeight, overlapTileDimension, periodic, heuristic, form) {
+            Bitmap bitmap = new Bitmap($"samples/{name}.png");
+            int inputWidth = bitmap.Width, inputHeight = bitmap.Height;
+            byte[,] sample = new byte[inputWidth, inputHeight];
+            colors = new List<Color>();
 
-        for (int y = 0; y < SY; y++) for (int x = 0; x < SX; x++)
-            {
-                Color color = bitmap.GetPixel(x, y);
+            for (int y = 0; y < inputHeight; y++) {
+                for (int x = 0; x < inputWidth; x++) {
+                    Color color = bitmap.GetPixel(x, y);
 
-                int i = 0;
-                foreach (var c in colors)
-                {
-                    if (c == color) break;
-                    i++;
+                    int colorIndex = colors.TakeWhile(c => c != color).Count();
+
+                    if (colorIndex == colors.Count) {
+                        colors.Add(color);
+                    }
+
+                    sample[x, y] = (byte) colorIndex;
+                }
+            }
+
+            int colorsCount = colors.Count;
+            long colorCountSquared = colorsCount.ToPower(overlapTileDimension * overlapTileDimension);
+
+            byte[] pattern(Func<int, int, byte> f) {
+                byte[] result = new byte[overlapTileDimension * overlapTileDimension];
+                for (int y = 0; y < overlapTileDimension; y++) {
+                    for (int x = 0; x < overlapTileDimension; x++) {
+                        result[x + y * overlapTileDimension] = f(x, y);
+                    }
                 }
 
-                if (i == colors.Count) colors.Add(color);
-                sample[x, y] = (byte)i;
+                return result;
             }
 
-        int C = colors.Count;
-        long W = C.ToPower(N * N);
-
-        byte[] pattern(Func<int, int, byte> f)
-        {
-            byte[] result = new byte[N * N];
-            for (int y = 0; y < N; y++) for (int x = 0; x < N; x++) result[x + y * N] = f(x, y);
-            return result;
-        };
-
-        byte[] patternFromSample(int x, int y) => pattern((dx, dy) => sample[(x + dx) % SX, (y + dy) % SY]);
-        byte[] rotate(byte[] p) => pattern((x, y) => p[N - 1 - y + x * N]);
-        byte[] reflect(byte[] p) => pattern((x, y) => p[N - 1 - x + y * N]);
-
-        long index(byte[] p)
-        {
-            long result = 0, power = 1;
-            for (int i = 0; i < p.Length; i++)
-            {
-                result += p[p.Length - 1 - i] * power;
-                power *= C;
+            byte[] patternFromSample(int x, int y) {
+                return pattern((dx, dy) => sample[(x + dx) % inputWidth, (y + dy) % inputHeight]);
             }
-            return result;
-        };
 
-        byte[] patternFromIndex(long ind)
-        {
-            long residue = ind, power = W;
-            byte[] result = new byte[N * N];
+            byte[] rotate(IReadOnlyList<byte> inputPattern) {
+                return pattern((x, y) => inputPattern[overlapTileDimension - 1 - y + x * overlapTileDimension]);
+            }
 
-            for (int i = 0; i < result.Length; i++)
-            {
-                power /= C;
-                int count = 0;
+            byte[] reflect(IReadOnlyList<byte> inputPattern) {
+                return pattern((x, y) => inputPattern[overlapTileDimension - 1 - x + y * overlapTileDimension]);
+            }
 
-                while (residue >= power)
-                {
-                    residue -= power;
-                    count++;
+            long index(IReadOnlyList<byte> inputPattern) {
+                long result = 0, power = 1;
+                for (int pixelIdx = 0; pixelIdx < inputPattern.Count; pixelIdx++) {
+                    result += inputPattern[inputPattern.Count - 1 - pixelIdx] * power;
+                    power *= colorsCount;
                 }
 
-                result[i] = (byte)count;
+                return result;
             }
 
-            return result;
-        };
+            byte[] patternFromIndex(long idx) {
+                long residue = idx, power = colorCountSquared;
+                byte[] result = new byte[overlapTileDimension * overlapTileDimension];
 
-        var weights = new Dictionary<long, int>();
-        var ordering = new List<long>();
+                for (int i = 0; i < result.Length; i++) {
+                    power /= colorsCount;
+                    int count = 0;
 
-        for (int y = 0; y < (periodicInput ? SY : SY - N + 1); y++) for (int x = 0; x < (periodicInput ? SX : SX - N + 1); x++)
-            {
-                byte[][] ps = new byte[8][];
+                    while (residue >= power) {
+                        residue -= power;
+                        count++;
+                    }
 
-                ps[0] = patternFromSample(x, y);
-                ps[1] = reflect(ps[0]);
-                ps[2] = rotate(ps[0]);
-                ps[3] = reflect(ps[2]);
-                ps[4] = rotate(ps[2]);
-                ps[5] = reflect(ps[4]);
-                ps[6] = rotate(ps[4]);
-                ps[7] = reflect(ps[6]);
+                    result[i] = (byte) count;
+                }
 
-                for (int k = 0; k < symmetry; k++)
-                {
-                    long ind = index(ps[k]);
-                    if (weights.ContainsKey(ind)) weights[ind]++;
-                    else
-                    {
-                        weights.Add(ind, 1);
-                        ordering.Add(ind);
+                return result;
+            }
+
+            Dictionary<long, int> weightsDictionary = new Dictionary<long, int>();
+            List<long> ordering = new List<long>();
+
+            for (int y = 0; y < (periodicInput ? inputHeight : inputHeight - overlapTileDimension + 1); y++) {
+                for (int x = 0; x < (periodicInput ? inputWidth : inputWidth - overlapTileDimension + 1); x++) {
+                    byte[][] patternSymmetry = new byte[8][];
+
+                    patternSymmetry[0] = patternFromSample(x, y);
+                    patternSymmetry[1] = reflect(patternSymmetry[0]);   // pattern flipped over y axis once
+                    patternSymmetry[2] = rotate(patternSymmetry[0]);    // pattern rotated CW once
+                    patternSymmetry[3] = reflect(patternSymmetry[2]);   // pattern rotated CW once, then flipped
+                    patternSymmetry[4] = rotate(patternSymmetry[2]);    // pattern rotated CW twice
+                    patternSymmetry[5] = reflect(patternSymmetry[4]);   // pattern rotated CW twice, then flipped
+                    patternSymmetry[6] = rotate(patternSymmetry[4]);    // pattern rotated CW thrice
+                    patternSymmetry[7] = reflect(patternSymmetry[6]);   // pattern rotated CW thrice, then flipped
+
+                    for (int i = 0; i < symmetry; i++) {
+                        long idx = index(patternSymmetry[i]);
+                        if (weightsDictionary.ContainsKey(idx)) {
+                            weightsDictionary[idx]++;
+                        } else {
+                            weightsDictionary.Add(idx, 1);
+                            ordering.Add(idx);
+                        }
                     }
                 }
             }
 
-        T = weights.Count;
-        this.ground = (ground + T) % T;
-        patterns = new byte[T][];
-        base.weights = new double[T];
+            actionCount = weightsDictionary.Count;
+            this.ground = (ground + actionCount) % actionCount;
+            patterns = new byte[actionCount][];
+            weights = new double[actionCount];
 
-        int counter = 0;
-        foreach (long w in ordering)
-        {
-            patterns[counter] = patternFromIndex(w);
-            base.weights[counter] = weights[w];
-            counter++;
-        }
-
-        bool agrees(byte[] p1, byte[] p2, int dx, int dy)
-        {
-            int xmin = dx < 0 ? 0 : dx, xmax = dx < 0 ? dx + N : N, ymin = dy < 0 ? 0 : dy, ymax = dy < 0 ? dy + N : N;
-            for (int y = ymin; y < ymax; y++) for (int x = xmin; x < xmax; x++) if (p1[x + N * y] != p2[x - dx + N * (y - dy)]) return false;
-            return true;
-        };
-
-        propagator = new int[4][][];
-        for (int d = 0; d < 4; d++)
-        {
-            propagator[d] = new int[T][];
-            for (int t = 0; t < T; t++)
-            {
-                List<int> list = new List<int>();
-                for (int t2 = 0; t2 < T; t2++) if (agrees(patterns[t], patterns[t2], dx[d], dy[d])) list.Add(t2);
-                propagator[d][t] = new int[list.Count];
-                for (int c = 0; c < list.Count; c++) propagator[d][t][c] = list[c];
+            int counter = 0;
+            foreach (long w in ordering) {
+                patterns[counter] = patternFromIndex(w);
+                weights[counter] = weightsDictionary[w];
+                counter++;
             }
-        }
-    }
 
-    public override Bitmap Graphics()
-    {
-        Bitmap result = new Bitmap(MX, MY);
-        int[] bitmapData = new int[result.Height * result.Width];
+            bool acceptsPattern(IReadOnlyList<byte> pattern1, IReadOnlyList<byte> pattern2, int xChange, int yChange) {
+                int xMin = xChange < 0 ? 0 : xChange,
+                    xMax = xChange < 0 ? xChange + overlapTileDimension : overlapTileDimension,
+                    yMin = yChange < 0 ? 0 : yChange,
+                    yMax = yChange < 0 ? yChange + overlapTileDimension : overlapTileDimension;
+                for (int y = yMin; y < yMax; y++) {
+                    for (int x = xMin; x < xMax; x++) {
+                        if (pattern1[x + overlapTileDimension * y] != pattern2[x - xChange + overlapTileDimension * (y - yChange)]) {
+                            return false;
+                        }
+                    }
+                }
 
-        if (observed[0] >= 0)
-        {
-            for (int y = 0; y < MY; y++)
-            {
-                int dy = y < MY - N + 1 ? 0 : N - 1;
-                for (int x = 0; x < MX; x++)
-                {
-                    int dx = x < MX - N + 1 ? 0 : N - 1;
-                    Color c = colors[patterns[observed[x - dx + (y - dy) * MX]][dx + dy * N]];
-                    bitmapData[x + y * MX] = unchecked((int)0xff000000 | (c.R << 16) | (c.G << 8) | c.B);
+                return true;
+            }
+
+            propagator = new int[4][][];
+            for (int direction = 0; direction < 4; direction++) {
+                propagator[direction] = new int[actionCount][];
+                for (int a = 0; a < actionCount; a++) {
+                    List<int> list = new List<int>();
+                    for (int a2 = 0; a2 < actionCount; a2++) {
+                        if (acceptsPattern(patterns[a], patterns[a2], xChange[direction], yChange[direction])) {
+                            list.Add(a2);
+                        }
+                    }
+
+                    propagator[direction][a] = new int[list.Count];
+                    for (int a2 = 0; a2 < list.Count; a2++) {
+                        propagator[direction][a][a2] = list[a2];
+                    }
                 }
             }
         }
-        else
-        {
-            for (int i = 0; i < wave.Length; i++)
-            {
-                int contributors = 0, r = 0, g = 0, b = 0;
-                int x = i % MX, y = i / MX;
 
-                for (int dy = 0; dy < N; dy++) for (int dx = 0; dx < N; dx++)
-                    {
-                        int sx = x - dx;
-                        if (sx < 0) sx += MX;
+        public override Bitmap Graphics() {
+            Bitmap result = new Bitmap(imageOutputWidth, imageOutputHeight);
+            int[] bitmapData = new int[result.Height * result.Width];
 
-                        int sy = y - dy;
-                        if (sy < 0) sy += MY;
+            if (observed[0] >= 0) {
+                for (int y = 0; y < imageOutputHeight; y++) {
+                    int dy = y < imageOutputHeight - overlapTileDimension + 1 ? 0 : overlapTileDimension - 1;
+                    for (int x = 0; x < imageOutputWidth; x++) {
+                        int dx = x < imageOutputWidth - overlapTileDimension + 1 ? 0 : overlapTileDimension - 1;
+                        Color c = colors[patterns[observed[x - dx + (y - dy) * imageOutputWidth]][dx + dy * overlapTileDimension]];
+                        bitmapData[x + y * imageOutputWidth] = unchecked((int) 0xff000000 | (c.R << 16) | (c.G << 8) | c.B);
+                    }
+                }
+            } else {
+                for (int i = 0; i < wave.Length; i++) {
+                    int contributors = 0, r = 0, g = 0, b = 0;
+                    int x = i % imageOutputWidth, y = i / imageOutputWidth;
 
-                        int s = sx + sy * MX;
-                        if (!periodic && (sx + N > MX || sy + N > MY || sx < 0 || sy < 0)) continue;
-                        for (int t = 0; t < T; t++) if (wave[s][t])
-                            {
+                    for (int dy = 0; dy < overlapTileDimension; dy++) {
+                        for (int dx = 0; dx < overlapTileDimension; dx++) {
+                            int sx = x - dx;
+                            if (sx < 0) {
+                                sx += imageOutputWidth;
+                            }
+
+                            int sy = y - dy;
+                            if (sy < 0) {
+                                sy += imageOutputHeight;
+                            }
+
+                            int s = sx + sy * imageOutputWidth;
+                            if (!periodic && (sx + overlapTileDimension > imageOutputWidth || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
+                                continue;
+                            }
+
+                            for (int t = 0; t < actionCount; t++) {
+                                if (!wave[s][t]) {
+                                    continue;
+                                }
+
                                 contributors++;
-                                Color color = colors[patterns[t][dx + dy * N]];
+                                Color color = colors[patterns[t][dx + dy * overlapTileDimension]];
                                 r += color.R;
                                 g += color.G;
                                 b += color.B;
                             }
+                        }
                     }
 
-                bitmapData[i] = unchecked((int)0xff000000 | ((r / contributors) << 16) | ((g / contributors) << 8) | b / contributors);
+                    bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
+                                              ((g / contributors) << 8) | (b / contributors));
+                }
             }
+
+            BitmapData bits = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.WriteOnly,
+                PixelFormat.Format32bppArgb);
+            Marshal.Copy(bitmapData, 0, bits.Scan0, bitmapData.Length);
+            result.UnlockBits(bits);
+
+            return result;
         }
 
-        var bits = result.LockBits(new Rectangle(0, 0, result.Width, result.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-        System.Runtime.InteropServices.Marshal.Copy(bitmapData, 0, bits.Scan0, bitmapData.Length);
-        result.UnlockBits(bits);
+        protected override void Clear() {
+            base.Clear();
 
-        return result;
-    }
+            if (ground != 0) {
+                for (int x = 0; x < imageOutputWidth; x++) {
+                    for (int t = 0; t < actionCount; t++) {
+                        if (t != ground) {
+                            Ban(x + (imageOutputHeight - 1) * imageOutputWidth, t);
+                        }
+                    }
 
-    protected override void Clear()
-    {
-        base.Clear();
+                    for (int y = 0; y < imageOutputHeight - 1; y++) {
+                        Ban(x + y * imageOutputWidth, ground);
+                    }
+                }
 
-        if (ground != 0)
-        {
-            for (int x = 0; x < MX; x++)
-            {
-                for (int t = 0; t < T; t++) if (t != ground) Ban(x + (MY - 1) * MX, t);
-                for (int y = 0; y < MY - 1; y++) Ban(x + y * MX, ground);
+                Propagate();
             }
-
-            Propagate();
         }
     }
 }
