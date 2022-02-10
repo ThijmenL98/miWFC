@@ -1,0 +1,30 @@
+﻿File added to keepsake windows form elements that somehow
+incorrectly regenerate and break upon changing the UI.
+
+// 
+// inputImageCB
+// 
+this.inputImageCB.BackColor = System.Drawing.SystemColors.ControlLight;
+object[] inputImageDataSource = InputManager.getImages();
+this.inputImageCB.DataSource = inputImageDataSource;
+this.patternSize.SelectedIndex = this.patternSize.Items.IndexOf(inputImageDataSource[0]);
+this.patternSize.SelectedText = inputImageDataSource[0].ToString();
+this.inputImageCB.FormattingEnabled = true;
+this.inputImageCB.Location = new System.Drawing.Point(112, 19);
+this.inputImageCB.Name = "inputImageCB";
+this.inputImageCB.Size = new System.Drawing.Size(214, 21);
+this.inputImageCB.TabIndex = 4;
+this.inputImageCB.SelectedIndexChanged += new System.EventHandler(this.inputImage_SelectedIndexChanged);
+
+//
+// patternSize
+// 
+this.patternSize.BackColor = System.Drawing.SystemColors.ControlLight;
+object[] patternSizeDataSource = InputManager.getImagePatternDimensions(inputImageDataSource[0]);
+this.patternSize.DataSource = patternSizeDataSource;
+this.patternSize.SelectedIndex = this.patternSize.Items.IndexOf(patternSizeDataSource[0]);
+this.patternSize.FormattingEnabled = true;
+this.patternSize.Location = new System.Drawing.Point(206, 371);
+this.patternSize.Name = "patternSize";
+this.patternSize.Size = new System.Drawing.Size(120, 21);
+this.patternSize.TabIndex = 0;

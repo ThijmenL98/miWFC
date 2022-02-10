@@ -3,11 +3,15 @@ using System.Windows.Forms;
 
 namespace WFC4All {
     internal static class Program {
+        public static Form1 form;
+        
         [STAThread]
+        // ReSharper disable once InconsistentNaming
         private static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            form = new Form1();
+            Application.Run(form);
         }
     }
 }
