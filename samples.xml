@@ -23,26 +23,6 @@
       <overlapping name="TrickKnot" N="3" periodic="True"/>
       <overlapping name="Village" N="3" symmetry="2" periodic="True"/>
       <overlapping name="Water" N="3" symmetry="1" periodic="True"/>
-      <simpletiled name="Summer" size="20"/>
-      <simpletiled name="Castle" size="50" heuristic="Scanline"/>
-      <simpletiled name="Circuit" subset="Turnless" size="34" periodic="True" screenshots="3"/>
-      <simpletiled name="Knots" subset="Standard" size="24" periodic="True"/>
-      <simpletiled name="Knots" subset="Dense" size="24" periodic="True"/>
-      <simpletiled name="Knots" subset="Crossless" size="35"/>
-      <simpletiled name="Knots" subset="TE" size="24" screenshots="1"/>
-      <simpletiled name="Knots" subset="T" size="24" screenshots="1"/>
-      <simpletiled name="Knots" subset="CL" size="24"/>
-      <simpletiled name="Knots" subset="CE" size="24" periodic="True"/>
-      <simpletiled name="Knots" subset="C" size="24" periodic="True"/>
-      <simpletiled name="Knots" subset="Fabric" size="24" periodic="True" screenshots="1"/>
-      <simpletiled name="Knots" subset="Dense Fabric" size="24" periodic="True" screenshots="1"/>
-      <simpletiled name="Rooms" size="30"/>
-      <simpletiled name="Circles" size="24" screenshots="1"/>
-      <simpletiled name="Circles" subset="Large Circles" size="24" screenshots="1"/>
-      <simpletiled name="Circles" subset="Large Circles and Solid" size="24" screenshots="1"/>
-      <simpletiled name="Circles" subset="No Solid" size="24" screenshots="1"/>
-      <simpletiled name="FloorPlan" size="20" screenshots="3"/>
-
       <overlapping name="Cat" N="3" symmetry="2" periodic="True" size="80"/>
       <overlapping name="Cats" N="3" symmetry="2" periodic="True"/>
       <overlapping name="Skyline2" N="3" symmetry="2" periodic="True" ground="-1"/>
@@ -82,11 +62,12 @@
       <overlapping name="Disk" N="4" periodic="True" heuristic="MRV" size="90" screenshots="1"/>
       <overlapping name="BrownFox" N="4" symmetry="1" heuristic="MRV" size="90" screenshots="1"/>
       <overlapping name="Font" N="5" symmetry="2" periodic="True" heuristic="MRV" size="90" screenshots="1"/>
-      
       <overlapping name="Village" N="3" symmetry="2" size="36" periodic="True" limit="90"/>
-      <simpletiled name="Summer" size="10" periodic="False" limit="25"/>
-
-      <simpletiled name="Knots" subset="Standard" size="5" periodic="True" textOutput="True"/>
-      <simpletiled name="Summer" size="6" periodic="False" textOutput="True"/>
-      <simpletiled name="Circuit" subset="Turnless" size="7" periodic="True" textOutput="True"/>
+      
+      <simpletiled name="Summer" size="20"/>
+      <simpletiled name="Castle" size="50" heuristic="Scanline"/>
+      <simpletiled name="Circuit" subset="Turnless" size="34" periodic="True" screenshots="3"/>
+      <simpletiled name="Knots" subset="Standard" size="24" periodic="True"/>
+      <simpletiled name="Circles" size="24" screenshots="1"/>
+      <simpletiled name="FloorPlan" size="20" screenshots="3"/>
 </samples>

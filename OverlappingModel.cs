@@ -19,63 +19,13 @@ namespace WFC4All {
         private readonly int ground;
         private readonly byte[][] patterns;
 
-        public OverlappingModel(string name, int overlapTileDimension, int outputWidth, int outputHeight, bool periodicInput, bool periodic,
-            int symmetry, int ground, Heuristic heuristic, Form1 form)
+        public OverlappingModel(int overlapTileDimension, int outputWidth, int outputHeight, bool periodic, int ground,
+            Heuristic heuristic, Form1 form, InputManager inputManager)
             : base(outputWidth, outputHeight, overlapTileDimension, periodic, heuristic, form) {
-            Bitmap bitmap = new Bitmap($"samples/{name}.png");
-            int inputWidth = bitmap.Width, inputHeight = bitmap.Height;
-            byte[,] sample = new byte[inputWidth, inputHeight];
-            colors = new List<Color>();
-
-            for (int y = 0; y < inputHeight; y++) {
-                for (int x = 0; x < inputWidth; x++) {
-                    Color color = bitmap.GetPixel(x, y);
-
-                    int colorIndex = colors.TakeWhile(c => c != color).Count();
-
-                    if (colorIndex == colors.Count) {
-                        colors.Add(color);
-                    }
-
-                    sample[x, y] = (byte) colorIndex;
-                }
-            }
+            colors = inputManager.getCurrentColors();
 
             int colorsCount = colors.Count;
             long colorCountSquared = colorsCount.ToPower(overlapTileDimension * overlapTileDimension);
-
-            byte[] pattern(Func<int, int, byte> f) {
-                byte[] result = new byte[overlapTileDimension * overlapTileDimension];
-                for (int y = 0; y < overlapTileDimension; y++) {
-                    for (int x = 0; x < overlapTileDimension; x++) {
-                        result[x + y * overlapTileDimension] = f(x, y);
-                    }
-                }
-
-                return result;
-            }
-
-            byte[] patternFromSample(int x, int y) {
-                return pattern((dx, dy) => sample[(x + dx) % inputWidth, (y + dy) % inputHeight]);
-            }
-
-            byte[] rotate(IReadOnlyList<byte> inputPattern) {
-                return pattern((x, y) => inputPattern[overlapTileDimension - 1 - y + x * overlapTileDimension]);
-            }
-
-            byte[] reflect(IReadOnlyList<byte> inputPattern) {
-                return pattern((x, y) => inputPattern[overlapTileDimension - 1 - x + y * overlapTileDimension]);
-            }
-
-            long index(IReadOnlyList<byte> inputPattern) {
-                long result = 0, power = 1;
-                for (int pixelIdx = 0; pixelIdx < inputPattern.Count; pixelIdx++) {
-                    result += inputPattern[inputPattern.Count - 1 - pixelIdx] * power;
-                    power *= colorsCount;
-                }
-
-                return result;
-            }
 
             byte[] patternFromIndex(long idx) {
                 long residue = idx, power = colorCountSquared;
@@ -96,33 +46,8 @@ namespace WFC4All {
                 return result;
             }
 
-            Dictionary<long, int> weightsDictionary = new Dictionary<long, int>();
-            List<long> ordering = new List<long>();
-
-            for (int y = 0; y < (periodicInput ? inputHeight : inputHeight - overlapTileDimension + 1); y++) {
-                for (int x = 0; x < (periodicInput ? inputWidth : inputWidth - overlapTileDimension + 1); x++) {
-                    byte[][] patternSymmetry = new byte[8][];
-
-                    patternSymmetry[0] = patternFromSample(x, y);
-                    patternSymmetry[1] = reflect(patternSymmetry[0]);   // pattern flipped over y axis once
-                    patternSymmetry[2] = rotate(patternSymmetry[0]);    // pattern rotated CW once
-                    patternSymmetry[3] = reflect(patternSymmetry[2]);   // pattern rotated CW once, then flipped
-                    patternSymmetry[4] = rotate(patternSymmetry[2]);    // pattern rotated CW twice
-                    patternSymmetry[5] = reflect(patternSymmetry[4]);   // pattern rotated CW twice, then flipped
-                    patternSymmetry[6] = rotate(patternSymmetry[4]);    // pattern rotated CW thrice
-                    patternSymmetry[7] = reflect(patternSymmetry[6]);   // pattern rotated CW thrice, then flipped
-
-                    for (int i = 0; i < symmetry; i++) {
-                        long idx = index(patternSymmetry[i]);
-                        if (weightsDictionary.ContainsKey(idx)) {
-                            weightsDictionary[idx]++;
-                        } else {
-                            weightsDictionary.Add(idx, 1);
-                            ordering.Add(idx);
-                        }
-                    }
-                }
-            }
+            Dictionary<long, int> weightsDictionary = inputManager.getWeightsDictionary();
+            List<long> ordering = inputManager.getOrdering();
 
             actionCount = weightsDictionary.Count;
             this.ground = (ground + actionCount) % actionCount;
@@ -136,14 +61,16 @@ namespace WFC4All {
                 counter++;
             }
 
-            bool acceptsPattern(IReadOnlyList<byte> pattern1, IReadOnlyList<byte> pattern2, int xChange, int yChange) {
-                int xMin = xChange < 0 ? 0 : xChange,
-                    xMax = xChange < 0 ? xChange + overlapTileDimension : overlapTileDimension,
-                    yMin = yChange < 0 ? 0 : yChange,
-                    yMax = yChange < 0 ? yChange + overlapTileDimension : overlapTileDimension;
+            bool acceptsPattern(IReadOnlyList<byte> pattern1, IReadOnlyList<byte> pattern2, int xChangePattern,
+                int yChangePattern) {
+                int xMin = xChangePattern < 0 ? 0 : xChangePattern,
+                    xMax = xChangePattern < 0 ? xChangePattern + overlapTileDimension : overlapTileDimension,
+                    yMin = yChangePattern < 0 ? 0 : yChangePattern,
+                    yMax = yChangePattern < 0 ? yChangePattern + overlapTileDimension : overlapTileDimension;
                 for (int y = yMin; y < yMax; y++) {
                     for (int x = xMin; x < xMax; x++) {
-                        if (pattern1[x + overlapTileDimension * y] != pattern2[x - xChange + overlapTileDimension * (y - yChange)]) {
+                        if (pattern1[x + overlapTileDimension * y]
+                            != pattern2[x - xChangePattern + overlapTileDimension * (y - yChangePattern)]) {
                             return false;
                         }
                     }
@@ -180,8 +107,10 @@ namespace WFC4All {
                     int dy = y < imageOutputHeight - overlapTileDimension + 1 ? 0 : overlapTileDimension - 1;
                     for (int x = 0; x < imageOutputWidth; x++) {
                         int dx = x < imageOutputWidth - overlapTileDimension + 1 ? 0 : overlapTileDimension - 1;
-                        Color c = colors[patterns[observed[x - dx + (y - dy) * imageOutputWidth]][dx + dy * overlapTileDimension]];
-                        bitmapData[x + y * imageOutputWidth] = unchecked((int) 0xff000000 | (c.R << 16) | (c.G << 8) | c.B);
+                        Color c = colors[
+                            patterns[observed[x - dx + (y - dy) * imageOutputWidth]][dx + dy * overlapTileDimension]];
+                        bitmapData[x + y * imageOutputWidth]
+                            = unchecked((int) 0xff000000 | (c.R << 16) | (c.G << 8) | c.B);
                     }
                 }
             } else {
@@ -202,7 +131,8 @@ namespace WFC4All {
                             }
 
                             int s = sx + sy * imageOutputWidth;
-                            if (!periodic && (sx + overlapTileDimension > imageOutputWidth || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
+                            if (!periodic && (sx + overlapTileDimension > imageOutputWidth
+                                || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
                                 continue;
                             }
 
@@ -221,7 +151,7 @@ namespace WFC4All {
                     }
 
                     bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
-                                              ((g / contributors) << 8) | (b / contributors));
+                        ((g / contributors) << 8) | (b / contributors));
                 }
             }
 

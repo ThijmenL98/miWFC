@@ -16,16 +16,11 @@ using System.Xml.Linq;
 
 namespace WFC4All {
     internal class SimpleTiledModel : Model {
-        private readonly bool blackBackground;
-        private readonly List<string> tileNames;
         private readonly List<Color[]> tiles;
         private readonly int tilesize;
 
         public SimpleTiledModel(string name, string subsetName, int outputWidth, int outputHeight, bool periodic,
-            bool blackBackground,
             Heuristic heuristic, Form1 form) : base(outputWidth, outputHeight, 1, periodic, heuristic, form) {
-            this.blackBackground = blackBackground;
-
             XElement xRoot = XDocument.Load($"samples/{name}/data.xml").Root;
             tilesize = xRoot.Get("size", 16);
             bool unique = xRoot.Get("unique", false);
@@ -64,7 +59,7 @@ namespace WFC4All {
             }
 
             tiles = new List<Color[]>();
-            tileNames = new List<string>();
+            List<string> tileNames = new List<string>();
             List<double> weightList = new List<double>();
 
             List<int[]> action = new List<int[]>();
@@ -73,7 +68,7 @@ namespace WFC4All {
             if (xRoot == null) {
                 return;
             }
-            
+
             foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")) {
                 string tileName = xTile.Get<string>("name");
                 if (subset != null && !subset.Contains(tileName)) {
@@ -268,28 +263,23 @@ namespace WFC4All {
                 for (int x = 0; x < imageOutputWidth; x++) {
                     for (int y = 0; y < imageOutputHeight; y++) {
                         bool[] a = wave[x + y * imageOutputWidth];
-                        int amount = (from b in a where b select 1).Sum();
-                        double lambda = 1.0 / (from t in Enumerable.Range(0, actionCount) where a[t] select weights[t]).Sum();
+                        double lambda = 1.0 / (from t in Enumerable.Range(0, actionCount) where a[t] select weights[t])
+                            .Sum();
 
                         for (int yt = 0; yt < tilesize; yt++) {
                             for (int xt = 0; xt < tilesize; xt++) {
-                                if (blackBackground && amount == actionCount) {
-                                    bitmapData[x * tilesize + xt + (y * tilesize + yt) * imageOutputWidth * tilesize]
-                                        = unchecked((int) 0xff000000);
-                                } else {
-                                    double r = 0, g = 0, b = 0;
-                                    for (int t = 0; t < actionCount; t++) {
-                                        if (a[t]) {
-                                            Color c = tiles[t][xt + yt * tilesize];
-                                            r += c.R * weights[t] * lambda;
-                                            g += c.G * weights[t] * lambda;
-                                            b += c.B * weights[t] * lambda;
-                                        }
+                                double r = 0, g = 0, b = 0;
+                                for (int t = 0; t < actionCount; t++) {
+                                    if (a[t]) {
+                                        Color c = tiles[t][xt + yt * tilesize];
+                                        r += c.R * weights[t] * lambda;
+                                        g += c.G * weights[t] * lambda;
+                                        b += c.B * weights[t] * lambda;
                                     }
-
-                                    bitmapData[x * tilesize + xt + (y * tilesize + yt) * imageOutputWidth * tilesize] =
-                                        unchecked((int) 0xff000000 | ((int) r << 16) | ((int) g << 8) | (int) b);
                                 }
+
+                                bitmapData[x * tilesize + xt + (y * tilesize + yt) * imageOutputWidth * tilesize] =
+                                    unchecked((int) 0xff000000 | ((int) r << 16) | ((int) g << 8) | (int) b);
                             }
                         }
                     }
@@ -300,7 +290,6 @@ namespace WFC4All {
                 PixelFormat.Format32bppArgb);
             Marshal.Copy(bitmapData, 0, bits.Scan0, bitmapData.Length);
             result.UnlockBits(bits);
-
             return result;
         }
     }

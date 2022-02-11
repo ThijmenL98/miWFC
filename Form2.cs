@@ -20,7 +20,7 @@ namespace WFC4All {
             // 
             // closeButton
             // 
-            closeButton.Font = new Font("Microsoft Sans Serif", 14.25F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
+            closeButton.Font = new Font("Microsoft Sans Serif", 14.25F, FontStyle.Bold, GraphicsUnit.Point, (byte)0);
             closeButton.Location = new Point(131, 92);
             closeButton.Name = "closeButton";
             closeButton.Size = new Size(110, 47);
@@ -31,7 +31,7 @@ namespace WFC4All {
             // 
             // errorMessage
             // 
-            errorMessage.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, ((byte)(0)));
+            errorMessage.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, (byte)0);
             errorMessage.ForeColor = Color.Red;
             errorMessage.Location = new Point(12, 9);
             errorMessage.Name = "errorMessage";
