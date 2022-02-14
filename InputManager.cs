@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -31,6 +32,7 @@ namespace WFC4All {
         }
 
         public Bitmap runWfc() {
+
             Stopwatch sw = Stopwatch.StartNew();
 
             Random random = new Random();
@@ -38,9 +40,13 @@ namespace WFC4All {
             XElement xElem = xDoc.Root.Elements("overlapping", "simpletiled").Where(x =>
                 x.Get<string>("name") == form.getSelectedInput()).ElementAtOrDefault(0);
 
+            if (xElem != null && xElem.Name == "overlapping") {
+                extractPatterns();
+            }
+            
             Model model;
             string name = xElem.Get<string>("name");
-            Console.WriteLine($"< {name}");
+            Console.WriteLine();
 
             string heuristicString = xElem.Get<string>("heuristic");
             Model.Heuristic heuristic = heuristicString == "Scanline"
@@ -60,22 +66,17 @@ namespace WFC4All {
 
             for (int i = 0; i < xElem.Get("screenshots", 2); i++) {
                 for (int k = 0; k < 10; k++) {
-                    Console.Write("> ");
                     int seed = random.Next();
                     bool success = model.Run(seed, xElem.Get("limit", -1));
 
                     if (success) {
-                        Console.WriteLine("DONE");
-
-                        Console.WriteLine($"time = {sw.ElapsedMilliseconds}");
+                        Console.WriteLine($"WFC Runtime = {sw.ElapsedMilliseconds}");
                         return model.Graphics();
                     }
-
-                    Console.WriteLine("CONTRADICTION");
                 }
             }
 
-            Console.WriteLine($"time = {sw.ElapsedMilliseconds}");
+            Console.WriteLine($"WFC Runtime = {sw.ElapsedMilliseconds}");
             return null;
         }
 
@@ -204,6 +205,8 @@ namespace WFC4All {
                 return;
             }
             
+            form.setPatternLabelVisible();
+            
             int total = form.bitMaps.getPatternCount();
             for (int i = 0; i < total; i++) {
                 foreach (Control item in form.patternPanel.Controls) {
@@ -273,9 +276,13 @@ namespace WFC4All {
                             } else {
                                 weightsDictionary.Add(idx, 1);
                                 ordering.Add(idx);
+                                
                                 //TODO check if pattern is similar to others (flipped)
-                                form.addPattern(patternSymmetry[i], colors, overlapTileDimension,
-                                    weightsDictionary.Count - 1);
+                                if (i == 0) {
+                                    Thread.CurrentThread.IsBackground = true;
+                                    form.addPattern(patternSymmetry[0], colors, overlapTileDimension,
+                                        weightsDictionary.Count - 1);
+                                }
                             }
                         }
                     }

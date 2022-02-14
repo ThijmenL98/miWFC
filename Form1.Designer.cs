@@ -32,7 +32,7 @@ namespace WFC4All
         /// </summary>
         private void InitializeComponent() {
             this.resultPB = new System.Windows.Forms.PictureBox();
-            this.executeButton = new System.Windows.Forms.Button();
+            this.refreshButton = new System.Windows.Forms.Button();
             this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab = new System.Windows.Forms.TabPage();
             this.patternRotationLabel = new System.Windows.Forms.Label();
@@ -45,6 +45,7 @@ namespace WFC4All
             this.p1RotPB = new System.Windows.Forms.PictureBox();
             this.originalRotPB = new System.Windows.Forms.PictureBox();
             this.patternPanel = new System.Windows.Forms.Panel();
+            this.patternsLabel = new System.Windows.Forms.Label();
             this.extractPatternsButton = new System.Windows.Forms.Button();
             this.periodicInput = new System.Windows.Forms.CheckBox();
             this.modelChoice = new System.Windows.Forms.Button();
@@ -59,7 +60,6 @@ namespace WFC4All
             this.patternSizeLabel = new System.Windows.Forms.Label();
             this.patternSize = new System.Windows.Forms.ComboBox();
             this.execTab = new System.Windows.Forms.TabPage();
-            this.patternsLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.resultPB)).BeginInit();
             this.tabSelection.SuspendLayout();
             this.inputTab.SuspendLayout();
@@ -75,7 +75,6 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize)(this.outputHeightValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.outputWidthValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputImagePB)).BeginInit();
-            this.execTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // resultPB
@@ -88,15 +87,15 @@ namespace WFC4All
             this.resultPB.TabIndex = 0;
             this.resultPB.TabStop = false;
             // 
-            // executeButton
+            // refreshButton
             // 
-            this.executeButton.Location = new System.Drawing.Point(1171, 746);
-            this.executeButton.Name = "executeButton";
-            this.executeButton.Size = new System.Drawing.Size(150, 75);
-            this.executeButton.TabIndex = 1;
-            this.executeButton.Text = "Run";
-            this.executeButton.UseVisualStyleBackColor = true;
-            this.executeButton.Click += new System.EventHandler(this.executeButton_Click);
+            this.refreshButton.Location = new System.Drawing.Point(1171, 746);
+            this.refreshButton.Name = "refreshButton";
+            this.refreshButton.Size = new System.Drawing.Size(150, 75);
+            this.refreshButton.TabIndex = 1;
+            this.refreshButton.Text = "Refresh";
+            this.refreshButton.UseVisualStyleBackColor = true;
+            this.refreshButton.Click += new System.EventHandler(this.executeButton_Click);
             // 
             // tabSelection
             // 
@@ -137,6 +136,8 @@ namespace WFC4All
             this.inputTab.Controls.Add(this.inputImage);
             this.inputTab.Controls.Add(this.patternSizeLabel);
             this.inputTab.Controls.Add(this.patternSize);
+            this.inputTab.Controls.Add(this.resultPB);
+            this.inputTab.Controls.Add(this.refreshButton);
             this.inputTab.Location = new System.Drawing.Point(4, 22);
             this.inputTab.Name = "inputTab";
             this.inputTab.Padding = new System.Windows.Forms.Padding(3);
@@ -234,8 +235,19 @@ namespace WFC4All
             this.patternPanel.Controls.Add(this.patternsLabel);
             this.patternPanel.Location = new System.Drawing.Point(365, 24);
             this.patternPanel.Name = "patternPanel";
-            this.patternPanel.Size = new System.Drawing.Size(1206, 825);
+            this.patternPanel.Size = new System.Drawing.Size(500, 825);
             this.patternPanel.TabIndex = 11;
+            // 
+            // patternsLabel
+            // 
+            this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.patternsLabel.Location = new System.Drawing.Point(14, 14);
+            this.patternsLabel.Name = "patternsLabel";
+            this.patternsLabel.Size = new System.Drawing.Size(459, 56);
+            this.patternsLabel.TabIndex = 0;
+            this.patternsLabel.Text = "Extracted patterns, you can deselect patterns you don\'t want to show up in the fi" +
+    "nal generated image (red = excluded). Duplicate patterns (such as rotated or fli" +
+    "pped) are excluded!";
             // 
             // extractPatternsButton
             // 
@@ -402,25 +414,12 @@ namespace WFC4All
             // execTab
             // 
             this.execTab.BackColor = System.Drawing.Color.DarkGray;
-            this.execTab.Controls.Add(this.resultPB);
-            this.execTab.Controls.Add(this.executeButton);
             this.execTab.Location = new System.Drawing.Point(4, 22);
             this.execTab.Name = "execTab";
             this.execTab.Padding = new System.Windows.Forms.Padding(3);
             this.execTab.Size = new System.Drawing.Size(1592, 874);
             this.execTab.TabIndex = 1;
             this.execTab.Text = "Algorithm";
-            // 
-            // patternsLabel
-            // 
-            this.patternsLabel.AutoSize = true;
-            this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.patternsLabel.Location = new System.Drawing.Point(50, 15);
-            this.patternsLabel.Name = "patternsLabel";
-            this.patternsLabel.Size = new System.Drawing.Size(757, 15);
-            this.patternsLabel.TabIndex = 0;
-            this.patternsLabel.Text = "Extracted patterns, you can deselect patterns you don\'t want to show up in the fi" +
-    "nal generated image (red = excluded)";
             // 
             // Form1
             // 
@@ -445,12 +444,9 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize)(this.p1RotPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.originalRotPB)).EndInit();
             this.patternPanel.ResumeLayout(false);
-            this.patternPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.outputHeightValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.outputWidthValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputImagePB)).EndInit();
-            this.execTab.ResumeLayout(false);
-            this.execTab.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -466,7 +462,7 @@ namespace WFC4All
         private System.Windows.Forms.TabPage inputTab;
         private System.Windows.Forms.TabPage execTab;
 
-        private System.Windows.Forms.Button executeButton;
+        private System.Windows.Forms.Button refreshButton;
 
         private System.Windows.Forms.PictureBox resultPB;
 

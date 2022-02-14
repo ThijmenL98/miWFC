@@ -220,6 +220,11 @@ namespace WFC4All {
                 };
             }
         }
+
+        public void setPatternLabelVisible() {
+            Console.WriteLine("Clled");
+            patternsLabel.Visible = true;
+        }
     }
 
     public class BitMaps {
@@ -248,19 +253,19 @@ namespace WFC4All {
             MouseEventHandler pictureBoxMouseDown) {
             PictureBox newPB = new PictureBox();
 
-            patternCount++;
+            const int patternsPerRow = 6;
 
-            const int patternsPerRow = 16;
-
-            int idxX = patternIdx % patternsPerRow;
-            int idxY = (int) Math.Floor(patternIdx / (double) patternsPerRow);
+            int idxX = patternCount % patternsPerRow;
+            int idxY = (int) Math.Floor(patternCount / (double) patternsPerRow);
 
             const int size = 50;
             const int distance = 20;
 
-            newPB.Location = new Point(size + (size + distance) * idxX, size + (size + distance) * idxY);
+            newPB.Location = new Point(size + (size + distance) * idxX, size + 30 + (size + distance) * idxY);
             newPB.Size = new Size(size, size);
-            newPB.Name = "patternPB_" + patternIdx;
+            newPB.Name = "patternPB_" + patternCount;
+
+            patternCount++;
 
             Bitmap patternBM = new Bitmap(size, size);
 
