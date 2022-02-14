@@ -19,25 +19,11 @@ namespace WFC4All {
         private readonly List<Color[]> tiles;
         private readonly int tilesize;
 
-        public SimpleTiledModel(string name, string subsetName, int outputWidth, int outputHeight, bool periodic,
+        public SimpleTiledModel(string name, int outputWidth, int outputHeight, bool periodic,
             Heuristic heuristic, Form1 form) : base(outputWidth, outputHeight, 1, periodic, heuristic, form) {
             XElement xRoot = XDocument.Load($"samples/{name}/data.xml").Root;
             tilesize = xRoot.Get("size", 16);
             bool unique = xRoot.Get("unique", false);
-
-            List<string> subset = null;
-            if (subsetName != null) {
-                if (xRoot != null) {
-                    XElement xSubset = xRoot.Element("subsets")
-                        ?.Elements("subset")
-                        .FirstOrDefault(x => x.Get<string>("name") == subsetName);
-                    if (xSubset == null) {
-                        Console.WriteLine($@"ERROR: subset {subsetName} is not found");
-                    } else {
-                        subset = xSubset.Elements("tile").Select(x => x.Get<string>("name")).ToList();
-                    }
-                }
-            }
 
             Color[] tile(Func<int, int, Color> f) {
                 Color[] result = new Color[tilesize * tilesize];
@@ -71,9 +57,6 @@ namespace WFC4All {
 
             foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")) {
                 string tileName = xTile.Get<string>("name");
-                if (subset != null && !subset.Contains(tileName)) {
-                    continue;
-                }
 
                 Func<int, int> a, b;
                 int cardinality;
@@ -182,10 +165,6 @@ namespace WFC4All {
                     .Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
                 string[] right = xNeighbor.Get<string>("right")
                     .Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-
-                if (subset != null && (!subset.Contains(left[0]) || !subset.Contains(right[0]))) {
-                    continue;
-                }
 
                 int l = action[firstOccurrence[left[0]]][left.Length == 1 ? 0 : int.Parse(left[1])];
                 int d = action[l][1];

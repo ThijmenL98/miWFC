@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -10,7 +11,7 @@ namespace WFC4All {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
         public readonly PictureBox[] pbs;
-        public readonly int[] rotFlipOrder;
+        private readonly int[] rotFlipOrder;
         private int defaultSymmetry;
         private bool defaultPeriodicity;
 
@@ -37,28 +38,33 @@ namespace WFC4All {
             patternsLabel.Visible = false;
         }
 
+        private int lastRanForced;
+
         private void executeButton_Click(object sender, EventArgs e) {
-            Bitmap result;
-            try {
-                result = inputManager.runWfc();
-            } catch (Exception exception) {
-                Form2 errorDialog = new Form2();
-                errorDialog.Show();
-                Console.WriteLine(exception);
+            if (changingIndex) {
                 return;
             }
 
-            if (result.Width > resultPB.Width || result.Height > resultPB.Height) {
-                resultPB.Image = InputManager.resizePixels(resultPB, result, result.Width, result.Height,
-                    resultPB.Width, resultPB.Height, 0);
-            } else {
-                int i = 1;
-                while ((i + 1) * result.Width < resultPB.Width && (i + 1) * result.Height < resultPB.Height) {
-                    i++;
-                }
+            int now = DateTime.Now.Millisecond;
 
-                resultPB.Image = InputManager.resizePixels(resultPB, result, result.Width, result.Height,
-                    i * result.Width, i * result.Height, 0);
+            if (sender == null && now - lastRanForced <= 50) {
+                lastRanForced = now;
+                return;
+            }
+            
+            try {
+                Bitmap result = inputManager.runWfc();
+                Stopwatch sw = Stopwatch.StartNew();
+                if (result.Width > resultPB.Width || result.Height > resultPB.Height) {
+                    resultPB.Image = InputManager.resizeBitmap(result, result.Width/(float) resultPB.Width);
+                } else {
+                    resultPB.Image = InputManager.resizeBitmap(result, resultPB.Width/(float) result.Width);
+                }
+                result.Dispose();
+                Console.WriteLine("Displaying bitmap: " + sw.ElapsedMilliseconds + "ms.\n");
+            } catch (Exception exception) {
+                Console.WriteLine(exception);
+                resultPB.Image = InputManager.getImage("NoResultFound");
             }
         }
 
@@ -70,23 +76,29 @@ namespace WFC4All {
             return periodicInput.Checked;
         }
 
+        private bool changingIndex;
+
         private void inputImage_SelectedIndexChanged(object sender, EventArgs e) {
+            changingIndex = true;
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
             patternSize.DataSource = patternSizeDataSource;
 
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
             updateInputImage(newValue);
-            inputManager.setInputChanged();
             XDocument xDoc = XDocument.Load("samples.xml");
             XElement curSelection = xDoc.Root.Elements("overlapping", "simpletiled").Where(x =>
                 x.Get<string>("name") == getSelectedInput()).ElementAtOrDefault(0);
-            
+
             defaultSymmetry = curSelection.Get("symmetry", 8);
             defaultPeriodicity = curSelection.Get("periodicInput", true);
-            
+
             updateRotations();
             updatePeriodicity();
+
+            changingIndex = false;
+            inputManager.setInputChanged();
+            executeButton_Click(null, null);
         }
 
         public int getOutputWidth() {
@@ -106,13 +118,15 @@ namespace WFC4All {
             } else {
                 int i = 1;
                 while ((i + 1) * newImage.Width < inputImagePB.Width &&
-                    (i + 1) * newImage.Height < inputImagePB.Height) {
+                       (i + 1) * newImage.Height < inputImagePB.Height) {
                     i++;
                 }
 
                 inputImagePB.Image = InputManager.resizePixels(inputImagePB, newImage, newImage.Width, newImage.Height,
                     i * newImage.Width, i * newImage.Height, 0);
             }
+
+            inputImagePB.Refresh();
         }
 
         public string getSelectedInput() {
@@ -121,8 +135,12 @@ namespace WFC4All {
 
         private void modelChoice_Click(object sender, EventArgs e) {
             Button btn = (Button) sender;
+
+            outputHeightValue.Value = 24;
+            outputWidthValue.Value = 24;
+            
             btn.Text = btn.Text.Equals("Overlapping Model") ? "Simple Model" : "Overlapping Model";
-            inputManager.setInputChanged();
+            showRotationalOptions(btn.Text.Equals("Overlapping Model"));
 
             string[] images
                 = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled");
@@ -134,31 +152,32 @@ namespace WFC4All {
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[0]);
             patternSize.DataSource = patternSizeDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
+            
+            inputManager.setInputChanged();
         }
 
-        public void addPattern(byte[] bytes, List<Color> colors, int overlapTileDimension, int patternIdx) {
-            bitMaps.addPattern(bytes, colors, overlapTileDimension, patternIdx, inputManager, pictureBoxMouseDown);
+        public void addPattern(byte[] bytes, List<Color> colors, int overlapTileDimension, int patternIdx, bool add) {
+            bitMaps.addPattern(bytes, colors, overlapTileDimension, patternIdx, pictureBoxMouseDown, add);
         }
 
         private void extractPatternsButton_Click(object sender, EventArgs e) {
             patternsLabel.Visible = true;
-            if (modelChoice.Text.Equals("Overlapping Model")) {
-                inputManager.extractPatterns();
-            } else {
-                //TODO
-            }
+            inputManager.extractPatterns(false, modelChoice.Text.Equals("Overlapping Model"));
         }
 
         private void changeTab(object sender, TabControlCancelEventArgs e) {
             TabControl tc = (TabControl) sender;
             int curTab = tc.SelectedIndex;
             if (curTab == 1 && modelChoice.Text.Equals("Overlapping Model")) {
-                inputManager.extractPatterns();
+                inputManager.extractPatterns(false, true);
             }
         }
 
         private void inputChanged(object sender, EventArgs e) {
             inputManager.setInputChanged();
+            if (Visible) {
+                executeButton_Click(null, null);
+            }
         }
 
         private static void pictureBoxMouseDown(object sender, MouseEventArgs e) {
@@ -168,6 +187,7 @@ namespace WFC4All {
             }
         }
 
+        // ReSharper disable once UnusedParameter.Local
         private static void addHover(object sender, EventArgs e, string message) {
             ToolTip toolTip = new ToolTip();
 
@@ -175,7 +195,7 @@ namespace WFC4All {
             toolTip.InitialDelay = 0;
             toolTip.ReshowDelay = 500;
             toolTip.ShowAlways = true;
-            
+
             toolTip.SetToolTip((PictureBox) sender, message);
         }
 
@@ -184,10 +204,20 @@ namespace WFC4All {
         }
 
         private void updateRotations() {
-            foreach(int j in rotFlipOrder) {
+            foreach (int j in rotFlipOrder) {
                 int i = j - 1;
                 pbs[i].BackColor = defaultSymmetry < j + 1 ? Color.Red : Color.LawnGreen;
             }
+        }
+
+        public void showRotationalOptions(bool hide) {
+            foreach (int j in rotFlipOrder) {
+                int i = j - 1;
+                pbs[i].Visible = hide;
+            }
+
+            originalRotPB.Visible = hide;
+            patternRotationLabel.Visible = hide;
         }
 
         private void initializeRotations() {
@@ -215,14 +245,11 @@ namespace WFC4All {
                 pbs[i].Image = cloneBM;
                 pbs[i].MouseDown += pictureBoxMouseDown;
                 int i1 = i;
-                pbs[i].MouseHover += (sender, eventArgs) => {
-                    addHover(sender, eventArgs, rfsString[i1]);
-                };
+                pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[i1]); };
             }
         }
 
         public void setPatternLabelVisible() {
-            Console.WriteLine("Clled");
             patternsLabel.Visible = true;
         }
     }
@@ -249,23 +276,22 @@ namespace WFC4All {
             return curFloorIndex == 0 ? 0 : (curFloorIndex - patternSize);
         }
 
-        public void addPattern(byte[] pattern, List<Color> colors, int n, int patternIdx, InputManager inputManager,
-            MouseEventHandler pictureBoxMouseDown) {
+        public void addPattern(byte[] pattern, List<Color> colors, int n, int patternIdx,
+            MouseEventHandler pictureBoxMouseDown, bool add) {
+            const int size = 50;
+            const int patternsPerRow = 6;
             PictureBox newPB = new PictureBox();
 
-            const int patternsPerRow = 6;
+            if (add) {
+                int idxX = patternCount % patternsPerRow;
+                int idxY = (int) Math.Floor(patternCount / (double) patternsPerRow);
+                const int distance = 20;
 
-            int idxX = patternCount % patternsPerRow;
-            int idxY = (int) Math.Floor(patternCount / (double) patternsPerRow);
-
-            const int size = 50;
-            const int distance = 20;
-
-            newPB.Location = new Point(size + (size + distance) * idxX, size + 30 + (size + distance) * idxY);
-            newPB.Size = new Size(size, size);
-            newPB.Name = "patternPB_" + patternCount;
-
-            patternCount++;
+                newPB.Location = new Point(size + (size + distance) * idxX, size + 30 + (size + distance) * idxY);
+                newPB.Size = new Size(size, size);
+                newPB.Name = "patternPB_" + patternCount;
+                patternCount++;
+            }
 
             Bitmap patternBM = new Bitmap(size, size);
 
@@ -289,15 +315,17 @@ namespace WFC4All {
                 curFloorIndex = patternIdx;
             }
 
-            const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, patternBM, n, n, size, size, padding);
-            newPB.BackColor = Color.LawnGreen;
-            newPB.Padding = new Padding(padding);
-            newPB.MouseDown += pictureBoxMouseDown;
+            if (add) {
+                const int padding = 3;
+                newPB.Image = InputManager.resizePixels(newPB, patternBM, n, n, size, size, padding);
+                newPB.BackColor = Color.LawnGreen;
+                newPB.Padding = new Padding(padding);
+                newPB.MouseDown += pictureBoxMouseDown;
 
-            myForm.patternPanel.Controls.Add(newPB);
-            if (patternIdx % (patternsPerRow * 3) == patternsPerRow - 1) {
-                myForm.patternPanel.Refresh();
+                myForm.patternPanel.Controls.Add(newPB);
+                if (patternIdx % (patternsPerRow * 3) == patternsPerRow - 1) {
+                    myForm.patternPanel.Refresh();
+                }
             }
         }
     }

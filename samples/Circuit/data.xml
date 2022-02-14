@@ -162,21 +162,4 @@
         <neighbor left="vias 3" right="skew 2"/>
         <neighbor left="wire 1" right="skew"/>
     </neighbors>
-    <subsets>
-        <subset name="Turnless">
-            <tile name="bridge"/>
-            <tile name="component"/>
-            <tile name="connection"/>
-            <tile name="corner"/>
-            <tile name="substrate"/>
-            <tile name="t"/>
-            <tile name="track"/>
-            <tile name="transition"/>
-            <tile name="viad"/>
-            <tile name="vias"/>
-            <tile name="wire"/>
-            <tile name="skew"/>
-            <tile name="dskew"/>
-        </subset>
-    </subsets>
 </set>

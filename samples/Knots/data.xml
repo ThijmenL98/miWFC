@@ -43,47 +43,4 @@
         <neighbor left="t 1" right="t"/>
         <neighbor left="t 3" right="t 1"/>
     </neighbors>
-    <subsets>
-        <subset name="Standard">
-            <tile name="corner"/>
-            <tile name="cross"/>
-            <tile name="empty"/>
-            <tile name="line"/>
-        </subset>
-        <subset name="Dense">
-            <tile name="corner"/>
-            <tile name="cross"/>
-            <tile name="line"/>
-        </subset>
-        <subset name="Crossless">
-            <tile name="corner"/>
-            <tile name="empty"/>
-            <tile name="line"/>
-        </subset>
-        <subset name="TE">
-            <tile name="t"/>
-            <tile name="empty"/>
-        </subset>
-        <subset name="T">
-            <tile name="t"/>
-        </subset>
-        <subset name="CL">
-            <tile name="corner"/>
-            <tile name="line"/>
-        </subset>
-        <subset name="CE">
-            <tile name="corner"/>
-            <tile name="empty"/>
-        </subset>
-        <subset name="C">
-            <tile name="corner"/>
-        </subset>
-        <subset name="Fabric">
-            <tile name="cross"/>
-            <tile name="line"/>
-        </subset>
-        <subset name="Dense Fabric">
-            <tile name="cross"/>
-        </subset>
-    </subsets>
 </set>

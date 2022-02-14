@@ -53,12 +53,6 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Form2.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form2.Designer.cs">
-      <DependentUpon>Form2.cs</DependentUpon>
-    </Compile>
     <Compile Include="Helper.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="Model.cs" />
@@ -68,9 +62,6 @@
     <Compile Include="SimpleTiledModel.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Form2.resx">
-      <DependentUpon>Form2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -196,16 +187,6 @@
     <Content Include="samples\RedDot.png" />
     <Content Include="samples\RedMaze.png" />
     <Content Include="samples\Rooms.png" />
-    <Content Include="samples\Rooms\bend.png" />
-    <Content Include="samples\Rooms\corner.png" />
-    <Content Include="samples\Rooms\corridor.png" />
-    <Content Include="samples\Rooms\data.xml" />
-    <Content Include="samples\Rooms\door.png" />
-    <Content Include="samples\Rooms\empty.png" />
-    <Content Include="samples\Rooms\side.png" />
-    <Content Include="samples\Rooms\t.png" />
-    <Content Include="samples\Rooms\turn.png" />
-    <Content Include="samples\Rooms\wall.png" />
     <Content Include="samples\Rule126.png" />
     <Content Include="samples\Sand.png" />
     <Content Include="samples\ScaledMaze.png" />

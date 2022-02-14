@@ -320,13 +320,8 @@ namespace WFC4All
             // outputHeightValue
             // 
             this.outputHeightValue.Location = new System.Drawing.Point(206, 469);
-            this.outputHeightValue.Maximum = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
             this.outputHeightValue.Minimum = new decimal(new int[] {
-            20,
+            10,
             0,
             0,
             0});
@@ -334,7 +329,7 @@ namespace WFC4All
             this.outputHeightValue.Size = new System.Drawing.Size(67, 20);
             this.outputHeightValue.TabIndex = 3;
             this.outputHeightValue.Value = new decimal(new int[] {
-            50,
+            24,
             0,
             0,
             0});
@@ -356,7 +351,7 @@ namespace WFC4All
             this.outputWidthValue.Size = new System.Drawing.Size(67, 20);
             this.outputWidthValue.TabIndex = 4;
             this.outputWidthValue.Value = new decimal(new int[] {
-            50,
+            24,
             0,
             0,
             0});

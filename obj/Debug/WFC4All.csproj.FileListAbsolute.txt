@@ -18,7 +18,6 @@ C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.Genera
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.CoreCompileInputs.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.exe
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.pdb
-C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.Form2.resources
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.Form1.resources
 C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.csprojResolveAssemblyReference.cache
 C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.Form1.resources
