@@ -89,7 +89,7 @@ namespace WFC4All {
 
             while (sw.ElapsedMilliseconds < 3000) {
                 int seed = random.Next();
-                bool success = model.Run(seed, -1); //Setting Limit to e.g. x, causes it to stop after adding x tiles
+                bool success = model.Run(seed, -1); //TODO CF1: Setting Limit to e.g. x, causes it to stop after adding x tiles
 
                 if (success) {
                     Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
@@ -172,7 +172,7 @@ namespace WFC4All {
 
             currentBitmap = getImage(form.getSelectedInput());
 
-            if (fileChanged) {
+            if (fileChanged || lastDim != form.getSelectedOverlapTileDimension()) {
                 int total = form.bitMaps.getPatternCount();
                 for (int i = 0; i < total; i++) {
                     foreach (Control item in form.patternPanel.Controls) {
@@ -222,6 +222,8 @@ namespace WFC4All {
                 ordering = new List<long>();
 
                 Stopwatch sw = new Stopwatch();
+                int[] map = {0, 0, 1, 1, 2, 2, 3, 3};
+
                 for (int y = 0; y < (periodicInput ? inputHeight : inputHeight - overlapTileDimension + 1); y++) {
                     for (int x = 0; x < (periodicInput ? inputWidth : inputWidth - overlapTileDimension + 1); x++) {
                         byte[][] patternSymmetry = new byte[8][];
@@ -236,7 +238,7 @@ namespace WFC4All {
                         patternSymmetry[7] = reflect(patternSymmetry[6]); // pattern rotated CW thrice, then flipped
 
                         for (int i = 0; i < 8; i++) {
-                            if (i == 0 || transformationIsEnabled(i)) {
+                            if (i == 0 || transformationIsEnabled(map[i])) {
                                 long idx = index(patternSymmetry[i]);
 
                                 if (weightsDictionary.ContainsKey(idx)) {
@@ -248,16 +250,17 @@ namespace WFC4All {
                                     //TODO check if pattern is similar to others (flipped)
                                     Thread.CurrentThread.IsBackground = true;
                                     form.addPattern(patternSymmetry[0], overlappingColors, overlapTileDimension,
-                                        weightsDictionary.Count - 1, i == 0 && fileChanged);
+                                        weightsDictionary.Count - 1,
+                                        i == 0 && (fileChanged || lastDim != form.getSelectedOverlapTileDimension()));
                                 }
                             }
                         }
                     }
                 }
 
-                Console.WriteLine("Transformation extraction: " + sw.ElapsedMilliseconds + "ms.");
+                Console.WriteLine($@"Transformation extraction: {sw.ElapsedMilliseconds}ms.");
 
-                groundPatternIdx = form.bitMaps.getFloorIndex(weightsDictionary.Count);
+                groundPatternIdx = transformationIsEnabled(2) ? 0 : form.bitMaps.getFloorIndex(weightsDictionary.Count);
             } else {
                 xRoot = XDocument.Load($"samples/{curFile}/data.xml").Root;
                 tileSize = xRoot.Get("size", 16);
@@ -341,7 +344,8 @@ namespace WFC4All {
                         Bitmap bitmap = null;
                         for (int t = 0; t < cardinality; t++) {
                             bitmap = new Bitmap($"samples/{curFile}/{tileName} {t}.png");
-                            simpleColors.Add(tile((x, y) => bitmap.GetPixel(x, y), tileSize));
+                            Bitmap nonLocalBitmap = bitmap;
+                            simpleColors.Add(tile((x, y) => nonLocalBitmap.GetPixel(x, y), tileSize));
                             tileNames.Add($"{tileName} {t}");
                             curPattern++;
                         }
@@ -444,7 +448,7 @@ namespace WFC4All {
             return simpleActions;
         }
 
-        public Dictionary<string, int> getFirstOccurences() {
+        public Dictionary<string, int> getFirstOccurrences() {
             return firstOccurrences;
         }
 
@@ -465,6 +469,10 @@ namespace WFC4All {
         }
 
         private bool transformationIsEnabled(int i) {
+            if (i == 0) {
+                return true;
+            }
+
             PictureBox currentPB = form.pbs[i - 1];
             return currentPB.BackColor.Equals(Color.LawnGreen);
         }

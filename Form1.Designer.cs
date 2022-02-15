@@ -31,15 +31,8 @@ namespace WFC4All
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            this.resultPB = new System.Windows.Forms.PictureBox();
-            this.refreshButton = new System.Windows.Forms.Button();
-            this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab = new System.Windows.Forms.TabPage();
             this.patternRotationLabel = new System.Windows.Forms.Label();
-            this.p7RotPB = new System.Windows.Forms.PictureBox();
-            this.p6RotPB = new System.Windows.Forms.PictureBox();
-            this.p5RotPB = new System.Windows.Forms.PictureBox();
-            this.p4RotPB = new System.Windows.Forms.PictureBox();
             this.p3RotPB = new System.Windows.Forms.PictureBox();
             this.p2RotPB = new System.Windows.Forms.PictureBox();
             this.p1RotPB = new System.Windows.Forms.PictureBox();
@@ -59,14 +52,10 @@ namespace WFC4All
             this.inputImage = new System.Windows.Forms.Label();
             this.patternSizeLabel = new System.Windows.Forms.Label();
             this.patternSize = new System.Windows.Forms.ComboBox();
-            this.execTab = new System.Windows.Forms.TabPage();
-            ((System.ComponentModel.ISupportInitialize)(this.resultPB)).BeginInit();
-            this.tabSelection.SuspendLayout();
+            this.resultPB = new System.Windows.Forms.PictureBox();
+            this.refreshButton = new System.Windows.Forms.Button();
+            this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.p7RotPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.p6RotPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.p5RotPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.p4RotPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.p3RotPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.p2RotPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.p1RotPB)).BeginInit();
@@ -75,50 +64,15 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize)(this.outputHeightValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.outputWidthValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputImagePB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultPB)).BeginInit();
+            this.tabSelection.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // resultPB
-            // 
-            this.resultPB.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.resultPB.Location = new System.Drawing.Point(938, 80);
-            this.resultPB.Name = "resultPB";
-            this.resultPB.Size = new System.Drawing.Size(600, 600);
-            this.resultPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
-            this.resultPB.TabIndex = 0;
-            this.resultPB.TabStop = false;
-            // 
-            // refreshButton
-            // 
-            this.refreshButton.Location = new System.Drawing.Point(1171, 746);
-            this.refreshButton.Name = "refreshButton";
-            this.refreshButton.Size = new System.Drawing.Size(150, 75);
-            this.refreshButton.TabIndex = 1;
-            this.refreshButton.Text = "Refresh";
-            this.refreshButton.UseVisualStyleBackColor = true;
-            this.refreshButton.Click += executeButton_Click;
-
-            // 
-            // tabSelection
-            // 
-            this.tabSelection.Controls.Add(this.inputTab);
-            this.tabSelection.Controls.Add(this.execTab);
-            this.tabSelection.Location = new System.Drawing.Point(0, 0);
-            this.tabSelection.Name = "tabSelection";
-            this.tabSelection.SelectedIndex = 0;
-            this.tabSelection.Size = new System.Drawing.Size(1600, 900);
-            this.tabSelection.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-            this.tabSelection.TabIndex = 2;
-            this.tabSelection.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.changeTab);
             // 
             // inputTab
             // 
             this.inputTab.AutoScroll = true;
             this.inputTab.BackColor = System.Drawing.Color.DarkGray;
             this.inputTab.Controls.Add(this.patternRotationLabel);
-            this.inputTab.Controls.Add(this.p7RotPB);
-            this.inputTab.Controls.Add(this.p6RotPB);
-            this.inputTab.Controls.Add(this.p5RotPB);
-            this.inputTab.Controls.Add(this.p4RotPB);
             this.inputTab.Controls.Add(this.p3RotPB);
             this.inputTab.Controls.Add(this.p2RotPB);
             this.inputTab.Controls.Add(this.p1RotPB);
@@ -149,7 +103,7 @@ namespace WFC4All
             // patternRotationLabel
             // 
             this.patternRotationLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.patternRotationLabel.Location = new System.Drawing.Point(23, 627);
+            this.patternRotationLabel.Location = new System.Drawing.Point(23, 658);
             this.patternRotationLabel.Name = "patternRotationLabel";
             this.patternRotationLabel.Size = new System.Drawing.Size(180, 60);
             this.patternRotationLabel.TabIndex = 20;
@@ -157,45 +111,9 @@ namespace WFC4All
     "ce (black border)";
             this.patternRotationLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // p7RotPB
-            // 
-            this.p7RotPB.Location = new System.Drawing.Point(266, 789);
-            this.p7RotPB.Name = "p7RotPB";
-            this.p7RotPB.Size = new System.Drawing.Size(60, 60);
-            this.p7RotPB.TabIndex = 19;
-            this.p7RotPB.TabStop = false;
-            this.p7RotPB.Click += new System.EventHandler(this.inputChanged);
-            // 
-            // p6RotPB
-            // 
-            this.p6RotPB.Location = new System.Drawing.Point(186, 789);
-            this.p6RotPB.Name = "p6RotPB";
-            this.p6RotPB.Size = new System.Drawing.Size(60, 60);
-            this.p6RotPB.TabIndex = 18;
-            this.p6RotPB.TabStop = false;
-            this.p6RotPB.Click += new System.EventHandler(this.inputChanged);
-            // 
-            // p5RotPB
-            // 
-            this.p5RotPB.Location = new System.Drawing.Point(106, 789);
-            this.p5RotPB.Name = "p5RotPB";
-            this.p5RotPB.Size = new System.Drawing.Size(60, 60);
-            this.p5RotPB.TabIndex = 17;
-            this.p5RotPB.TabStop = false;
-            this.p5RotPB.Click += new System.EventHandler(this.inputChanged);
-            // 
-            // p4RotPB
-            // 
-            this.p4RotPB.Location = new System.Drawing.Point(26, 789);
-            this.p4RotPB.Name = "p4RotPB";
-            this.p4RotPB.Size = new System.Drawing.Size(60, 60);
-            this.p4RotPB.TabIndex = 16;
-            this.p4RotPB.TabStop = false;
-            this.p4RotPB.Click += new System.EventHandler(this.inputChanged);
-            // 
             // p3RotPB
             // 
-            this.p3RotPB.Location = new System.Drawing.Point(226, 709);
+            this.p3RotPB.Location = new System.Drawing.Point(246, 761);
             this.p3RotPB.Name = "p3RotPB";
             this.p3RotPB.Size = new System.Drawing.Size(60, 60);
             this.p3RotPB.TabIndex = 15;
@@ -204,7 +122,7 @@ namespace WFC4All
             // 
             // p2RotPB
             // 
-            this.p2RotPB.Location = new System.Drawing.Point(146, 709);
+            this.p2RotPB.Location = new System.Drawing.Point(146, 764);
             this.p2RotPB.Name = "p2RotPB";
             this.p2RotPB.Size = new System.Drawing.Size(60, 60);
             this.p2RotPB.TabIndex = 14;
@@ -213,7 +131,7 @@ namespace WFC4All
             // 
             // p1RotPB
             // 
-            this.p1RotPB.Location = new System.Drawing.Point(66, 709);
+            this.p1RotPB.Location = new System.Drawing.Point(46, 764);
             this.p1RotPB.Name = "p1RotPB";
             this.p1RotPB.Size = new System.Drawing.Size(60, 60);
             this.p1RotPB.TabIndex = 13;
@@ -222,7 +140,7 @@ namespace WFC4All
             // 
             // originalRotPB
             // 
-            this.originalRotPB.Location = new System.Drawing.Point(226, 629);
+            this.originalRotPB.Location = new System.Drawing.Point(226, 660);
             this.originalRotPB.Name = "originalRotPB";
             this.originalRotPB.Size = new System.Drawing.Size(60, 60);
             this.originalRotPB.TabIndex = 12;
@@ -407,15 +325,36 @@ namespace WFC4All
             this.patternSize.TabIndex = 0;
             this.patternSize.SelectedIndexChanged += new System.EventHandler(this.inputChanged);
             // 
-            // execTab
+            // resultPB
             // 
-            this.execTab.BackColor = System.Drawing.Color.DarkGray;
-            this.execTab.Location = new System.Drawing.Point(4, 22);
-            this.execTab.Name = "execTab";
-            this.execTab.Padding = new System.Windows.Forms.Padding(3);
-            this.execTab.Size = new System.Drawing.Size(1592, 874);
-            this.execTab.TabIndex = 1;
-            this.execTab.Text = "Algorithm";
+            this.resultPB.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.resultPB.Location = new System.Drawing.Point(938, 80);
+            this.resultPB.Name = "resultPB";
+            this.resultPB.Size = new System.Drawing.Size(600, 600);
+            this.resultPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.resultPB.TabIndex = 0;
+            this.resultPB.TabStop = false;
+            // 
+            // refreshButton
+            // 
+            this.refreshButton.Location = new System.Drawing.Point(1171, 746);
+            this.refreshButton.Name = "refreshButton";
+            this.refreshButton.Size = new System.Drawing.Size(150, 75);
+            this.refreshButton.TabIndex = 1;
+            this.refreshButton.Text = "Refresh";
+            this.refreshButton.UseVisualStyleBackColor = true;
+            this.refreshButton.Click += new System.EventHandler(this.executeButton_Click);
+            // 
+            // tabSelection
+            // 
+            this.tabSelection.Controls.Add(this.inputTab);
+            this.tabSelection.Location = new System.Drawing.Point(0, 0);
+            this.tabSelection.Name = "tabSelection";
+            this.tabSelection.SelectedIndex = 0;
+            this.tabSelection.Size = new System.Drawing.Size(1600, 900);
+            this.tabSelection.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabSelection.TabIndex = 2;
+            this.tabSelection.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.changeTab);
             // 
             // Form1
             // 
@@ -427,14 +366,8 @@ namespace WFC4All
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "Form1";
             this.Text = "WFC4All";
-            ((System.ComponentModel.ISupportInitialize)(this.resultPB)).EndInit();
-            this.tabSelection.ResumeLayout(false);
             this.inputTab.ResumeLayout(false);
             this.inputTab.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.p7RotPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.p6RotPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.p5RotPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.p4RotPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.p3RotPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.p2RotPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.p1RotPB)).EndInit();
@@ -443,45 +376,37 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize)(this.outputHeightValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.outputWidthValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputImagePB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultPB)).EndInit();
+            this.tabSelection.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
 
-        private System.Windows.Forms.Label inputImage;
-        private System.Windows.Forms.PictureBox inputImagePB;
-        private System.Windows.Forms.ComboBox inputImageCB;
-
-        private System.Windows.Forms.ComboBox patternSize;
-        private System.Windows.Forms.Label patternSizeLabel;
-
-        private System.Windows.Forms.TabControl tabSelection;
-        private System.Windows.Forms.TabPage inputTab;
-        private System.Windows.Forms.TabPage execTab;
-
-        private System.Windows.Forms.Button refreshButton;
-
-        private System.Windows.Forms.PictureBox resultPB;
-
         #endregion
 
+        private TabPage inputTab;
+        private Label patternRotationLabel;
+        private PictureBox p3RotPB;
+        private PictureBox p2RotPB;
+        private PictureBox p1RotPB;
+        private PictureBox originalRotPB;
+        public Panel patternPanel;
+        private Label patternsLabel;
+        private Button extractPatternsButton;
+        private CheckBox periodicInput;
+        private Button modelChoice;
         private Label outputImageHeightLabel;
         private Label outputImageWidthLabel;
         private Label outputSizeLabel;
         private NumericUpDown outputHeightValue;
         private NumericUpDown outputWidthValue;
-        private CheckBox periodicInput;
-        private Button modelChoice;
-        private Button extractPatternsButton;
-        public Panel patternPanel;
-        private PictureBox p3RotPB;
-        private PictureBox p2RotPB;
-        private PictureBox p1RotPB;
-        private PictureBox p7RotPB;
-        private PictureBox p6RotPB;
-        private PictureBox p5RotPB;
-        private PictureBox p4RotPB;
-        private PictureBox originalRotPB;
-        private Label patternRotationLabel;
-        private Label patternsLabel;
+        private ComboBox inputImageCB;
+        private PictureBox inputImagePB;
+        private Label inputImage;
+        private Label patternSizeLabel;
+        private ComboBox patternSize;
+        private PictureBox resultPB;
+        private Button refreshButton;
+        private TabControl tabSelection;
     }
 }

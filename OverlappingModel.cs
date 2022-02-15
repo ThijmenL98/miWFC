@@ -6,11 +6,9 @@ The above copyright notice and this permission notice shall be included in all c
 The software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
 */
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace WFC4All {
@@ -132,7 +130,7 @@ namespace WFC4All {
 
                             int s = sx + sy * imageOutputWidth;
                             if (!periodic && (sx + overlapTileDimension > imageOutputWidth
-                                || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
+                                              || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
                                 continue;
                             }
 
@@ -150,8 +148,12 @@ namespace WFC4All {
                         }
                     }
 
-                    bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
-                        ((g / contributors) << 8) | (b / contributors));
+                    if (contributors > overlapTileDimension*overlapTileDimension) {
+                        bitmapData[i] = unchecked((int) 0xff000000);
+                    } else {
+                        bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
+                                                  ((g / contributors) << 8) | (b / contributors));
+                    }
                 }
             }
 

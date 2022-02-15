@@ -26,7 +26,7 @@ namespace WFC4All {
             tilesize = inputManager.getTileSize();
             XElement xRoot = inputManager.getSimpleXRoot();
             tiles = inputManager.getSimpleColors();
-            Dictionary<string, int> firstOccurrence = inputManager.getFirstOccurences();
+            Dictionary<string, int> firstOccurrence = inputManager.getFirstOccurrences();
             List<int[]> action = inputManager.getActions();
             actionCount = action.Count;
             weights = inputManager.getSimpleWeights().ToArray();
@@ -129,17 +129,24 @@ namespace WFC4All {
                         for (int yt = 0; yt < tilesize; yt++) {
                             for (int xt = 0; xt < tilesize; xt++) {
                                 double r = 0, g = 0, b = 0;
+                                int count = 0;
                                 for (int t = 0; t < actionCount; t++) {
                                     if (a[t]) {
                                         Color c = tiles[t][xt + yt * tilesize];
                                         r += c.R * weights[t] * lambda;
                                         g += c.G * weights[t] * lambda;
                                         b += c.B * weights[t] * lambda;
+                                        count++;
                                     }
                                 }
 
-                                bitmapData[x * tilesize + xt + (y * tilesize + yt) * imageOutputWidth * tilesize] =
-                                    unchecked((int) 0xff000000 | ((int) r << 16) | ((int) g << 8) | (int) b);
+                                if (count == 1) {
+                                    bitmapData[x * tilesize + xt + (y * tilesize + yt) * imageOutputWidth * tilesize] =
+                                        unchecked((int) 0xff000000 | ((int) r << 16) | ((int) g << 8) | (int) b);
+                                } else {
+                                    bitmapData[x * tilesize + xt + (y * tilesize + yt) * imageOutputWidth * tilesize] =
+                                        unchecked((int) 0xff000000);
+                                }
                             }
                         }
                     }

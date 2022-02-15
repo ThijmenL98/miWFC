@@ -11,8 +11,11 @@ namespace WFC4All {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
         public readonly PictureBox[] pbs;
-        private readonly int[] rotFlipOrder;
-        private int defaultSymmetry, initOutWidth, initInWidth, initOutHeight, initInHeight;
+        private int defaultSymmetry;
+        private readonly int initOutWidth;
+        private readonly int initInWidth;
+        private readonly int initOutHeight;
+        private readonly int initInHeight;
         private bool defaultPeriodicity;
 
         public Form1() {
@@ -27,10 +30,7 @@ namespace WFC4All {
             initOutWidth = resultPB.Width;
             initOutHeight = resultPB.Height;
 
-            lastValue = "";
-
-            pbs = new[] {p4RotPB, p1RotPB, p7RotPB, p2RotPB, p6RotPB, p3RotPB, p5RotPB};
-            rotFlipOrder = new[] {4, 1, 7, 2, 6, 3, 5};
+            pbs = new[] {p1RotPB, p2RotPB, p3RotPB};
 
             string[] inputImageDataSource = inputManager.getImages("overlapping"); // or "simpletiled"
             inputImageCB.DataSource = inputImageDataSource;
@@ -42,8 +42,6 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
             initializeRotations();
-
-            patternsLabel.Visible = false;
         }
 
         private int lastRanForced;
@@ -67,7 +65,8 @@ namespace WFC4All {
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
 
                 result.Dispose();
-                Console.WriteLine("Displaying bitmap: " + sw.ElapsedMilliseconds + "ms.\n");
+                Console.WriteLine($@"Displaying bitmap: {sw.ElapsedMilliseconds}ms.");
+                Console.WriteLine();
             } catch (Exception exception) {
                 Console.WriteLine(exception);
                 resultPB.Image = InputManager.getImage("NoResultFound");
@@ -84,12 +83,9 @@ namespace WFC4All {
 
         private bool changingIndex;
 
-        private string lastValue;
-
         private void inputImage_SelectedIndexChanged(object sender, EventArgs e) {
             changingIndex = true;
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
-            lastValue = newValue;
             updateInputImage(newValue);
             XDocument xDoc = XDocument.Load("samples.xml");
             XElement curSelection = xDoc.Root.Elements("overlapping", "simpletiled").Where(x =>
@@ -99,13 +95,13 @@ namespace WFC4All {
                 (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
                 patternSize.DataSource = patternSizeDataSource;
                 patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
-                
+
                 defaultSymmetry = curSelection.Get("symmetry", 8);
                 defaultPeriodicity = curSelection.Get("periodicInput", true);
             } else {
                 inputManager.extractPatterns(true, false);
             }
-            
+
             Refresh();
 
             updateRotations();
@@ -169,7 +165,6 @@ namespace WFC4All {
         }
 
         private void extractPatternsButton_Click(object sender, EventArgs e) {
-            patternsLabel.Visible = true;
             inputManager.extractPatterns(false, modelChoice.Text.Equals("Overlapping Model"));
         }
 
@@ -212,15 +207,13 @@ namespace WFC4All {
         }
 
         private void updateRotations() {
-            foreach (int j in rotFlipOrder) {
-                int i = j - 1;
-                pbs[i].BackColor = defaultSymmetry < j + 1 ? Color.Red : Color.LawnGreen;
+            for (int i = 0; i < 3; i++) {
+                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
             }
         }
 
-        public void showRotationalOptions(bool hide) {
-            foreach (int j in rotFlipOrder) {
-                int i = j - 1;
+        private void showRotationalOptions(bool hide) {
+            for (int i = 0; i < 3; i++) {
                 pbs[i].Visible = hide;
             }
 
@@ -233,31 +226,26 @@ namespace WFC4All {
         }
 
         private void initializeRotations() {
-            Bitmap referenceImg = new Bitmap($"rotationRef.png");
+            Bitmap referenceImg = new Bitmap("rotationRef.png");
             const int padding = 3;
             originalRotPB.BackColor = Color.Black;
             originalRotPB.Padding = new Padding(padding);
             originalRotPB.Image = referenceImg;
 
-            RotateFlipType[] rfs = {
-                RotateFlipType.RotateNoneFlipX, RotateFlipType.Rotate90FlipNone, RotateFlipType.Rotate90FlipX,
-                RotateFlipType.Rotate180FlipNone, RotateFlipType.Rotate180FlipX, RotateFlipType.Rotate270FlipNone,
-                RotateFlipType.Rotate270FlipX
+            string[] rfs = {
+                "rotationRef1.png", "rotationRef2.png", "rotationRef3.png"
             };
             string[] rfsString = {
-                "Flip Horizontally", "Rotate Clockwise 90°", "Rotate Clockwise 90° & Flip Horizontally",
-                "Rotate 180°", "Rotate 180° & Flip Horizontally", "Rotate Clockwise 270°",
-                "Rotate Clockwise 270° & Flip Horizontally"
+                "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
+                "Rotate Clockwise 270°\nand Horizontally Flipped"
             };
-            for (int i = 0; i < 7; i++) {
-                pbs[i].BackColor = defaultSymmetry < i + 1 ? Color.Red : Color.LawnGreen;
+            for (int i = 0; i < 3; i++) {
+                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
                 pbs[i].Padding = new Padding(padding);
-                Bitmap cloneBM = (Bitmap) referenceImg.Clone();
-                cloneBM.RotateFlip(rfs[i]);
-                pbs[i].Image = cloneBM;
+                pbs[i].Image = new Bitmap(rfs[i]);
                 pbs[i].MouseDown += pictureBoxMouseDown;
-                int i1 = i;
-                pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[i1]); };
+                int nonLocalI = i;
+                pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[nonLocalI]); };
             }
         }
 
@@ -354,7 +342,7 @@ namespace WFC4All {
             newPB.Size = new Size(size, size);
             newPB.Name = "patternPB_" + patternCount;
             patternCount++;
-            
+
             const int padding = 3;
             newPB.Image = InputManager.resizePixels(newPB, pattern, pattern.Width, pattern.Height, size, size, padding);
             newPB.BackColor = Color.LawnGreen;
