@@ -95,7 +95,8 @@ namespace WFC4All
             this.refreshButton.TabIndex = 1;
             this.refreshButton.Text = "Refresh";
             this.refreshButton.UseVisualStyleBackColor = true;
-            this.refreshButton.Click += new System.EventHandler(this.executeButton_Click);
+            this.refreshButton.Click += executeButton_Click;
+
             // 
             // tabSelection
             // 

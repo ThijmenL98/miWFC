@@ -19,136 +19,17 @@ namespace WFC4All {
         private readonly List<Color[]> tiles;
         private readonly int tilesize;
 
-        public SimpleTiledModel(string name, int outputWidth, int outputHeight, bool periodic,
-            Heuristic heuristic, Form1 form) : base(outputWidth, outputHeight, 1, periodic, heuristic, form) {
-            XElement xRoot = XDocument.Load($"samples/{name}/data.xml").Root;
-            tilesize = xRoot.Get("size", 16);
-            bool unique = xRoot.Get("unique", false);
+        public SimpleTiledModel(int outputWidth, int outputHeight, bool periodic,
+            Heuristic heuristic, Form1 form, InputManager inputManager) 
+            : base(outputWidth, outputHeight, 1, periodic, heuristic, form) {
 
-            Color[] tile(Func<int, int, Color> f) {
-                Color[] result = new Color[tilesize * tilesize];
-                for (int y = 0; y < tilesize; y++) {
-                    for (int x = 0; x < tilesize; x++) {
-                        result[x + y * tilesize] = f(x, y);
-                    }
-                }
-
-                return result;
-            }
-
-            Color[] rotate(Color[] array) {
-                return tile((x, y) => array[tilesize - 1 - y + x * tilesize]);
-            }
-
-            Color[] reflect(Color[] array) {
-                return tile((x, y) => array[tilesize - 1 - x + y * tilesize]);
-            }
-
-            tiles = new List<Color[]>();
-            List<string> tileNames = new List<string>();
-            List<double> weightList = new List<double>();
-
-            List<int[]> action = new List<int[]>();
-            Dictionary<string, int> firstOccurrence = new Dictionary<string, int>();
-
-            if (xRoot == null) {
-                return;
-            }
-
-            foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")) {
-                string tileName = xTile.Get<string>("name");
-
-                Func<int, int> a, b;
-                int cardinality;
-
-                char sym = xTile.Get("symmetry", 'X');
-                switch (sym) {
-                    case 'L':
-                        cardinality = 4;
-                        a = i => (i + 1) % 4;
-                        b = i => i % 2 == 0 ? i + 1 : i - 1;
-                        break;
-                    case 'T':
-                        cardinality = 4;
-                        a = i => (i + 1) % 4;
-                        b = i => i % 2 == 0 ? i : 4 - i;
-                        break;
-                    case 'I':
-                        cardinality = 2;
-                        a = i => 1 - i;
-                        b = i => i;
-                        break;
-                    case '\\':
-                        cardinality = 2;
-                        a = i => 1 - i;
-                        b = i => 1 - i;
-                        break;
-                    case 'F':
-                        cardinality = 8;
-                        a = i => i < 4 ? (i + 1) % 4 : 4 + (i - 1) % 4;
-                        b = i => i < 4 ? i + 4 : i - 4;
-                        break;
-                    default:
-                        cardinality = 1;
-                        a = i => i;
-                        b = i => i;
-                        break;
-                }
-
-                actionCount = action.Count;
-                firstOccurrence.Add(tileName, actionCount);
-
-                int[][] map = new int[cardinality][];
-                for (int t = 0; t < cardinality; t++) {
-                    map[t] = new int[8];
-
-                    map[t][0] = t;
-                    map[t][1] = a(t);
-                    map[t][2] = a(a(t));
-                    map[t][3] = a(a(a(t)));
-                    map[t][4] = b(t);
-                    map[t][5] = b(a(t));
-                    map[t][6] = b(a(a(t)));
-                    map[t][7] = b(a(a(a(t))));
-
-                    for (int s = 0; s < 8; s++) {
-                        map[t][s] += actionCount;
-                    }
-
-                    action.Add(map[t]);
-                }
-
-                if (unique) {
-                    for (int t = 0; t < cardinality; t++) {
-                        Bitmap bitmap = new Bitmap($"samples/{name}/{tileName} {t}.png");
-                        tiles.Add(tile((x, y) => bitmap.GetPixel(x, y)));
-                        tileNames.Add($"{tileName} {t}");
-                    }
-                } else {
-                    Bitmap bitmap = new Bitmap($"samples/{name}/{tileName}.png");
-                    tiles.Add(tile((x, y) => bitmap.GetPixel(x, y)));
-                    tileNames.Add($"{tileName} 0");
-
-                    for (int t = 1; t < cardinality; t++) {
-                        if (t <= 3) {
-                            tiles.Add(rotate(tiles[actionCount + t - 1]));
-                        }
-
-                        if (t >= 4) {
-                            tiles.Add(reflect(tiles[actionCount + t - 4]));
-                        }
-
-                        tileNames.Add($"{tileName} {t}");
-                    }
-                }
-
-                for (int t = 0; t < cardinality; t++) {
-                    weightList.Add(xTile.Get("weight", 1.0));
-                }
-            }
-
+            tilesize = inputManager.getTileSize();
+            XElement xRoot = inputManager.getSimpleXRoot();
+            tiles = inputManager.getSimpleColors();
+            Dictionary<string, int> firstOccurrence = inputManager.getFirstOccurences();
+            List<int[]> action = inputManager.getActions();
             actionCount = action.Count;
-            weights = weightList.ToArray();
+            weights = inputManager.getSimpleWeights().ToArray();
 
             propagator = new int[4][][];
             bool[][][] densePropagator = new bool[4][][];
@@ -210,7 +91,7 @@ namespace WFC4All {
 
                     int spCount = sp.Count;
                     if (spCount == 0) {
-                        Console.WriteLine($@"ERROR: tile {tileNames[t1]} has no neighbors in direction {d}");
+                        Console.WriteLine($@"ERROR: tile {inputManager.getSimpleTileName(t1)} has no neighbors in direction {d}");
                     }
 
                     propagator[d][t1] = new int[spCount];

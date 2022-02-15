@@ -22,7 +22,7 @@ namespace WFC4All {
         public OverlappingModel(int overlapTileDimension, int outputWidth, int outputHeight, bool periodic, int ground,
             Heuristic heuristic, Form1 form, InputManager inputManager)
             : base(outputWidth, outputHeight, overlapTileDimension, periodic, heuristic, form) {
-            colors = inputManager.getCurrentColors();
+            colors = inputManager.getOverlapColors();
 
             int colorsCount = colors.Count;
             long colorCountSquared = colorsCount.ToPower(overlapTileDimension * overlapTileDimension);
@@ -46,7 +46,7 @@ namespace WFC4All {
                 return result;
             }
 
-            Dictionary<long, int> weightsDictionary = inputManager.getWeightsDictionary();
+            Dictionary<long, int> weightsDictionary = inputManager.getOverlappingWeights();
             List<long> ordering = inputManager.getOrdering();
 
             actionCount = weightsDictionary.Count;
