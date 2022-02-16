@@ -81,19 +81,22 @@ namespace WFC4All {
                 }
 
                 model = new OverlappingModel(form.getSelectedOverlapTileDimension(), form.getOutputWidth(),
-                    form.getOutputHeight(), form.getPeriodicEnabled(), groundPattern, heuristic, form, this);
+                    form.getOutputHeight(), form.getPeriodicEnabled(), groundPattern, heuristic, this);
             } else {
                 model = new SimpleTiledModel(form.getOutputWidth(), form.getOutputHeight(), form.getPeriodicEnabled(),
-                    heuristic, form, this);
+                    heuristic, this);
             }
 
             while (sw.ElapsedMilliseconds < 3000) {
                 int seed = random.Next();
-                bool success = model.Run(seed, -1); //TODO CF1: Setting Limit to e.g. x, causes it to stop after adding x tiles
+                //TODO CF1: Setting Limit to e.g. x, causes it to stop after adding x tiles
+                bool success = model.run(seed, 0, -1);
 
                 if (success) {
                     Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
-                    return model.Graphics();
+                    return model.graphics();
+                } else {
+                    //TODO RF2: Backtracking
                 }
             }
 

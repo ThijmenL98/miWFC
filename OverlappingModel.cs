@@ -9,6 +9,7 @@ The software is provided "as is", without warranty of any kind, express or impli
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace WFC4All {
@@ -18,8 +19,8 @@ namespace WFC4All {
         private readonly byte[][] patterns;
 
         public OverlappingModel(int overlapTileDimension, int outputWidth, int outputHeight, bool periodic, int ground,
-            Heuristic heuristic, Form1 form, InputManager inputManager)
-            : base(outputWidth, outputHeight, overlapTileDimension, periodic, heuristic, form) {
+            Heuristic heuristic, InputManager inputManager)
+            : base(outputWidth, outputHeight, overlapTileDimension, periodic, heuristic) {
             colors = inputManager.getOverlapColors();
 
             int colorsCount = colors.Count;
@@ -96,7 +97,7 @@ namespace WFC4All {
             }
         }
 
-        public override Bitmap Graphics() {
+        public override Bitmap graphics() {
             Bitmap result = new Bitmap(imageOutputWidth, imageOutputHeight);
             int[] bitmapData = new int[result.Height * result.Width];
 
@@ -148,11 +149,12 @@ namespace WFC4All {
                         }
                     }
 
-                    if (contributors > overlapTileDimension*overlapTileDimension) {
+                    bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
+                                              ((g / contributors) << 8) | (b / contributors));
+
+                    if (!colors.Select(c2 => c2.ToArgb()).Contains(bitmapData[i]) &&
+                        contributors > overlapTileDimension * overlapTileDimension) {
                         bitmapData[i] = unchecked((int) 0xff000000);
-                    } else {
-                        bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
-                                                  ((g / contributors) << 8) | (b / contributors));
                     }
                 }
             }
@@ -165,23 +167,23 @@ namespace WFC4All {
             return result;
         }
 
-        protected override void Clear() {
-            base.Clear();
+        protected override void clear() {
+            base.clear();
 
             if (ground != 0) {
                 for (int x = 0; x < imageOutputWidth; x++) {
                     for (int t = 0; t < actionCount; t++) {
                         if (t != ground) {
-                            Ban(x + (imageOutputHeight - 1) * imageOutputWidth, t);
+                            ban(x + (imageOutputHeight - 1) * imageOutputWidth, t, false);
                         }
                     }
 
                     for (int y = 0; y < imageOutputHeight - 1; y++) {
-                        Ban(x + y * imageOutputWidth, ground);
+                        ban(x + y * imageOutputWidth, ground, false);
                     }
                 }
 
-                Propagate();
+                propagate();
             }
         }
     }

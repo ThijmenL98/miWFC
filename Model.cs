@@ -21,8 +21,6 @@ namespace WFC4All {
         protected static readonly int[] yChange = {0, 1, 0, -1};
         private static readonly int[] opposite = {2, 3, 0, 1};
 
-        private readonly Form1 form;
-
         private readonly Heuristic heuristic;
 
         protected readonly int imageOutputWidth, imageOutputHeight, overlapTileDimension;
@@ -44,16 +42,16 @@ namespace WFC4All {
 
         protected double[] weights;
 
-        protected Model(int outputWidth, int outputHeight, int overlapTileDimension, bool periodic, Heuristic heuristic, Form1 form1) {
+        protected Model(int outputWidth, int outputHeight, int overlapTileDimension, bool periodic,
+            Heuristic heuristic) {
             imageOutputWidth = outputWidth;
             imageOutputHeight = outputHeight;
             this.overlapTileDimension = overlapTileDimension;
             this.periodic = periodic;
             this.heuristic = heuristic;
-            form = form1;
         }
 
-        private void Init() {
+        private void init() {
             wave = new bool[imageOutputWidth * imageOutputHeight][];
             compatible = new int[wave.Length][][];
             for (int i = 0; i < wave.Length; i++) {
@@ -88,19 +86,24 @@ namespace WFC4All {
             stackSize = 0;
         }
 
-        public bool Run(int seed, int limit) {
+        public bool run(int seed, int start, int steps) {
             if (wave == null) {
-                Init();
+                init();
             }
 
-            Clear();
+            if (start == 0) {
+                clear();
+            }
+
             Random random = new Random(seed);
 
-            for (int l = 0; l < limit || limit < 0; l++) {
-                int node = NextUnobservedNode(random);
+            int limit = start + steps;
+
+            for (int l = start; l < limit || limit < 0; l++) {
+                int node = nextUnobservedNode(random);
                 if (node >= 0) {
-                    Observe(node, random);
-                    bool success = Propagate();
+                    observe(node, random);
+                    bool success = propagate();
                     if (!success) {
                         return false;
                     }
@@ -121,10 +124,11 @@ namespace WFC4All {
             return true;
         }
 
-        private int NextUnobservedNode(Random random) {
+        private int nextUnobservedNode(Random random) {
             if (heuristic == Heuristic.SCANLINE) {
                 for (int i = observedSoFar; i < wave.Length; i++) {
-                    if (!periodic && (i % imageOutputWidth + overlapTileDimension > imageOutputWidth || i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
+                    if (!periodic && (i % imageOutputWidth + overlapTileDimension > imageOutputWidth ||
+                                      i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
                         continue;
                     }
 
@@ -140,7 +144,8 @@ namespace WFC4All {
             double min = 1E+4;
             int argMin = -1;
             for (int i = 0; i < wave.Length; i++) {
-                if (!periodic && (i % imageOutputWidth + overlapTileDimension > imageOutputWidth || i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
+                if (!periodic && (i % imageOutputWidth + overlapTileDimension > imageOutputWidth ||
+                                  i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
                     continue;
                 }
 
@@ -158,7 +163,7 @@ namespace WFC4All {
             return argMin;
         }
 
-        private void Observe(int node, Random random) {
+        private void observe(int node, Random random) {
             bool[] w = wave[node];
             for (int t = 0; t < actionCount; t++) {
                 distribution[t] = w[t] ? weights[t] : 0.0;
@@ -168,12 +173,12 @@ namespace WFC4All {
 
             for (int t = 0; t < actionCount; t++) {
                 if (w[t] != (t == r)) {
-                    Ban(node, t);
+                    ban(node, t, true);
                 }
             }
         }
 
-        protected bool Propagate() {
+        protected bool propagate() {
             while (stackSize > 0) {
                 (int i1, int t1) = stack[stackSize - 1];
                 stackSize--;
@@ -184,7 +189,8 @@ namespace WFC4All {
                 for (int d = 0; d < 4; d++) {
                     int x2 = x1 + xChange[d];
                     int y2 = y1 + yChange[d];
-                    if (!periodic && (x2 < 0 || y2 < 0 || x2 + overlapTileDimension > imageOutputWidth || y2 + overlapTileDimension > imageOutputHeight)) {
+                    if (!periodic && (x2 < 0 || y2 < 0 || x2 + overlapTileDimension > imageOutputWidth ||
+                                      y2 + overlapTileDimension > imageOutputHeight)) {
                         continue;
                     }
 
@@ -209,7 +215,7 @@ namespace WFC4All {
 
                         comp[d]--;
                         if (comp[d] == 0) {
-                            Ban(i2, t2);
+                            ban(i2, t2, false);
                         }
                     }
                 }
@@ -218,26 +224,27 @@ namespace WFC4All {
             return sumsOfOnes[0] > 0;
         }
 
-        protected void Ban(int i, int t) {
-            wave[i][t] = false;
+        protected void ban(int position, int patternIdx, bool observed) {
+            // TODO add state to stack for backprop
+            wave[position][patternIdx] = false;
 
-            int[] comp = compatible[i][t];
+            int[] comp = compatible[position][patternIdx];
             for (int d = 0; d < 4; d++) {
                 comp[d] = 0;
             }
 
-            stack[stackSize] = (i, t);
+            stack[stackSize] = (position, patternIdx);
             stackSize++;
 
-            sumsOfOnes[i] -= 1;
-            sumsOfWeights[i] -= weights[t];
-            sumsOfWeightLogWeights[i] -= weightLogWeights[t];
+            sumsOfOnes[position] -= 1;
+            sumsOfWeights[position] -= weights[patternIdx];
+            sumsOfWeightLogWeights[position] -= weightLogWeights[patternIdx];
 
-            double sum = sumsOfWeights[i];
-            entropies[i] = Math.Log(sum) - sumsOfWeightLogWeights[i] / sum;
+            double sum = sumsOfWeights[position];
+            entropies[position] = Math.Log(sum) - sumsOfWeightLogWeights[position] / sum;
         }
 
-        protected virtual void Clear() {
+        protected virtual void clear() {
             for (int i = 0; i < wave.Length; i++) {
                 for (int t = 0; t < actionCount; t++) {
                     wave[i][t] = true;
@@ -256,6 +263,6 @@ namespace WFC4All {
             observedSoFar = 0;
         }
 
-        public abstract Bitmap Graphics();
+        public abstract Bitmap graphics();
     }
 }

@@ -262,7 +262,7 @@ namespace WFC4All
             0,
             0});
             this.outputWidthValue.Minimum = new decimal(new int[] {
-            20,
+            10,
             0,
             0,
             0});
@@ -405,7 +405,7 @@ namespace WFC4All
         private Label inputImage;
         private Label patternSizeLabel;
         private ComboBox patternSize;
-        private PictureBox resultPB;
+        public PictureBox resultPB;
         private Button refreshButton;
         private TabControl tabSelection;
     }

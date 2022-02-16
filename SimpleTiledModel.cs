@@ -20,9 +20,8 @@ namespace WFC4All {
         private readonly int tilesize;
 
         public SimpleTiledModel(int outputWidth, int outputHeight, bool periodic,
-            Heuristic heuristic, Form1 form, InputManager inputManager) 
-            : base(outputWidth, outputHeight, 1, periodic, heuristic, form) {
-
+            Heuristic heuristic, InputManager inputManager)
+            : base(outputWidth, outputHeight, 1, periodic, heuristic) {
             tilesize = inputManager.getTileSize();
             XElement xRoot = inputManager.getSimpleXRoot();
             tiles = inputManager.getSimpleColors();
@@ -91,7 +90,8 @@ namespace WFC4All {
 
                     int spCount = sp.Count;
                     if (spCount == 0) {
-                        Console.WriteLine($@"ERROR: tile {inputManager.getSimpleTileName(t1)} has no neighbors in direction {d}");
+                        Console.WriteLine(
+                            $@"ERROR: tile {inputManager.getSimpleTileName(t1)} has no neighbors in direction {d}");
                     }
 
                     propagator[d][t1] = new int[spCount];
@@ -102,7 +102,7 @@ namespace WFC4All {
             }
         }
 
-        public override Bitmap Graphics() {
+        public override Bitmap graphics() {
             Bitmap result = new Bitmap(imageOutputWidth * tilesize, imageOutputHeight * tilesize);
             int[] bitmapData = new int[result.Height * result.Width];
 
