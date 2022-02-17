@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
@@ -42,6 +43,11 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
             initializeRotations();
+            
+            advanceButton.Visible = false;
+            animateButton.Visible = false;
+            animationSpeedLabel.Visible = false;
+            animationSpeedValue.Visible = false;
         }
 
         private int lastRanForced;
@@ -59,7 +65,7 @@ namespace WFC4All {
             }
 
             try {
-                Bitmap result = inputManager.runWfc();
+                (Bitmap result, bool _) = inputManager.initAndRunWfc(true, getStepAmount());
                 Stopwatch sw = Stopwatch.StartNew();
                 resultPB.Image = InputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
@@ -67,6 +73,59 @@ namespace WFC4All {
                 result.Dispose();
                 Console.WriteLine($@"Displaying bitmap: {sw.ElapsedMilliseconds}ms.");
                 Console.WriteLine();
+            } catch (Exception exception) {
+                Console.WriteLine(exception);
+                resultPB.Image = InputManager.getImage("NoResultFound");
+            }
+        }
+
+        private void advanceButton_Click(object sender, EventArgs e) {
+            int now = DateTime.Now.Millisecond;
+
+            if (sender == null && now - lastRanForced <= 50) {
+                lastRanForced = now;
+                return;
+            }
+
+            try {
+                (Bitmap result, bool finished) = inputManager.initAndRunWfc(false, getStepAmount());
+                if (finished) {
+                    return;
+                }
+                resultPB.Image = InputManager.resizeBitmap(result,
+                    Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+
+                result.Dispose();
+            } catch (Exception) {
+                resultPB.Image = InputManager.getImage("NoResultFound");
+            }
+        }
+
+        private void animateButton_Click(object sender, EventArgs e){
+            int now = DateTime.Now.Millisecond;
+
+            if (sender == null && now - lastRanForced <= 50) {
+                lastRanForced = now;
+                return;
+            }
+
+            try {
+                bool finished = false;
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                while (!finished) {
+                    Bitmap result;
+                    (result, finished) = inputManager.initAndRunWfc(false, getStepAmount());
+
+                    resultPB.Image = InputManager.resizeBitmap(result,
+                        Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+
+                    result.Dispose();
+                    resultPB.Refresh();
+                    Thread.Sleep(getAnimationSpeed());
+                    if (finished) {
+                        return;
+                    }
+                }
             } catch (Exception exception) {
                 Console.WriteLine(exception);
                 resultPB.Image = InputManager.getImage("NoResultFound");
@@ -114,6 +173,14 @@ namespace WFC4All {
 
         public int getOutputWidth() {
             return (int) outputWidthValue.Value;
+        }
+
+        private int getStepAmount() {
+            return (int) stepValue.Value;
+        }
+
+        private int getAnimationSpeed() {
+            return (int) animationSpeedValue.Value;
         }
 
         public int getOutputHeight() {
@@ -251,6 +318,21 @@ namespace WFC4All {
 
         public void setPatternLabelVisible() {
             patternsLabel.Visible = true;
+        }
+
+        private void stepCountValueChanged(object sender, EventArgs e) {
+            int value = (int) stepValue.Value;
+            if (value == 0 || value == -1) {
+                stepValue.Value = -1;
+            } 
+            
+            advanceButton.Visible = !(value == 0 || value == -1);
+            animateButton.Visible = !(value == 0 || value == -1);
+            animationSpeedLabel.Visible = !(value == 0 || value == -1);
+            animationSpeedValue.Visible = !(value == 0 || value == -1);
+
+            string prefix = stepValue.Value == 1 || stepValue.Value == -1 ? "" : "s";
+            advanceButton.Text = $@"Advance {stepValue.Value} step{prefix}";
         }
     }
 

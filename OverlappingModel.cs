@@ -174,12 +174,12 @@ namespace WFC4All {
                 for (int x = 0; x < imageOutputWidth; x++) {
                     for (int t = 0; t < actionCount; t++) {
                         if (t != ground) {
-                            ban(x + (imageOutputHeight - 1) * imageOutputWidth, t, false);
+                            ban(x + (imageOutputHeight - 1) * imageOutputWidth, t);
                         }
                     }
 
                     for (int y = 0; y < imageOutputHeight - 1; y++) {
-                        ban(x + y * imageOutputWidth, ground, false);
+                        ban(x + y * imageOutputWidth, ground);
                     }
                 }
 

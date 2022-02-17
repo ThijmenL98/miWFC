@@ -42,6 +42,8 @@ namespace WFC4All {
 
         protected double[] weights;
 
+        private int currentStep;
+
         protected Model(int outputWidth, int outputHeight, int overlapTileDimension, bool periodic,
             Heuristic heuristic) {
             imageOutputWidth = outputWidth;
@@ -61,6 +63,8 @@ namespace WFC4All {
                     compatible[i][t] = new int[4];
                 }
             }
+
+            currentStep = 0;
 
             distribution = new double[actionCount];
             observed = new int[imageOutputWidth * imageOutputHeight];
@@ -86,7 +90,7 @@ namespace WFC4All {
             stackSize = 0;
         }
 
-        public bool run(int seed, int start, int steps) {
+        public int run(int seed, int start, int steps) {
             if (wave == null) {
                 init();
             }
@@ -99,13 +103,12 @@ namespace WFC4All {
 
             int limit = start + steps;
 
-            for (int l = start; l < limit || limit < 0; l++) {
+            for (currentStep = start; currentStep < limit || limit < 0; currentStep++) {
                 int node = nextUnobservedNode(random);
                 if (node >= 0) {
                     observe(node, random);
-                    bool success = propagate();
-                    if (!success) {
-                        return false;
+                    if (!propagate()) {
+                        return 0;
                     }
                 } else {
                     for (int i = 0; i < wave.Length; i++) {
@@ -117,11 +120,11 @@ namespace WFC4All {
                         }
                     }
 
-                    return true;
+                    return 2;
                 }
             }
 
-            return true;
+            return 1;
         }
 
         private int nextUnobservedNode(Random random) {
@@ -159,7 +162,7 @@ namespace WFC4All {
                     }
                 }
             }
-
+            
             return argMin;
         }
 
@@ -168,12 +171,11 @@ namespace WFC4All {
             for (int t = 0; t < actionCount; t++) {
                 distribution[t] = w[t] ? weights[t] : 0.0;
             }
-
+            
             int r = distribution.Random(random.NextDouble());
-
             for (int t = 0; t < actionCount; t++) {
                 if (w[t] != (t == r)) {
-                    ban(node, t, true);
+                    ban(node, t);
                 }
             }
         }
@@ -215,7 +217,7 @@ namespace WFC4All {
 
                         comp[d]--;
                         if (comp[d] == 0) {
-                            ban(i2, t2, false);
+                            ban(i2, t2);
                         }
                     }
                 }
@@ -224,8 +226,7 @@ namespace WFC4All {
             return sumsOfOnes[0] > 0;
         }
 
-        protected void ban(int position, int patternIdx, bool observed) {
-            // TODO add state to stack for backprop
+        protected bool ban(int position, int patternIdx) {
             wave[position][patternIdx] = false;
 
             int[] comp = compatible[position][patternIdx];
@@ -237,13 +238,16 @@ namespace WFC4All {
             stackSize++;
 
             sumsOfOnes[position] -= 1;
+
             sumsOfWeights[position] -= weights[patternIdx];
             sumsOfWeightLogWeights[position] -= weightLogWeights[patternIdx];
 
             double sum = sumsOfWeights[position];
             entropies[position] = Math.Log(sum) - sumsOfWeightLogWeights[position] / sum;
-        }
 
+            return sumsOfOnes[position] == 0;
+        }
+        
         protected virtual void clear() {
             for (int i = 0; i < wave.Length; i++) {
                 for (int t = 0; t < actionCount; t++) {

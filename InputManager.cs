@@ -27,6 +27,9 @@ namespace WFC4All {
         private List<string> tileNames;
         private Dictionary<string, int> firstOccurrences;
 
+        private int curSeed, curStep;
+        private Model curModel;
+
         private XElement xRoot;
 
         public InputManager(Form1 formIn) {
@@ -40,68 +43,78 @@ namespace WFC4All {
             inputHasChanged = true;
             groundPatternIdx = 0;
             curFile = "";
+            curModel = null;
         }
 
         /*
          * Functionality
          */
 
-        public Bitmap runWfc() {
+        public (Bitmap, bool) initAndRunWfc(bool reset, int steps) {
             Stopwatch sw = Stopwatch.StartNew();
 
-            Random random = new Random();
+            if (reset) {
+                XElement xElem = xDoc.Root.Elements("overlapping", "simpletiled")
+                    .Where(x => x.Get<string>("name") == form.getSelectedInput()).ElementAtOrDefault(0);
 
-            XElement xElem = xDoc.Root.Elements("overlapping", "simpletiled")
-                .Where(x => x.Get<string>("name") == form.getSelectedInput()).ElementAtOrDefault(0);
-
-            if ((xElem != null && xElem.Name == "overlapping") || lastDim != form.getSelectedOverlapTileDimension()) {
-                extractPatterns(lastDim != form.getSelectedOverlapTileDimension(),
-                    xElem != null && xElem.Name == "overlapping");
-                lastDim = form.getSelectedOverlapTileDimension();
-                Console.WriteLine($@"Pattern Extraction = {sw.ElapsedMilliseconds}ms.");
-                sw.Restart();
-            }
-
-            Model model;
-            string name = xElem.Get<string>("name");
-
-            string heuristicString = xElem.Get<string>("heuristic");
-            Model.Heuristic heuristic = heuristicString == "Scanline"
-                ? Model.Heuristic.SCANLINE
-                : heuristicString == "MRV"
-                    ? Model.Heuristic.MRV
-                    : Model.Heuristic.ENTROPY;
-
-            if (xElem != null && xElem.Name == "overlapping") {
-                int groundPattern = 0;
-
-                if (name.Equals("Skyline") || name.Equals("Flowers") || name.Equals("Platformer") ||
-                    name.Equals("Skyline2")) {
-                    groundPattern = getGroundPatternIdx();
+                if ((xElem != null && xElem.Name == "overlapping") ||
+                    lastDim != form.getSelectedOverlapTileDimension()) {
+                    extractPatterns(lastDim != form.getSelectedOverlapTileDimension(),
+                        xElem != null && xElem.Name == "overlapping");
+                    lastDim = form.getSelectedOverlapTileDimension();
+                    Console.WriteLine($@"Pattern Extraction = {sw.ElapsedMilliseconds}ms.");
+                    sw.Restart();
                 }
 
-                model = new OverlappingModel(form.getSelectedOverlapTileDimension(), form.getOutputWidth(),
-                    form.getOutputHeight(), form.getPeriodicEnabled(), groundPattern, heuristic, this);
-            } else {
-                model = new SimpleTiledModel(form.getOutputWidth(), form.getOutputHeight(), form.getPeriodicEnabled(),
-                    heuristic, this);
-            }
+                string name = xElem.Get<string>("name");
 
-            while (sw.ElapsedMilliseconds < 3000) {
-                int seed = random.Next();
-                //TODO CF1: Setting Limit to e.g. x, causes it to stop after adding x tiles
-                bool success = model.run(seed, 0, -1);
+                string heuristicString = xElem.Get<string>("heuristic");
+                Model.Heuristic heuristic = heuristicString == "Scanline"
+                    ? Model.Heuristic.SCANLINE
+                    : heuristicString == "MRV"
+                        ? Model.Heuristic.MRV
+                        : Model.Heuristic.ENTROPY;
 
-                if (success) {
-                    Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
-                    return model.graphics();
+                if (xElem != null && xElem.Name == "overlapping") {
+                    int groundPattern = 0;
+
+                    if (name.Equals("Skyline") || name.Equals("Flowers") || name.Equals("Platformer") ||
+                        name.Equals("Skyline2")) {
+                        groundPattern = getGroundPatternIdx();
+                    }
+
+                    curModel = new OverlappingModel(form.getSelectedOverlapTileDimension(), form.getOutputWidth(),
+                        form.getOutputHeight(), form.getPeriodicEnabled(), groundPattern, heuristic, this);
                 } else {
-                    //TODO RF2: Backtracking
+                    curModel = new SimpleTiledModel(form.getOutputWidth(), form.getOutputHeight(),
+                        form.getPeriodicEnabled(),
+                        heuristic, this);
                 }
             }
 
             Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
-            return null;
+            return runWfc(curModel, sw, steps, reset);
+        }
+
+        private (Bitmap, bool) runWfc(Model model, Stopwatch sw, int steps, bool reset) {
+            if (reset) {
+                Random random = new Random();
+                curSeed = random.Next();
+            }
+            int success = model.run(curSeed, reset ? 0 : curStep, steps);
+            if (reset) {
+                curStep = steps;
+            } else {
+                curStep += steps;
+            }
+
+            if (success != 0) {
+                Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
+                return (model.graphics(), success == 2);
+            }
+
+            Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
+            return (null, false);
         }
 
         public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int w1, int h1, int w2, int h2,
