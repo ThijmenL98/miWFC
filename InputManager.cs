@@ -49,9 +49,10 @@ namespace WFC4All {
         /*
          * Functionality
          */
+        private readonly Stopwatch sw = Stopwatch.StartNew();
 
         public (Bitmap, bool) initAndRunWfc(bool reset, int steps) {
-            Stopwatch sw = Stopwatch.StartNew();
+            sw.Restart();
 
             if (reset) {
                 XElement xElem = xDoc.Root.Elements("overlapping", "simpletiled")
@@ -62,7 +63,6 @@ namespace WFC4All {
                     extractPatterns(lastDim != form.getSelectedOverlapTileDimension(),
                         xElem != null && xElem.Name == "overlapping");
                     lastDim = form.getSelectedOverlapTileDimension();
-                    Console.WriteLine($@"Pattern Extraction = {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                 }
 
@@ -92,15 +92,15 @@ namespace WFC4All {
                 }
             }
 
-            Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
-            return runWfc(curModel, sw, steps, reset);
+            return runWfc(curModel, steps, reset);
         }
 
-        private (Bitmap, bool) runWfc(Model model, Stopwatch sw, int steps, bool reset) {
+        private (Bitmap, bool) runWfc(Model model, int steps, bool reset) {
             if (reset) {
                 Random random = new Random();
                 curSeed = random.Next();
             }
+
             int success = model.run(curSeed, reset ? 0 : curStep, steps);
             if (reset) {
                 curStep = steps;
@@ -109,11 +109,9 @@ namespace WFC4All {
             }
 
             if (success != 0) {
-                Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
                 return (model.graphics(), success == 2);
             }
 
-            Console.WriteLine($@"Algorithm = {sw.ElapsedMilliseconds}ms.");
             return (null, false);
         }
 
@@ -237,7 +235,6 @@ namespace WFC4All {
                 weightsDictionary = new Dictionary<long, int>();
                 ordering = new List<long>();
 
-                Stopwatch sw = new Stopwatch();
                 int[] map = {0, 0, 1, 1, 2, 2, 3, 3};
 
                 for (int y = 0; y < (periodicInput ? inputHeight : inputHeight - overlapTileDimension + 1); y++) {
@@ -273,8 +270,6 @@ namespace WFC4All {
                         }
                     }
                 }
-
-                Console.WriteLine($@"Transformation extraction: {sw.ElapsedMilliseconds}ms.");
 
                 groundPatternIdx = transformationIsEnabled(2) ? 0 : form.bitMaps.getFloorIndex(weightsDictionary.Count);
             } else {

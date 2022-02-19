@@ -7,7 +7,9 @@ The software is provided "as is", without warranty of any kind, express or impli
 */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace WFC4All {
     internal abstract class Model {
@@ -44,6 +46,9 @@ namespace WFC4All {
 
         private int currentStep;
 
+        // <timeStamp, Stack<State<pos, pattern, compatibility array>>>
+        private Dictionary<int, Stack<LoggedStep>> backTrackDict;
+
         protected Model(int outputWidth, int outputHeight, int overlapTileDimension, bool periodic,
             Heuristic heuristic) {
             imageOutputWidth = outputWidth;
@@ -54,6 +59,10 @@ namespace WFC4All {
         }
 
         private void init() {
+            backTrackDict = new Dictionary<int, Stack<LoggedStep>> {
+                [0] = new Stack<LoggedStep>()
+            };
+
             wave = new bool[imageOutputWidth * imageOutputHeight][];
             compatible = new int[wave.Length][][];
             for (int i = 0; i < wave.Length; i++) {
@@ -104,11 +113,17 @@ namespace WFC4All {
             int limit = start + steps;
 
             for (currentStep = start; currentStep < limit || limit < 0; currentStep++) {
+                if (!backTrackDict.ContainsKey(currentStep)) {
+                    backTrackDict[currentStep] = new Stack<LoggedStep>();
+                }
+
                 int node = nextUnobservedNode(random);
                 if (node >= 0) {
                     observe(node, random);
                     if (!propagate()) {
-                        return 0;
+                        if (!backtrack()) {
+                            return 0;
+                        }
                     }
                 } else {
                     for (int i = 0; i < wave.Length; i++) {
@@ -127,11 +142,38 @@ namespace WFC4All {
             return 1;
         }
 
+        private bool backtrack() {
+            Console.WriteLine("Starting backtracking for step " + currentStep);
+            if (currentStep == 0) {
+                return false;
+            }
+
+            Stack<LoggedStep> toUndoStack = backTrackDict[currentStep];
+            while (toUndoStack.Count > 0) {
+                LoggedStep toUndo = toUndoStack.Pop();
+                if (!toUndo.wasObserved()) {
+                    unBan(toUndo);
+                } else {
+                    Console.Write("Banning "+ toUndo.getPattern() + " at " + toUndo.getPos());
+                    Console.WriteLine(" -> " + sumsOfOnes[toUndo.getPos()] + " patterns left.");
+                    bool success = ban(toUndo.getPos(), toUndo.getPattern(), false, false);
+                    if (!success) {
+                        currentStep--;
+                        Console.WriteLine("Backtracking again");
+                        return backtrack();
+                    }
+                }
+            }
+
+            currentStep--;
+            return true;
+        }
+
         private int nextUnobservedNode(Random random) {
             if (heuristic == Heuristic.SCANLINE) {
                 for (int i = observedSoFar; i < wave.Length; i++) {
                     if (!periodic && (i % imageOutputWidth + overlapTileDimension > imageOutputWidth ||
-                                      i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
+                        i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
                         continue;
                     }
 
@@ -148,7 +190,7 @@ namespace WFC4All {
             int argMin = -1;
             for (int i = 0; i < wave.Length; i++) {
                 if (!periodic && (i % imageOutputWidth + overlapTileDimension > imageOutputWidth ||
-                                  i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
+                    i / imageOutputWidth + overlapTileDimension > imageOutputHeight)) {
                     continue;
                 }
 
@@ -162,7 +204,7 @@ namespace WFC4All {
                     }
                 }
             }
-            
+
             return argMin;
         }
 
@@ -171,16 +213,19 @@ namespace WFC4All {
             for (int t = 0; t < actionCount; t++) {
                 distribution[t] = w[t] ? weights[t] : 0.0;
             }
-            
+
             int r = distribution.Random(random.NextDouble());
+            int[] comp = compatible[node][r];
+            backTrackDict[currentStep].Push(new LoggedStep(node, r, comp.ToArray(), true));
             for (int t = 0; t < actionCount; t++) {
                 if (w[t] != (t == r)) {
-                    ban(node, t);
+                    ban(node, t, false);
                 }
             }
         }
 
         protected bool propagate() {
+            bool successfulBans = true;
             while (stackSize > 0) {
                 (int i1, int t1) = stack[stackSize - 1];
                 stackSize--;
@@ -192,7 +237,7 @@ namespace WFC4All {
                     int x2 = x1 + xChange[d];
                     int y2 = y1 + yChange[d];
                     if (!periodic && (x2 < 0 || y2 < 0 || x2 + overlapTileDimension > imageOutputWidth ||
-                                      y2 + overlapTileDimension > imageOutputHeight)) {
+                        y2 + overlapTileDimension > imageOutputHeight)) {
                         continue;
                     }
 
@@ -217,27 +262,34 @@ namespace WFC4All {
 
                         comp[d]--;
                         if (comp[d] == 0) {
-                            ban(i2, t2);
+                            bool success = ban(i2, t2, false);
+                            if (!success) {
+                                successfulBans = false;
+                            }
                         }
                     }
                 }
             }
 
-            return sumsOfOnes[0] > 0;
+            return sumsOfOnes[0] > 0 && successfulBans;
         }
 
-        protected bool ban(int position, int patternIdx) {
+        protected bool ban(int position, int patternIdx, bool wasObserved, bool addBackTrack = true) {
             wave[position][patternIdx] = false;
 
             int[] comp = compatible[position][patternIdx];
-            for (int d = 0; d < 4; d++) {
-                comp[d] = 0;
+            if (addBackTrack) {
+                backTrackDict[currentStep].Push(new LoggedStep(position, patternIdx, comp.ToArray(), wasObserved));
+            }
+
+            for (int direction = 0; direction < 4; direction++) {
+                comp[direction] = 0;
             }
 
             stack[stackSize] = (position, patternIdx);
             stackSize++;
 
-            sumsOfOnes[position] -= 1;
+            sumsOfOnes[position]--;
 
             sumsOfWeights[position] -= weights[patternIdx];
             sumsOfWeightLogWeights[position] -= weightLogWeights[patternIdx];
@@ -245,28 +297,75 @@ namespace WFC4All {
             double sum = sumsOfWeights[position];
             entropies[position] = Math.Log(sum) - sumsOfWeightLogWeights[position] / sum;
 
-            return sumsOfOnes[position] == 0;
+            return sumsOfOnes[position] != 0;
         }
-        
+
+        private void unBan(LoggedStep loggedStep) {
+            int position = loggedStep.getPos();
+            int patternIdx = loggedStep.getPattern();
+
+            sumsOfOnes[position]++;
+            sumsOfWeights[position] += weights[patternIdx];
+            sumsOfWeightLogWeights[position] += weightLogWeights[patternIdx];
+
+            double sum = sumsOfWeights[position];
+            entropies[position] = Math.Log(sum) - sumsOfWeightLogWeights[position] / sum;
+
+            for (int direction = 0; direction < 4; direction++) {
+                compatible[position][patternIdx][direction] = loggedStep.getCompat().ToArray()[direction];
+            }
+
+            wave[position][patternIdx] = true;
+        }
+
         protected virtual void clear() {
-            for (int i = 0; i < wave.Length; i++) {
-                for (int t = 0; t < actionCount; t++) {
-                    wave[i][t] = true;
-                    for (int d = 0; d < 4; d++) {
-                        compatible[i][t][d] = propagator[opposite[d]][t].Length;
+            for (int nodeIdx = 0; nodeIdx < wave.Length; nodeIdx++) {
+                for (int patternIdx = 0; patternIdx < actionCount; patternIdx++) {
+                    wave[nodeIdx][patternIdx] = true;
+                    for (int direction = 0; direction < 4; direction++) {
+                        compatible[nodeIdx][patternIdx][direction] = propagator[opposite[direction]][patternIdx].Length;
                     }
                 }
 
-                sumsOfOnes[i] = weights.Length;
-                sumsOfWeights[i] = sumOfWeights;
-                sumsOfWeightLogWeights[i] = sumOfWeightLogWeights;
-                entropies[i] = startingEntropy;
-                observed[i] = -1;
+                sumsOfOnes[nodeIdx] = weights.Length;
+                sumsOfWeights[nodeIdx] = sumOfWeights;
+                sumsOfWeightLogWeights[nodeIdx] = sumOfWeightLogWeights;
+                entropies[nodeIdx] = startingEntropy;
+                observed[nodeIdx] = -1;
             }
 
             observedSoFar = 0;
         }
 
         public abstract Bitmap graphics();
+    }
+
+    internal class LoggedStep {
+        private readonly int position, pattern;
+        private readonly int[] compatibilities;
+        private readonly bool observed;
+
+        public LoggedStep(int curPosition, int curPattern, int[] curCompatibilities, bool wasObserved) {
+            position = curPosition;
+            pattern = curPattern;
+            compatibilities = curCompatibilities;
+            observed = wasObserved;
+        }
+
+        public int getPos() {
+            return position;
+        }
+
+        public int getPattern() {
+            return pattern;
+        }
+
+        public int[] getCompat() {
+            return compatibilities;
+        }
+
+        public bool wasObserved() {
+            return observed;
+        }
     }
 }

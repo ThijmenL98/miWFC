@@ -66,13 +66,14 @@ namespace WFC4All {
 
             try {
                 (Bitmap result, bool _) = inputManager.initAndRunWfc(true, getStepAmount());
+                while (result == null) {
+                    (result, _) = inputManager.initAndRunWfc(true, getStepAmount());
+                }
                 Stopwatch sw = Stopwatch.StartNew();
                 resultPB.Image = InputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
 
                 result.Dispose();
-                Console.WriteLine($@"Displaying bitmap: {sw.ElapsedMilliseconds}ms.");
-                Console.WriteLine();
             } catch (Exception exception) {
                 Console.WriteLine(exception);
                 resultPB.Image = InputManager.getImage("NoResultFound");

@@ -81,17 +81,18 @@ namespace WFC4All {
             propagator = new int[4][][];
             for (int direction = 0; direction < 4; direction++) {
                 propagator[direction] = new int[actionCount][];
-                for (int a = 0; a < actionCount; a++) {
+                for (int patternIdx = 0; patternIdx < actionCount; patternIdx++) {
                     List<int> list = new List<int>();
                     for (int a2 = 0; a2 < actionCount; a2++) {
-                        if (acceptsPattern(patterns[a], patterns[a2], xChange[direction], yChange[direction])) {
+                        if (acceptsPattern(patterns[patternIdx], patterns[a2], xChange[direction],
+                            yChange[direction])) {
                             list.Add(a2);
                         }
                     }
 
-                    propagator[direction][a] = new int[list.Count];
+                    propagator[direction][patternIdx] = new int[list.Count];
                     for (int a2 = 0; a2 < list.Count; a2++) {
-                        propagator[direction][a][a2] = list[a2];
+                        propagator[direction][patternIdx][a2] = list[a2];
                     }
                 }
             }
@@ -106,8 +107,13 @@ namespace WFC4All {
                     int dy = y < imageOutputHeight - overlapTileDimension + 1 ? 0 : overlapTileDimension - 1;
                     for (int x = 0; x < imageOutputWidth; x++) {
                         int dx = x < imageOutputWidth - overlapTileDimension + 1 ? 0 : overlapTileDimension - 1;
-                        Color c = colors[
-                            patterns[observed[x - dx + (y - dy) * imageOutputWidth]][dx + dy * overlapTileDimension]];
+                        int pixelLocation = x - dx + (y - dy) * imageOutputWidth;
+
+                        int patternAtLoc = observed[pixelLocation];
+                        byte[] patternPixels = patterns[patternAtLoc];
+                        byte pixelAtCurrentPos = patternPixels[dx + dy * overlapTileDimension];
+
+                        Color c = colors[pixelAtCurrentPos];
                         bitmapData[x + y * imageOutputWidth]
                             = unchecked((int) 0xff000000 | (c.R << 16) | (c.G << 8) | c.B);
                     }
@@ -131,7 +137,7 @@ namespace WFC4All {
 
                             int s = sx + sy * imageOutputWidth;
                             if (!periodic && (sx + overlapTileDimension > imageOutputWidth
-                                              || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
+                                || sy + overlapTileDimension > imageOutputHeight || sx < 0 || sy < 0)) {
                                 continue;
                             }
 
@@ -150,11 +156,12 @@ namespace WFC4All {
                     }
 
                     bitmapData[i] = unchecked((int) 0xff000000 | ((r / contributors) << 16) |
-                                              ((g / contributors) << 8) | (b / contributors));
+                        ((g / contributors) << 8) | (b / contributors));
 
                     if (!colors.Select(c2 => c2.ToArgb()).Contains(bitmapData[i]) &&
                         contributors > overlapTileDimension * overlapTileDimension) {
-                        bitmapData[i] = unchecked((int) 0xff000000);
+                        bitmapData[i] = Color.DarkGray.GetHashCode();
+                        
                     }
                 }
             }
@@ -174,12 +181,12 @@ namespace WFC4All {
                 for (int x = 0; x < imageOutputWidth; x++) {
                     for (int t = 0; t < actionCount; t++) {
                         if (t != ground) {
-                            ban(x + (imageOutputHeight - 1) * imageOutputWidth, t);
+                            ban(x + (imageOutputHeight - 1) * imageOutputWidth, t, false);
                         }
                     }
 
                     for (int y = 0; y < imageOutputHeight - 1; y++) {
-                        ban(x + y * imageOutputWidth, ground);
+                        ban(x + y * imageOutputWidth, ground, false);
                     }
                 }
 
