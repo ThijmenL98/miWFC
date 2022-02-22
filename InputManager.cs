@@ -4,115 +4,134 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using WFC4All.DeBroglie;
+using WFC4All.DeBroglie.Models;
+using WFC4All.DeBroglie.Topo;
 
 namespace WFC4All {
     public class InputManager {
         private readonly XDocument xDoc;
         private Bitmap currentBitmap;
-        private List<Color> overlappingColors;
-        private List<Color[]> simpleColors;
-        private byte[,] sample;
-        private Dictionary<long, int> weightsDictionary;
-        private List<long> ordering;
-        private int groundPatternIdx, lastDim, tileSize;
+        private readonly int groundPatternIdx;
         private readonly Form1 form;
-        private bool inputHasChanged;
-        private string curFile;
-        private List<double> simpleWeights;
-        private List<int[]> simpleActions;
-        private List<string> tileNames;
-        private Dictionary<string, int> firstOccurrences;
-
-        private int curSeed, curStep;
-        private Model curModel;
+        private bool inputHasChanged, sizeHasChanged;
 
         private XElement xRoot;
+
+        private TilePropagator dbPropagator;
+        private TileModel dbModel;
 
         public InputManager(Form1 formIn) {
             form = formIn;
             xDoc = XDocument.Load("samples.xml");
             currentBitmap = null;
-            overlappingColors = new List<Color>();
-            simpleColors = new List<Color[]>();
-            weightsDictionary = new Dictionary<long, int>();
-            ordering = new List<long>();
             inputHasChanged = true;
+            sizeHasChanged = true;
             groundPatternIdx = 0;
-            curFile = "";
-            curModel = null;
+            dbModel = null;
+            dbPropagator = null;
         }
 
         /*
          * Functionality
          */
-        private readonly Stopwatch sw = Stopwatch.StartNew();
 
-        public (Bitmap, bool) initAndRunWfc(bool reset, int steps) {
+        public (Bitmap, bool) initAndRunWfcDB(bool reset, int steps) {
+            Console.WriteLine();
+            Stopwatch sw = new Stopwatch();
             sw.Restart();
+            if (reset || dbPropagator == null) {
+                bool selectedPeriodicity = form.isOverlappingModel() && form.getPeriodicEnabled();
+                if (inputHasChanged) {
+                    currentBitmap = getImage(form.getSelectedInput());
+                    ITopoArray<Color> dbSample
+                        = TopoArray.create(imageToColourArray(currentBitmap), selectedPeriodicity);
+                    ITopoArray<Tile> tiles = dbSample.toTiles();
 
-            if (reset) {
-                XElement xElem = xDoc.Root.Elements("overlapping", "simpletiled")
-                    .Where(x => x.Get<string>("name") == form.getSelectedInput()).ElementAtOrDefault(0);
+                    if (form.isOverlappingModel()) {
+                        dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
+                        List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
+                        int total = form.bitMaps.getPatternCount();
+                        form.bitMaps.reset();
 
-                if ((xElem != null && xElem.Name == "overlapping") ||
-                    lastDim != form.getSelectedOverlapTileDimension()) {
-                    extractPatterns(lastDim != form.getSelectedOverlapTileDimension(),
-                        xElem != null && xElem.Name == "overlapping");
-                    lastDim = form.getSelectedOverlapTileDimension();
-                    sw.Restart();
-                }
+                        for (int i = 0; i < total; i++) {
+                            foreach (Control item in form.patternPanel.Controls) {
+                                if (item.Name == "patternPB_" + i) {
+                                    Thread.CurrentThread.IsBackground = true;
+                                    form.patternPanel.Controls.Remove(item);
+                                    break;
+                                }
+                            }
+                        }
 
-                string name = xElem.Get<string>("name");
+                        foreach (PatternArray patternArray in patternList) {
+                            form.addPattern(patternArray, currentColors.ToList());
+                        }
+                    } else {
+                        //TODO
+                        dbModel = new AdjacentModel();
+                        ((AdjacentModel) dbModel).addSample(tiles);
 
-                string heuristicString = xElem.Get<string>("heuristic");
-                Model.Heuristic heuristic = heuristicString == "Scanline"
-                    ? Model.Heuristic.SCANLINE
-                    : heuristicString == "MRV"
-                        ? Model.Heuristic.MRV
-                        : Model.Heuristic.ENTROPY;
-
-                if (xElem != null && xElem.Name == "overlapping") {
-                    int groundPattern = 0;
-
-                    if (name.Equals("Skyline") || name.Equals("Flowers") || name.Equals("Platformer") ||
-                        name.Equals("Skyline2")) {
-                        groundPattern = getGroundPatternIdx();
+                        Console.WriteLine(tiles.get(0));
                     }
 
-                    curModel = new OverlappingModel(form.getSelectedOverlapTileDimension(), form.getOutputWidth(),
-                        form.getOutputHeight(), form.getPeriodicEnabled(), groundPattern, heuristic, this);
+                    Console.WriteLine(@"Init took " + sw.ElapsedMilliseconds + @"ms.");
+                    sw.Restart();
+                    sizeHasChanged = true;
+                }
+
+                if (sizeHasChanged) {
+                    GridTopology dbTopology = new GridTopology(form.getOutputWidth(), form.getOutputHeight(),
+                        selectedPeriodicity);
+                    dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
+                        BackTrackDepth = -1,
+                    });
+                    Console.WriteLine(@"Assigning took " + sw.ElapsedMilliseconds + @"ms.");
+                    sw.Restart();
                 } else {
-                    curModel = new SimpleTiledModel(form.getOutputWidth(), form.getOutputHeight(),
-                        form.getPeriodicEnabled(),
-                        heuristic, this);
+                    dbPropagator?.clear();
+                    Console.WriteLine(@"Clearing took " + sw.ElapsedMilliseconds + @"ms.");
+                }
+
+                inputHasChanged = false;
+                sizeHasChanged = false;
+            }
+
+            return runWfcDB(steps);
+        }
+
+        private (Bitmap, bool) runWfcDB(int steps) {
+            Stopwatch sw = new Stopwatch();
+            sw.Restart();
+            Resolution dbStatus = Resolution.UNDECIDED;
+            if (steps == -1) {
+                dbStatus = dbPropagator.run();
+            } else {
+                for (int i = 0; i < steps; i++) {
+                    dbStatus = dbPropagator.step();
                 }
             }
 
-            return runWfc(curModel, steps, reset);
-        }
+            Console.WriteLine(@"Stepping took " + sw.ElapsedMilliseconds + @"ms.");
+            sw.Restart();
 
-        private (Bitmap, bool) runWfc(Model model, int steps, bool reset) {
-            if (reset) {
-                Random random = new Random();
-                curSeed = random.Next();
+            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
+            Bitmap outputBitmap = new Bitmap(form.getOutputWidth(), form.getOutputHeight());
+            for (int y = 0; y < form.getOutputHeight(); y++) {
+                for (int x = 0; x < form.getOutputWidth(); x++) {
+                    Color cur = dbOutput.get(x, y);
+                    outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.DarkGray);
+                }
             }
-
-            int success = model.run(curSeed, reset ? 0 : curStep, steps);
-            if (reset) {
-                curStep = steps;
-            } else {
-                curStep += steps;
-            }
-
-            if (success != 0) {
-                return (model.graphics(), success == 2);
-            }
-
-            return (null, false);
+            
+            Console.WriteLine(@"Bitmap took " + sw.ElapsedMilliseconds + @"ms.");
+            return (outputBitmap, dbStatus == Resolution.DECIDED);
         }
 
         public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int w1, int h1, int w2, int h2,
@@ -142,7 +161,7 @@ namespace WFC4All {
                     int px = (int) Math.Floor(j * xRatio);
                     Color nextC;
                     if (px >= bitmap.Width || py >= bitmap.Height) {
-                        nextC = Color.LawnGreen;
+                        nextC = Color.Transparent;
                     } else {
                         nextC = bitmap.GetPixel(px, py);
                     }
@@ -152,6 +171,36 @@ namespace WFC4All {
             }
 
             return outputBM;
+        }
+
+        private static HashSet<Color> currentColors;
+
+        private static Color[][] imageToColourArray(Bitmap bmp) {
+            int width = bmp.Width;
+            int height = bmp.Height;
+            BitmapData data = bmp.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly,
+                PixelFormat.Format24bppRgb);
+
+            byte[] bytes = new byte[height * data.Stride];
+            try {
+                Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
+            } finally {
+                bmp.UnlockBits(data);
+            }
+
+            Color[][] result = new Color[height][];
+            currentColors = new HashSet<Color>();
+            for (int y = 0; y < height; ++y) {
+                result[y] = new Color[width];
+                for (int x = 0; x < width; ++x) {
+                    int offset = y * data.Stride + x * 3;
+                    Color c = Color.FromArgb(255, bytes[offset + 2], bytes[offset + 1], bytes[offset + 0]);
+                    result[y][x] = c;
+                    currentColors.Add(c);
+                }
+            }
+
+            return result;
         }
 
         public static Bitmap resizeBitmap(Bitmap source, float scale) {
@@ -171,240 +220,16 @@ namespace WFC4All {
             return bmp;
         }
 
-        public void extractPatterns(bool force, bool overlapping) {
-            if (!inputHasChanged && !force) {
-                return;
-            }
-
-            form.setPatternLabelVisible();
-
-            bool fileChanged = false;
-            if (!curFile.Equals(form.getSelectedInput())) {
-                curFile = form.getSelectedInput();
-                fileChanged = true;
-            }
-
-            currentBitmap = getImage(form.getSelectedInput());
-
-            if (fileChanged || lastDim != form.getSelectedOverlapTileDimension()) {
-                int total = form.bitMaps.getPatternCount();
-                for (int i = 0; i < total; i++) {
-                    foreach (Control item in form.patternPanel.Controls) {
-                        if (item.Name == "patternPB_" + i) {
-                            Thread.CurrentThread.IsBackground = true;
-                            form.patternPanel.Controls.Remove(item);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            bool periodicInput = form.getPeriodicEnabled();
-            int overlapTileDimension = form.getSelectedOverlapTileDimension();
-            int inputWidth = currentBitmap.Width, inputHeight = currentBitmap.Height;
-
-            if (overlapping) {
-                sample = new byte[inputWidth, inputHeight];
-                overlappingColors = new List<Color>();
-                for (int y = 0; y < inputHeight; y++) {
-                    for (int x = 0; x < inputWidth; x++) {
-                        Color color = currentBitmap.GetPixel(x, y);
-
-                        int colorIndex = overlappingColors.TakeWhile(c => c != color).Count();
-
-                        if (colorIndex == overlappingColors.Count) {
-                            overlappingColors.Add(color);
-                        }
-
-                        sample[x, y] = (byte) colorIndex;
-                    }
-                }
-
-                int colorsCount = overlappingColors.Count;
-
-                long index(IReadOnlyList<byte> inputPattern) {
-                    long result = 0, power = 1;
-                    for (int pixelIdx = 0; pixelIdx < inputPattern.Count; pixelIdx++) {
-                        result += inputPattern[inputPattern.Count - 1 - pixelIdx] * power;
-                        power *= colorsCount;
-                    }
-
-                    return result;
-                }
-
-                weightsDictionary = new Dictionary<long, int>();
-                ordering = new List<long>();
-
-                int[] map = {0, 0, 1, 1, 2, 2, 3, 3};
-
-                for (int y = 0; y < (periodicInput ? inputHeight : inputHeight - overlapTileDimension + 1); y++) {
-                    for (int x = 0; x < (periodicInput ? inputWidth : inputWidth - overlapTileDimension + 1); x++) {
-                        byte[][] patternSymmetry = new byte[8][];
-
-                        patternSymmetry[0] = patternFromSample(x, y);
-                        patternSymmetry[1] = reflect(patternSymmetry[0]); // pattern flipped over y axis once
-                        patternSymmetry[2] = rotate(patternSymmetry[0]); // pattern rotated CW once
-                        patternSymmetry[3] = reflect(patternSymmetry[2]); // pattern rotated CW once, then flipped
-                        patternSymmetry[4] = rotate(patternSymmetry[2]); // pattern rotated CW twice
-                        patternSymmetry[5] = reflect(patternSymmetry[4]); // pattern rotated CW twice, then flipped
-                        patternSymmetry[6] = rotate(patternSymmetry[4]); // pattern rotated CW thrice
-                        patternSymmetry[7] = reflect(patternSymmetry[6]); // pattern rotated CW thrice, then flipped
-
-                        for (int i = 0; i < 8; i++) {
-                            if (i == 0 || transformationIsEnabled(map[i])) {
-                                long idx = index(patternSymmetry[i]);
-
-                                if (weightsDictionary.ContainsKey(idx)) {
-                                    weightsDictionary[idx]++;
-                                } else {
-                                    weightsDictionary.Add(idx, 1);
-                                    ordering.Add(idx);
-
-                                    //TODO check if pattern is similar to others (flipped)
-                                    Thread.CurrentThread.IsBackground = true;
-                                    form.addPattern(patternSymmetry[0], overlappingColors, overlapTileDimension,
-                                        weightsDictionary.Count - 1,
-                                        i == 0 && (fileChanged || lastDim != form.getSelectedOverlapTileDimension()));
-                                }
-                            }
-                        }
-                    }
-                }
-
-                groundPatternIdx = transformationIsEnabled(2) ? 0 : form.bitMaps.getFloorIndex(weightsDictionary.Count);
-            } else {
-                xRoot = XDocument.Load($"samples/{curFile}/data.xml").Root;
-                tileSize = xRoot.Get("size", 16);
-                bool unique = xRoot.Get("unique", false);
-                simpleColors = new List<Color[]>();
-                tileNames = new List<string>();
-                simpleActions = new List<int[]>();
-                simpleWeights = new List<double>();
-                firstOccurrences = new Dictionary<string, int>();
-
-                if (xRoot == null) {
-                    return;
-                }
-
-                int curPattern = 0;
-
-                foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")) {
-                    string tileName = xTile.Get<string>("name");
-
-                    Func<int, int> a, b;
-                    int cardinality;
-
-                    char sym = xTile.Get("symmetry", 'X');
-                    switch (sym) {
-                        case 'L':
-                            cardinality = 4;
-                            a = i => (i + 1) % 4;
-                            b = i => i % 2 == 0 ? i + 1 : i - 1;
-                            break;
-                        case 'T':
-                            cardinality = 4;
-                            a = i => (i + 1) % 4;
-                            b = i => i % 2 == 0 ? i : 4 - i;
-                            break;
-                        case 'I':
-                            cardinality = 2;
-                            a = i => 1 - i;
-                            b = i => i;
-                            break;
-                        case '\\':
-                            cardinality = 2;
-                            a = i => 1 - i;
-                            b = i => 1 - i;
-                            break;
-                        case 'F':
-                            cardinality = 8;
-                            a = i => i < 4 ? (i + 1) % 4 : 4 + (i - 1) % 4;
-                            b = i => i < 4 ? i + 4 : i - 4;
-                            break;
-                        default:
-                            cardinality = 1;
-                            a = i => i;
-                            b = i => i;
-                            break;
-                    }
-
-                    int actionCount = simpleActions.Count;
-                    firstOccurrences.Add(tileName, actionCount);
-
-                    int[][] map = new int[cardinality][];
-                    for (int t = 0; t < cardinality; t++) {
-                        map[t] = new int[8];
-
-                        map[t][0] = t;
-                        map[t][1] = a(t);
-                        map[t][2] = a(a(t));
-                        map[t][3] = a(a(a(t)));
-                        map[t][4] = b(t);
-                        map[t][5] = b(a(t));
-                        map[t][6] = b(a(a(t)));
-                        map[t][7] = b(a(a(a(t))));
-
-                        for (int s = 0; s < 8; s++) {
-                            map[t][s] += actionCount;
-                        }
-
-                        simpleActions.Add(map[t]);
-                    }
-
-                    if (unique) {
-                        Bitmap bitmap = null;
-                        for (int t = 0; t < cardinality; t++) {
-                            bitmap = new Bitmap($"samples/{curFile}/{tileName} {t}.png");
-                            Bitmap nonLocalBitmap = bitmap;
-                            simpleColors.Add(tile((x, y) => nonLocalBitmap.GetPixel(x, y), tileSize));
-                            tileNames.Add($"{tileName} {t}");
-                            curPattern++;
-                        }
-
-                        if (bitmap != null) {
-                            form.addPattern(bitmap, curPattern);
-                        }
-                    } else {
-                        Bitmap bitmap = new Bitmap($"samples/{curFile}/{tileName}.png");
-                        simpleColors.Add(tile((x, y) => bitmap.GetPixel(x, y), tileSize));
-                        tileNames.Add($"{tileName} 0");
-
-                        for (int t = 1; t < cardinality; t++) {
-                            if (t <= 3) {
-                                simpleColors.Add(rotate(simpleColors[actionCount + t - 1], tileSize));
-                            }
-
-                            if (t >= 4) {
-                                simpleColors.Add(reflect(simpleColors[actionCount + t - 4], tileSize));
-                            }
-
-                            tileNames.Add($"{tileName} {t}");
-
-                            curPattern++;
-                        }
-
-                        form.addPattern(bitmap, curPattern);
-                    }
-
-                    for (int t = 0; t < cardinality; t++) {
-                        simpleWeights.Add(xTile.Get("weight", 1.0));
-                    }
-                }
-            }
-
-            inputHasChanged = false;
-        }
-
         /*
          * Getters
          */
 
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public (object[], int) getImagePatternDimensions(string imageName) {
-            IEnumerable<XElement> xElements = xDoc.Root.Elements("overlapping", "simpletiled");
+            IEnumerable<XElement> xElements = xDoc.Root.elements("overlapping", "simpletiled");
             IEnumerable<int> matchingElements = xElements.Where(x =>
-                x.Get<string>("name") == imageName).Select(t =>
-                t.Get("N", 3));
+                x.get<string>("name") == imageName).Select(t =>
+                t.get("N", 3));
 
             List<object> patternDimensionsList = new List<object>();
             int j = 0;
@@ -422,7 +247,7 @@ namespace WFC4All {
         public string[] getImages(string modelType) {
             List<string> images = new List<string>();
             if (xDoc.Root != null) {
-                images = xDoc.Root.Elements(modelType).Select(xElement => xElement.Get<string>("name"))
+                images = xDoc.Root.Elements(modelType).Select(xElement => xElement.get<string>("name"))
                     .ToList();
             }
 
@@ -435,48 +260,8 @@ namespace WFC4All {
             return new Bitmap($"samples/{name}.png");
         }
 
-        public List<Color> getOverlapColors() {
-            return overlappingColors;
-        }
-
-        public List<Color[]> getSimpleColors() {
-            return simpleColors;
-        }
-
-        public Dictionary<long, int> getOverlappingWeights() {
-            return weightsDictionary;
-        }
-
-        public List<double> getSimpleWeights() {
-            return simpleWeights;
-        }
-
-        public int getTileSize() {
-            return tileSize;
-        }
-
-        public List<int[]> getActions() {
-            return simpleActions;
-        }
-
-        public Dictionary<string, int> getFirstOccurrences() {
-            return firstOccurrences;
-        }
-
-        public string getSimpleTileName(int index) {
-            return tileNames[index];
-        }
-
         public XElement getSimpleXRoot() {
             return xRoot;
-        }
-
-        public List<long> getOrdering() {
-            return ordering;
-        }
-
-        private int getGroundPatternIdx() {
-            return groundPatternIdx;
         }
 
         private bool transformationIsEnabled(int i) {
@@ -492,63 +277,13 @@ namespace WFC4All {
          * Setters
          */
 
-        public void setInputChanged() {
+        public void setInputChanged(string source) {
+            Console.WriteLine(@"Input changed on " + source);
             inputHasChanged = true;
         }
 
-        /*
-         * Pattern Adaptation Overlapping
-         */
-
-        private byte[] patternFromSample(int x, int y) {
-            currentBitmap = getImage(form.getSelectedInput());
-            int inputWidth = currentBitmap.Width, inputHeight = currentBitmap.Height;
-            return pattern((dx, dy) => sample[(x + dx) % inputWidth, (y + dy) % inputHeight]);
-        }
-
-        private byte[] pattern(Func<int, int, byte> f) {
-            int overlapTileDimension = form.getSelectedOverlapTileDimension();
-            byte[] result = new byte[overlapTileDimension * overlapTileDimension];
-            for (int y = 0; y < overlapTileDimension; y++) {
-                for (int x = 0; x < overlapTileDimension; x++) {
-                    result[x + y * overlapTileDimension] = f(x, y);
-                }
-            }
-
-            return result;
-        }
-
-        private byte[] rotate(IReadOnlyList<byte> inputPattern) {
-            int overlapTileDimension = form.getSelectedOverlapTileDimension();
-            return pattern((x, y) => inputPattern[overlapTileDimension - 1 - y + x * overlapTileDimension]);
-        }
-
-        private byte[] reflect(IReadOnlyList<byte> inputPattern) {
-            int overlapTileDimension = form.getSelectedOverlapTileDimension();
-            return pattern((x, y) => inputPattern[overlapTileDimension - 1 - x + y * overlapTileDimension]);
-        }
-
-        /*
-         * Pattern Adaptation Simple
-         */
-
-        private Color[] tile(Func<int, int, Color> f, int tilesize) {
-            Color[] result = new Color[tilesize * tilesize];
-            for (int y = 0; y < tilesize; y++) {
-                for (int x = 0; x < tilesize; x++) {
-                    result[x + y * tilesize] = f(x, y);
-                }
-            }
-
-            return result;
-        }
-
-        private Color[] rotate(IReadOnlyList<Color> array, int tilesize) {
-            return tile((x, y) => array[tilesize - 1 - y + x * tilesize], tilesize);
-        }
-
-        private Color[] reflect(IReadOnlyList<Color> array, int tilesize) {
-            return tile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
+        public void setSizeChanged() {
+            sizeHasChanged = true;
         }
     }
 }

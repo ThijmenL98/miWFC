@@ -11,41 +11,43 @@ using System.ComponentModel;
 using System.Linq;
 using System.Xml.Linq;
 
-internal static class Helper {
-    public static int Random(this double[] weights, double r) {
-        double sum = 0;
-        for (int i = 0; i < weights.Length; i++) {
-            sum += weights[i];
-        }
-
-        double threshold = r * sum;
-
-        double partialSum = 0;
-        for (int i = 0; i < weights.Length; i++) {
-            partialSum += weights[i];
-            if (partialSum >= threshold) {
-                return i;
+namespace WFC4All {
+    internal static class Helper {
+        public static int random(this double[] weights, double r) {
+            double sum = 0;
+            for (int i = 0; i < weights.Length; i++) {
+                sum += weights[i];
             }
+
+            double threshold = r * sum;
+
+            double partialSum = 0;
+            for (int i = 0; i < weights.Length; i++) {
+                partialSum += weights[i];
+                if (partialSum >= threshold) {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
-        return -1;
-    }
+        public static long toPower(this int a, int n) {
+            long product = 1;
+            for (int i = 0; i < n; i++) {
+                product *= a;
+            }
 
-    public static long ToPower(this int a, int n) {
-        long product = 1;
-        for (int i = 0; i < n; i++) {
-            product *= a;
+            return product;
         }
 
-        return product;
-    }
+        public static T get<T>(this XElement xelem, string attribute, T defaultT = default) {
+            XAttribute a = xelem.Attribute(attribute);
+            return a == null ? defaultT : (T) TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString(a.Value);
+        }
 
-    public static T Get<T>(this XElement xelem, string attribute, T defaultT = default) {
-        XAttribute a = xelem.Attribute(attribute);
-        return a == null ? defaultT : (T) TypeDescriptor.GetConverter(typeof(T)).ConvertFromInvariantString(a.Value);
-    }
-
-    public static IEnumerable<XElement> Elements(this XElement xelement, params string[] names) {
-        return xelement.Elements().Where(e => names.Any(n => n == e.Name));
+        public static IEnumerable<XElement> elements(this XElement xelement, params string[] names) {
+            return xelement.Elements().Where(e => names.Any(n => n == e.Name));
+        }
     }
 }

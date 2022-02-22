@@ -320,6 +320,7 @@ namespace WFC4All
             this.outputHeightValue.Size = new System.Drawing.Size(67, 22);
             this.outputHeightValue.TabIndex = 3;
             this.outputHeightValue.Value = new decimal(new int[] {24, 0, 0, 0});
+            this.outputHeightValue.ValueChanged += new System.EventHandler(this.outputSizeChanged);
             // 
             // outputWidthValue
             // 
@@ -331,6 +332,7 @@ namespace WFC4All
             this.outputWidthValue.Size = new System.Drawing.Size(67, 22);
             this.outputWidthValue.TabIndex = 4;
             this.outputWidthValue.Value = new decimal(new int[] {24, 0, 0, 0});
+            this.outputWidthValue.ValueChanged += new System.EventHandler(this.outputSizeChanged);
             // 
             // inputImageCB
             // 

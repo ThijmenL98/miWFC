@@ -5,5 +5,6 @@
 	
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=WFC4All_002FForm1/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=WFC4All_002FForm2/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=WFC4All_002FProperties_002FResources/@EntryIndexedValue">False</s:Boolean>
 	
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/Initialized/@EntryValue">True</s:Boolean></wpf:ResourceDictionary>
