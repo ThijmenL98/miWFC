@@ -12,7 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -245,9 +245,6 @@
     <Content Include="samples\WalledDot.png" />
     <Content Include="samples\Water.png" />
     <Content Include="samples\Wrinkles.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="output\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DeBroglie\DeBroglie.csproj">

@@ -64,7 +64,6 @@
       <overlapping name="Font" N="5" symmetry="2" periodic="True" heuristic="MRV" size="90"/>
       <overlapping name="Village" N="3" symmetry="2" size="36" periodic="True"/>
       
-      <simpletiled name="Summer" size="20"/>
       <simpletiled name="Castle" size="50" heuristic="Scanline"/>
       <simpletiled name="Circuit" size="34" periodic="True"/>
       <simpletiled name="Knots" size="24" periodic="True"/>

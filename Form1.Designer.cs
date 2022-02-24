@@ -45,7 +45,6 @@ namespace WFC4All
             this.originalRotPB = new System.Windows.Forms.PictureBox();
             this.patternPanel = new System.Windows.Forms.Panel();
             this.patternsLabel = new System.Windows.Forms.Label();
-            this.extractPatternsButton = new System.Windows.Forms.Button();
             this.periodicInput = new System.Windows.Forms.CheckBox();
             this.modelChoice = new System.Windows.Forms.Button();
             this.outputImageHeightLabel = new System.Windows.Forms.Label();
@@ -92,7 +91,6 @@ namespace WFC4All
             this.inputTab.Controls.Add(this.p1RotPB);
             this.inputTab.Controls.Add(this.originalRotPB);
             this.inputTab.Controls.Add(this.patternPanel);
-            this.inputTab.Controls.Add(this.extractPatternsButton);
             this.inputTab.Controls.Add(this.periodicInput);
             this.inputTab.Controls.Add(this.modelChoice);
             this.inputTab.Controls.Add(this.outputImageHeightLabel);
@@ -242,17 +240,6 @@ namespace WFC4All
             this.patternsLabel.Size = new System.Drawing.Size(459, 56);
             this.patternsLabel.TabIndex = 0;
             this.patternsLabel.Text = "Extracted patterns, you can deselect patterns you don\'t want to show up in the fi" + "nal generated image (red = excluded). Duplicate patterns (such as rotated or fli" + "pped) are excluded!";
-            // 
-            // extractPatternsButton
-            // 
-            this.extractPatternsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.extractPatternsButton.Location = new System.Drawing.Point(23, 558);
-            this.extractPatternsButton.Name = "extractPatternsButton";
-            this.extractPatternsButton.Size = new System.Drawing.Size(303, 35);
-            this.extractPatternsButton.TabIndex = 10;
-            this.extractPatternsButton.Text = "Extract Patterns";
-            this.extractPatternsButton.UseVisualStyleBackColor = true;
-            this.extractPatternsButton.Click += new System.EventHandler(this.extractPatternsButton_Click);
             // 
             // periodicInput
             // 
@@ -416,7 +403,6 @@ namespace WFC4All
             this.tabSelection.Size = new System.Drawing.Size(1600, 900);
             this.tabSelection.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabSelection.TabIndex = 2;
-            this.tabSelection.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.changeTab);
             // 
             // Form1
             // 
@@ -447,7 +433,7 @@ namespace WFC4All
 
         #endregion
 
-        private TabPage inputTab;
+        private System.Windows.Forms.TabPage inputTab;
         private Label patternRotationLabel;
         private PictureBox p3RotPB;
         private PictureBox p2RotPB;
@@ -455,9 +441,8 @@ namespace WFC4All
         private PictureBox originalRotPB;
         public System.Windows.Forms.Panel patternPanel;
         private System.Windows.Forms.Label patternsLabel;
-        private Button extractPatternsButton;
         private CheckBox periodicInput;
-        private Button modelChoice;
+        private System.Windows.Forms.Button modelChoice;
         private Label outputImageHeightLabel;
         private Label outputImageWidthLabel;
         private Label outputSizeLabel;
@@ -475,7 +460,7 @@ namespace WFC4All
         private Label stepSizeLabel;
         private Button advanceButton;
         private Button animateButton;
-        private Label animationSpeedLabel;
+        private System.Windows.Forms.Label animationSpeedLabel;
         private System.Windows.Forms.NumericUpDown animationSpeedValue;
     }
 }
