@@ -47,15 +47,15 @@ namespace WFC4All {
             if (form.isChangingModels) {
                 return (new Bitmap(1, 1), true);
             }
-            
+
             Stopwatch sw = new();
             sw.Restart();
-            
+
             if (reset || dbPropagator == null) {
                 bool selectedPeriodicity = form.isOverlappingModel() && form.getPeriodicEnabled();
                 if (inputHasChanged) {
                     currentBitmap = getImage(form.getSelectedInput());
-                    
+
                     for (int i = 0; i < form.bitMaps.getPatternCount(); i++) {
                         foreach (Control item in form.patternPanel.Controls) {
                             if (item.Name == "patternPB_" + i) {
@@ -65,6 +65,7 @@ namespace WFC4All {
                             }
                         }
                     }
+
                     form.bitMaps.reset();
 
                     if (form.isOverlappingModel()) {
@@ -74,8 +75,17 @@ namespace WFC4All {
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
 
+                        bool isCached = false;
+
                         foreach (PatternArray patternArray in patternList) {
-                            form.addPattern(patternArray, currentColors.ToList());
+                            isCached = form.addPattern(patternArray, currentColors.ToList());
+                            if (isCached) {
+                                break;
+                            }
+                        }
+
+                        if (!isCached) {
+                            form.bitMaps.saveCache();
                         }
                     } else {
                         dbModel = new AdjacentModel();
@@ -93,6 +103,8 @@ namespace WFC4All {
 
                         TileRotationBuilder builder = new(4, true);
                         List<Tile> tiles = new();
+
+                        bool isCached = false;
 
                         foreach (XElement xTile in xRoot.Element("tiles")?.elements("tile")!) {
                             string tileName = xTile.get<string>("name");
@@ -176,16 +188,23 @@ namespace WFC4All {
                                     : reflect(simpleColors[actionCount + t - 4], tileSize));
                             }
 
-                            form.addPattern(bitmap);
+                            if (!isCached) {
+                                isCached = form.addPattern(bitmap);
+                            }
 
                             for (int t = 0; t < cardinality; t++) {
                                 simpleWeights.Add(xTile.get("weight", 1.0));
                             }
                         }
-                        
+
+                        if (!isCached) {
+                            form.bitMaps.saveCache();
+                        }
+
+
                         TileRotation rotations = builder.build();
                         dbModel = new AdjacentModel(DirectionSet.cartesian2d);
-                        foreach ((Tile tile, int i) in tiles.Select((value, i) => ( value, i ))) {
+                        foreach ((Tile tile, int i) in tiles.Select((value, i) => (value, i))) {
                             ((AdjacentModel) dbModel).setFrequency(tile, simpleWeights[i], rotations);
                         }
                     }

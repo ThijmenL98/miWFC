@@ -19,7 +19,7 @@ namespace WFC4All {
         private readonly int initInHeight;
         private bool defaultPeriodicity;
         public bool isChangingModels;
-        
+
         private readonly XDocument xDoc;
 
         public Form1() {
@@ -238,12 +238,12 @@ namespace WFC4All {
             executeButton_Click(null, null);
         }
 
-        public void addPattern(Bitmap bitmap) {
-            bitMaps.addPattern(bitmap, pictureBoxMouseDown);
+        public bool addPattern(Bitmap bitmap) {
+            return bitMaps.addPattern(bitmap, pictureBoxMouseDown);
         }
 
-        public void addPattern(PatternArray pixels, List<Color> distinctColors) {
-            bitMaps.addPattern(pixels, distinctColors, pictureBoxMouseDown);
+        public bool addPattern(PatternArray pixels, List<Color> distinctColors) {
+            return bitMaps.addPattern(pixels, distinctColors, pictureBoxMouseDown);
         }
 
         public bool isOverlappingModel() {
@@ -345,12 +345,16 @@ namespace WFC4All {
 
         private HashSet<ImageR> curBitmaps;
         private Dictionary<int, List<Bitmap>> similarityMap;
+        private List<PictureBox> pictureBoxes;
+        private Dictionary<string, Tuple<List<PictureBox>, int>> cache;
 
         public BitMaps(Form1 form) {
             myForm = form;
             patternCount = 0;
             curBitmaps = new HashSet<ImageR>();
             similarityMap = new Dictionary<int, List<Bitmap>>();
+            cache = new Dictionary<string, Tuple<List<PictureBox>, int>>();
+            pictureBoxes = new List<PictureBox>();
         }
 
         private int patternCount;
@@ -365,13 +369,27 @@ namespace WFC4All {
             curFloorIndex = 0;
             curBitmaps = new HashSet<ImageR>();
             similarityMap = new Dictionary<int, List<Bitmap>>();
+            pictureBoxes = new List<PictureBox>();
+        }
+
+        public void saveCache() {
+            cache[myForm.getSelectedInput()] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex );
         }
 
         public int getFloorIndex(int patternSize) {
             return curFloorIndex == 0 ? 0 : curFloorIndex - patternSize;
         }
 
-        public void addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
+        public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
+            if (cache.ContainsKey(myForm.getSelectedInput())) {
+                foreach (PictureBox pb in cache[myForm.getSelectedInput()].Item1) {
+                    myForm.patternPanel.Controls.Add(pb);
+                }
+                patternCount = cache[myForm.getSelectedInput()].Item1.Count;
+                curFloorIndex = cache[myForm.getSelectedInput()].Item2;
+                return true;
+            }
+
             const int size = 50;
             const int patternsPerRow = 6;
             PictureBox newPB = new();
@@ -412,9 +430,10 @@ namespace WFC4All {
             foreach ((ImageR reference, int i) in curBitmaps.Select((reference, i) => (reference, i))) {
                 if (transforms.Select(transform => cur.Data.All(x =>
                         x.Value == reference.Data[
-                            transform.Invoke(cur.Size.Width - 1, cur.Size.Height - 1, x.Key.X, x.Key.Y)])).Any(match => match)) {
+                            transform.Invoke(cur.Size.Width - 1, cur.Size.Height - 1, x.Key.X, x.Key.Y)]))
+                    .Any(match => match)) {
                     similarityMap[i].Add(pattern);
-                    return;
+                    return false;
                 }
             }
 
@@ -427,16 +446,15 @@ namespace WFC4All {
 
             const int padding = 3;
             newPB.Image = InputManager.resizePixels(newPB, pattern, pattern.Width, pattern.Height, size, size, padding);
-            newPB.BackColor = Color.DimGray;//TODO Re-Enable for CF Color.LawnGreen;
+            newPB.BackColor = Color.DimGray; //TODO Re-Enable for CF Color.LawnGreen;
             newPB.Padding = new Padding(padding);
             //newPB.MouseDown += pictureBoxMouseDown;
 
+            pictureBoxes.Add(newPB);
             myForm.patternPanel.Controls.Add(newPB);
-            if (patternCount % (patternsPerRow * 3) == patternsPerRow - 1) {
-                myForm.patternPanel.Refresh();
-            }
 
             patternCount++;
+            return false;
         }
 
         private readonly List<Func<int, int, int, int, Point>> transforms = new() {
@@ -450,7 +468,16 @@ namespace WFC4All {
             (w, h, x, y) => new Point(w - y, h - x), // rotated 270 and mirrored
         };
 
-        public void addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
+        public bool addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
+            if (cache.ContainsKey(myForm.getSelectedInput())) {
+                foreach (PictureBox pb in cache[myForm.getSelectedInput()].Item1) {
+                    myForm.patternPanel.Controls.Add(pb);
+                }
+                patternCount = cache[myForm.getSelectedInput()].Item1.Count;
+                curFloorIndex = cache[myForm.getSelectedInput()].Item2;
+                return true;
+            }
+            
             const int size = 50;
             const int patternsPerRow = 6;
             PictureBox newPB = new();
@@ -469,8 +496,10 @@ namespace WFC4All {
             newPB.Padding = new Padding(padding);
             newPB.MouseDown += pictureBoxMouseDown;
 
+            pictureBoxes.Add(newPB);
             myForm.patternPanel.Controls.Add(newPB);
             patternCount++;
+            return false;
         }
 
         private record ImageR(Size Size, Dictionary<Point, Color> Data) {
