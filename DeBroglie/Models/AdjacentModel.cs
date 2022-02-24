@@ -58,8 +58,6 @@ namespace WFC4All.DeBroglie.Models
             setDirections(directions);
         }
 
-
-
         /// <summary>
         /// Constructs an AdjacentModel and initializees it with a given sample.
         /// </summary>

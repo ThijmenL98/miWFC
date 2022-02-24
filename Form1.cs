@@ -50,6 +50,7 @@ namespace WFC4All {
             initializeRotations();
 
             advanceButton.Visible = false;
+            backButton.Visible = false;
             animateButton.Visible = false;
             animationSpeedLabel.Visible = false;
             animationSpeedValue.Visible = false;
@@ -103,6 +104,18 @@ namespace WFC4All {
                     return;
                 }
 
+                resultPB.Image = InputManager.resizeBitmap(result,
+                    Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+
+                result.Dispose();
+            } catch (Exception) {
+                resultPB.Image = InputManager.getImage("NoResultFound");
+            }
+        }
+
+        private void backButton_Click(object sender, EventArgs e) {
+            try {
+                Bitmap result = inputManager.stepBackWfc(getStepAmount());
                 resultPB.Image = InputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
 
@@ -331,12 +344,13 @@ namespace WFC4All {
             }
 
             advanceButton.Visible = value is not (0 or -1);
+            backButton.Visible = value is not (0 or -1);
             animateButton.Visible = value is not (0 or -1);
             animationSpeedLabel.Visible = value is not (0 or -1);
             animationSpeedValue.Visible = value is not (0 or -1);
 
-            string prefix = stepValue.Value is 1 or -1 ? "" : "s";
-            advanceButton.Text = $@"Advance {stepValue.Value} step{prefix}";
+            advanceButton.Text = $@"Advance {stepValue.Value}";
+            backButton.Text = $@"Step {stepValue.Value} Back";
         }
     }
 
@@ -373,7 +387,7 @@ namespace WFC4All {
         }
 
         public void saveCache() {
-            cache[myForm.getSelectedInput()] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex );
+            cache[myForm.getSelectedInput()] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
         public int getFloorIndex(int patternSize) {
@@ -385,6 +399,7 @@ namespace WFC4All {
                 foreach (PictureBox pb in cache[myForm.getSelectedInput()].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
                 }
+
                 patternCount = cache[myForm.getSelectedInput()].Item1.Count;
                 curFloorIndex = cache[myForm.getSelectedInput()].Item2;
                 return true;
@@ -473,11 +488,12 @@ namespace WFC4All {
                 foreach (PictureBox pb in cache[myForm.getSelectedInput()].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
                 }
+
                 patternCount = cache[myForm.getSelectedInput()].Item1.Count;
                 curFloorIndex = cache[myForm.getSelectedInput()].Item2;
                 return true;
             }
-            
+
             const int size = 50;
             const int patternsPerRow = 6;
             PictureBox newPB = new();

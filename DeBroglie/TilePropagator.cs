@@ -347,6 +347,10 @@ namespace WFC4All.DeBroglie
             return wavePropagator.run();
         }
 
+        public Resolution doBacktrack() {
+            return wavePropagator.stepBack();
+        }
+
         internal SelectedTracker createSelectedTracker(TilePropagatorTileSet tileSet)
         {
             SelectedTracker tracker = new SelectedTracker(this, wavePropagator, tileModelMapping, tileSet);

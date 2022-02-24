@@ -102,7 +102,8 @@ namespace WFC4All {
                         }
 
                         TileRotationBuilder builder = new(4, true);
-                        List<Tile> tiles = new();
+                        List<Color[]> tiles = new();
+                        List<TileSymmetry> symmetries = new();
 
                         bool isCached = false;
 
@@ -152,10 +153,7 @@ namespace WFC4All {
                                     break;
                             }
 
-                            Tile tile = new(tileName);
-                            tiles.Add(tile);
-                            builder.setTreatment(tile, TileRotationTreatment.GENERATED);
-                            builder.addSymmetry(tile, symmetry);
+                            symmetries.Add(symmetry);
 
                             int actionCount = simpleActions.Count;
 
@@ -182,6 +180,15 @@ namespace WFC4All {
                             Bitmap bitmap = new($"samples/{form.getSelectedInput()}/{tileName}.png");
                             simpleColors.Add(imTile((x, y) => bitmap.GetPixel(x, y), tileSize));
 
+                            tiles.Add(imTile((x, y) => bitmap.GetPixel(x, y), tileSize));
+
+                            for (int t = 1; t < cardinality; t++) {
+                                if (t <= 3)
+                                    tiles.Add(rotate(tiles[actionCount + t - 1], tileSize));
+                                if (t >= 4)
+                                    tiles.Add(reflect(tiles[actionCount + t - 4], tileSize));
+                            }
+
                             for (int t = 1; t < cardinality; t++) {
                                 simpleColors.Add(t <= 3
                                     ? rotate(simpleColors[actionCount + t - 1], tileSize)
@@ -201,12 +208,45 @@ namespace WFC4All {
                             form.bitMaps.saveCache();
                         }
 
-
+                        // for (int i = 0; i < 3; i++) {
+                        //     builder.setTreatment(tiles[i], TileRotationTreatment.GENERATED);
+                        //     builder.addSymmetry(tiles[i], symmetries[i]);
+                        // } 
                         TileRotation rotations = builder.build();
                         dbModel = new AdjacentModel(DirectionSet.cartesian2d);
-                        foreach ((Tile tile, int i) in tiles.Select((value, i) => (value, i))) {
-                            ((AdjacentModel) dbModel).setFrequency(tile, simpleWeights[i], rotations);
+
+                        ITopoArray<Tile> tilesvar = TopoArray.create(new[] {
+                            new[] {26, 24, 26, 24, 20, 3, 16, 27, 0, 27, 13, 19, 26, 20, 3, 14, 27, 15, 27, 13},
+                            new[] {5, 4, 6, 2, 8, 6, 9, 23, 3, 23, 11, 13, 3, 2, 3, 9, 19, 28, 20, 16},
+                            new[] {21, 2, 14, 10, 0, 15, 12, 23, 5, 25, 4, 1, 6, 2, 3, 11, 15, 17, 15, 12},
+                            new[] {27, 10, 18, 8, 6, 9, 2, 19, 24, 20, 2, 11, 10, 13, 3, 22, 28, 21, 9, 2},
+                            new[] {19, 24, 28, 26, 24, 28, 21, 14, 10, 13, 2, 2, 8, 1, 6, 23, 16, 27, 17, 10},
+                            new[] {15, 10, 18, 5, 7, 9, 23, 9, 22, 28, 24, 24, 26, 28, 24, 20, 9, 19, 24, 21},
+                            new[] {9, 2, 11, 13, 3, 16, 27, 12, 23, 9, 2, 8, 6, 16, 10, 15, 12, 8, 4, 25},
+                            new[] {11, 13, 8, 1, 6, 9, 19, 24, 20, 16, 10, 0, 15, 12, 8, 1, 4, 6, 2, 19},
+                            new[] {2, 16, 0, 17, 15, 12, 8, 4, 7, 9, 8, 6, 9, 8, 6, 9, 2, 2, 2, 8},
+                            new[] {4, 1, 6, 22, 28, 21, 3, 2, 5, 1, 6, 22, 28, 26, 24, 28, 21, 2, 22, 26},
+                            new[] {2, 9, 2, 23, 9, 23, 3, 14, 10, 12, 2, 23, 9, 3, 2, 9, 23, 8, 25, 6},
+                            new[] {14, 12, 2, 19, 28, 20, 5, 1, 4, 4, 7, 19, 28, 26, 21, 11, 27, 0, 27, 15},
+                            new[] {9, 2, 8, 4, 1, 7, 22, 28, 21, 14, 0, 15, 12, 3, 23, 8, 25, 6, 19, 28},
+                            new[] {12, 22, 26, 21, 16, 0, 27, 17, 27, 18, 3, 9, 22, 26, 20, 3, 23, 14, 10, 12},
+                            new[] {4, 25, 6, 23, 9, 5, 25, 7, 23, 16, 0, 18, 23, 3, 14, 0, 27, 12, 8, 4},
+                            new[] {10, 27, 15, 27, 17, 15, 27, 0, 27, 18, 3, 16, 27, 0, 12, 5, 25, 4, 6, 22},
+                            new[] {24, 20, 9, 19, 24, 28, 20, 3, 23, 16, 0, 12, 23, 5, 7, 14, 27, 10, 13, 23},
+                            new[] {10, 10, 18, 2, 2, 11, 13, 3, 23, 9, 3, 2, 19, 24, 26, 28, 20, 2, 16, 27},
+                            new[] {8, 4, 1, 4, 4, 4, 1, 6, 19, 28, 26, 21, 2, 8, 6, 11, 15, 10, 12, 23},
+                            new[] {0, 10, 18, 22, 24, 21, 11, 15, 10, 12, 5, 25, 4, 6, 2, 22, 28, 24, 24, 20},
+                        }, true).toTiles();
+
+                        ((AdjacentModel) dbModel).addSample(tilesvar);
+                        
+                        for (int i = 0; i < 3; i++) {
+                            ((AdjacentModel) dbModel).setFrequency(tilesvar.get(i), simpleWeights[i], rotations);
                         }
+                        
+                        // foreach ((Tile tile, int i) in tiles.Select((value, i) => (value, i))) {
+                        //     ((AdjacentModel) dbModel).setFrequency(tile, simpleWeights[i], rotations);
+                        // }
                     }
 
                     Console.WriteLine(@"Init took " + sw.ElapsedMilliseconds + @"ms.");
@@ -246,7 +286,42 @@ namespace WFC4All {
                 }
             }
 
-            Console.WriteLine(@"Stepping took " + sw.ElapsedMilliseconds + @"ms.");
+            Console.WriteLine(@"Stepping forward took " + sw.ElapsedMilliseconds + @"ms.");
+            sw.Restart();
+
+            Bitmap outputBitmap = new(form.getOutputWidth(), form.getOutputHeight());
+            if (form.isOverlappingModel()) {
+                ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
+                for (int y = 0; y < form.getOutputHeight(); y++) {
+                    for (int x = 0; x < form.getOutputWidth(); x++) {
+                        Color cur = dbOutput.get(x, y);
+                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.DarkGray);
+                    }
+                }
+            } else {
+                Console.WriteLine("SIMPLE");
+                ITopoArray<object> dbOutput = dbPropagator.toValueArray<object>();
+                for (int y = 0; y < form.getOutputHeight(); y++) {
+                    for (int x = 0; x < form.getOutputWidth(); x++) {
+                        Console.Write(dbOutput.get(x, y) + " ");
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+
+            Console.WriteLine(@"Bitmap took " + sw.ElapsedMilliseconds + @"ms.");
+            return (outputBitmap, dbStatus == Resolution.DECIDED);
+        }
+
+        public Bitmap stepBackWfc(int steps) {
+            Stopwatch sw = new();
+            sw.Restart();
+            for (int i = 0; i < steps; i++) {
+                dbPropagator.doBacktrack();
+            }
+
+            Console.WriteLine(@"Stepping back took " + sw.ElapsedMilliseconds + @"ms.");
             sw.Restart();
 
             Bitmap outputBitmap = new(form.getOutputWidth(), form.getOutputHeight());
@@ -269,7 +344,8 @@ namespace WFC4All {
             }
 
             Console.WriteLine(@"Bitmap took " + sw.ElapsedMilliseconds + @"ms.");
-            return (outputBitmap, dbStatus == Resolution.DECIDED);
+
+            return outputBitmap;
         }
 
         public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int w1, int h1, int w2, int h2,

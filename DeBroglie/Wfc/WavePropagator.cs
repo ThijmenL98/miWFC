@@ -391,6 +391,16 @@ namespace WFC4All.DeBroglie.Wfc
             return status;
         }
 
+        public Resolution stepBack() {
+            if(backtrackItemsLengths.Count == 1) {
+                return Resolution.CONTRADICTION;
+            }
+            doBacktrack();
+            prevChoices.pop();
+            backtrackCount++;
+            return Resolution.DECIDED;
+        }
+
         private void doBacktrack()
         {
             int targetLength = backtrackItemsLengths.pop() - droppedBacktrackItemsCount;
@@ -411,7 +421,6 @@ namespace WFC4All.DeBroglie.Wfc
                 }
                 // Next, undo the decremenents done in Propagate
                 patternModelConstraint.undoBan(item);
-
             }
         }
 
