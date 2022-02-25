@@ -12,19 +12,20 @@ namespace WFC4All {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
         public readonly PictureBox[] pbs;
-        private int defaultSymmetry;
-        private readonly int initOutWidth;
-        private readonly int initInWidth;
-        private readonly int initOutHeight;
-        private readonly int initInHeight;
+        private int defaultSymmetry, savePoint;
+        private readonly int initOutWidth, initInWidth, initOutHeight, initInHeight;
         private bool defaultPeriodicity;
         public bool isChangingModels;
 
         private readonly XDocument xDoc;
 
+        private Size oldSize;
+
         public Form1() {
             xDoc = XDocument.Load("samples.xml");
             defaultSymmetry = 8;
+            oldSize = new Size(1616, 939);
+            savePoint = 0;
             isChangingModels = false;
             defaultPeriodicity = true;
             inputManager = new InputManager(this);
@@ -48,12 +49,30 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
             initializeRotations();
+        }
 
-            advanceButton.Visible = false;
-            backButton.Visible = false;
-            animateButton.Visible = false;
-            animationSpeedLabel.Visible = false;
-            animationSpeedValue.Visible = false;
+        protected override void OnResize(EventArgs e) {
+            base.OnResize(e);
+
+            foreach (Control cnt in Controls) {
+                resizeAll(cnt, Size);
+            }
+
+            foreach (Control cnt in inputTab.Controls) {
+                resizeAll(cnt, Size);
+            }
+
+            oldSize = Size;
+        }
+        
+        private void resizeAll(Control control, Size newSize) {
+            int width      = newSize.Width - oldSize.Width;
+            control.Left  += (control.Left  * width) / oldSize.Width;
+            control.Width += (control.Width * width) / oldSize.Width;
+
+            int height = newSize.Height - oldSize.Height;
+            control.Top    += (control.Top    * height) / oldSize.Height;
+            control.Height += (control.Height * height) / oldSize.Height;
         }
 
         private int lastRanForced;
@@ -118,6 +137,11 @@ namespace WFC4All {
                 Bitmap result = inputManager.stepBackWfc(getStepAmount());
                 resultPB.Image = InputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+
+                int curStep = inputManager.getCurrentStep();
+                if (curStep < savePoint) {
+                    savePoint = curStep;
+                }
 
                 result.Dispose();
             } catch (Exception) {
@@ -348,9 +372,30 @@ namespace WFC4All {
             animateButton.Visible = value is not (0 or -1);
             animationSpeedLabel.Visible = value is not (0 or -1);
             animationSpeedValue.Visible = value is not (0 or -1);
+            markerButton.Visible = value is not (0 or -1);
+            revertMarkerButton.Visible = value is not (0 or -1);
 
             advanceButton.Text = $@"Advance {stepValue.Value}";
             backButton.Text = $@"Step {stepValue.Value} Back";
+        }
+
+        private void markerButton_Click(object sender, EventArgs e) {
+            savePoint = inputManager.getCurrentStep();
+        }
+
+        private void revertMarkerButton_Click(object sender, EventArgs e) {
+            int stepsToRevert = inputManager.getCurrentStep() - savePoint;
+            try {
+                Bitmap result = inputManager.stepBackWfc(stepsToRevert);
+                resultPB.Image = InputManager.resizeBitmap(result,
+                    Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+                
+                markerButton_Click(null, null);
+
+                result.Dispose();
+            } catch (Exception) {
+                resultPB.Image = InputManager.getImage("NoResultFound");
+            }
         }
     }
 
@@ -360,14 +405,14 @@ namespace WFC4All {
         private HashSet<ImageR> curBitmaps;
         private Dictionary<int, List<Bitmap>> similarityMap;
         private List<PictureBox> pictureBoxes;
-        private Dictionary<string, Tuple<List<PictureBox>, int>> cache;
+        private Dictionary<Tuple<string, int>, Tuple<List<PictureBox>, int>> cache;
 
         public BitMaps(Form1 form) {
             myForm = form;
             patternCount = 0;
             curBitmaps = new HashSet<ImageR>();
             similarityMap = new Dictionary<int, List<Bitmap>>();
-            cache = new Dictionary<string, Tuple<List<PictureBox>, int>>();
+            cache = new Dictionary<Tuple<string, int>, Tuple<List<PictureBox>, int>>();
             pictureBoxes = new List<PictureBox>();
         }
 
@@ -387,7 +432,9 @@ namespace WFC4All {
         }
 
         public void saveCache() {
-            cache[myForm.getSelectedInput()] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
+            Tuple<string, int> key
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
         public int getFloorIndex(int patternSize) {
@@ -395,13 +442,15 @@ namespace WFC4All {
         }
 
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
-            if (cache.ContainsKey(myForm.getSelectedInput())) {
-                foreach (PictureBox pb in cache[myForm.getSelectedInput()].Item1) {
+            Tuple<string, int> key
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            if (cache.ContainsKey(key)) {
+                foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
                 }
 
-                patternCount = cache[myForm.getSelectedInput()].Item1.Count;
-                curFloorIndex = cache[myForm.getSelectedInput()].Item2;
+                patternCount = cache[key].Item1.Count;
+                curFloorIndex = cache[key].Item2;
                 return true;
             }
 
@@ -461,6 +510,7 @@ namespace WFC4All {
 
             const int padding = 3;
             newPB.Image = InputManager.resizePixels(newPB, pattern, pattern.Width, pattern.Height, size, size, padding);
+            pattern.Dispose();
             newPB.BackColor = Color.DimGray; //TODO Re-Enable for CF Color.LawnGreen;
             newPB.Padding = new Padding(padding);
             //newPB.MouseDown += pictureBoxMouseDown;
@@ -484,13 +534,15 @@ namespace WFC4All {
         };
 
         public bool addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
-            if (cache.ContainsKey(myForm.getSelectedInput())) {
-                foreach (PictureBox pb in cache[myForm.getSelectedInput()].Item1) {
+            Tuple<string, int> key
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            if (cache.ContainsKey(key)) {
+                foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
                 }
 
-                patternCount = cache[myForm.getSelectedInput()].Item1.Count;
-                curFloorIndex = cache[myForm.getSelectedInput()].Item2;
+                patternCount = cache[key].Item1.Count;
+                curFloorIndex = cache[key].Item2;
                 return true;
             }
 
@@ -508,6 +560,7 @@ namespace WFC4All {
 
             const int padding = 3;
             newPB.Image = InputManager.resizePixels(newPB, pattern, pattern.Width, pattern.Height, size, size, padding);
+            pattern.Dispose();
             newPB.BackColor = Color.LawnGreen;
             newPB.Padding = new Padding(padding);
             newPB.MouseDown += pictureBoxMouseDown;

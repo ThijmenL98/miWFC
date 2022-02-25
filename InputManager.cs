@@ -20,8 +20,10 @@ namespace WFC4All {
         private readonly XDocument xDoc;
         private Bitmap currentBitmap;
         private readonly int groundPatternIdx;
+        private int currentStep, tileSize;
         private readonly Form1 form;
         private bool inputHasChanged, sizeHasChanged;
+        private Dictionary<string, Tuple<Color[], Tile, int>> tileCache;
 
         private XElement xRoot;
 
@@ -29,7 +31,10 @@ namespace WFC4All {
         private TileModel dbModel;
 
         public InputManager(Form1 formIn) {
+            tileSize = 0;
+            tileCache = new Dictionary<string, Tuple<Color[], Tile, int>>();
             form = formIn;
+            currentStep = 0;
             xDoc = XDocument.Load("./samples.xml");
             currentBitmap = null;
             inputHasChanged = true;
@@ -91,10 +96,8 @@ namespace WFC4All {
                         dbModel = new AdjacentModel();
                         xRoot = XDocument.Load($"samples/{form.getSelectedInput()}/data.xml").Root;
 
-                        int tileSize = xRoot.get("size", 16);
+                        tileSize = xRoot.get("size", 16);
 
-                        List<Color[]> simpleColors = new();
-                        List<int[]> simpleActions = new();
                         List<double> simpleWeights = new();
 
                         if (xRoot == null) {
@@ -102,97 +105,59 @@ namespace WFC4All {
                         }
 
                         TileRotationBuilder builder = new(4, true);
-                        List<Color[]> tiles = new();
-                        List<TileSymmetry> symmetries = new();
+                        tileCache = new Dictionary<string, Tuple<Color[], Tile, int>>();
+                        Dictionary<int, TileSymmetry> symmetries = new();
 
                         bool isCached = false;
 
                         foreach (XElement xTile in xRoot.Element("tiles")?.elements("tile")!) {
                             string tileName = xTile.get<string>("name");
 
-                            Func<int, int> a, b;
-                            int cardinality;
-
                             char sym = xTile.get("symmetry", 'X');
+
                             TileSymmetry symmetry = TileSymmetry.X;
+                            int cardinality;
                             switch (sym) {
                                 case 'L':
                                     symmetry = TileSymmetry.L;
                                     cardinality = 4;
-                                    a = i => (i + 1) % 4;
-                                    b = i => i % 2 == 0 ? i + 1 : i - 1;
                                     break;
                                 case 'T':
                                     symmetry = TileSymmetry.T;
                                     cardinality = 4;
-                                    a = i => (i + 1) % 4;
-                                    b = i => i % 2 == 0 ? i : 4 - i;
                                     break;
                                 case 'I':
                                     symmetry = TileSymmetry.I;
                                     cardinality = 2;
-                                    a = i => 1 - i;
-                                    b = i => i;
                                     break;
                                 case '\\':
                                     symmetry = TileSymmetry.SLASH;
                                     cardinality = 2;
-                                    a = i => 1 - i;
-                                    b = i => 1 - i;
                                     break;
                                 case 'F':
                                     symmetry = TileSymmetry.F;
                                     cardinality = 8;
-                                    a = i => i < 4 ? (i + 1) % 4 : 4 + (i - 1) % 4;
-                                    b = i => i < 4 ? i + 4 : i - 4;
                                     break;
                                 default:
                                     cardinality = 1;
-                                    a = i => i;
-                                    b = i => i;
                                     break;
                             }
 
-                            symmetries.Add(symmetry);
-
-                            int actionCount = simpleActions.Count;
-
-                            int[][] map = new int[cardinality][];
-                            for (int t = 0; t < cardinality; t++) {
-                                map[t] = new int[8];
-
-                                map[t][0] = t;
-                                map[t][1] = a(t);
-                                map[t][2] = a(a(t));
-                                map[t][3] = a(a(a(t)));
-                                map[t][4] = b(t);
-                                map[t][5] = b(a(t));
-                                map[t][6] = b(a(a(t)));
-                                map[t][7] = b(a(a(a(t))));
-
-                                for (int s = 0; s < 8; s++) {
-                                    map[t][s] += actionCount;
-                                }
-
-                                simpleActions.Add(map[t]);
-                            }
-
                             Bitmap bitmap = new($"samples/{form.getSelectedInput()}/{tileName}.png");
-                            simpleColors.Add(imTile((x, y) => bitmap.GetPixel(x, y), tileSize));
+                            Color[] cur = imTile((x, y) => bitmap.GetPixel(x, y), tileSize);
+                            int val = tileCache.Count;
+                            tileCache.Add(tileName, new Tuple<Color[], Tile, int>(cur, new Tile(val), val));
 
-                            tiles.Add(imTile((x, y) => bitmap.GetPixel(x, y), tileSize));
-
-                            for (int t = 1; t < cardinality; t++) {
-                                if (t <= 3)
-                                    tiles.Add(rotate(tiles[actionCount + t - 1], tileSize));
-                                if (t >= 4)
-                                    tiles.Add(reflect(tiles[actionCount + t - 4], tileSize));
-                            }
+                            symmetries[val] = symmetry;
 
                             for (int t = 1; t < cardinality; t++) {
-                                simpleColors.Add(t <= 3
-                                    ? rotate(simpleColors[actionCount + t - 1], tileSize)
-                                    : reflect(simpleColors[actionCount + t - 4], tileSize));
+                                string name = $"{tileName} {t}";
+                                int myIdx = tileCache.Count;
+                                tileCache.Add(name, t <= 3
+                                    ? new Tuple<Color[], Tile, int>(rotate(cur.ToArray(), tileSize),
+                                        new Tile(myIdx), val)
+                                    : new Tuple<Color[], Tile, int>(reflect(cur.ToArray(), tileSize),
+                                        new Tile(myIdx), val));
                             }
 
                             if (!isCached) {
@@ -208,45 +173,32 @@ namespace WFC4All {
                             form.bitMaps.saveCache();
                         }
 
-                        // for (int i = 0; i < 3; i++) {
-                        //     builder.setTreatment(tiles[i], TileRotationTreatment.GENERATED);
-                        //     builder.addSymmetry(tiles[i], symmetries[i]);
-                        // } 
+                        for (int i = 0; i < tileCache.Count; i++) {
+                            builder.setTreatment(tileCache.ElementAt(i).Value.Item2, TileRotationTreatment.GENERATED);
+                            int refIdx = tileCache.ElementAt(i).Value.Item3;
+                            builder.addSymmetry(tileCache.ElementAt(i).Value.Item2, symmetries[refIdx]);
+                        }
+
                         TileRotation rotations = builder.build();
+
                         dbModel = new AdjacentModel(DirectionSet.cartesian2d);
 
-                        ITopoArray<Tile> tilesvar = TopoArray.create(new[] {
-                            new[] {26, 24, 26, 24, 20, 3, 16, 27, 0, 27, 13, 19, 26, 20, 3, 14, 27, 15, 27, 13},
-                            new[] {5, 4, 6, 2, 8, 6, 9, 23, 3, 23, 11, 13, 3, 2, 3, 9, 19, 28, 20, 16},
-                            new[] {21, 2, 14, 10, 0, 15, 12, 23, 5, 25, 4, 1, 6, 2, 3, 11, 15, 17, 15, 12},
-                            new[] {27, 10, 18, 8, 6, 9, 2, 19, 24, 20, 2, 11, 10, 13, 3, 22, 28, 21, 9, 2},
-                            new[] {19, 24, 28, 26, 24, 28, 21, 14, 10, 13, 2, 2, 8, 1, 6, 23, 16, 27, 17, 10},
-                            new[] {15, 10, 18, 5, 7, 9, 23, 9, 22, 28, 24, 24, 26, 28, 24, 20, 9, 19, 24, 21},
-                            new[] {9, 2, 11, 13, 3, 16, 27, 12, 23, 9, 2, 8, 6, 16, 10, 15, 12, 8, 4, 25},
-                            new[] {11, 13, 8, 1, 6, 9, 19, 24, 20, 16, 10, 0, 15, 12, 8, 1, 4, 6, 2, 19},
-                            new[] {2, 16, 0, 17, 15, 12, 8, 4, 7, 9, 8, 6, 9, 8, 6, 9, 2, 2, 2, 8},
-                            new[] {4, 1, 6, 22, 28, 21, 3, 2, 5, 1, 6, 22, 28, 26, 24, 28, 21, 2, 22, 26},
-                            new[] {2, 9, 2, 23, 9, 23, 3, 14, 10, 12, 2, 23, 9, 3, 2, 9, 23, 8, 25, 6},
-                            new[] {14, 12, 2, 19, 28, 20, 5, 1, 4, 4, 7, 19, 28, 26, 21, 11, 27, 0, 27, 15},
-                            new[] {9, 2, 8, 4, 1, 7, 22, 28, 21, 14, 0, 15, 12, 3, 23, 8, 25, 6, 19, 28},
-                            new[] {12, 22, 26, 21, 16, 0, 27, 17, 27, 18, 3, 9, 22, 26, 20, 3, 23, 14, 10, 12},
-                            new[] {4, 25, 6, 23, 9, 5, 25, 7, 23, 16, 0, 18, 23, 3, 14, 0, 27, 12, 8, 4},
-                            new[] {10, 27, 15, 27, 17, 15, 27, 0, 27, 18, 3, 16, 27, 0, 12, 5, 25, 4, 6, 22},
-                            new[] {24, 20, 9, 19, 24, 28, 20, 3, 23, 16, 0, 12, 23, 5, 7, 14, 27, 10, 13, 23},
-                            new[] {10, 10, 18, 2, 2, 11, 13, 3, 23, 9, 3, 2, 19, 24, 26, 28, 20, 2, 16, 27},
-                            new[] {8, 4, 1, 4, 4, 4, 1, 6, 19, 28, 26, 21, 2, 8, 6, 11, 15, 10, 12, 23},
-                            new[] {0, 10, 18, 22, 24, 21, 11, 15, 10, 12, 5, 25, 4, 6, 2, 22, 28, 24, 24, 20},
-                        }, true).toTiles();
-
-                        ((AdjacentModel) dbModel).addSample(tilesvar);
-                        
-                        for (int i = 0; i < 3; i++) {
-                            ((AdjacentModel) dbModel).setFrequency(tilesvar.get(i), simpleWeights[i], rotations);
+                        for (int i = 0; i < tileCache.Count; i++) {
+                            double refWeight = simpleWeights[tileCache.ElementAt(i).Value.Item3];
+                            Tile refTile = tileCache.ElementAt(i).Value.Item2;
+                            ((AdjacentModel) dbModel).setFrequency(refTile, refWeight, rotations);
                         }
-                        
-                        // foreach ((Tile tile, int i) in tiles.Select((value, i) => (value, i))) {
-                        //     ((AdjacentModel) dbModel).setFrequency(tile, simpleWeights[i], rotations);
-                        // }
+
+                        foreach (XElement xNeighbor in xRoot.Element("neighbors").Elements("neighbor")) {
+                            string left = xNeighbor.get<string>("left");
+                            string right = xNeighbor.get<string>("right");
+
+                            Tile leftTile = tileCache[left].Item2;
+                            Tile rightTile = tileCache[right].Item2;
+
+                            ((AdjacentModel) dbModel).addAdjacency(new[] {leftTile}, new[] {rightTile},
+                                Direction.X_PLUS, new TileRotation(4, true));
+                        }
                     }
 
                     Console.WriteLine(@"Init took " + sw.ElapsedMilliseconds + @"ms.");
@@ -274,6 +226,10 @@ namespace WFC4All {
             return runWfcDB(steps);
         }
 
+        public int getCurrentStep() {
+            return currentStep;
+        }
+
         private (Bitmap, bool) runWfcDB(int steps) {
             Stopwatch sw = new();
             sw.Restart();
@@ -283,14 +239,16 @@ namespace WFC4All {
             } else {
                 for (int i = 0; i < steps; i++) {
                     dbStatus = dbPropagator.step();
+                    currentStep++;
                 }
             }
 
             Console.WriteLine(@"Stepping forward took " + sw.ElapsedMilliseconds + @"ms.");
             sw.Restart();
 
-            Bitmap outputBitmap = new(form.getOutputWidth(), form.getOutputHeight());
+            Bitmap outputBitmap;
             if (form.isOverlappingModel()) {
+                outputBitmap = new Bitmap(form.getOutputWidth(), form.getOutputHeight());
                 ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
@@ -299,14 +257,23 @@ namespace WFC4All {
                     }
                 }
             } else {
+                outputBitmap = new Bitmap(form.getOutputWidth() * tileSize, form.getOutputHeight() * tileSize);
                 Console.WriteLine("SIMPLE");
-                ITopoArray<object> dbOutput = dbPropagator.toValueArray<object>();
+                ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
-                        Console.Write(dbOutput.get(x, y) + " ");
-                    }
+                        int value = dbOutput.get(x, y);
+                        Color[] outputPattern = value >= 0
+                            ? tileCache.ElementAt(value).Value.Item1
+                            : Enumerable.Repeat(Color.DarkGray, tileSize * tileSize).ToArray();
 
-                    Console.WriteLine();
+                        for (int yy = 0; yy < tileSize; yy++) {
+                            for (int xx = 0; xx < tileSize; xx++) {
+                                Color cur = outputPattern[xx * tileSize + yy];
+                                outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy, cur);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -324,8 +291,9 @@ namespace WFC4All {
             Console.WriteLine(@"Stepping back took " + sw.ElapsedMilliseconds + @"ms.");
             sw.Restart();
 
-            Bitmap outputBitmap = new(form.getOutputWidth(), form.getOutputHeight());
+            Bitmap outputBitmap;
             if (form.isOverlappingModel()) {
+                outputBitmap = new Bitmap(form.getOutputWidth(), form.getOutputHeight());
                 ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
@@ -334,11 +302,21 @@ namespace WFC4All {
                     }
                 }
             } else {
+                outputBitmap = new Bitmap(form.getOutputWidth() * tileSize, form.getOutputHeight() * tileSize);
                 Console.WriteLine("SIMPLE");
-                ITopoArray<object> dbOutput = dbPropagator.toValueArray<object>();
+                ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
-                        //Console.WriteLine(dbOutput.get(x,y) == null);
+                        int value = dbOutput.get(x, y);
+                        Color[] outputPattern = value >= 0
+                            ? tileCache.ElementAt(value).Value.Item1
+                            : Enumerable.Repeat(Color.DarkGray, tileSize * tileSize).ToArray();
+                        for (int yy = 0; yy < tileSize; yy++) {
+                            for (int xx = 0; xx < tileSize; xx++) {
+                                Color cur = outputPattern[xx * tileSize + yy];
+                                outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy, cur);
+                            }
+                        }
                     }
                 }
             }

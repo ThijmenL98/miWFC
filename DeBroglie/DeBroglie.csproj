@@ -14,6 +14,7 @@
     <FileVersion>1.0.0.0</FileVersion>
     <AssemblyName>WFC4All.DeBroglie</AssemblyName>
     <RootNamespace>WFC4All.DeBroglie</RootNamespace>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

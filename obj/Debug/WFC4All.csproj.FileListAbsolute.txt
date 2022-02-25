@@ -19,7 +19,6 @@ C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.CoreCo
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.exe
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.pdb
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.Form1.resources
-C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.csprojResolveAssemblyReference.cache
 C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.Form1.resources
 C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.Properties.Resources.resources
 C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.csproj.GenerateResource.Cache
@@ -32,3 +31,7 @@ C:\Users\Thijmen\Documents\Git\thesis\bin\Debug\WFC4All.pdb
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.DeBroglie.dll
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.DeBroglie.pdb
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.CopyComplete
+C:\Users\Thijmen\Documents\Git\thesis\bin\Debug\WFC4All.DeBroglie.dll
+C:\Users\Thijmen\Documents\Git\thesis\bin\Debug\WFC4All.DeBroglie.pdb
+C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.csprojAssemblyReference.cache
+C:\Users\Thijmen\Documents\Git\thesis\obj\Debug\WFC4All.csproj.CopyComplete
