@@ -347,6 +347,10 @@ namespace WFC4All.DeBroglie
             return wavePropagator.run();
         }
 
+        public Resolution propSingle() {
+            return wavePropagator.propagateSingle();
+        }
+        
         public Resolution doBacktrack() {
             return wavePropagator.stepBack();
         }

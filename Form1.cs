@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using WFC4All.DeBroglie.Models;
@@ -98,8 +97,8 @@ namespace WFC4All {
                 try {
                     resultPB.Image = InputManager.resizeBitmap(result,
                         Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
-                } catch (Exception e1) {
-                    Console.WriteLine(e1);
+                } catch (Exception exception) {
+                    Console.WriteLine(exception);
                 }
 
                 result.Dispose();
@@ -148,6 +147,39 @@ namespace WFC4All {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
         }
+        
+        private Timer myTimer = new(); 
+
+        private void myTimer_Tick(object sender, EventArgs e)
+        {
+            if (InvokeRequired) {
+                /* Not on UI thread, reenter there... */
+                BeginInvoke(new EventHandler(myTimer_Tick), sender, e);
+            } else {
+                lock (myTimer) {
+                    /* only work when this is no reentry while we are already working */
+                    if (myTimer.Enabled) {
+                        myTimer.Stop();
+                        myTimer.Interval = getAnimationSpeed();
+                        try {
+                            (Bitmap result, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
+                            resultPB.Image = InputManager.resizeBitmap(result,
+                                Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+            
+                            result.Dispose();
+                            resultPB.Refresh();
+                            if (finished) {
+                                return;
+                            }
+                        } catch (Exception exception) {
+                            Console.WriteLine(exception);
+                            resultPB.Image = InputManager.getImage("NoResultFound");
+                        }
+                        myTimer.Start(); /* optionally restart for periodic work */
+                    }
+                }
+            }
+        }
 
         private void animateButton_Click(object sender, EventArgs e) {
             int now = DateTime.Now.Millisecond;
@@ -157,27 +189,20 @@ namespace WFC4All {
                 return;
             }
 
-            try {
-                bool finished = false;
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                while (!finished) {
-                    Bitmap result;
-                    (result, finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
-
-                    resultPB.Image = InputManager.resizeBitmap(result,
-                        Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
-
-                    result.Dispose();
-                    resultPB.Refresh();
-                    Thread.Sleep(getAnimationSpeed());
-                    if (finished) {
-                        return;
-                    }
+            if (animateButton.Text.Equals("Animate")) {
+                lock (myTimer) {
+                    myTimer.Interval = getAnimationSpeed();
+                    myTimer.Tick += (myTimer_Tick);
+                    myTimer.Start();
                 }
-            } catch (Exception exception) {
-                Console.WriteLine(exception);
-                resultPB.Image = InputManager.getImage("NoResultFound");
+            } else {
+                lock (myTimer) {
+                    myTimer.Stop();
+                    myTimer = new();
+                }
             }
+
+            animateButton.Text = animateButton.Text.Equals("Animate") ? "Pause" : "Animate";
         }
 
         public int getSelectedOverlapTileDimension() {
@@ -326,13 +351,14 @@ namespace WFC4All {
         }
 
         private void showRotationalOptions(bool hide) {
-            for (int i = 0; i < 3; i++) {
-                pbs[i].Visible = hide;
-            }
-
-            originalRotPB.Visible = hide;
-            patternRotationLabel.Visible = hide;
-            periodicInput.Visible = hide;
+            // TODO: Redo RF1
+            // for (int i = 0; i < 3; i++) {
+            //     pbs[i].Visible = hide;
+            // }
+            //
+            // originalRotPB.Visible = hide;
+            // patternRotationLabel.Visible = hide;
+            // periodicInput.Visible = hide;
             patternSize.Visible = hide;
             patternSizeLabel.Visible = hide;
         }
@@ -374,9 +400,6 @@ namespace WFC4All {
             animationSpeedValue.Visible = value is not (0 or -1);
             markerButton.Visible = value is not (0 or -1);
             revertMarkerButton.Visible = value is not (0 or -1);
-
-            advanceButton.Text = $@"Advance {stepValue.Value}";
-            backButton.Text = $@"Step {stepValue.Value} Back";
         }
 
         private void markerButton_Click(object sender, EventArgs e) {
@@ -417,14 +440,16 @@ namespace WFC4All {
         }
 
         private int patternCount;
+        private int totalPatternCount;
         private int curFloorIndex;
 
         public int getPatternCount() {
-            return patternCount;
+            return totalPatternCount;
         }
 
         public void reset() {
             patternCount = 0;
+            totalPatternCount = 0;
             curFloorIndex = 0;
             curBitmaps = new HashSet<ImageR>();
             similarityMap = new Dictionary<int, List<Bitmap>>();
@@ -437,13 +462,14 @@ namespace WFC4All {
             cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
-        public int getFloorIndex(int patternSize) {
-            return curFloorIndex == 0 ? 0 : curFloorIndex - patternSize;
+        public int getFloorIndex() {
+            return curFloorIndex == 0 ? 0 : curFloorIndex;
         }
 
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int> key
                 = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            totalPatternCount++;
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
@@ -471,7 +497,7 @@ namespace WFC4All {
 
             bool isGroundPattern = true;
             Dictionary<Point, Color> data = new();
-
+            
             for (int x = 0; x < n; x++) {
                 for (int y = 0; y < n; y++) {
                     Color tileColor = (Color) colors.getTileAt(x, y).Value;
@@ -479,11 +505,11 @@ namespace WFC4All {
                     int colorIdx = distinctColors.IndexOf(tileColor);
                     data[new Point(x, y)] = tileColor;
 
-                    if (y == 0 && colorIdx != distinctColors.Count - 1) {
+                    if (y == 2 && colorIdx != distinctColors.Count - 1) {
                         isGroundPattern = false;
                     }
 
-                    if (y != 0 && colorIdx != 0) {
+                    if (y != 2 && colorIdx != 0) {
                         isGroundPattern = false;
                     }
                 }
@@ -505,7 +531,8 @@ namespace WFC4All {
             similarityMap[patternCount] = new List<Bitmap> {pattern};
 
             if (isGroundPattern) {
-                curFloorIndex = patternCount;
+                curFloorIndex = totalPatternCount;
+                Console.WriteLine("Found ground pattern: " + totalPatternCount);
             }
 
             const int padding = 3;

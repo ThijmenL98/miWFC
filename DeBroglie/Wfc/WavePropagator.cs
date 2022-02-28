@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using WFC4All.DeBroglie.Topo;
 using WFC4All.DeBroglie.Trackers;
 
-namespace WFC4All.DeBroglie.Wfc
-{
+namespace WFC4All.DeBroglie.Wfc {
     /// <summary>
     /// WavePropagator holds a wave, and supports updating it's possibilities 
     /// according to the model constraints.
     /// </summary>
-    internal class WavePropagator
-    {
+    internal class WavePropagator {
         // Main data tracking what we've decided so far
         private Wave wave;
 
@@ -56,8 +54,7 @@ namespace WFC4All.DeBroglie.Wfc
             IWaveConstraint[] constraints = null,
             Func<double> randomDouble = null,
             FrequencySet[] frequencySets = null,
-            bool clear = true)
-        {
+            bool clear = true) {
             patternCount = model.PatternCount;
             frequencies = model.Frequencies;
 
@@ -80,6 +77,7 @@ namespace WFC4All.DeBroglie.Wfc
         // This is only exposed publically
         // in case users write their own constraints, it's not 
         // otherwise useful.
+
         #region Internal API
 
         public Wave Wave => wave;
@@ -93,93 +91,78 @@ namespace WFC4All.DeBroglie.Wfc
         /**
          * Requires that index, pattern is possible
          */
-        public bool internalBan(int index, int pattern)
-        {
+        public bool internalBan(int index, int pattern) {
             // Record information for backtracking
-            if (backtrack)
-            {
-                backtrackItems.push(new IndexPatternItem
-                {
+            if (backtrack) {
+                backtrackItems.push(new IndexPatternItem {
                     Index = index,
                     Pattern = pattern,
                 });
             }
 
             patternModelConstraint.doBan(index, pattern);
-            
+
             // Update the wave
             bool isContradiction = wave.removePossibility(index, pattern);
 
             // Update trackers
-            foreach (ITracker tracker in trackers)
-            {
+            foreach (ITracker tracker in trackers) {
                 tracker.doBan(index, pattern);
             }
 
             return isContradiction;
         }
 
-        public bool internalSelect(int index, int chosenPattern)
-        {
-            for (int pattern = 0; pattern < patternCount; pattern++)
-            {
-                if (pattern == chosenPattern)
-                {
+        public bool internalSelect(int index, int chosenPattern) {
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (pattern == chosenPattern) {
                     continue;
                 }
-                if (wave.get(index, pattern))
-                {
+
+                if (wave.get(index, pattern)) {
                     if (internalBan(index, pattern)) {
                         return true;
                     }
                 }
             }
+
             return false;
         }
+
         #endregion
 
 
-        private void observe(out int index, out int pattern)
-        {
+        private void observe(out int index, out int pattern) {
             pickHeuristic.pickObservation(out index, out pattern);
-            if (index == -1)
-            {
+            if (index == -1) {
                 return;
             }
 
             // Decide on the given cell
-            if (internalSelect(index, pattern))
-            {
+            if (internalSelect(index, pattern)) {
                 status = Resolution.CONTRADICTION;
             }
         }
 
         // Returns the only possible value of a cell if there is only one,
         // otherwise returns -1 (multiple possible) or -2 (none possible)
-        private int getDecidedCell(int index)
-        {
-            int decidedPattern = (int)Resolution.CONTRADICTION;
-            for (int pattern = 0; pattern < patternCount; pattern++)
-            {
-                if (wave.get(index, pattern))
-                {
-                    if (decidedPattern == (int)Resolution.CONTRADICTION)
-                    {
+        private int getDecidedCell(int index) {
+            int decidedPattern = (int) Resolution.CONTRADICTION;
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (wave.get(index, pattern)) {
+                    if (decidedPattern == (int) Resolution.CONTRADICTION) {
                         decidedPattern = pattern;
-                    }
-                    else
-                    {
-                        return (int)Resolution.UNDECIDED;
+                    } else {
+                        return (int) Resolution.UNDECIDED;
                     }
                 }
             }
+
             return decidedPattern;
         }
 
-        private void initConstraints()
-        {
-            foreach (IWaveConstraint constraint in constraints)
-            {
+        private void initConstraints() {
+            foreach (IWaveConstraint constraint in constraints) {
                 constraint.init(this);
                 if (status != Resolution.UNDECIDED) {
                     return;
@@ -190,14 +173,13 @@ namespace WFC4All.DeBroglie.Wfc
                     return;
                 }
             }
+
             return;
         }
 
-        private void stepConstraints()
-        {
+        private void stepConstraints() {
             // TODO: Do we need to worry about evaluating constraints multiple times?
-            foreach (IWaveConstraint constraint in constraints)
-            {
+            foreach (IWaveConstraint constraint in constraints) {
                 constraint.check(this);
                 if (status != Resolution.UNDECIDED) {
                     return;
@@ -208,6 +190,7 @@ namespace WFC4All.DeBroglie.Wfc
                     return;
                 }
             }
+
             deferredConstraintsStep = false;
         }
 
@@ -217,12 +200,10 @@ namespace WFC4All.DeBroglie.Wfc
         /**
          * Resets the wave to it's original state
          */
-        public Resolution clear()
-        {
+        public Resolution clear() {
             wave = new Wave(frequencies.Length, indexCount);
 
-            if (backtrack)
-            {
+            if (backtrack) {
                 backtrackItems = new Deque<IndexPatternItem>();
                 backtrackItemsLengths = new Deque<int>();
                 backtrackItemsLengths.push(0);
@@ -231,15 +212,13 @@ namespace WFC4All.DeBroglie.Wfc
 
             status = Resolution.UNDECIDED;
             trackers = new List<ITracker>();
-            if (frequencySets != null)
-            {
-                ArrayPriorityEntropyTracker entropyTracker = new ArrayPriorityEntropyTracker(wave, frequencySets, topology.Mask);
+            if (frequencySets != null) {
+                ArrayPriorityEntropyTracker entropyTracker
+                    = new ArrayPriorityEntropyTracker(wave, frequencySets, topology.Mask);
                 entropyTracker.reset();
                 addTracker(entropyTracker);
                 pickHeuristic = new ArrayPriorityEntropyHeuristic(entropyTracker, randomDouble);
-            }
-            else
-            {
+            } else {
                 EntropyTracker entropyTracker = new EntropyTracker(wave, frequencies, topology.Mask);
                 entropyTracker.reset();
                 addTracker(entropyTracker);
@@ -260,25 +239,22 @@ namespace WFC4All.DeBroglie.Wfc
         /**
          * Indicates that the generation cannot proceed, forcing the algorithm to backtrack or exit.
          */
-        public void setContradiction()
-        {
+        public void setContradiction() {
             status = Resolution.CONTRADICTION;
         }
 
         /**
          * Removes pattern as a possibility from index
          */
-        public Resolution ban(int x, int y, int z, int pattern)
-        {
+        public Resolution ban(int x, int y, int z, int pattern) {
             int index = topology.getIndex(x, y, z);
-            if (wave.get(index, pattern))
-            {
+            if (wave.get(index, pattern)) {
                 deferredConstraintsStep = true;
-                if (internalBan(index, pattern))
-                {
+                if (internalBan(index, pattern)) {
                     return status = Resolution.CONTRADICTION;
                 }
             }
+
             patternModelConstraint.propagate();
             return status;
         }
@@ -286,31 +262,26 @@ namespace WFC4All.DeBroglie.Wfc
         /**
          * Make some progress in the WaveFunctionCollapseAlgorithm
          */
-        public Resolution step()
-        {
+        public Resolution step() {
             int index;
 
             // This will true if the user has called Ban, etc, since the last step.
-            if (deferredConstraintsStep)
-            {
+            if (deferredConstraintsStep) {
                 stepConstraints();
             }
 
             // If we're already in a final state. skip making an observiation, 
             // and jump to backtrack handling / return.
-            if (status != Resolution.UNDECIDED)
-            {
+            if (status != Resolution.UNDECIDED) {
                 index = 0;
                 goto restart;
             }
 
             // Record state before making a choice
-            if (backtrack)
-            {
+            if (backtrack) {
                 backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
                 // Clean up backtracks if they are too long
-                while (backtrackDepth != -1 && backtrackItemsLengths.Count > backtrackDepth)
-                {
+                while (backtrackDepth != -1 && backtrackItemsLengths.Count > backtrackDepth) {
                     int newDroppedCount = backtrackItemsLengths.unshift();
                     prevChoices.unshift();
                     backtrackItems.dropFirst(newDroppedCount - droppedBacktrackItemsCount);
@@ -322,9 +293,8 @@ namespace WFC4All.DeBroglie.Wfc
             observe(out index, out int pattern);
 
             // Record what was selected for backtracking purposes
-            if(index != -1 && backtrack)
-            {
-                prevChoices.push(new IndexPatternItem { Index = index, Pattern = pattern });
+            if (index != -1 && backtrack) {
+                prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
             }
 
             // After a backtrack we resume here
@@ -339,51 +309,46 @@ namespace WFC4All.DeBroglie.Wfc
             }
 
             // Are all things are fully chosen?
-            if (index == -1 && status == Resolution.UNDECIDED)
-            {
+            if (index == -1 && status == Resolution.UNDECIDED) {
                 status = Resolution.DECIDED;
                 return status;
             }
 
-            if (backtrack && status == Resolution.CONTRADICTION)
-            {
+            if (backtrack && status == Resolution.CONTRADICTION) {
                 // After back tracking, it's no logner the case things are fully chosen
                 index = 0;
 
                 // Actually backtrack
-                while (true)
-                {
-                    if(backtrackItemsLengths.Count == 1)
-                    {
+                while (true) {
+                    if (backtrackItemsLengths.Count == 1) {
                         // We've backtracked as much as we can, but 
                         // it's still not possible. That means it is imposible
                         return Resolution.CONTRADICTION;
                     }
+
                     doBacktrack();
                     IndexPatternItem item = prevChoices.pop();
                     backtrackCount++;
                     status = Resolution.UNDECIDED;
                     // Mark the given choice as impossible
-                    if (internalBan(item.Index, item.Pattern))
-                    {
+                    if (internalBan(item.Index, item.Pattern)) {
                         status = Resolution.CONTRADICTION;
                     }
+
                     if (status == Resolution.UNDECIDED) {
                         patternModelConstraint.propagate();
                     }
 
-                    if (status == Resolution.CONTRADICTION)
-                    {
+                    if (status == Resolution.CONTRADICTION) {
                         // If still in contradiction, repeat backtracking
 
                         continue;
-                    }
-                    else
-                    {
+                    } else {
                         // Include the last ban as part of the previous backtrack
                         backtrackItemsLengths.pop();
                         backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
                     }
+
                     goto restart;
                 }
             }
@@ -392,21 +357,38 @@ namespace WFC4All.DeBroglie.Wfc
         }
 
         public Resolution stepBack() {
-            if(backtrackItemsLengths.Count == 1) {
+            if (backtrackItemsLengths.Count == 1) {
                 return Resolution.CONTRADICTION;
             }
+
             doBacktrack();
             prevChoices.pop();
             backtrackCount++;
             return Resolution.DECIDED;
         }
 
-        private void doBacktrack()
-        {
+        public Resolution propagateSingle() {
+            if (status == Resolution.UNDECIDED) {
+                patternModelConstraint.propagate();
+            }
+
+            if (status == Resolution.UNDECIDED) {
+                stepConstraints();
+            }
+
+            // Are all things are fully chosen?
+            if (status == Resolution.UNDECIDED) {
+                status = Resolution.DECIDED;
+                return status;
+            }
+
+            return status;
+        }
+
+        private void doBacktrack() {
             int targetLength = backtrackItemsLengths.pop() - droppedBacktrackItemsCount;
             // Undo each item
-            while (backtrackItems.Count > targetLength)
-            {
+            while (backtrackItems.Count > targetLength) {
                 IndexPatternItem item = backtrackItems.pop();
                 int index = item.Index;
                 int pattern = item.Pattern;
@@ -415,32 +397,28 @@ namespace WFC4All.DeBroglie.Wfc
                 // as it is removed in InternalBan
                 wave.addPossibility(index, pattern);
                 // Update trackers
-                foreach(ITracker tracker in trackers)
-                {
+                foreach (ITracker tracker in trackers) {
                     tracker.undoBan(index, pattern);
                 }
+
                 // Next, undo the decremenents done in Propagate
                 patternModelConstraint.undoBan(item);
             }
         }
 
-        public void addTracker(ITracker tracker)
-        {
+        public void addTracker(ITracker tracker) {
             trackers.Add(tracker);
         }
 
-        public void removeTracker(ITracker tracker)
-        {
+        public void removeTracker(ITracker tracker) {
             trackers.Remove(tracker);
         }
 
         /**
          * Rpeatedly step until the status is Decided or Contradiction
          */
-        public Resolution run()
-        {
-            while (true)
-            {
+        public Resolution run() {
+            while (true) {
                 step();
                 if (status != Resolution.UNDECIDED) {
                     return status;
@@ -452,28 +430,23 @@ namespace WFC4All.DeBroglie.Wfc
          * Returns the array of decided patterns, writing
          * -1 or -2 to indicate cells that are undecided or in contradiction.
          */
-        public ITopoArray<int> toTopoArray()
-        {
+        public ITopoArray<int> toTopoArray() {
             return TopoArray.createByIndex(getDecidedCell, topology);
         }
 
         /**
          * Returns an array where each cell is a list of remaining possible patterns.
          */
-        public ITopoArray<ISet<int>> toTopoArraySets()
-        {
-            return TopoArray.createByIndex(index =>
-            {
+        public ITopoArray<ISet<int>> toTopoArraySets() {
+            return TopoArray.createByIndex(index => {
                 HashSet<int> hs = new HashSet<int>();
-                for (int pattern = 0; pattern < patternCount; pattern++)
-                {
-                    if (wave.get(index, pattern))
-                    {
+                for (int pattern = 0; pattern < patternCount; pattern++) {
+                    if (wave.get(index, pattern)) {
                         hs.Add(pattern);
                     }
                 }
 
-                return (ISet<int>)hs;
+                return (ISet<int>) hs;
             }, topology);
         }
     }

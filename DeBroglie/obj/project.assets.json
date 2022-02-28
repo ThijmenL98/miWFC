@@ -180,24 +180,26 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Thijmen\\.nuget\\packages\\": {}
+    "C:\\Users\\thijm\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Thijmen\\Documents\\Git\\thesis\\DeBroglie\\DeBroglie.csproj",
+      "projectUniqueName": "C:\\Users\\thijm\\Documents\\Git Repositories\\thesis\\DeBroglie\\DeBroglie.csproj",
       "projectName": "WFC4All.DeBroglie",
-      "projectPath": "C:\\Users\\Thijmen\\Documents\\Git\\thesis\\DeBroglie\\DeBroglie.csproj",
-      "packagesPath": "C:\\Users\\Thijmen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Thijmen\\Documents\\Git\\thesis\\DeBroglie\\obj\\",
+      "projectPath": "C:\\Users\\thijm\\Documents\\Git Repositories\\thesis\\DeBroglie\\DeBroglie.csproj",
+      "packagesPath": "C:\\Users\\thijm\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\thijm\\Documents\\Git Repositories\\thesis\\DeBroglie\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Thijmen\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\thijm\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "netstandard2.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -233,7 +235,7 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.403\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }

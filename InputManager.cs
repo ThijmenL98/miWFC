@@ -12,34 +12,32 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using WFC4All.DeBroglie;
 using WFC4All.DeBroglie.Models;
-using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
 
 namespace WFC4All {
     public class InputManager {
         private readonly XDocument xDoc;
         private Bitmap currentBitmap;
-        private readonly int groundPatternIdx;
         private int currentStep, tileSize;
         private readonly Form1 form;
         private bool inputHasChanged, sizeHasChanged;
-        private Dictionary<string, Tuple<Color[], Tile, int>> tileCache;
+        private Dictionary<int, Tuple<Color[], Tile>> tileCache;
 
         private XElement xRoot;
 
         private TilePropagator dbPropagator;
         private TileModel dbModel;
+        private Tile firstTile, groundPattern;
 
         public InputManager(Form1 formIn) {
             tileSize = 0;
-            tileCache = new Dictionary<string, Tuple<Color[], Tile, int>>();
+            tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
             form = formIn;
             currentStep = 0;
             xDoc = XDocument.Load("./samples.xml");
             currentBitmap = null;
             inputHasChanged = true;
             sizeHasChanged = true;
-            groundPatternIdx = 0;
             dbModel = null;
             dbPropagator = null;
         }
@@ -80,6 +78,8 @@ namespace WFC4All {
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
 
+                        //TODO: Ground Pattern Redo - SXfirstTile = tiles.get(0);
+
                         bool isCached = false;
 
                         foreach (PatternArray patternArray in patternList) {
@@ -92,6 +92,9 @@ namespace WFC4All {
                         if (!isCached) {
                             form.bitMaps.saveCache();
                         }
+                        Console.WriteLine(form.bitMaps.getPatternCount());
+                        Console.WriteLine(form.bitMaps.getFloorIndex() - 1);
+                        //TODO: Ground Pattern Redo - groundPattern = tiles.get(form.bitMaps.getFloorIndex() - 1);
                     } else {
                         dbModel = new AdjacentModel();
                         xRoot = XDocument.Load($"samples/{form.getSelectedInput()}/data.xml").Root;
@@ -104,62 +107,33 @@ namespace WFC4All {
                             return (new Bitmap(0, 0), true);
                         }
 
-                        TileRotationBuilder builder = new(4, true);
-                        tileCache = new Dictionary<string, Tuple<Color[], Tile, int>>();
-                        Dictionary<int, TileSymmetry> symmetries = new();
-
+                        tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
                         bool isCached = false;
 
                         foreach (XElement xTile in xRoot.Element("tiles")?.elements("tile")!) {
-                            string tileName = xTile.get<string>("name");
+                            Bitmap bitmap = new($"samples/{form.getSelectedInput()}/{xTile.get<string>("name")}.png");
+                            int cardinality = xTile.get("symmetry", 'X') switch {
+                                'L' => 4,
+                                'T' => 4,
+                                'I' => 2,
+                                '\\' => 2,
+                                'F' => 8,
+                                _ => 1
+                            };
 
-                            char sym = xTile.get("symmetry", 'X');
-
-                            TileSymmetry symmetry = TileSymmetry.X;
-                            int cardinality;
-                            switch (sym) {
-                                case 'L':
-                                    symmetry = TileSymmetry.L;
-                                    cardinality = 4;
-                                    break;
-                                case 'T':
-                                    symmetry = TileSymmetry.T;
-                                    cardinality = 4;
-                                    break;
-                                case 'I':
-                                    symmetry = TileSymmetry.I;
-                                    cardinality = 2;
-                                    break;
-                                case '\\':
-                                    symmetry = TileSymmetry.SLASH;
-                                    cardinality = 2;
-                                    break;
-                                case 'F':
-                                    symmetry = TileSymmetry.F;
-                                    cardinality = 8;
-                                    break;
-                                default:
-                                    cardinality = 1;
-                                    break;
-                            }
-
-                            Bitmap bitmap = new($"samples/{form.getSelectedInput()}/{tileName}.png");
                             Color[] cur = imTile((x, y) => bitmap.GetPixel(x, y), tileSize);
                             int val = tileCache.Count;
-                            tileCache.Add(tileName, new Tuple<Color[], Tile, int>(cur, new Tile(val), val));
-
-                            symmetries[val] = symmetry;
+                            Tile curTile = new Tile(val);
+                            tileCache.Add(val, new Tuple<Color[], Tile>(cur, curTile));
 
                             for (int t = 1; t < cardinality; t++) {
-                                string name = $"{tileName} {t}";
                                 int myIdx = tileCache.Count;
-                                tileCache.Add(name, t <= 3
-                                    ? new Tuple<Color[], Tile, int>(rotate(cur.ToArray(), tileSize),
-                                        new Tile(myIdx), val)
-                                    : new Tuple<Color[], Tile, int>(reflect(cur.ToArray(), tileSize),
-                                        new Tile(myIdx), val));
+                                Color[] curCard = t <= 3
+                                    ? rotate(tileCache[val + t - 1].Item1.ToArray(), tileSize)
+                                    : reflect(tileCache[val + t - 4].Item1.ToArray(), tileSize);
+                                tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
                             }
-
+                            
                             if (!isCached) {
                                 isCached = form.addPattern(bitmap);
                             }
@@ -174,31 +148,27 @@ namespace WFC4All {
                         }
 
                         for (int i = 0; i < tileCache.Count; i++) {
-                            builder.setTreatment(tileCache.ElementAt(i).Value.Item2, TileRotationTreatment.GENERATED);
-                            int refIdx = tileCache.ElementAt(i).Value.Item3;
-                            builder.addSymmetry(tileCache.ElementAt(i).Value.Item2, symmetries[refIdx]);
-                        }
-
-                        TileRotation rotations = builder.build();
-
-                        dbModel = new AdjacentModel(DirectionSet.cartesian2d);
-
-                        for (int i = 0; i < tileCache.Count; i++) {
-                            double refWeight = simpleWeights[tileCache.ElementAt(i).Value.Item3];
+                            double refWeight = simpleWeights[i];
                             Tile refTile = tileCache.ElementAt(i).Value.Item2;
-                            ((AdjacentModel) dbModel).setFrequency(refTile, refWeight, rotations);
+                            ((AdjacentModel) dbModel).setFrequency(refTile, refWeight);
                         }
 
-                        foreach (XElement xNeighbor in xRoot.Element("neighbors").Elements("neighbor")) {
-                            string left = xNeighbor.get<string>("left");
-                            string right = xNeighbor.get<string>("right");
+                        int[][] values = new int[50][];
 
-                            Tile leftTile = tileCache[left].Item2;
-                            Tile rightTile = tileCache[right].Item2;
+                        int j = 0;
+                        foreach (XElement xTile in xRoot.Element("rows")?.elements("row")!) {
+                            string[] row = xTile.Value.Split(',');
+                            values[j] = new int[50];
+                            for (int k = 0; k < 50; k++) {
+                                values[j][k] = int.Parse(row[k]);
+                            }
 
-                            ((AdjacentModel) dbModel).addAdjacency(new[] {leftTile}, new[] {rightTile},
-                                Direction.X_PLUS, new TileRotation(4, true));
+                            j++;
                         }
+
+                        ITopoArray<int> sample = TopoArray.create(values, false);
+
+                        dbModel = new AdjacentModel(sample.toTiles());
                     }
 
                     Console.WriteLine(@"Init took " + sw.ElapsedMilliseconds + @"ms.");
@@ -218,6 +188,19 @@ namespace WFC4All {
                     dbPropagator?.clear();
                     Console.WriteLine(@"Clearing took " + sw.ElapsedMilliseconds + @"ms.");
                 }
+
+                // TODO: Ground pattern banning redo
+                // if (form.isOverlappingModel() && selectedPeriodicity) {
+                //     Console.WriteLine(firstTile == null);
+                //     for (int x = 0; x < form.getOutputWidth(); x++) {
+                //         dbPropagator?.@select(x, form.getOutputHeight() - 1, 0, groundPattern);
+                //         for (int y = 0; y < form.getOutputHeight() - 1; y++) {
+                //             dbPropagator?.ban(x, y, 0, groundPattern);
+                //         }
+                //     }
+                //
+                //     dbPropagator?.propSingle();
+                // }
 
                 inputHasChanged = false;
                 sizeHasChanged = false;
@@ -258,7 +241,6 @@ namespace WFC4All {
                 }
             } else {
                 outputBitmap = new Bitmap(form.getOutputWidth() * tileSize, form.getOutputHeight() * tileSize);
-                Console.WriteLine("SIMPLE");
                 ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
@@ -269,8 +251,9 @@ namespace WFC4All {
 
                         for (int yy = 0; yy < tileSize; yy++) {
                             for (int xx = 0; xx < tileSize; xx++) {
-                                Color cur = outputPattern[xx * tileSize + yy];
-                                outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy, cur);
+                                Color cur = outputPattern[yy * tileSize + xx];
+                                outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy,
+                                    cur);
                             }
                         }
                     }
@@ -303,7 +286,6 @@ namespace WFC4All {
                 }
             } else {
                 outputBitmap = new Bitmap(form.getOutputWidth() * tileSize, form.getOutputHeight() * tileSize);
-                Console.WriteLine("SIMPLE");
                 ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
@@ -313,7 +295,7 @@ namespace WFC4All {
                             : Enumerable.Repeat(Color.DarkGray, tileSize * tileSize).ToArray();
                         for (int yy = 0; yy < tileSize; yy++) {
                             for (int xx = 0; xx < tileSize; xx++) {
-                                Color cur = outputPattern[xx * tileSize + yy];
+                                Color cur = outputPattern[yy * tileSize + xx];
                                 outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy, cur);
                             }
                         }
@@ -480,7 +462,7 @@ namespace WFC4All {
          * Pattern Adaptation Simple
          */
 
-        private Color[] imTile(Func<int, int, Color> f, int tilesize) {
+        private static Color[] imTile(Func<int, int, Color> f, int tilesize) {
             Color[] result = new Color[tilesize * tilesize];
             for (int y = 0; y < tilesize; y++) {
                 for (int x = 0; x < tilesize; x++) {
@@ -491,11 +473,11 @@ namespace WFC4All {
             return result;
         }
 
-        private Color[] rotate(IReadOnlyList<Color> array, int tilesize) {
+        private static Color[] rotate(IReadOnlyList<Color> array, int tilesize) {
             return imTile((x, y) => array[tilesize - 1 - y + x * tilesize], tilesize);
         }
 
-        private Color[] reflect(IReadOnlyList<Color> array, int tilesize) {
+        private static Color[] reflect(IReadOnlyList<Color> array, int tilesize) {
             return imTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
         }
     }

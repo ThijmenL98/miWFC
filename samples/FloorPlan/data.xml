@@ -20,146 +20,56 @@
         <tile name="vent" symmetry="X" weight="0.5"/>
         <tile name="table" symmetry="X" weight="0.8"/>
     </tiles>
-    <neighbors>
-        <neighbor left="empty" right="empty"/>
-        <neighbor left="empty" right="out"/>
-        <neighbor left="empty" right="wall 3"/>
-        <neighbor left="out" right="wall"/>
-        <neighbor left="wall" right="wall"/>
-        <neighbor left="wall" right="in"/>
-        <neighbor left="wall 3" right="floor"/>
-        <neighbor left="in" right="floor"/>
-        <neighbor left="floor" right="floor"/>
-
-        <neighbor left="empty" right="halfglass 3"/>
-        <neighbor left="out" right="halfglass"/>
-        <neighbor left="in 1" right="halfglass"/>
-        <neighbor left="halfglass 3" right="floor"/>
-        <neighbor left="halfglass" right="glass"/>
-        <neighbor left="glass" right="glass"/>
-        <neighbor left="empty" right="glass 3"/>
-        <neighbor left="glass 3" right="floor"/>
-
-        <neighbor left="empty" right="walldiv 3"/>
-        <neighbor left="out" right="walldiv"/>
-        <neighbor left="wall" right="walldiv"/>
-        <neighbor left="walldiv" right="in"/>
-        <neighbor left="walldiv" right="halfglass"/>
-        <neighbor left="divturn" right="walldiv 1"/>
-        <neighbor left="div" right="walldiv 1"/>
-        <neighbor left="divt" right="walldiv 1"/>
-
-        <neighbor left="wall 3" right="divturn"/>
-        <neighbor left="in" right="divturn"/>
-        <neighbor left="in" right="divturn 3"/>
-        <neighbor left="floor" right="divturn"/>
-        <neighbor left="halfglass 3" right="divturn"/>
-        <neighbor left="halfglass 3" right="divturn 3"/>
-        <neighbor left="glass 3" right="divturn"/>
-        <neighbor left="divturn 1" right="divturn"/>
-        <neighbor left="divturn 2" right="divturn"/>
-
-        <neighbor left="wall 3" right="div 1"/>
-        <neighbor left="in" right="div 1"/>
-        <neighbor left="floor" right="div 1"/>
-        <neighbor left="halfglass 3" right="div 1"/>
-        <neighbor left="glass 3" right="div 1"/>
-        <neighbor left="div 1" right="divturn"/>
-        <neighbor left="divturn" right="div"/>
-        <neighbor left="div" right="div"/>
-        <neighbor left="div 1" right="div 1"/>
-
-        <neighbor left="wall 3" right="divt 1"/>
-        <neighbor left="in" right="divt 1"/>
-        <neighbor left="floor" right="divt 1"/>
-        <neighbor left="halfglass 3" right="divt 1"/>
-        <neighbor left="glass 3" right="divt 1"/>
-        <neighbor left="divturn 1" right="divt 1"/>
-        <neighbor left="divturn" right="divt"/>
-        <neighbor left="div 1" right="divt 1"/>
-        <neighbor left="div" right="divt"/>
-        <neighbor left="div" right="divt 3"/>
-        <neighbor left="divt 3" right="divt 1"/>
-        <neighbor left="divt" right="divt 2"/>
-
-        <neighbor left="wall 3" right="stairs 1"/>
-        <neighbor left="in" right="stairs 1"/>
-        <neighbor left="floor" right="stairs 1"/>
-        <neighbor left="halfglass 3" right="stairs 1"/>
-        <neighbor left="glass 3" right="stairs 1"/>
-        <neighbor left="stairs 3" right="divturn"/>
-        <neighbor left="divturn" right="stairs"/>
-        <neighbor left="div 1" right="stairs 1"/>
-        <neighbor left="div" right="stairs"/>
-        <neighbor left="divt 3" right="stairs 1"/>
-        <neighbor left="divt 2" right="stairs"/>
-        <neighbor left="stairs 3" right="stairs 1"/>
-        <neighbor left="stairs 1" right="stairs 3"/>
-
-        <neighbor left="empty" right="w 3"/>
-        <neighbor left="out" right="w"/>
-        <neighbor left="w" right="in"/>
-        <neighbor left="floor" right="w 1"/>
-        <neighbor left="walldiv" right="w"/>
-        <neighbor left="w" right="w"/>
-        <neighbor left="w 3" right="divturn"/>
-        <neighbor left="w 3" right="div 1"/>
-        <neighbor left="w 3" right="divt 1"/>
-        <neighbor left="w 3" right="stairs 1"/>
-        <neighbor left="empty" right="window 3"/>
-        <neighbor left="out" right="window"/>
-        <neighbor left="window" right="in"/>
-        <neighbor left="floor" right="window 1"/>
-        <neighbor left="walldiv" right="window"/>
-        <neighbor left="window" right="window"/>
-        <neighbor left="window 3" right="divturn"/>
-        <neighbor left="window 3" right="div 1"/>
-        <neighbor left="window 3" right="divt 1"/>
-        <neighbor left="window 3" right="stairs 1"/>
-
-        <neighbor left="wall 3" right="door 1"/>
-        <neighbor left="in" right="door 1"/>
-        <neighbor left="floor" right="door 1"/>
-        <neighbor left="halfglass 3" right="door 1"/>
-        <neighbor left="glass 3" right="door 1"/>
-        <neighbor left="walldiv 3" right="door"/>
-        <neighbor left="w" right="door 1"/>
-        <neighbor left="window" right="door 1"/>
-        <neighbor left="door 1" right="divturn"/>
-        <neighbor left="divturn" right="door"/>
-        <neighbor left="div 1" right="door 1"/>
-        <neighbor left="div" right="door"/>
-        <neighbor left="divt 3" right="door 1"/>
-        <neighbor left="divt" right="door"/>
-        <neighbor left="divt 1" right="door"/>
-        <neighbor left="stairs 3" right="door 1"/>
-        <neighbor left="stairs" right="door"/>
-        <neighbor left="door 1" right="door 1"/>
-        <neighbor left="door" right="door"/>
-
-        <neighbor left="wall 3" right="vent"/>
-        <neighbor left="in" right="vent"/>
-        <neighbor left="halfglass 3" right="vent"/>
-        <neighbor left="glass 3" right="vent"/>
-        <neighbor left="w 3" right="vent"/>
-        <neighbor left="window 3" right="vent"/>
-        <neighbor left="vent" right="divturn"/>
-        <neighbor left="div 1" right="vent"/>
-        <neighbor left="divt 3" right="vent"/>
-        <neighbor left="vent" right="vent"/>
-        <neighbor left="stairs 3" right="vent"/>
-        <neighbor left="door 1" right="vent"/>
-        <neighbor left="wall 3" right="table"/>
-        <neighbor left="in" right="table"/>
-        <neighbor left="halfglass 3" right="table"/>
-        <neighbor left="glass 3" right="table"/>
-        <neighbor left="w 3" right="table"/>
-        <neighbor left="window 3" right="table"/>
-        <neighbor left="table" right="divturn"/>
-        <neighbor left="div 1" right="table"/>
-        <neighbor left="divt 3" right="table"/>
-        <neighbor left="table" right="table"/>
-        <neighbor left="stairs 3" right="table"/>
-        <neighbor left="door 1" right="table"/>
-    </neighbors>
+    <rows>
+        <row>11,46,12,35,53,10,26,2,0,19,13,30,34,32,13,35,30,34,42,36,31,41,43,55,35,30,27,0,8,53,54,53,46,28,12,13,13,10,5,5,9,30,52,31,37,52,32,33,52,31,</row>
+        <row>33,34,32,53,53,6,0,0,0,1,44,9,13,53,13,35,10,5,9,53,13,53,30,34,31,55,49,0,8,30,52,38,32,37,34,34,32,6,0,0,8,55,33,34,31,13,41,43,13,10,</row>
+        <row>35,13,41,43,35,11,46,28,3,0,0,51,13,37,52,31,49,0,8,35,13,30,34,36,34,36,27,0,1,5,9,54,53,53,10,44,26,2,0,0,29,34,39,33,52,52,31,37,34,27,</row>
+        <row>38,34,39,35,53,55,55,35,6,0,0,1,48,26,9,33,27,0,1,26,48,9,13,35,55,35,6,0,0,0,29,32,41,43,45,0,0,0,0,0,47,54,41,43,33,34,32,35,13,49,</row>
+        <row>34,32,41,43,30,40,34,31,11,28,3,0,0,0,47,35,45,0,0,0,0,29,34,39,55,35,11,28,3,0,8,35,53,35,45,0,4,7,7,7,12,54,35,35,35,13,53,30,34,27,</row>
+        <row>32,53,35,35,33,42,34,32,13,30,27,0,4,50,12,53,11,20,24,16,28,12,13,35,55,35,54,53,6,0,8,41,43,30,27,0,47,33,34,52,52,34,31,35,30,40,31,10,44,2,</row>
+        <row>35,35,41,43,35,55,10,26,5,5,2,0,51,54,33,38,34,32,55,55,30,34,34,38,32,30,34,31,6,0,8,35,35,55,11,7,12,35,13,10,5,9,54,30,34,42,36,27,0,0,</row>
+        <row>31,35,53,35,30,36,27,0,0,0,0,0,1,5,26,5,9,53,55,10,44,9,55,10,26,9,33,34,27,0,8,53,37,34,36,34,36,31,33,27,0,29,32,10,48,9,53,11,28,3,</row>
+        <row>40,31,53,53,13,53,11,20,24,16,28,3,0,0,0,0,8,30,36,27,0,29,32,6,0,47,35,13,49,0,29,31,53,13,53,54,35,10,26,2,0,51,35,45,0,51,35,55,53,6,</row>
+        <row>42,32,53,30,34,38,32,55,33,34,39,6,0,4,50,28,12,55,35,11,28,12,35,6,0,1,26,5,2,0,1,5,26,48,26,9,30,27,0,0,0,51,35,45,0,51,37,34,39,11,</row>
+        <row>55,41,43,10,44,9,37,34,39,13,53,6,0,29,32,35,33,34,38,34,39,33,38,27,0,0,0,0,0,0,0,0,0,0,0,29,32,11,28,7,28,12,35,11,7,12,35,13,53,54,</row>
+        <row>55,35,30,27,0,8,35,54,30,34,39,11,28,12,53,41,43,54,54,54,35,35,13,11,20,24,24,24,16,28,7,3,0,4,28,12,53,54,30,52,31,33,38,34,34,32,30,34,39,33,</row>
+        <row>52,31,13,6,0,1,26,5,5,9,30,36,31,13,35,53,30,34,32,54,35,37,34,32,55,55,33,52,32,35,54,45,0,17,53,55,53,10,44,9,55,53,13,13,13,53,55,55,41,43,</row>
+        <row>10,44,44,2,0,0,0,0,0,29,32,35,13,13,35,35,55,55,53,54,35,35,13,37,34,32,35,55,35,30,52,27,0,25,53,33,38,27,0,8,33,38,32,13,13,30,52,34,31,35,</row>
+        <row>27,0,0,0,4,50,28,7,28,12,41,43,13,13,53,37,34,52,38,34,39,35,13,53,13,35,30,34,38,52,32,49,0,19,41,43,13,49,0,1,26,44,26,9,33,34,40,34,40,38,</row>
+        <row>11,50,3,0,51,55,35,55,37,34,39,37,34,52,39,35,13,10,44,9,53,30,40,38,52,39,10,48,9,55,53,11,28,12,35,30,36,27,0,0,0,0,0,8,35,33,42,34,42,32,</row>
+        <row>32,54,49,0,29,34,38,32,35,55,41,43,54,54,41,43,33,27,0,51,30,34,42,32,13,30,27,0,29,34,38,52,31,54,35,54,35,21,0,0,4,46,28,12,41,43,33,34,32,35,</row>
+        <row>35,54,11,28,12,54,54,41,43,55,35,37,52,52,31,35,35,11,28,12,13,13,10,26,9,13,49,0,8,55,10,14,22,18,26,9,35,23,0,0,51,55,30,34,31,35,35,13,35,30,</row>
+        <row>38,32,13,30,40,34,32,53,53,55,41,43,33,52,34,31,53,55,35,33,52,34,27,0,29,32,11,28,12,33,27,0,0,0,0,8,35,15,0,0,1,14,22,18,9,41,43,13,53,13,</row>
+        <row>13,37,34,36,42,32,53,41,43,55,35,35,53,13,13,13,37,52,39,35,55,55,11,50,12,53,54,37,52,39,49,0,0,4,28,12,53,11,28,3,0,0,0,0,51,35,30,40,38,52,</row>
+        <row>48,26,9,35,54,35,53,35,53,55,53,53,35,13,13,13,35,13,53,30,52,36,34,40,52,38,34,31,10,26,2,0,0,47,37,34,39,55,35,49,0,4,7,28,12,30,34,42,32,13,</row>
+        <row>0,0,29,38,32,53,53,35,53,55,35,35,30,40,52,52,31,10,26,9,55,35,33,42,34,34,32,13,45,0,0,4,7,12,35,55,37,52,38,27,0,47,13,53,54,10,48,48,26,9,</row>
+        <row>24,16,12,55,53,41,43,53,35,55,41,43,33,42,32,33,52,27,0,29,34,31,35,10,44,9,53,13,45,0,0,47,33,52,39,55,35,55,55,49,0,29,52,38,34,27,0,0,0,47,</row>
+        <row>36,52,32,55,53,35,35,35,35,55,35,35,53,55,41,43,54,6,0,8,55,55,53,21,0,29,38,32,45,0,0,47,35,13,30,52,38,40,52,27,0,1,14,22,18,2,0,0,0,47,</row>
+        <row>53,54,35,55,41,43,41,43,30,36,31,53,30,36,31,35,54,6,0,1,44,9,35,23,0,51,13,35,11,28,7,12,37,34,40,34,34,42,32,45,0,0,0,0,0,0,4,50,50,12,</row>
+        <row>38,34,38,36,31,53,53,35,55,53,33,38,32,35,55,30,36,27,0,0,0,29,31,15,0,51,33,38,34,31,33,34,31,33,42,36,52,32,53,11,46,28,50,28,3,0,17,13,13,33,</row>
+        <row>52,32,54,53,55,35,53,35,55,41,43,55,35,53,55,55,35,11,20,24,16,12,55,11,46,12,53,55,10,44,26,44,44,26,9,35,54,53,30,52,40,31,13,35,6,0,25,13,10,26,</row>
+        <row>55,37,34,38,34,39,35,35,55,53,30,34,39,37,52,40,38,40,52,34,52,34,36,52,32,13,35,55,6,0,0,0,0,0,29,38,36,38,32,33,42,34,32,35,6,0,19,13,45,0,</row>
+        <row>48,26,9,54,54,41,43,35,33,38,32,13,41,43,33,42,52,42,34,52,32,13,35,10,26,48,26,48,2,0,4,20,24,16,12,13,35,55,35,53,13,13,41,43,6,0,29,34,27,0,</row>
+        <row>0,0,29,52,32,35,35,35,35,55,35,13,35,35,53,55,10,48,9,54,37,34,38,27,0,0,0,0,0,0,29,52,52,52,36,34,39,55,35,35,33,52,31,53,6,0,51,55,11,28,</row>
+        <row>3,0,47,13,35,35,35,35,30,34,31,13,35,35,53,55,49,0,29,32,35,10,5,2,0,0,4,20,24,16,12,13,13,13,35,13,35,55,53,41,43,54,33,38,27,0,29,32,54,30,</row>
+        <row>45,0,29,34,31,35,53,30,34,52,34,40,31,35,37,34,27,0,8,41,43,6,0,0,0,0,29,34,52,32,13,13,10,5,26,44,26,9,35,35,37,52,39,55,11,28,12,35,10,14,</row>
+        <row>27,0,51,55,55,35,30,40,34,52,34,42,32,41,43,13,45,0,8,35,35,6,0,4,50,28,12,13,13,35,33,52,27,0,0,0,0,29,31,35,53,13,53,33,34,39,33,38,27,0,</row>
+        <row>45,0,29,32,55,37,34,42,34,34,52,32,35,35,30,36,27,0,8,35,30,27,0,17,54,53,13,13,13,41,43,13,6,0,0,0,0,51,13,41,43,13,35,53,13,35,35,13,11,7,</row>
+        <row>11,7,12,53,55,53,10,5,5,9,55,53,35,53,55,35,11,50,12,35,55,49,0,25,54,53,10,5,9,35,37,34,27,0,4,46,46,12,13,53,53,13,53,53,13,35,30,34,52,52,</row>
+        <row>34,34,52,38,52,31,49,0,0,8,55,53,35,35,33,38,34,32,33,38,52,27,0,19,33,38,27,0,17,41,43,13,45,0,47,13,33,34,32,53,30,34,31,30,34,38,34,52,34,40,</row>
+        <row>13,33,52,36,34,32,49,0,0,29,36,31,41,43,35,13,13,35,35,10,5,2,0,1,26,44,2,0,25,35,53,13,11,50,12,13,35,54,35,30,40,34,34,52,52,52,52,34,36,42,</row>
+        <row>9,35,13,35,55,53,11,7,7,12,35,55,53,35,30,52,52,39,35,6,0,0,0,0,0,0,0,0,19,35,37,52,52,32,13,33,38,36,38,36,42,36,52,52,32,13,13,13,53,33,</row>
+        <row>29,38,36,38,40,38,40,34,52,40,38,40,31,53,13,13,13,41,43,11,7,28,50,50,50,50,50,28,12,41,43,55,10,26,44,26,9,53,54,35,54,35,55,55,53,13,33,34,31,53,</row>
+        <row>12,13,35,33,42,36,42,34,34,42,36,42,32,37,52,34,34,31,35,13,13,30,36,34,34,40,34,31,13,53,53,55,6,0,0,0,8,30,36,31,33,38,32,55,30,34,39,33,34,38,</row>
+        <row>34,32,35,53,55,35,10,44,44,9,35,55,41,43,55,33,34,40,31,10,48,9,53,13,33,42,34,52,52,31,30,34,27,0,4,7,12,55,53,10,26,44,26,5,9,55,53,35,10,14,</row>
+        <row>13,35,35,53,55,30,27,0,0,29,38,52,39,37,34,39,33,42,52,27,0,51,37,34,39,55,10,14,22,18,9,55,49,0,29,52,32,55,30,27,0,0,0,0,29,34,31,35,49,0,</row>
+        <row>40,31,35,37,34,32,6,0,0,47,13,13,41,43,13,41,43,10,5,2,0,29,31,54,30,34,27,0,0,0,29,34,27,0,8,55,35,55,55,6,0,4,46,28,12,55,33,38,27,0,</row>
+        <row>42,36,31,53,55,35,6,0,0,29,52,32,53,30,34,31,30,27,0,0,0,1,48,48,9,54,6,0,4,28,12,13,6,0,8,55,30,36,52,27,0,29,36,31,55,55,53,55,6,0,</row>
+        <row>54,35,33,38,34,39,11,7,7,12,55,41,43,10,44,9,54,11,28,7,3,0,0,0,51,33,27,0,29,31,54,33,27,0,1,48,9,35,13,11,7,12,53,13,33,34,38,32,11,46,</row>
+        <row>34,31,35,54,54,37,52,52,34,34,36,31,30,27,0,29,36,52,39,13,21,0,0,0,51,35,11,28,12,54,10,26,2,0,0,0,8,53,13,13,13,33,38,32,35,13,13,35,13,13,</row>
+        <row>55,33,38,34,34,31,10,5,9,13,53,55,55,21,0,47,35,55,35,13,23,0,4,28,12,30,40,31,33,34,27,0,0,4,50,50,12,37,52,52,52,39,13,41,43,13,10,26,9,33,</row>
+        <row>44,26,9,13,13,13,49,0,8,13,30,34,32,23,0,29,38,40,31,13,23,0,17,30,36,34,42,34,39,13,49,0,0,51,13,33,34,31,33,34,32,30,40,31,37,34,27,0,51,35,</row>
+        <row>0,0,29,34,34,36,27,0,29,32,55,55,35,15,0,51,33,42,34,32,23,0,25,55,35,54,10,5,26,48,2,0,0,51,13,53,10,48,26,9,53,33,42,32,35,54,11,28,12,41,</row>
+        <row>4,46,12,13,13,35,11,46,12,37,52,52,39,11,7,12,53,13,13,53,23,0,19,55,30,36,27,0,0,0,0,4,7,12,33,38,27,0,0,8,53,35,55,41,43,33,34,31,54,35,</row>
+    </rows>
 </set>

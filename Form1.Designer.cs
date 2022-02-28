@@ -120,7 +120,7 @@ namespace WFC4All
             // 
             // markerButton
             // 
-            this.markerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.markerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.markerButton.Location = new System.Drawing.Point(938, 781);
             this.markerButton.Name = "markerButton";
             this.markerButton.Size = new System.Drawing.Size(110, 40);
@@ -131,7 +131,7 @@ namespace WFC4All
             // 
             // revertMarkerButton
             // 
-            this.revertMarkerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.revertMarkerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.revertMarkerButton.Location = new System.Drawing.Point(1054, 781);
             this.revertMarkerButton.Name = "revertMarkerButton";
             this.revertMarkerButton.Size = new System.Drawing.Size(110, 40);
@@ -174,7 +174,7 @@ namespace WFC4All
             // 
             // animateButton
             // 
-            this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.animateButton.Location = new System.Drawing.Point(1053, 736);
             this.animateButton.Name = "animateButton";
             this.animateButton.Size = new System.Drawing.Size(110, 40);
@@ -187,6 +187,7 @@ namespace WFC4All
             // 
             this.stepValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.stepValue.Location = new System.Drawing.Point(1471, 736);
+            this.stepValue.Maximum = new decimal(new int[] {999, 0, 0, 0});
             this.stepValue.Minimum = new decimal(new int[] {1, 0, 0, -2147483648});
             this.stepValue.Name = "stepValue";
             this.stepValue.Size = new System.Drawing.Size(67, 24);
@@ -206,7 +207,7 @@ namespace WFC4All
             // 
             // advanceButton
             // 
-            this.advanceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.advanceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.advanceButton.Location = new System.Drawing.Point(1168, 736);
             this.advanceButton.Name = "advanceButton";
             this.advanceButton.Size = new System.Drawing.Size(110, 40);
@@ -224,6 +225,7 @@ namespace WFC4All
             this.patternRotationLabel.TabIndex = 20;
             this.patternRotationLabel.Text = "Select allowed pattern transformations. On the right is a non-transformed referen" + "ce (black border)";
             this.patternRotationLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.patternRotationLabel.Visible = false;
             // 
             // p3RotPB
             // 
@@ -232,6 +234,7 @@ namespace WFC4All
             this.p3RotPB.Size = new System.Drawing.Size(60, 60);
             this.p3RotPB.TabIndex = 15;
             this.p3RotPB.TabStop = false;
+            this.p3RotPB.Visible = false;
             this.p3RotPB.Click += new System.EventHandler(this.inputChanged);
             // 
             // p2RotPB
@@ -241,6 +244,7 @@ namespace WFC4All
             this.p2RotPB.Size = new System.Drawing.Size(60, 60);
             this.p2RotPB.TabIndex = 14;
             this.p2RotPB.TabStop = false;
+            this.p2RotPB.Visible = false;
             this.p2RotPB.Click += new System.EventHandler(this.inputChanged);
             // 
             // p1RotPB
@@ -250,6 +254,7 @@ namespace WFC4All
             this.p1RotPB.Size = new System.Drawing.Size(60, 60);
             this.p1RotPB.TabIndex = 13;
             this.p1RotPB.TabStop = false;
+            this.p1RotPB.Visible = false;
             this.p1RotPB.Click += new System.EventHandler(this.inputChanged);
             // 
             // originalRotPB
@@ -259,6 +264,7 @@ namespace WFC4All
             this.originalRotPB.Size = new System.Drawing.Size(60, 60);
             this.originalRotPB.TabIndex = 12;
             this.originalRotPB.TabStop = false;
+            this.originalRotPB.Visible = false;
             // 
             // patternPanel
             // 
@@ -294,6 +300,7 @@ namespace WFC4All
             this.periodicInput.Text = "Periodic Input";
             this.periodicInput.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.periodicInput.UseVisualStyleBackColor = true;
+            this.periodicInput.Visible = false;
             this.periodicInput.CheckedChanged += new System.EventHandler(this.inputChanged);
             // 
             // modelChoice
@@ -424,7 +431,7 @@ namespace WFC4All
             // 
             // restartButton
             // 
-            this.restartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.restartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.restartButton.Location = new System.Drawing.Point(1168, 781);
             this.restartButton.Name = "restartButton";
             this.restartButton.Size = new System.Drawing.Size(110, 40);
@@ -475,14 +482,14 @@ namespace WFC4All
         #endregion
 
         private System.Windows.Forms.TabPage inputTab;
-        private Label patternRotationLabel;
-        private PictureBox p3RotPB;
-        private PictureBox p2RotPB;
-        private PictureBox p1RotPB;
-        private PictureBox originalRotPB;
+        private System.Windows.Forms.Label patternRotationLabel;
+        private System.Windows.Forms.PictureBox p3RotPB;
+        private System.Windows.Forms.PictureBox p2RotPB;
+        private System.Windows.Forms.PictureBox p1RotPB;
+        private System.Windows.Forms.PictureBox originalRotPB;
         public System.Windows.Forms.Panel patternPanel;
         private System.Windows.Forms.Label patternsLabel;
-        private CheckBox periodicInput;
+        private System.Windows.Forms.CheckBox periodicInput;
         private System.Windows.Forms.Button modelChoice;
         private System.Windows.Forms.Label outputImageHeightLabel;
         private System.Windows.Forms.Label outputImageWidthLabel;
