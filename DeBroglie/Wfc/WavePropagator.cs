@@ -143,6 +143,17 @@ namespace WFC4All.DeBroglie.Wfc {
                 status = Resolution.CONTRADICTION;
             }
         }
+        
+        private void observeWith(int index, int pattern) {
+            if (index == -1) {
+                return;
+            }
+
+            // Decide on the given cell
+            if (internalSelect(index, pattern)) {
+                status = Resolution.CONTRADICTION;
+            }
+        }
 
         // Returns the only possible value of a cell if there is only one,
         // otherwise returns -1 (multiple possible) or -2 (none possible)
@@ -291,6 +302,97 @@ namespace WFC4All.DeBroglie.Wfc {
 
             // Pick a tile and Select a pattern from it.
             observe(out index, out int pattern);
+
+            // Record what was selected for backtracking purposes
+            if (index != -1 && backtrack) {
+                prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
+            }
+
+            // After a backtrack we resume here
+            restart:
+
+            if (status == Resolution.UNDECIDED) {
+                patternModelConstraint.propagate();
+            }
+
+            if (status == Resolution.UNDECIDED) {
+                stepConstraints();
+            }
+
+            // Are all things are fully chosen?
+            if (index == -1 && status == Resolution.UNDECIDED) {
+                status = Resolution.DECIDED;
+                return status;
+            }
+
+            if (backtrack && status == Resolution.CONTRADICTION) {
+                // After back tracking, it's no logner the case things are fully chosen
+                index = 0;
+
+                // Actually backtrack
+                while (true) {
+                    if (backtrackItemsLengths.Count == 1) {
+                        // We've backtracked as much as we can, but 
+                        // it's still not possible. That means it is imposible
+                        return Resolution.CONTRADICTION;
+                    }
+
+                    doBacktrack();
+                    IndexPatternItem item = prevChoices.pop();
+                    backtrackCount++;
+                    status = Resolution.UNDECIDED;
+                    // Mark the given choice as impossible
+                    if (internalBan(item.Index, item.Pattern)) {
+                        status = Resolution.CONTRADICTION;
+                    }
+
+                    if (status == Resolution.UNDECIDED) {
+                        patternModelConstraint.propagate();
+                    }
+
+                    if (status == Resolution.CONTRADICTION) {
+                        // If still in contradiction, repeat backtracking
+
+                        continue;
+                    } else {
+                        // Include the last ban as part of the previous backtrack
+                        backtrackItemsLengths.pop();
+                        backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
+                    }
+
+                    goto restart;
+                }
+            }
+
+            return status;
+        }
+
+        public Resolution stepWith(int index, int pattern) {
+            // This will true if the user has called Ban, etc, since the last step.
+            if (deferredConstraintsStep) {
+                stepConstraints();
+            }
+
+            // If we're already in a final state. skip making an observiation, 
+            // and jump to backtrack handling / return.
+            if (status != Resolution.UNDECIDED) {
+                goto restart;
+            }
+
+            // Record state before making a choice
+            if (backtrack) {
+                backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
+                // Clean up backtracks if they are too long
+                while (backtrackDepth != -1 && backtrackItemsLengths.Count > backtrackDepth) {
+                    int newDroppedCount = backtrackItemsLengths.unshift();
+                    prevChoices.unshift();
+                    backtrackItems.dropFirst(newDroppedCount - droppedBacktrackItemsCount);
+                    droppedBacktrackItemsCount = newDroppedCount;
+                }
+            }
+
+            // Pick a tile and Select a pattern from it.
+            observeWith(index, pattern);
 
             // Record what was selected for backtracking purposes
             if (index != -1 && backtrack) {

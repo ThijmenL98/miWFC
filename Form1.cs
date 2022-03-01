@@ -16,6 +16,8 @@ namespace WFC4All {
         private bool defaultPeriodicity;
         public bool isChangingModels;
 
+        private Bitmap result;
+
         private readonly XDocument xDoc;
 
         private Size oldSize;
@@ -24,6 +26,7 @@ namespace WFC4All {
             xDoc = XDocument.Load("samples.xml");
             defaultSymmetry = 8;
             oldSize = new Size(1616, 939);
+            result = new Bitmap(1, 1);
             savePoint = 0;
             isChangingModels = false;
             defaultPeriodicity = true;
@@ -63,14 +66,14 @@ namespace WFC4All {
 
             oldSize = Size;
         }
-        
+
         private void resizeAll(Control control, Size newSize) {
-            int width      = newSize.Width - oldSize.Width;
-            control.Left  += (control.Left  * width) / oldSize.Width;
+            int width = newSize.Width - oldSize.Width;
+            control.Left += (control.Left * width) / oldSize.Width;
             control.Width += (control.Width * width) / oldSize.Width;
 
             int height = newSize.Height - oldSize.Height;
-            control.Top    += (control.Top    * height) / oldSize.Height;
+            control.Top += (control.Top * height) / oldSize.Height;
             control.Height += (control.Height * height) / oldSize.Height;
         }
 
@@ -81,27 +84,21 @@ namespace WFC4All {
                 return;
             }
 
-            int now = DateTime.Now.Millisecond;
-
-            if (sender == null && now - lastRanForced <= 50) {
-                lastRanForced = now;
-                return;
-            }
-
             try {
-                (Bitmap result, bool _) = inputManager.initAndRunWfcDB(true, getStepAmount());
-                while (result == null) {
-                    (result, _) = inputManager.initAndRunWfcDB(true, getStepAmount());
+                (Bitmap result2, bool _) = inputManager.initAndRunWfcDB(true, getStepAmount());
+                while (result2 == null) {
+                    (result2, _) = inputManager.initAndRunWfcDB(true, getStepAmount());
                 }
 
                 try {
-                    resultPB.Image = InputManager.resizeBitmap(result,
-                        Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+                    resultPB.Image = InputManager.resizeBitmap(result2,
+                        Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result.Width));
                 } catch (Exception exception) {
                     Console.WriteLine(exception);
                 }
 
-                result.Dispose();
+                result = new Bitmap(result2);
+                result2.Dispose();
             } catch (Exception exception) {
                 Console.WriteLine(exception);
                 resultPB.Image = InputManager.getImage("NoResultFound");
@@ -117,15 +114,16 @@ namespace WFC4All {
             }
 
             try {
-                (Bitmap result, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
+                (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
                 if (finished) {
                     return;
                 }
 
-                resultPB.Image = InputManager.resizeBitmap(result,
-                    Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+                resultPB.Image = InputManager.resizeBitmap(result2,
+                    Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
-                result.Dispose();
+                result = new Bitmap(result2);
+                result2.Dispose();
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
@@ -133,25 +131,25 @@ namespace WFC4All {
 
         private void backButton_Click(object sender, EventArgs e) {
             try {
-                Bitmap result = inputManager.stepBackWfc(getStepAmount());
-                resultPB.Image = InputManager.resizeBitmap(result,
-                    Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+                Bitmap result2 = inputManager.stepBackWfc(getStepAmount());
+                resultPB.Image = InputManager.resizeBitmap(result2,
+                    Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                 int curStep = inputManager.getCurrentStep();
                 if (curStep < savePoint) {
                     savePoint = curStep;
                 }
 
-                result.Dispose();
+                result = new Bitmap(result2);
+                result2.Dispose();
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
         }
-        
-        private Timer myTimer = new(); 
 
-        private void myTimer_Tick(object sender, EventArgs e)
-        {
+        private Timer myTimer = new();
+
+        private void myTimer_Tick(object sender, EventArgs e) {
             if (InvokeRequired) {
                 /* Not on UI thread, reenter there... */
                 BeginInvoke(new EventHandler(myTimer_Tick), sender, e);
@@ -162,19 +160,22 @@ namespace WFC4All {
                         myTimer.Stop();
                         myTimer.Interval = getAnimationSpeed();
                         try {
-                            (Bitmap result, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
-                            resultPB.Image = InputManager.resizeBitmap(result,
-                                Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
-            
-                            result.Dispose();
+                            (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
+                            resultPB.Image = InputManager.resizeBitmap(result2,
+                                Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
+
+                            result = new Bitmap(result2);
+                            result2.Dispose();
                             resultPB.Refresh();
                             if (finished) {
+                                animateButton.Text = @"Animate";
                                 return;
                             }
                         } catch (Exception exception) {
                             Console.WriteLine(exception);
                             resultPB.Image = InputManager.getImage("NoResultFound");
                         }
+
                         myTimer.Start(); /* optionally restart for periodic work */
                     }
                 }
@@ -198,7 +199,7 @@ namespace WFC4All {
             } else {
                 lock (myTimer) {
                     myTimer.Stop();
-                    myTimer = new();
+                    myTimer = new Timer();
                 }
             }
 
@@ -409,16 +410,30 @@ namespace WFC4All {
         private void revertMarkerButton_Click(object sender, EventArgs e) {
             int stepsToRevert = inputManager.getCurrentStep() - savePoint;
             try {
-                Bitmap result = inputManager.stepBackWfc(stepsToRevert);
+                result = inputManager.stepBackWfc(stepsToRevert);
                 resultPB.Image = InputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
-                
+
                 markerButton_Click(null, null);
 
                 result.Dispose();
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
+        }
+
+        private void resultPB_Click(object sender, EventArgs e) {
+            Point clickPos = ((PictureBox) sender).PointToClient(Cursor.Position);
+            int clickX = clickPos.X, clickY = clickPos.Y, width = getOutputWidth(), height = getOutputHeight();
+            int a = (int) Math.Floor((double) clickX * width / 600d),
+                b = (int) Math.Floor((double) clickY * height / 600d);
+            Console.WriteLine($@"(x:{clickX}, y:{clickY}) -> (a:{a}, b:{b})");
+            
+            //TODO CF2
+            // result.SetPixel(a, b, Color.Red);
+            //
+            // resultPB.Image = InputManager.resizeBitmap(result,
+            //     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
         }
     }
 
@@ -428,7 +443,7 @@ namespace WFC4All {
         private HashSet<ImageR> curBitmaps;
         private Dictionary<int, List<Bitmap>> similarityMap;
         private List<PictureBox> pictureBoxes;
-        private Dictionary<Tuple<string, int>, Tuple<List<PictureBox>, int>> cache;
+        private readonly Dictionary<Tuple<string, int>, Tuple<List<PictureBox>, int>> cache;
 
         public BitMaps(Form1 form) {
             myForm = form;
@@ -444,7 +459,7 @@ namespace WFC4All {
         private int curFloorIndex;
 
         public int getPatternCount() {
-            return totalPatternCount;
+            return patternCount;
         }
 
         public void reset() {
@@ -469,7 +484,6 @@ namespace WFC4All {
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int> key
                 = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
-            totalPatternCount++;
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
@@ -497,7 +511,7 @@ namespace WFC4All {
 
             bool isGroundPattern = true;
             Dictionary<Point, Color> data = new();
-            
+
             for (int x = 0; x < n; x++) {
                 for (int y = 0; y < n; y++) {
                     Color tileColor = (Color) colors.getTileAt(x, y).Value;
@@ -505,13 +519,22 @@ namespace WFC4All {
                     int colorIdx = distinctColors.IndexOf(tileColor);
                     data[new Point(x, y)] = tileColor;
 
-                    if (y == 2 && colorIdx != distinctColors.Count - 1) {
+                    if (y != n - 1 && colorIdx != 0) {
                         isGroundPattern = false;
                     }
 
-                    if (y != 2 && colorIdx != 0) {
+                    if (y == n - 1 && colorIdx != distinctColors.Count - 1) {
                         isGroundPattern = false;
                     }
+                }
+            }
+
+            if (isGroundPattern) {
+                for (int y = n-1; y >= 0; y--) {
+                    for (int x = 0; x < n; x++) {
+                        Console.Write($@"({x},{y})-{colors.getTileAt(x, y).Value}, ");
+                    }
+                    Console.WriteLine();
                 }
             }
 
@@ -532,7 +555,6 @@ namespace WFC4All {
 
             if (isGroundPattern) {
                 curFloorIndex = totalPatternCount;
-                Console.WriteLine("Found ground pattern: " + totalPatternCount);
             }
 
             const int padding = 3;
@@ -546,6 +568,7 @@ namespace WFC4All {
             myForm.patternPanel.Controls.Add(newPB);
 
             patternCount++;
+            totalPatternCount++;
             return false;
         }
 
@@ -595,6 +618,7 @@ namespace WFC4All {
             pictureBoxes.Add(newPB);
             myForm.patternPanel.Controls.Add(newPB);
             patternCount++;
+            totalPatternCount++;
             return false;
         }
 

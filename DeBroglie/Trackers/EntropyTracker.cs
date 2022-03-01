@@ -27,6 +27,7 @@ namespace WFC4All.DeBroglie.Trackers
             double[] frequencies,
             bool[] mask)
         {
+            Console.WriteLine("EYO Entropy tracker created");
             this.frequencies = frequencies;
             patternCount = frequencies.Length;
             this.mask = mask;
@@ -135,6 +136,19 @@ namespace WFC4All.DeBroglie.Trackers
                 }
             }
             return selectedIndex;
+        }
+
+        public int getLexicalIndex() {
+            for (int i = 0; i < indices; i++) {
+                int c = wave.getPatternCount(i);
+                if (c <= 1) {
+                    continue;
+                } else {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public int getRandomPossiblePatternAt(int index, Func<double> randomDouble)

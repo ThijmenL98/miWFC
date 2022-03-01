@@ -45,6 +45,7 @@ namespace WFC4All {
         /*
          * Functionality
          */
+        ITopoArray<Tile> tiles = null;
 
         public (Bitmap, bool) initAndRunWfcDB(bool reset, int steps) {
             if (form.isChangingModels) {
@@ -61,7 +62,7 @@ namespace WFC4All {
 
                     for (int i = 0; i < form.bitMaps.getPatternCount(); i++) {
                         foreach (Control item in form.patternPanel.Controls) {
-                            if (item.Name == "patternPB_" + i) {
+                            if (item.Name.Contains("patternPB_")) {
                                 Thread.CurrentThread.IsBackground = true;
                                 form.patternPanel.Controls.Remove(item);
                                 break;
@@ -74,11 +75,11 @@ namespace WFC4All {
                     if (form.isOverlappingModel()) {
                         ITopoArray<Color> dbSample
                             = TopoArray.create(imageToColourArray(currentBitmap), selectedPeriodicity);
-                        ITopoArray<Tile> tiles = dbSample.toTiles();
+                        tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
 
-                        //TODO: Ground Pattern Redo - SXfirstTile = tiles.get(0);
+                        Console.WriteLine(tiles.get(0));
 
                         bool isCached = false;
 
@@ -92,9 +93,8 @@ namespace WFC4All {
                         if (!isCached) {
                             form.bitMaps.saveCache();
                         }
-                        Console.WriteLine(form.bitMaps.getPatternCount());
-                        Console.WriteLine(form.bitMaps.getFloorIndex() - 1);
-                        //TODO: Ground Pattern Redo - groundPattern = tiles.get(form.bitMaps.getFloorIndex() - 1);
+
+                        //TODO: Ground Pattern Redo - groundPattern = tiles.get(form.bitMaps.getFloorIndex());
                     } else {
                         dbModel = new AdjacentModel();
                         xRoot = XDocument.Load($"samples/{form.getSelectedInput()}/data.xml").Root;
@@ -133,7 +133,7 @@ namespace WFC4All {
                                     : reflect(tileCache[val + t - 4].Item1.ToArray(), tileSize);
                                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
                             }
-                            
+
                             if (!isCached) {
                                 isCached = form.addPattern(bitmap);
                             }
@@ -167,7 +167,6 @@ namespace WFC4All {
                         }
 
                         ITopoArray<int> sample = TopoArray.create(values, false);
-
                         dbModel = new AdjacentModel(sample.toTiles());
                     }
 
@@ -189,18 +188,22 @@ namespace WFC4All {
                     Console.WriteLine(@"Clearing took " + sw.ElapsedMilliseconds + @"ms.");
                 }
 
-                // TODO: Ground pattern banning redo
-                // if (form.isOverlappingModel() && selectedPeriodicity) {
-                //     Console.WriteLine(firstTile == null);
-                //     for (int x = 0; x < form.getOutputWidth(); x++) {
-                //         dbPropagator?.@select(x, form.getOutputHeight() - 1, 0, groundPattern);
-                //         for (int y = 0; y < form.getOutputHeight() - 1; y++) {
-                //             dbPropagator?.ban(x, y, 0, groundPattern);
-                //         }
-                //     }
-                //
-                //     dbPropagator?.propSingle();
-                // }
+                string[] groundEnabledInput = {"flowers"};
+                if (groundEnabledInput.Any(x => x.Equals(form.getSelectedInput().ToLower()))) {
+                    //     // TODO: Ground pattern banning redo
+                    //     if (form.isOverlappingModel() && selectedPeriodicity) {
+                    for (int x = 0; x < 3; x++) {
+                        //             // dbPropagator?.@select(x, form.getOutputHeight() - 1, 0, groundPattern);
+                        //             dbPropagator?.observe(x + (form.getOutputHeight()-4) * form.getOutputWidth(),
+                        //                 form.bitMaps.getFloorIndex());
+                        //             for (int y = 0; y < form.getOutputHeight() - 1; y++) {
+                        //                 //dbPropagator?.ban(x, y, 0, groundPattern);
+                        //                 //dbPropagator?.ban(x, y, form.bitMaps.getFloorIndex());
+                        dbPropagator?.@select(x, form.getOutputHeight() - 1, 0, new Tile(currentColors.ElementAt(currentColors.Count-1)));
+                    }
+                    //         }
+                    //     }
+                }
 
                 inputHasChanged = false;
                 sizeHasChanged = false;
@@ -456,7 +459,6 @@ namespace WFC4All {
         public void setSizeChanged() {
             sizeHasChanged = true;
         }
-
 
         /*
          * Pattern Adaptation Simple

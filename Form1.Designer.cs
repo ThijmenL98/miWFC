@@ -166,11 +166,11 @@ namespace WFC4All
             this.animationSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.animationSpeedValue.Location = new System.Drawing.Point(1471, 809);
             this.animationSpeedValue.Maximum = new decimal(new int[] {2000, 0, 0, 0});
-            this.animationSpeedValue.Minimum = new decimal(new int[] {1, 0, 0, 0});
+            this.animationSpeedValue.Minimum = new decimal(new int[] {25, 0, 0, 0});
             this.animationSpeedValue.Name = "animationSpeedValue";
             this.animationSpeedValue.Size = new System.Drawing.Size(67, 24);
             this.animationSpeedValue.TabIndex = 25;
-            this.animationSpeedValue.Value = new decimal(new int[] {10, 0, 0, 0});
+            this.animationSpeedValue.Value = new decimal(new int[] {50, 0, 0, 0});
             // 
             // animateButton
             // 
@@ -428,6 +428,7 @@ namespace WFC4All
             this.resultPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.resultPB.TabIndex = 0;
             this.resultPB.TabStop = false;
+            this.resultPB.Click += new System.EventHandler(this.resultPB_Click);
             // 
             // restartButton
             // 
@@ -501,7 +502,7 @@ namespace WFC4All
         private Label inputImage;
         private System.Windows.Forms.Label patternSizeLabel;
         private System.Windows.Forms.ComboBox patternSize;
-        public PictureBox resultPB;
+        public System.Windows.Forms.PictureBox resultPB;
         private System.Windows.Forms.Button restartButton;
         private TabControl tabSelection;
         private System.Windows.Forms.NumericUpDown stepValue;

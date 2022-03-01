@@ -52,7 +52,7 @@ namespace WFC4All.DeBroglie.Wfc
         // Returns true if there is a contradiction
         public bool removePossibility(int index, int pattern)
         {
-            Debug.Assert(possibilities[index * patternCount + pattern] == true);
+           // Debug.Assert(possibilities[index * patternCount + pattern] == true);
             possibilities[index * patternCount + pattern] = false;
             int c = --patternCounts[index];
             return c == 0;
@@ -60,7 +60,7 @@ namespace WFC4All.DeBroglie.Wfc
 
         public void addPossibility(int index, int pattern)
         {
-            Debug.Assert(possibilities[index * patternCount + pattern] == false);
+           // Debug.Assert(possibilities[index * patternCount + pattern] == false);
             possibilities[index * patternCount + pattern] = true;
             patternCounts[index]++;
         }

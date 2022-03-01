@@ -21,7 +21,7 @@ namespace WFC4All.DeBroglie.Models {
             return s;
         }
 
-        public Tile getTileAt(int x, int y, int z) {
+        private Tile getTileAt(int x, int y, int z) {
             return values[x, y, z];
         }
 
