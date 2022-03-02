@@ -47,9 +47,13 @@ namespace WFC4All.DeBroglie.Wfc {
 
         private IPickHeuristic pickHeuristic;
 
+        private readonly int outWidth, outHeight;
+
         public WavePropagator(
             PatternModel model,
             ITopology topology,
+            int outputWidth,
+            int outputHeight,
             int backtrackDepth = 0,
             IWaveConstraint[] constraints = null,
             Func<double> randomDouble = null,
@@ -57,6 +61,9 @@ namespace WFC4All.DeBroglie.Wfc {
             bool clear = true) {
             patternCount = model.PatternCount;
             frequencies = model.Frequencies;
+
+            outWidth = outputWidth;
+            outHeight = outputHeight;
 
             indexCount = topology.IndexCount;
             backtrack = backtrackDepth != 0;
@@ -230,7 +237,7 @@ namespace WFC4All.DeBroglie.Wfc {
                 addTracker(entropyTracker);
                 pickHeuristic = new ArrayPriorityEntropyHeuristic(entropyTracker, randomDouble);
             } else {
-                EntropyTracker entropyTracker = new EntropyTracker(wave, frequencies, topology.Mask);
+                EntropyTracker entropyTracker = new EntropyTracker(wave, frequencies, topology.Mask, outWidth, outHeight);
                 entropyTracker.reset();
                 addTracker(entropyTracker);
                 pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble);

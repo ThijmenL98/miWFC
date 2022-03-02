@@ -17,6 +17,10 @@
     <LangVersion>9</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="../README.md">
       <Pack>true</Pack>

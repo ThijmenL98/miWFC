@@ -23,14 +23,14 @@ namespace WFC4All.DeBroglie.Wfc
         public void pickObservation(out int index, out int pattern)
         {
             // Choose a random cell
-            //TODO RF7
+            // TODO RF7
             // Lexical: entropyTracker.getLexicalIndex()
-            // Entropy: entropyTracker.getRandomMinEntropyIndex(randomDouble)
-            // Simple: TODO
-            // Random: TODO
-            // Spiral: TODO
+            // Entropy: entropyTracker.getRandomMinEntropyIndex(randomDouble, false)
+            // Simple: entropyTracker.getRandomMinEntropyIndex(randomDouble, true)
+            // Random: entropyTracker.getRandomIndex()
+            // Spiral: entropyTracker.getSpiralIndex()
             // Hilbert: TODO
-            index = entropyTracker.getRandomMinEntropyIndex(randomDouble);
+            index = entropyTracker.getRandomMinEntropyIndex(randomDouble, false);
             if (index == -1)
             {
                 pattern = -1;

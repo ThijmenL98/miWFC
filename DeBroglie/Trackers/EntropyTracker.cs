@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using WFC4All.DeBroglie.Wfc;
 
-namespace WFC4All.DeBroglie.Trackers
-{
-
-    internal class EntropyTracker : ITracker
-    {
+namespace WFC4All.DeBroglie.Trackers {
+    internal class EntropyTracker : ITracker {
         private readonly int patternCount;
 
         private readonly double[] frequencies;
@@ -22,23 +21,34 @@ namespace WFC4All.DeBroglie.Trackers
 
         private readonly Wave wave;
 
+        private List<int> cache = new();
+
+        private Queue<(int, int)> spiralIndices;
+
+        private readonly int outputWidth, outputHeight;
+
         public EntropyTracker(
             Wave wave,
             double[] frequencies,
-            bool[] mask)
-        {
-            Console.WriteLine("EYO Entropy tracker created");
+            bool[] mask,
+            int outWidth,
+            int outHeight) {
+            Console.WriteLine(@$"EYO Entropy tracker created");
             this.frequencies = frequencies;
             patternCount = frequencies.Length;
             this.mask = mask;
+
+            outputWidth = outWidth;
+            outputHeight = outHeight;
+
+            generateSpiralCoords();
 
             this.wave = wave;
             indices = wave.Indicies;
 
             // Initialize plogp
             plogp = new double[patternCount];
-            for (int pattern = 0; pattern < patternCount; pattern++)
-            {
+            for (int pattern = 0; pattern < patternCount; pattern++) {
                 double f = frequencies[pattern];
                 double v = f > 0 ? f * Math.Log(f) : 0.0;
                 plogp[pattern] = v;
@@ -47,132 +57,220 @@ namespace WFC4All.DeBroglie.Trackers
             entropyValues = new EntropyValues[indices];
         }
 
-        public void doBan(int index, int pattern)
-        {
+        public void doBan(int index, int pattern) {
             entropyValues[index].decrement(frequencies[pattern], plogp[pattern]);
         }
 
-        public void reset()
-        {
+        public void reset() {
             // Assumes Reset is called on a truly new Wave.
 
             EntropyValues initial;
             initial.plogpSum = 0;
             initial.sum = 0;
             initial.entropy = 0;
-            for (int pattern = 0; pattern < patternCount; pattern++)
-            {
+            for (int pattern = 0; pattern < patternCount; pattern++) {
                 double f = frequencies[pattern];
                 double v = f > 0 ? f * Math.Log(f) : 0.0;
                 initial.plogpSum += v;
                 initial.sum += f;
             }
+
             initial.recomputeEntropy();
-            for (int index = 0; index < indices; index++)
-            {
+            for (int index = 0; index < indices; index++) {
                 entropyValues[index] = initial;
             }
+
+            cache = new List<int>();
+
+            generateSpiralCoords();
         }
 
-        public void undoBan(int index, int pattern)
-        {
+        public void undoBan(int index, int pattern) {
             entropyValues[index].increment(frequencies[pattern], plogp[pattern]);
+            cache.Remove(index);
         }
 
         // Finds the cells with minimal entropy (excluding 0, decided cells)
         // and picks one randomly.
         // Returns -1 if every cell is decided.
-        public int getRandomMinEntropyIndex(Func<double> randomDouble)
-        {
+        public int getRandomMinEntropyIndex(Func<double> randomDouble, bool isSimple) {
             int selectedIndex = -1;
             // TODO: At the moment this is a linear scan, but potentially
             // could use some data structure
             double minEntropy = double.PositiveInfinity;
             int countAtMinEntropy = 0;
-            for (int i = 0; i < indices; i++)
-            {
+            for (int i = 0; i < indices; i++) {
                 if (mask != null && !mask[i]) {
                     continue;
                 }
 
                 int c = wave.getPatternCount(i);
                 double e = entropyValues[i].entropy;
-                if (c <= 1)
-                {
+                if (c <= 1) {
                     continue;
                 }
-                else if (e < minEntropy)
-                {
+
+
+                if (e < minEntropy) {
                     countAtMinEntropy = 1;
                     minEntropy = e;
-                }
-                else if (e == minEntropy)
-                {
+                } else if (!isSimple && Math.Abs(e - minEntropy) < 0.001d) {
                     countAtMinEntropy++;
                 }
             }
-            int n = (int)(countAtMinEntropy * randomDouble());
 
-            for (int i = 0; i < indices; i++)
-            {
+            int n = (int) (countAtMinEntropy * randomDouble());
+
+            for (int i = 0; i < indices; i++) {
                 if (mask != null && !mask[i]) {
                     continue;
                 }
 
                 int c = wave.getPatternCount(i);
                 double e = entropyValues[i].entropy;
-                if (c <= 1)
-                {
+                if (c <= 1) {
                     continue;
                 }
-                else if (e == minEntropy)
-                {
-                    if (n == 0)
-                    {
+
+                if (Math.Abs(e - minEntropy) < 0.001d) {
+                    if (n == 0) {
                         selectedIndex = i;
                         break;
                     }
+
                     n--;
                 }
             }
+
             return selectedIndex;
+        }
+
+        // class RandomPool {
+        //     Stack<int> pool;
+        //
+        //     public RandomPool(Random rng, IEnumerable<int> items) {
+        //         var itemList = items.ToList();
+        //         Shuffle(itemList, rng);
+        //         pool = new Stack<int>(itemList);        
+        //     }
+        //
+        //     public int Next() => pool.Count > 0 ? pool.Pop() : -1;
+        // }
+
+        public int getRandomIndex() {
+            Random rand = new();
+
+            while (true) {
+                List<int> available = Enumerable.Range(0, indices).Except(cache).ToList();
+                if (available.Count == 0) {
+                    return -1;
+                }
+
+                int r = available.ElementAt(rand.Next(available.Count()));
+                if (wave.getPatternCount(r) <= 1) {
+                    cache.Add(r);
+                } else {
+                    return r;
+                }
+            }
         }
 
         public int getLexicalIndex() {
             for (int i = 0; i < indices; i++) {
-                int c = wave.getPatternCount(i);
-                if (c <= 1) {
+                if (wave.getPatternCount(i) <= 1) {
                     continue;
-                } else {
-                    return i;
                 }
+
+                return i;
             }
 
             return -1;
         }
 
-        public int getRandomPossiblePatternAt(int index, Func<double> randomDouble)
-        {
+        public int getSpiralIndex() {
+            (int, int) next = spiralIndices.Dequeue();
+            int index = next.Item1 + next.Item2 * outputHeight;
+            
+            int c = wave.getPatternCount(index);
+            while (c <= 1) {
+                if (spiralIndices.Count == 0) {
+                    return -1;
+                }
+
+                next = spiralIndices.Dequeue();
+                index = next.Item1 + next.Item2 * outputHeight;
+                c = wave.getPatternCount(index);
+            }
+
+            return index;
+        }
+
+        private void generateSpiralCoords() {
+            int x = (int) Math.Floor(outputWidth / 2d), y = (int) Math.Floor(outputHeight / 2d);
+            spiralIndices = new Queue<(int, int)>();
+            customEnqueue(x, y);
+
+            int n = 1;
+            
+            while (spiralIndices.Count < outputWidth * outputHeight) {
+                if (n % 2 == 0) {
+                    customEnqueue(++x, y);
+                    for (int m = 0; m < n; m++) {
+                        customEnqueue(x, ++y);
+                    }
+
+                    for (int m = 0; m < n; m++) {
+                        customEnqueue(--x, y);
+                    }
+                } else {
+                    customEnqueue(--x, y);
+                    for (int m = 0; m < n; m++) {
+                        customEnqueue(x, --y);
+                    }
+
+                    for (int m = 0; m < n; m++) {
+                        customEnqueue(++x, y);
+                    }
+                }
+
+                n++;
+            }
+        }
+
+        private void customEnqueue(int x, int y) {
+            if (x < 0 || y < 0) {
+                return;
+            }
+
+            if (x >= outputWidth) {
+                return;
+            }
+
+            if (y >= outputHeight) {
+                return;
+            }
+            spiralIndices.Enqueue((x, y));
+        }
+
+        public int getRandomPossiblePatternAt(int index, Func<double> randomDouble) {
             double s = 0.0;
-            for (int pattern = 0; pattern < patternCount; pattern++)
-            {
-                if (wave.get(index, pattern))
-                {
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (wave.get(index, pattern)) {
                     s += frequencies[pattern];
                 }
             }
+
             double r = randomDouble() * s;
-            for (int pattern = 0; pattern < patternCount; pattern++)
-            {
-                if (wave.get(index, pattern))
-                {
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (wave.get(index, pattern)) {
                     r -= frequencies[pattern];
                 }
-                if (r <= 0)
-                {
+
+                if (r <= 0) {
                     return pattern;
                 }
             }
+
             return patternCount - 1;
         }
 
@@ -181,26 +279,22 @@ namespace WFC4All.DeBroglie.Trackers
           * This struct is updated every time the cell is changed.
           * p'(pattern) is equal to Frequencies[pattern] if the pattern is still possible, otherwise 0.
           */
-        private struct EntropyValues
-        {
-            public double plogpSum;     // The sum of p'(pattern) * log(p'(pattern)).
-            public double sum;          // The sum of p'(pattern).
-            public double entropy;      // The entropy of the cell.
+        private struct EntropyValues {
+            public double plogpSum; // The sum of p'(pattern) * log(p'(pattern)).
+            public double sum; // The sum of p'(pattern).
+            public double entropy; // The entropy of the cell.
 
-            public void recomputeEntropy()
-            {
+            public void recomputeEntropy() {
                 entropy = Math.Log(sum) - plogpSum / sum;
             }
 
-            public void decrement(double p, double plogp)
-            {
+            public void decrement(double p, double plogp) {
                 plogpSum -= plogp;
                 sum -= p;
                 recomputeEntropy();
             }
 
-            public void increment(double p, double plogp)
-            {
+            public void increment(double p, double plogp) {
                 plogpSum += plogp;
                 sum += p;
                 recomputeEntropy();

@@ -120,7 +120,9 @@ namespace WFC4All.DeBroglie
 #pragma warning disable CS0618 // Type or member is obsolete
             wavePropagator = new WavePropagator(
                 patternModel, 
-                patternTopology, 
+                patternTopology,
+                topology.Width,
+                topology.Height, 
                 options.BackTrackDepth, 
                 waveConstraints, 
                 options.RandomDouble ?? (options.Random == null ? (Func<double>)null : options.Random.NextDouble),

@@ -13,6 +13,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <LangVersion>9</LangVersion>
+    <ApplicationIcon>icon (1).ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -26,7 +27,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -61,14 +62,16 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="icon (1).ico" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -85,129 +88,377 @@
   <ItemGroup>
     <Content Include="backup.txt" />
     <Content Include="README.md" />
+    <None Include="rotationRef.png" />
+    <None Include="rotationRef1.png" />
+    <None Include="rotationRef2.png" />
+    <None Include="rotationRef3.png" />
     <Content Include="samples.xml" />
-    <Content Include="samples\3Bricks.png" />
-    <Content Include="samples\Angular.png" />
-    <Content Include="samples\BrownFox.png" />
-    <Content Include="samples\Castle.png" />
-    <Content Include="samples\Castle\bridge.png" />
-    <Content Include="samples\Castle\data.xml" />
-    <Content Include="samples\Castle\ground.png" />
-    <Content Include="samples\Castle\river.png" />
-    <Content Include="samples\Castle\riverturn.png" />
-    <Content Include="samples\Castle\road.png" />
-    <Content Include="samples\Castle\roadturn.png" />
-    <Content Include="samples\Castle\t.png" />
-    <Content Include="samples\Castle\tower.png" />
-    <Content Include="samples\Castle\wall.png" />
-    <Content Include="samples\Castle\wallriver.png" />
-    <Content Include="samples\Castle\wallroad.png" />
-    <Content Include="samples\Cat.png" />
-    <Content Include="samples\Cats.png" />
-    <Content Include="samples\Cave.png" />
-    <Content Include="samples\Chess.png" />
-    <Content Include="samples\Circle.png" />
-    <Content Include="samples\Circles.png" />
-    <Content Include="samples\Circles\b.png" />
-    <Content Include="samples\Circles\b_half.png" />
-    <Content Include="samples\Circles\b_i.png" />
-    <Content Include="samples\Circles\b_quarter.png" />
-    <Content Include="samples\Circles\data.xml" />
-    <Content Include="samples\Circles\w.png" />
-    <Content Include="samples\Circles\w_half.png" />
-    <Content Include="samples\Circles\w_i.png" />
-    <Content Include="samples\Circles\w_quarter.png" />
-    <Content Include="samples\Circuit.png" />
-    <Content Include="samples\Circuit\bridge.png" />
-    <Content Include="samples\Circuit\component.png" />
-    <Content Include="samples\Circuit\connection.png" />
-    <Content Include="samples\Circuit\corner.png" />
-    <Content Include="samples\Circuit\data.xml" />
-    <Content Include="samples\Circuit\dskew.png" />
-    <Content Include="samples\Circuit\skew.png" />
-    <Content Include="samples\Circuit\substrate.png" />
-    <Content Include="samples\Circuit\t.png" />
-    <Content Include="samples\Circuit\track.png" />
-    <Content Include="samples\Circuit\transition.png" />
-    <Content Include="samples\Circuit\turn.png" />
-    <Content Include="samples\Circuit\viad.png" />
-    <Content Include="samples\Circuit\vias.png" />
-    <Content Include="samples\Circuit\wire.png" />
-    <Content Include="samples\City.png" />
-    <Content Include="samples\ColoredCity.png" />
-    <Content Include="samples\Disk.png" />
-    <Content Include="samples\Dungeon.png" />
-    <Content Include="samples\Fabric.png" />
-    <Content Include="samples\FloorPlan.png" />
-    <Content Include="samples\FloorPlan\data.xml" />
-    <Content Include="samples\FloorPlan\div.png" />
-    <Content Include="samples\FloorPlan\divt.png" />
-    <Content Include="samples\FloorPlan\divturn.png" />
-    <Content Include="samples\FloorPlan\door.png" />
-    <Content Include="samples\FloorPlan\empty.png" />
-    <Content Include="samples\FloorPlan\floor.png" />
-    <Content Include="samples\FloorPlan\glass.png" />
-    <Content Include="samples\FloorPlan\halfglass.png" />
-    <Content Include="samples\FloorPlan\in.png" />
-    <Content Include="samples\FloorPlan\out.png" />
-    <Content Include="samples\FloorPlan\stairs.png" />
-    <Content Include="samples\FloorPlan\table.png" />
-    <Content Include="samples\FloorPlan\vent.png" />
-    <Content Include="samples\FloorPlan\w.png" />
-    <Content Include="samples\FloorPlan\wall.png" />
-    <Content Include="samples\FloorPlan\walldiv.png" />
-    <Content Include="samples\FloorPlan\window.png" />
-    <Content Include="samples\Flowers.png" />
-    <Content Include="samples\Font.png" />
-    <Content Include="samples\Forest.png" />
-    <Content Include="samples\Hogs.png" />
-    <Content Include="samples\Knot.png" />
-    <Content Include="samples\Knots.png" />
-    <Content Include="samples\Knots\corner.png" />
-    <Content Include="samples\Knots\cross.png" />
-    <Content Include="samples\Knots\data.xml" />
-    <Content Include="samples\Knots\empty.png" />
-    <Content Include="samples\Knots\line.png" />
-    <Content Include="samples\Knots\t.png" />
-    <Content Include="samples\Lake.png" />
-    <Content Include="samples\LessRooms.png" />
-    <Content Include="samples\Lines.png" />
-    <Content Include="samples\Link.png" />
-    <Content Include="samples\Link2.png" />
-    <Content Include="samples\MagicOffice.png" />
-    <Content Include="samples\Maze.png" />
-    <Content Include="samples\Mazelike.png" />
-    <Content Include="samples\MoreFlowers.png" />
-    <Content Include="samples\Mountains.png" />
-    <Content Include="samples\Nested.png" />
-    <Content Include="samples\NoResultFound.png" />
-    <Content Include="samples\NotKnot.png" />
-    <Content Include="samples\Office.png" />
-    <Content Include="samples\Office2.png" />
-    <Content Include="samples\Paths.png" />
-    <Content Include="samples\Qud.png" />
-    <Content Include="samples\RedDot.png" />
-    <Content Include="samples\RedMaze.png" />
-    <Content Include="samples\Rooms.png" />
-    <Content Include="samples\Rule126.png" />
-    <Content Include="samples\Sand.png" />
-    <Content Include="samples\ScaledMaze.png" />
-    <Content Include="samples\Sewers.png" />
-    <Content Include="samples\SimpleKnot.png" />
-    <Content Include="samples\SimpleMaze.png" />
-    <Content Include="samples\SimpleWall.png" />
-    <Content Include="samples\Skew1.png" />
-    <Content Include="samples\Skew2.png" />
-    <Content Include="samples\Skyline.png" />
-    <Content Include="samples\SmileCity.png" />
-    <Content Include="samples\Spirals.png" />
-    <Content Include="samples\Town.png" />
-    <Content Include="samples\TrickKnot.png" />
-    <Content Include="samples\Village.png" />
-    <Content Include="samples\Wall.png" />
-    <Content Include="samples\WalledDot.png" />
-    <Content Include="samples\Water.png" />
-    <Content Include="samples\Wrinkles.png" />
+    <Content Include="samples\3Bricks.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Angular.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\BrownFox.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\bridge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\data.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\ground.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\river.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\riverturn.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\road.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\roadturn.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\t.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\tower.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\wall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\wallriver.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Castle\wallroad.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Cat.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Cats.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Cave.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Chess.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circle.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\b.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\b_half.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\b_i.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\b_quarter.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\data.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\w.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\w_half.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\w_i.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circles\w_quarter.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\bridge.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\component.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\connection.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\corner.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\data.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\dskew.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\skew.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\substrate.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\t.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\track.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\transition.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\turn.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\viad.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\vias.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Circuit\wire.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\City.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\ColoredCity.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Disk.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Dungeon.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Fabric.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\data.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\div.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\divt.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\divturn.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\door.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\empty.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\floor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\glass.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\halfglass.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\in.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\out.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\stairs.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\table.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\vent.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\w.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\wall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\walldiv.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\FloorPlan\window.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Flowers.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Font.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Forest.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Hogs.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots\corner.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots\cross.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots\data.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots\empty.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots\line.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Knots\t.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Lake.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\LessRooms.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Lines.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Link.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Link2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\MagicOffice.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Maze.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Mazelike.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\MoreFlowers.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Mountains.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Nested.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\NoResultFound.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\NotKnot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Office.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Office2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Paths.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Qud.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\RedDot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\RedMaze.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Rooms.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Rule126.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Sand.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\ScaledMaze.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Sewers.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\SimpleKnot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\SimpleMaze.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\SimpleWall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Skew1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Skew2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Skyline.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\SmileCity.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Spirals.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Town.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\TrickKnot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Village.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Wall.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\WalledDot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Water.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="samples\Wrinkles.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DeBroglie\DeBroglie.csproj">

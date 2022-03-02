@@ -1,10 +1,8 @@
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\bin\Release\netstandard2.0\WFC4All.DeBroglie.deps.json
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\bin\Release\netstandard2.0\WFC4All.DeBroglie.dll
-C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\bin\Release\netstandard2.0\WFC4All.DeBroglie.pdb
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\DeBroglie.csproj.AssemblyReference.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\DeBroglie.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\DeBroglie.AssemblyInfoInputs.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\DeBroglie.AssemblyInfo.cs
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\DeBroglie.csproj.CoreCompileInputs.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\WFC4All.DeBroglie.dll
-C:\Users\thijm\Documents\Git Repositories\thesis\DeBroglie\obj\Release\netstandard2.0\WFC4All.DeBroglie.pdb

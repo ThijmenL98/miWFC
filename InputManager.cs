@@ -34,7 +34,7 @@ namespace WFC4All {
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
             form = formIn;
             currentStep = 0;
-            xDoc = XDocument.Load("./samples.xml");
+            xDoc = XDocument.Parse(Properties.Resources.samples);
             currentBitmap = null;
             inputHasChanged = true;
             sizeHasChanged = true;
@@ -77,9 +77,7 @@ namespace WFC4All {
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
-
-                        Console.WriteLine(tiles.get(0));
-
+                        
                         bool isCached = false;
 
                         foreach (PatternArray patternArray in patternList) {

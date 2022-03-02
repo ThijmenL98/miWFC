@@ -19,10 +19,10 @@ namespace WFC4All.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace WFC4All.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("WFC4All.Properties.Resources", typeof(Resources).Assembly);
@@ -51,12 +51,79 @@ namespace WFC4All.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        public static System.Drawing.Icon icon {
+            get {
+                object obj = ResourceManager.GetObject("icon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap rotationRef {
+            get {
+                object obj = ResourceManager.GetObject("rotationRef", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap rotationRef1 {
+            get {
+                object obj = ResourceManager.GetObject("rotationRef1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap rotationRef2 {
+            get {
+                object obj = ResourceManager.GetObject("rotationRef2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap rotationRef3 {
+            get {
+                object obj = ResourceManager.GetObject("rotationRef3", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;samples&gt;
+        ///      &lt;overlapping name=&quot;Chess&quot; N=&quot;2&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;Skyline&quot; N=&quot;3&quot; symmetry=&quot;2&quot; ground=&quot;-1&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;Flowers&quot; N=&quot;3&quot; symmetry=&quot;2&quot; ground=&quot;-4&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;Hogs&quot; N=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;Hogs&quot; N=&quot;2&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;Knot&quot; N=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;LessRooms&quot; N=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///      &lt;overlapping name=&quot;Mountains&quot; N=&quot;3&quot; symme [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string samples {
+            get {
+                return ResourceManager.GetString("samples", resourceCulture);
             }
         }
     }

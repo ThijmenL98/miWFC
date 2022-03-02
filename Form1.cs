@@ -23,7 +23,9 @@ namespace WFC4All {
         private Size oldSize;
 
         public Form1() {
-            xDoc = XDocument.Load("samples.xml");
+            Icon = Properties.Resources.icon;
+            
+            xDoc = XDocument.Parse(Properties.Resources.samples);
             defaultSymmetry = 8;
             oldSize = new Size(1616, 939);
             result = new Bitmap(1, 1);
@@ -38,7 +40,7 @@ namespace WFC4All {
             initInHeight = inputImagePB.Height;
             initOutWidth = resultPB.Width;
             initOutHeight = resultPB.Height;
-
+            
             pbs = new[] {p1RotPB, p2RotPB, p3RotPB};
 
             string[] inputImageDataSource = inputManager.getImages("overlapping"); // or "simpletiled"
@@ -365,14 +367,14 @@ namespace WFC4All {
         }
 
         private void initializeRotations() {
-            Bitmap referenceImg = new("rotationRef.png");
+            Bitmap referenceImg = new(Properties.Resources.rotationRef);
             const int padding = 3;
             originalRotPB.BackColor = Color.Black;
             originalRotPB.Padding = new Padding(padding);
             originalRotPB.Image = referenceImg;
 
-            string[] rfs = {
-                "rotationRef1.png", "rotationRef2.png", "rotationRef3.png"
+            Bitmap[] rfs = {
+                Properties.Resources.rotationRef1, Properties.Resources.rotationRef2,Properties.Resources.rotationRef3
             };
             string[] rfsString = {
                 "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
@@ -526,15 +528,6 @@ namespace WFC4All {
                     if (y == n - 1 && colorIdx != distinctColors.Count - 1) {
                         isGroundPattern = false;
                     }
-                }
-            }
-
-            if (isGroundPattern) {
-                for (int y = n-1; y >= 0; y--) {
-                    for (int x = 0; x < n; x++) {
-                        Console.Write($@"({x},{y})-{colors.getTileAt(x, y).Value}, ");
-                    }
-                    Console.WriteLine();
                 }
             }
 
