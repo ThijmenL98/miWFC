@@ -1,0 +1,14 @@
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.exe.config
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.pdb
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.DeBroglie.dll
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.DeBroglie.pdb
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.AssemblyReference.cache
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.SuggestedBindingRedirects.cache
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.Form1.resources
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.Properties.Resources.resources
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.GenerateResource.cache
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.CoreCompileInputs.cache
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.CopyComplete
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.pdb

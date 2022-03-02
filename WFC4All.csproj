@@ -185,7 +185,6 @@
     <Content Include="samples\Office.png" />
     <Content Include="samples\Office2.png" />
     <Content Include="samples\Paths.png" />
-    <Content Include="samples\Platformer.png" />
     <Content Include="samples\Qud.png" />
     <Content Include="samples\RedDot.png" />
     <Content Include="samples\RedMaze.png" />
@@ -200,7 +199,6 @@
     <Content Include="samples\Skew1.png" />
     <Content Include="samples\Skew2.png" />
     <Content Include="samples\Skyline.png" />
-    <Content Include="samples\Skyline2.png" />
     <Content Include="samples\SmileCity.png" />
     <Content Include="samples\Spirals.png" />
     <Content Include="samples\Town.png" />

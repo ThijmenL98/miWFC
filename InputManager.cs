@@ -27,7 +27,7 @@ namespace WFC4All {
 
         private TilePropagator dbPropagator;
         private TileModel dbModel;
-        private Tile firstTile, groundPattern;
+        private ITopoArray<Tile> tiles;
 
         public InputManager(Form1 formIn) {
             tileSize = 0;
@@ -45,7 +45,6 @@ namespace WFC4All {
         /*
          * Functionality
          */
-        ITopoArray<Tile> tiles = null;
 
         public (Bitmap, bool) initAndRunWfcDB(bool reset, int steps) {
             if (form.isChangingModels) {
@@ -93,8 +92,6 @@ namespace WFC4All {
                         if (!isCached) {
                             form.bitMaps.saveCache();
                         }
-
-                        //TODO: Ground Pattern Redo - groundPattern = tiles.get(form.bitMaps.getFloorIndex());
                     } else {
                         dbModel = new AdjacentModel();
                         xRoot = XDocument.Load($"samples/{form.getSelectedInput()}/data.xml").Root;
@@ -170,7 +167,7 @@ namespace WFC4All {
                         dbModel = new AdjacentModel(sample.toTiles());
                     }
 
-                    Console.WriteLine(@"Init took " + sw.ElapsedMilliseconds + @"ms.");
+                    Console.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                     sizeHasChanged = true;
                 }
@@ -181,28 +178,37 @@ namespace WFC4All {
                     dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                         BackTrackDepth = -1,
                     });
-                    Console.WriteLine(@"Assigning took " + sw.ElapsedMilliseconds + @"ms.");
+                    Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                 } else {
                     dbPropagator?.clear();
-                    Console.WriteLine(@"Clearing took " + sw.ElapsedMilliseconds + @"ms.");
+                    Console.WriteLine(@$"Clearing took {sw.ElapsedMilliseconds}ms.");
                 }
 
-                string[] groundEnabledInput = {"flowers"};
-                if (groundEnabledInput.Any(x => x.Equals(form.getSelectedInput().ToLower()))) {
-                    //     // TODO: Ground pattern banning redo
-                    //     if (form.isOverlappingModel() && selectedPeriodicity) {
-                    for (int x = 0; x < 3; x++) {
-                        //             // dbPropagator?.@select(x, form.getOutputHeight() - 1, 0, groundPattern);
-                        //             dbPropagator?.observe(x + (form.getOutputHeight()-4) * form.getOutputWidth(),
-                        //                 form.bitMaps.getFloorIndex());
-                        //             for (int y = 0; y < form.getOutputHeight() - 1; y++) {
-                        //                 //dbPropagator?.ban(x, y, 0, groundPattern);
-                        //                 //dbPropagator?.ban(x, y, form.bitMaps.getFloorIndex());
-                        dbPropagator?.@select(x, form.getOutputHeight() - 1, 0, new Tile(currentColors.ElementAt(currentColors.Count-1)));
+                if (form.isOverlappingModel() && selectedPeriodicity) {
+                    if ("flowers".Equals(form.getSelectedInput().ToLower())) {
+                        // Set the bottom last 2 rows to be the ground tile
+                        dbPropagator?.@select(0, form.getOutputHeight() - 1, 0,
+                            new Tile(currentColors.ElementAt(currentColors.Count - 1)));
+                        dbPropagator?.@select(0, form.getOutputHeight() - 2, 0,
+                            new Tile(currentColors.ElementAt(currentColors.Count - 1)));
+
+                        // And ban it elsewhere
+                        for (int y = 0; y < form.getOutputHeight() - 2; y++) {
+                            dbPropagator?.ban(0, y, 0, new Tile(currentColors.ElementAt(currentColors.Count - 1)));
+                        }
                     }
-                    //         }
-                    //     }
+
+                    if ("skyline".Equals(form.getSelectedInput().ToLower())) {
+                        // Set the bottom last row to be the ground tile
+                        dbPropagator?.@select(0, form.getOutputHeight() - 1, 0,
+                            new Tile(currentColors.ElementAt(currentColors.Count - 1)));
+
+                        // And ban it elsewhere
+                        for (int y = 0; y < form.getOutputHeight() - 1; y++) {
+                            dbPropagator?.ban(0, y, 0, new Tile(currentColors.ElementAt(currentColors.Count - 1)));
+                        }
+                    }
                 }
 
                 inputHasChanged = false;
@@ -229,7 +235,7 @@ namespace WFC4All {
                 }
             }
 
-            Console.WriteLine(@"Stepping forward took " + sw.ElapsedMilliseconds + @"ms.");
+            Console.WriteLine(@$"Stepping forward took {sw.ElapsedMilliseconds}ms.");
             sw.Restart();
 
             Bitmap outputBitmap;
@@ -263,7 +269,7 @@ namespace WFC4All {
                 }
             }
 
-            Console.WriteLine(@"Bitmap took " + sw.ElapsedMilliseconds + @"ms.");
+            Console.WriteLine(@$"Bitmap took {sw.ElapsedMilliseconds}ms. {dbStatus}");
             return (outputBitmap, dbStatus == Resolution.DECIDED);
         }
 
@@ -274,7 +280,7 @@ namespace WFC4All {
                 dbPropagator.doBacktrack();
             }
 
-            Console.WriteLine(@"Stepping back took " + sw.ElapsedMilliseconds + @"ms.");
+            Console.WriteLine(@$"Stepping back took {sw.ElapsedMilliseconds}ms.");
             sw.Restart();
 
             Bitmap outputBitmap;
@@ -306,7 +312,7 @@ namespace WFC4All {
                 }
             }
 
-            Console.WriteLine(@"Bitmap took " + sw.ElapsedMilliseconds + @"ms.");
+            Console.WriteLine(@$"Bitmap took {sw.ElapsedMilliseconds}ms.");
 
             return outputBitmap;
         }
@@ -451,7 +457,7 @@ namespace WFC4All {
 
         public void setInputChanged(string source) {
             if (!form.isChangingModels) {
-                Console.WriteLine(@"Input changed on " + source);
+                Console.WriteLine(@$"Input changed on {source}");
                 inputHasChanged = true;
             }
         }

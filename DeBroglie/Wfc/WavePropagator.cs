@@ -464,9 +464,13 @@ namespace WFC4All.DeBroglie.Wfc {
             }
 
             doBacktrack();
-            prevChoices.pop();
+            if (prevChoices.Count > 0) {
+                prevChoices.pop();
+            }
+
             backtrackCount++;
-            return Resolution.DECIDED;
+            status = Resolution.UNDECIDED;
+            return status;
         }
 
         public Resolution propagateSingle() {

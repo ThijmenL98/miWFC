@@ -300,7 +300,6 @@ namespace WFC4All
             this.periodicInput.Text = "Periodic Input";
             this.periodicInput.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.periodicInput.UseVisualStyleBackColor = true;
-            this.periodicInput.Visible = false;
             this.periodicInput.CheckedChanged += new System.EventHandler(this.inputChanged);
             // 
             // modelChoice

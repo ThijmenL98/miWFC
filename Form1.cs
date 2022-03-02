@@ -69,12 +69,12 @@ namespace WFC4All {
 
         private void resizeAll(Control control, Size newSize) {
             int width = newSize.Width - oldSize.Width;
-            control.Left += (control.Left * width) / oldSize.Width;
-            control.Width += (control.Width * width) / oldSize.Width;
+            control.Left += control.Left * width / oldSize.Width;
+            control.Width += control.Width * width / oldSize.Width;
 
             int height = newSize.Height - oldSize.Height;
-            control.Top += (control.Top * height) / oldSize.Height;
-            control.Height += (control.Height * height) / oldSize.Height;
+            control.Top += control.Top * height / oldSize.Height;
+            control.Height += control.Height * height / oldSize.Height;
         }
 
         private int lastRanForced;
@@ -193,7 +193,7 @@ namespace WFC4All {
             if (animateButton.Text.Equals("Animate")) {
                 lock (myTimer) {
                     myTimer.Interval = getAnimationSpeed();
-                    myTimer.Tick += (myTimer_Tick);
+                    myTimer.Tick += myTimer_Tick;
                     myTimer.Start();
                 }
             } else {
