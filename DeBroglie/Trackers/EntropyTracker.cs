@@ -23,9 +23,10 @@ namespace WFC4All.DeBroglie.Trackers {
 
         private List<int> cache = new();
 
-        private Queue<(int, int)> spiralIndices;
+        private Queue<(int, int)> spiralIndices, hilbertIndices;
 
-        private readonly int outputWidth, outputHeight;
+        private int outputWidth;
+        private int outputHeight;
 
         public EntropyTracker(
             Wave wave,
@@ -42,6 +43,7 @@ namespace WFC4All.DeBroglie.Trackers {
             outputHeight = outHeight;
 
             generateSpiralCoords();
+            generateHilbertCoords();
 
             this.wave = wave;
             indices = wave.Indicies;
@@ -157,16 +159,14 @@ namespace WFC4All.DeBroglie.Trackers {
         //     public int Next() => pool.Count > 0 ? pool.Pop() : -1;
         // }
 
-        public int getRandomIndex() {
-            Random rand = new();
-
+        public int getRandomIndex(Func<double> randomDouble) {
             while (true) {
                 List<int> available = Enumerable.Range(0, indices).Except(cache).ToList();
                 if (available.Count == 0) {
                     return -1;
                 }
 
-                int r = available.ElementAt(rand.Next(available.Count()));
+                int r = available.ElementAt((int) Math.Floor(randomDouble() * available.Count));
                 if (wave.getPatternCount(r) <= 1) {
                     cache.Add(r);
                 } else {
@@ -188,16 +188,24 @@ namespace WFC4All.DeBroglie.Trackers {
         }
 
         public int getSpiralIndex() {
-            (int, int) next = spiralIndices.Dequeue();
+            return getQueuedIndex(spiralIndices);
+        }
+
+        public int getHilbertIndex() {
+            return getQueuedIndex(hilbertIndices);
+        }
+
+        private int getQueuedIndex(Queue<(int, int)> queue) {
+            (int, int) next = queue.Dequeue();
             int index = next.Item1 + next.Item2 * outputHeight;
-            
+
             int c = wave.getPatternCount(index);
             while (c <= 1) {
-                if (spiralIndices.Count == 0) {
+                if (queue.Count == 0) {
                     return -1;
                 }
 
-                next = spiralIndices.Dequeue();
+                next = queue.Dequeue();
                 index = next.Item1 + next.Item2 * outputHeight;
                 c = wave.getPatternCount(index);
             }
@@ -208,28 +216,28 @@ namespace WFC4All.DeBroglie.Trackers {
         private void generateSpiralCoords() {
             int x = (int) Math.Floor(outputWidth / 2d), y = (int) Math.Floor(outputHeight / 2d);
             spiralIndices = new Queue<(int, int)>();
-            customEnqueue(x, y);
+            customEnqueue(x, y, spiralIndices);
 
             int n = 1;
-            
+
             while (spiralIndices.Count < outputWidth * outputHeight) {
                 if (n % 2 == 0) {
-                    customEnqueue(++x, y);
+                    customEnqueue(++x, y, spiralIndices);
                     for (int m = 0; m < n; m++) {
-                        customEnqueue(x, ++y);
+                        customEnqueue(x, ++y, spiralIndices);
                     }
 
                     for (int m = 0; m < n; m++) {
-                        customEnqueue(--x, y);
+                        customEnqueue(--x, y, spiralIndices);
                     }
                 } else {
-                    customEnqueue(--x, y);
+                    customEnqueue(--x, y, spiralIndices);
                     for (int m = 0; m < n; m++) {
-                        customEnqueue(x, --y);
+                        customEnqueue(x, --y, spiralIndices);
                     }
 
                     for (int m = 0; m < n; m++) {
-                        customEnqueue(++x, y);
+                        customEnqueue(++x, y, spiralIndices);
                     }
                 }
 
@@ -237,7 +245,37 @@ namespace WFC4All.DeBroglie.Trackers {
             }
         }
 
-        private void customEnqueue(int x, int y) {
+        private void generateHilbertCoords() {
+            hilbertIndices = new Queue<(int, int)>();
+            for (int i = 0; hilbertIndices.Count < outputWidth * outputHeight; i++) {
+                int t = i, x = 0, y = 0;
+                for (int s = 1; s < outputWidth * outputHeight; s *= 2) {
+                    int rx = 1 & (t / 2);
+                    int ry = 1 & (t ^ rx);
+                    hilbertRot(s, rx, ry, x, y, out x, out y);
+                    x += s * rx;
+                    y += s * ry;
+                    t /= 4;
+                }
+
+                customEnqueue(x, y, hilbertIndices);
+            }
+        }
+
+        private static void hilbertRot(int n, int rx, int ry, int refX, int refY, out int x, out int y) {
+            x = refX;
+            y = refY;
+            if (ry == 0) {
+                if (rx == 1) {
+                    x = n - 1 - x;
+                    y = n - 1 - y;
+                }
+
+                (y, x) = (x, y);
+            }
+        }
+
+        private void customEnqueue(int x, int y, Queue<(int, int)> queue) {
             if (x < 0 || y < 0) {
                 return;
             }
@@ -249,7 +287,8 @@ namespace WFC4All.DeBroglie.Trackers {
             if (y >= outputHeight) {
                 return;
             }
-            spiralIndices.Enqueue((x, y));
+
+            queue.Enqueue((x, y));
         }
 
         public int getRandomPossiblePatternAt(int index, Func<double> randomDouble) {

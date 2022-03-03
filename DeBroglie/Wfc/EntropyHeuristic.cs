@@ -27,9 +27,9 @@ namespace WFC4All.DeBroglie.Wfc
             // Lexical: entropyTracker.getLexicalIndex()
             // Entropy: entropyTracker.getRandomMinEntropyIndex(randomDouble, false)
             // Simple: entropyTracker.getRandomMinEntropyIndex(randomDouble, true)
-            // Random: entropyTracker.getRandomIndex()
-            // Spiral: entropyTracker.getSpiralIndex()
-            // Hilbert: TODO
+            // Random: entropyTracker.getRandomIndex(randomDouble)
+            // Spiral: entropyTracker.getSpiralIndex(randomDouble)
+            // Hilbert: entropyTracker.getLexicalIndex()
             index = entropyTracker.getRandomMinEntropyIndex(randomDouble, false);
             if (index == -1)
             {
