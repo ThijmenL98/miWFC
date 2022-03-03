@@ -290,7 +290,7 @@ namespace WFC4All.DeBroglie.Trackers {
             queue.Enqueue((x, y));
         }
 
-        public int getRandomPossiblePatternAt(int index, Func<double> randomDouble) {
+        public int getWeightedPatternAt(int index, Func<double> randomDouble) {
             double s = 0.0;
             for (int pattern = 0; pattern < patternCount; pattern++) {
                 if (wave.get(index, pattern)) {
@@ -310,6 +310,33 @@ namespace WFC4All.DeBroglie.Trackers {
             }
 
             return patternCount - 1;
+        }
+
+        public int getRandomPatternAt(int index, Func<double> randomDouble) {
+            int s = 0;
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (wave.get(index, pattern)) {
+                    s++;
+                }
+            }
+
+            double r = randomDouble() * s;
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (wave.get(index, pattern)) {
+                    r--;
+                }
+
+                if (r <= 0) {
+                    return pattern;
+                }
+            }
+
+            return patternCount - 1;
+        }
+
+        public int getLeastPatternAt(int index) {
+            //TODO
+            return 0;
         }
 
         /**

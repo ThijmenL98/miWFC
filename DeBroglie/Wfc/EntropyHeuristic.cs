@@ -45,7 +45,10 @@ namespace WFC4All.DeBroglie.Wfc
             
             // Choose a random pattern
             //TODO RF8
-            pattern = entropyTracker.getRandomPossiblePatternAt(index, randomDouble);
+            // Weighted - Pick weighted pattern (although randomly) = entropyTracker.getWeightedPatternAt(index, randomDouble);
+            // Random - Pick random pattern                         = entropyTracker.getRandomPatternAt(index, randomDouble);
+            // Least - Pick least used pattern next
+            pattern = entropyTracker.getWeightedPatternAt(index, randomDouble);
         }
     }
 }
