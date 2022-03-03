@@ -28,4 +28,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="WFC4All, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\bin\Debug\WFC4All.exe</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

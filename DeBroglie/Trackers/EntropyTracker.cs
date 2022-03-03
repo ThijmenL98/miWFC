@@ -34,7 +34,6 @@ namespace WFC4All.DeBroglie.Trackers {
             bool[] mask,
             int outWidth,
             int outHeight) {
-            Console.WriteLine(@$"EYO Entropy tracker created");
             this.frequencies = frequencies;
             patternCount = frequencies.Length;
             this.mask = mask;

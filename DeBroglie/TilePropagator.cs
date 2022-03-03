@@ -67,13 +67,13 @@ namespace WFC4All.DeBroglie
         /// <param name="topology">The dimensions of the output to generate</param>
         /// <param name="backtrack">If true, store additional information to allow rolling back choices that lead to a contradiction.</param>
         /// <param name="constraints">Extra constraints to control the generation process.</param>
-        public TilePropagator(TileModel tileModel, ITopology topology, bool backtrack = false,
+        public TilePropagator(TileModel tileModel, ITopology topology, int selectionHeuristic, bool backtrack = false,
             ITileConstraint[] constraints = null)
             : this(tileModel, topology, new TilePropagatorOptions
             {
                 BackTrackDepth = backtrack ? -1 : 0,
                 Constraints = constraints,
-            })
+            }, selectionHeuristic)
         {
 
         }
@@ -89,18 +89,18 @@ namespace WFC4All.DeBroglie
         [Obsolete("Use TilePropagatorOptions")]
         public TilePropagator(TileModel tileModel, ITopology topology, bool backtrack,
             ITileConstraint[] constraints,
-            Random random)
+            Random random, int selectionHeuristic)
             :this(tileModel, topology, new TilePropagatorOptions
             {
                 BackTrackDepth = backtrack ? -1 : 0,
                 Constraints = constraints,
                 Random = random,
-            })
+            }, selectionHeuristic)
         {
 
         }
 
-        public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options)
+        public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, int selectionHeuristic)
         {
             this.tileModel = tileModel;
             this.topology = topology;
@@ -123,6 +123,7 @@ namespace WFC4All.DeBroglie
                 patternTopology,
                 topology.Width,
                 topology.Height, 
+                selectionHeuristic,
                 options.BackTrackDepth, 
                 waveConstraints, 
                 options.RandomDouble ?? (options.Random == null ? (Func<double>)null : options.Random.NextDouble),

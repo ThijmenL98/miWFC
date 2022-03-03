@@ -32,6 +32,11 @@ namespace WFC4All
         /// </summary>
         private void InitializeComponent() {
             this.inputTab = new System.Windows.Forms.TabPage();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.selectionHeuristicDesc = new System.Windows.Forms.Label();
+            this.selectionHeuristicLabel = new System.Windows.Forms.Label();
+            this.selectionHeuristicCB = new System.Windows.Forms.ComboBox();
+            this.selectionHeuristicPB = new System.Windows.Forms.PictureBox();
             this.markerButton = new System.Windows.Forms.Button();
             this.revertMarkerButton = new System.Windows.Forms.Button();
             this.backButton = new System.Windows.Forms.Button();
@@ -64,17 +69,19 @@ namespace WFC4All
             this.restartButton = new System.Windows.Forms.Button();
             this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize) (this.animationSpeedValue)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.stepValue)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.p3RotPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.p2RotPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.p1RotPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.originalRotPB)).BeginInit();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.selectionHeuristicPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.animationSpeedValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.stepValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.p3RotPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.p2RotPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.p1RotPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.originalRotPB)).BeginInit();
             this.patternPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize) (this.outputHeightValue)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.outputWidthValue)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.inputImagePB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.resultPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.outputHeightValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.outputWidthValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputImagePB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultPB)).BeginInit();
             this.tabSelection.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -82,6 +89,7 @@ namespace WFC4All
             // 
             this.inputTab.AutoScroll = true;
             this.inputTab.BackColor = System.Drawing.Color.DarkGray;
+            this.inputTab.Controls.Add(this.panel1);
             this.inputTab.Controls.Add(this.markerButton);
             this.inputTab.Controls.Add(this.revertMarkerButton);
             this.inputTab.Controls.Add(this.backButton);
@@ -118,9 +126,67 @@ namespace WFC4All
             this.inputTab.TabIndex = 0;
             this.inputTab.Text = "Input Manipulation";
             // 
+            // panel1
+            // 
+            this.panel1.BackColor = System.Drawing.Color.Silver;
+            this.panel1.Controls.Add(this.selectionHeuristicDesc);
+            this.panel1.Controls.Add(this.selectionHeuristicLabel);
+            this.panel1.Controls.Add(this.selectionHeuristicCB);
+            this.panel1.Controls.Add(this.selectionHeuristicPB);
+            this.panel1.Location = new System.Drawing.Point(9, 552);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(346, 111);
+            this.panel1.TabIndex = 34;
+            // 
+            // selectionHeuristicDesc
+            // 
+            this.selectionHeuristicDesc.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.selectionHeuristicDesc.BackColor = System.Drawing.Color.Transparent;
+            this.selectionHeuristicDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.selectionHeuristicDesc.Location = new System.Drawing.Point(95, 37);
+            this.selectionHeuristicDesc.Name = "selectionHeuristicDesc";
+            this.selectionHeuristicDesc.Size = new System.Drawing.Size(139, 58);
+            this.selectionHeuristicDesc.TabIndex = 33;
+            this.selectionHeuristicDesc.Text = "Select the most logical choice based on the amount of available options, and solv" +
+    "e ties randomly";
+            this.selectionHeuristicDesc.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // selectionHeuristicLabel
+            // 
+            this.selectionHeuristicLabel.AutoSize = true;
+            this.selectionHeuristicLabel.BackColor = System.Drawing.Color.Transparent;
+            this.selectionHeuristicLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.selectionHeuristicLabel.Location = new System.Drawing.Point(11, 37);
+            this.selectionHeuristicLabel.Name = "selectionHeuristicLabel";
+            this.selectionHeuristicLabel.Size = new System.Drawing.Size(67, 30);
+            this.selectionHeuristicLabel.TabIndex = 32;
+            this.selectionHeuristicLabel.Text = "Selection\r\nHeuristic";
+            // 
+            // selectionHeuristicCB
+            // 
+            this.selectionHeuristicCB.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.selectionHeuristicCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.selectionHeuristicCB.FormattingEnabled = true;
+            this.selectionHeuristicCB.Location = new System.Drawing.Point(95, 14);
+            this.selectionHeuristicCB.Name = "selectionHeuristicCB";
+            this.selectionHeuristicCB.Size = new System.Drawing.Size(139, 21);
+            this.selectionHeuristicCB.TabIndex = 31;
+            this.selectionHeuristicCB.SelectedIndexChanged += new System.EventHandler(this.selectionHeuristicCB_SelectedIndexChanged);
+            // 
+            // selectionHeuristicPB
+            // 
+            this.selectionHeuristicPB.Image = global::WFC4All.Properties.Resources.Entropy;
+            this.selectionHeuristicPB.InitialImage = global::WFC4All.Properties.Resources.Entropy;
+            this.selectionHeuristicPB.Location = new System.Drawing.Point(240, 5);
+            this.selectionHeuristicPB.Name = "selectionHeuristicPB";
+            this.selectionHeuristicPB.Size = new System.Drawing.Size(100, 100);
+            this.selectionHeuristicPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.selectionHeuristicPB.TabIndex = 30;
+            this.selectionHeuristicPB.TabStop = false;
+            // 
             // markerButton
             // 
-            this.markerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.markerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.markerButton.Location = new System.Drawing.Point(938, 781);
             this.markerButton.Name = "markerButton";
             this.markerButton.Size = new System.Drawing.Size(110, 40);
@@ -131,7 +197,7 @@ namespace WFC4All
             // 
             // revertMarkerButton
             // 
-            this.revertMarkerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.revertMarkerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.revertMarkerButton.Location = new System.Drawing.Point(1054, 781);
             this.revertMarkerButton.Name = "revertMarkerButton";
             this.revertMarkerButton.Size = new System.Drawing.Size(110, 40);
@@ -142,7 +208,7 @@ namespace WFC4All
             // 
             // backButton
             // 
-            this.backButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.backButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.backButton.Location = new System.Drawing.Point(938, 736);
             this.backButton.Name = "backButton";
             this.backButton.Size = new System.Drawing.Size(110, 40);
@@ -153,7 +219,7 @@ namespace WFC4All
             // 
             // animationSpeedLabel
             // 
-            this.animationSpeedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.animationSpeedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.animationSpeedLabel.Location = new System.Drawing.Point(1293, 788);
             this.animationSpeedLabel.Name = "animationSpeedLabel";
             this.animationSpeedLabel.Size = new System.Drawing.Size(173, 64);
@@ -163,18 +229,30 @@ namespace WFC4All
             // 
             // animationSpeedValue
             // 
-            this.animationSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.animationSpeedValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.animationSpeedValue.Location = new System.Drawing.Point(1471, 809);
-            this.animationSpeedValue.Maximum = new decimal(new int[] {2000, 0, 0, 0});
-            this.animationSpeedValue.Minimum = new decimal(new int[] {25, 0, 0, 0});
+            this.animationSpeedValue.Maximum = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            0});
+            this.animationSpeedValue.Minimum = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
             this.animationSpeedValue.Name = "animationSpeedValue";
             this.animationSpeedValue.Size = new System.Drawing.Size(67, 24);
             this.animationSpeedValue.TabIndex = 25;
-            this.animationSpeedValue.Value = new decimal(new int[] {50, 0, 0, 0});
+            this.animationSpeedValue.Value = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
             // 
             // animateButton
             // 
-            this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.animateButton.Location = new System.Drawing.Point(1053, 736);
             this.animateButton.Name = "animateButton";
             this.animateButton.Size = new System.Drawing.Size(110, 40);
@@ -185,19 +263,31 @@ namespace WFC4All
             // 
             // stepValue
             // 
-            this.stepValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.stepValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.stepValue.Location = new System.Drawing.Point(1471, 736);
-            this.stepValue.Maximum = new decimal(new int[] {999, 0, 0, 0});
-            this.stepValue.Minimum = new decimal(new int[] {1, 0, 0, -2147483648});
+            this.stepValue.Maximum = new decimal(new int[] {
+            999,
+            0,
+            0,
+            0});
+            this.stepValue.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            -2147483648});
             this.stepValue.Name = "stepValue";
             this.stepValue.Size = new System.Drawing.Size(67, 24);
             this.stepValue.TabIndex = 22;
-            this.stepValue.Value = new decimal(new int[] {10, 0, 0, 0});
+            this.stepValue.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
             this.stepValue.ValueChanged += new System.EventHandler(this.stepCountValueChanged);
             // 
             // stepSizeLabel
             // 
-            this.stepSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.stepSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.stepSizeLabel.Location = new System.Drawing.Point(1297, 716);
             this.stepSizeLabel.Name = "stepSizeLabel";
             this.stepSizeLabel.Size = new System.Drawing.Size(161, 64);
@@ -207,7 +297,7 @@ namespace WFC4All
             // 
             // advanceButton
             // 
-            this.advanceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.advanceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.advanceButton.Location = new System.Drawing.Point(1168, 736);
             this.advanceButton.Name = "advanceButton";
             this.advanceButton.Size = new System.Drawing.Size(110, 40);
@@ -218,18 +308,19 @@ namespace WFC4All
             // 
             // patternRotationLabel
             // 
-            this.patternRotationLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.patternRotationLabel.Location = new System.Drawing.Point(23, 658);
+            this.patternRotationLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.patternRotationLabel.Location = new System.Drawing.Point(44, 700);
             this.patternRotationLabel.Name = "patternRotationLabel";
             this.patternRotationLabel.Size = new System.Drawing.Size(180, 60);
             this.patternRotationLabel.TabIndex = 20;
-            this.patternRotationLabel.Text = "Select allowed pattern transformations. On the right is a non-transformed referen" + "ce (black border)";
+            this.patternRotationLabel.Text = "Select allowed pattern transformations. On the right is a non-transformed referen" +
+    "ce (black border)";
             this.patternRotationLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             this.patternRotationLabel.Visible = false;
             // 
             // p3RotPB
             // 
-            this.p3RotPB.Location = new System.Drawing.Point(246, 761);
+            this.p3RotPB.Location = new System.Drawing.Point(249, 781);
             this.p3RotPB.Name = "p3RotPB";
             this.p3RotPB.Size = new System.Drawing.Size(60, 60);
             this.p3RotPB.TabIndex = 15;
@@ -239,7 +330,7 @@ namespace WFC4All
             // 
             // p2RotPB
             // 
-            this.p2RotPB.Location = new System.Drawing.Point(146, 764);
+            this.p2RotPB.Location = new System.Drawing.Point(149, 781);
             this.p2RotPB.Name = "p2RotPB";
             this.p2RotPB.Size = new System.Drawing.Size(60, 60);
             this.p2RotPB.TabIndex = 14;
@@ -249,7 +340,7 @@ namespace WFC4All
             // 
             // p1RotPB
             // 
-            this.p1RotPB.Location = new System.Drawing.Point(46, 764);
+            this.p1RotPB.Location = new System.Drawing.Point(49, 781);
             this.p1RotPB.Name = "p1RotPB";
             this.p1RotPB.Size = new System.Drawing.Size(60, 60);
             this.p1RotPB.TabIndex = 13;
@@ -259,7 +350,7 @@ namespace WFC4All
             // 
             // originalRotPB
             // 
-            this.originalRotPB.Location = new System.Drawing.Point(226, 660);
+            this.originalRotPB.Location = new System.Drawing.Point(247, 702);
             this.originalRotPB.Name = "originalRotPB";
             this.originalRotPB.Size = new System.Drawing.Size(60, 60);
             this.originalRotPB.TabIndex = 12;
@@ -279,19 +370,21 @@ namespace WFC4All
             // 
             // patternsLabel
             // 
-            this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.patternsLabel.Location = new System.Drawing.Point(14, 14);
             this.patternsLabel.Name = "patternsLabel";
             this.patternsLabel.Size = new System.Drawing.Size(459, 56);
             this.patternsLabel.TabIndex = 0;
-            this.patternsLabel.Text = "Extracted patterns, you can deselect patterns you don\'t want to show up in the fi" + "nal generated image (red = excluded). Duplicate patterns (such as rotated or fli" + "pped) are excluded!";
+            this.patternsLabel.Text = "Extracted patterns, you can deselect patterns you don\'t want to show up in the fi" +
+    "nal generated image (red = excluded). Duplicate patterns (such as rotated or fli" +
+    "pped) are excluded!";
             // 
             // periodicInput
             // 
             this.periodicInput.AutoSize = true;
             this.periodicInput.Checked = true;
             this.periodicInput.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.periodicInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.periodicInput.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.periodicInput.Location = new System.Drawing.Point(20, 516);
             this.periodicInput.Name = "periodicInput";
             this.periodicInput.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
@@ -304,7 +397,7 @@ namespace WFC4All
             // 
             // modelChoice
             // 
-            this.modelChoice.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.modelChoice.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.modelChoice.Location = new System.Drawing.Point(177, 507);
             this.modelChoice.Name = "modelChoice";
             this.modelChoice.Size = new System.Drawing.Size(149, 35);
@@ -316,7 +409,7 @@ namespace WFC4All
             // outputImageHeightLabel
             // 
             this.outputImageHeightLabel.AutoSize = true;
-            this.outputImageHeightLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputImageHeightLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.outputImageHeightLabel.Location = new System.Drawing.Point(177, 472);
             this.outputImageHeightLabel.Name = "outputImageHeightLabel";
             this.outputImageHeightLabel.Size = new System.Drawing.Size(53, 15);
@@ -326,7 +419,7 @@ namespace WFC4All
             // outputImageWidthLabel
             // 
             this.outputImageWidthLabel.AutoSize = true;
-            this.outputImageWidthLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputImageWidthLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.outputImageWidthLabel.Location = new System.Drawing.Point(177, 447);
             this.outputImageWidthLabel.Name = "outputImageWidthLabel";
             this.outputImageWidthLabel.Size = new System.Drawing.Size(47, 15);
@@ -336,7 +429,7 @@ namespace WFC4All
             // outputSizeLabel
             // 
             this.outputSizeLabel.AutoSize = true;
-            this.outputSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.outputSizeLabel.Location = new System.Drawing.Point(20, 455);
             this.outputSizeLabel.Name = "outputSizeLabel";
             this.outputSizeLabel.Size = new System.Drawing.Size(125, 15);
@@ -345,31 +438,51 @@ namespace WFC4All
             // 
             // outputHeightValue
             // 
-            this.outputHeightValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputHeightValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.outputHeightValue.Location = new System.Drawing.Point(246, 468);
-            this.outputHeightValue.Minimum = new decimal(new int[] {10, 0, 0, 0});
+            this.outputHeightValue.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
             this.outputHeightValue.Name = "outputHeightValue";
             this.outputHeightValue.Size = new System.Drawing.Size(80, 24);
             this.outputHeightValue.TabIndex = 3;
-            this.outputHeightValue.Value = new decimal(new int[] {24, 0, 0, 0});
+            this.outputHeightValue.Value = new decimal(new int[] {
+            24,
+            0,
+            0,
+            0});
             this.outputHeightValue.ValueChanged += new System.EventHandler(this.outputSizeChanged);
             // 
             // outputWidthValue
             // 
-            this.outputWidthValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputWidthValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.outputWidthValue.Location = new System.Drawing.Point(246, 443);
-            this.outputWidthValue.Maximum = new decimal(new int[] {500, 0, 0, 0});
-            this.outputWidthValue.Minimum = new decimal(new int[] {10, 0, 0, 0});
+            this.outputWidthValue.Maximum = new decimal(new int[] {
+            500,
+            0,
+            0,
+            0});
+            this.outputWidthValue.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
             this.outputWidthValue.Name = "outputWidthValue";
             this.outputWidthValue.Size = new System.Drawing.Size(80, 24);
             this.outputWidthValue.TabIndex = 4;
-            this.outputWidthValue.Value = new decimal(new int[] {24, 0, 0, 0});
+            this.outputWidthValue.Value = new decimal(new int[] {
+            24,
+            0,
+            0,
+            0});
             this.outputWidthValue.ValueChanged += new System.EventHandler(this.outputSizeChanged);
             // 
             // inputImageCB
             // 
             this.inputImageCB.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.inputImageCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.inputImageCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.inputImageCB.FormattingEnabled = true;
             this.inputImageCB.Location = new System.Drawing.Point(112, 53);
             this.inputImageCB.Name = "inputImageCB";
@@ -389,7 +502,7 @@ namespace WFC4All
             // 
             this.inputImage.BackColor = System.Drawing.Color.Transparent;
             this.inputImage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.inputImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.inputImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.inputImage.Location = new System.Drawing.Point(20, 54);
             this.inputImage.Name = "inputImage";
             this.inputImage.Size = new System.Drawing.Size(180, 21);
@@ -400,7 +513,7 @@ namespace WFC4All
             // 
             this.patternSizeLabel.BackColor = System.Drawing.Color.Transparent;
             this.patternSizeLabel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.patternSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.patternSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.patternSizeLabel.Location = new System.Drawing.Point(20, 406);
             this.patternSizeLabel.Name = "patternSizeLabel";
             this.patternSizeLabel.Size = new System.Drawing.Size(150, 20);
@@ -410,7 +523,7 @@ namespace WFC4All
             // patternSize
             // 
             this.patternSize.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.patternSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.patternSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.patternSize.FormattingEnabled = true;
             this.patternSize.Location = new System.Drawing.Point(177, 405);
             this.patternSize.Name = "patternSize";
@@ -431,7 +544,7 @@ namespace WFC4All
             // 
             // restartButton
             // 
-            this.restartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.restartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.restartButton.Location = new System.Drawing.Point(1168, 781);
             this.restartButton.Name = "restartButton";
             this.restartButton.Size = new System.Drawing.Size(110, 40);
@@ -461,20 +574,30 @@ namespace WFC4All
             this.Text = "WFC4All";
             this.inputTab.ResumeLayout(false);
             this.inputTab.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize) (this.animationSpeedValue)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.stepValue)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.p3RotPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.p2RotPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.p1RotPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.originalRotPB)).EndInit();
+            this.panel1.ResumeLayout(false);
+            this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.selectionHeuristicPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.animationSpeedValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.stepValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.p3RotPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.p2RotPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.p1RotPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.originalRotPB)).EndInit();
             this.patternPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize) (this.outputHeightValue)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.outputWidthValue)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.inputImagePB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.resultPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.outputHeightValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.outputWidthValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputImagePB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.resultPB)).EndInit();
             this.tabSelection.ResumeLayout(false);
             this.ResumeLayout(false);
+
         }
+
+        private System.Windows.Forms.Label selectionHeuristicDesc;
+
+        private System.Windows.Forms.PictureBox selectionHeuristicPB;
+        private System.Windows.Forms.ComboBox selectionHeuristicCB;
+        private System.Windows.Forms.Label selectionHeuristicLabel;
 
         private System.Windows.Forms.Button revertMarkerButton;
         private System.Windows.Forms.Button markerButton;
@@ -511,5 +634,6 @@ namespace WFC4All
         private System.Windows.Forms.Label animationSpeedLabel;
         private System.Windows.Forms.NumericUpDown animationSpeedValue;
         private System.Windows.Forms.Button backButton;
+        private Panel panel1;
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using WFC4All.DeBroglie.Models;
+using WFC4All.Properties;
 
 namespace WFC4All {
     public partial class Form1 : Form {
@@ -23,9 +24,9 @@ namespace WFC4All {
         private Size oldSize;
 
         public Form1() {
-            Icon = Properties.Resources.icon;
-            
-            xDoc = XDocument.Parse(Properties.Resources.samples);
+            Icon = Resources.icon;
+
+            xDoc = XDocument.Parse(Resources.samples);
             defaultSymmetry = 8;
             oldSize = new Size(1616, 939);
             result = new Bitmap(1, 1);
@@ -40,13 +41,18 @@ namespace WFC4All {
             initInHeight = inputImagePB.Height;
             initOutWidth = resultPB.Width;
             initOutHeight = resultPB.Height;
-            
+
             pbs = new[] {p1RotPB, p2RotPB, p3RotPB};
 
             string[] inputImageDataSource = inputManager.getImages("overlapping"); // or "simpletiled"
             inputImageCB.DataSource = inputImageDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(inputImageDataSource[0]);
             patternSize.SelectedText = inputImageDataSource[0];
+
+            string[] selectionHeuristicDataSource =
+                {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
+            selectionHeuristicCB.DataSource = selectionHeuristicDataSource;
+            InputManager.setSelectionHeuristic(SelectionHeuristic.ENTROPY);
 
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(inputImageDataSource[0]);
             patternSize.DataSource = patternSizeDataSource;
@@ -367,14 +373,14 @@ namespace WFC4All {
         }
 
         private void initializeRotations() {
-            Bitmap referenceImg = new(Properties.Resources.rotationRef);
+            Bitmap referenceImg = new(Resources.rotationRef);
             const int padding = 3;
             originalRotPB.BackColor = Color.Black;
             originalRotPB.Padding = new Padding(padding);
             originalRotPB.Image = referenceImg;
 
             Bitmap[] rfs = {
-                Properties.Resources.rotationRef1, Properties.Resources.rotationRef2,Properties.Resources.rotationRef3
+                Resources.rotationRef1, Resources.rotationRef2, Resources.rotationRef3
             };
             string[] rfsString = {
                 "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
@@ -430,12 +436,63 @@ namespace WFC4All {
             int a = (int) Math.Floor((double) clickX * width / 600d),
                 b = (int) Math.Floor((double) clickY * height / 600d);
             Console.WriteLine($@"(x:{clickX}, y:{clickY}) -> (a:{a}, b:{b})");
-            
+
             //TODO CF2
             // result.SetPixel(a, b, Color.Red);
             //
             // resultPB.Image = InputManager.resizeBitmap(result,
             //     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
+        }
+
+        private void selectionHeuristicCB_SelectedIndexChanged(object sender, EventArgs e) {
+            //TODO
+            string[] allowedValues = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
+            string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            switch (Array.FindIndex(allowedValues, x => x.Contains(newValue))) {
+                case 0: // Least Entropy
+                    selectionHeuristicPB.Image = Resources.Entropy;
+                    selectionHeuristicDesc.Text
+                        = @"Select the most logical choice based on available options, solve ties randomly";
+                    InputManager.setSelectionHeuristic(SelectionHeuristic.ENTROPY);
+                    break;
+                case 1: // Simple
+                    selectionHeuristicPB.Image = Resources.Simple;
+                    selectionHeuristicDesc.Text = @"Similar to least entropy, but solve ties lexically";
+                    InputManager.setSelectionHeuristic(SelectionHeuristic.SIMPLE);
+                    break;
+                case 2: // Lexical
+                    selectionHeuristicPB.Image = Resources.Lexical;
+                    selectionHeuristicDesc.Text = @"In reading order, starting left to right, top to bottom";
+                    InputManager.setSelectionHeuristic(SelectionHeuristic.LEXICAL);
+                    break;
+                case 3: // Random
+                    selectionHeuristicPB.Image = Resources.Random;
+                    // ReSharper disable once LocalizableElement
+                    selectionHeuristicDesc.Text = "Select randomly\nWarning, Slow!";
+                    InputManager.setSelectionHeuristic(SelectionHeuristic.RANDOM);
+                    break;
+                case 4: // Spiral
+                    selectionHeuristicPB.Image = Resources.Spiral;
+                    selectionHeuristicDesc.Text
+                        = @"Select in an outwards spiral fashion";
+                    InputManager.setSelectionHeuristic(SelectionHeuristic.SPIRAL);
+                    break;
+                case 5: // Hilbert Curve
+                    selectionHeuristicPB.Image = Resources.Hilbert;
+                    selectionHeuristicDesc.Text
+                        = @"Select following a space-filling path";
+                    InputManager.setSelectionHeuristic(SelectionHeuristic.HILBERT);
+                    break;
+                default:
+                    return;
+            }
+
+            selectionHeuristicDesc.Refresh();
+            selectionHeuristicPB.Refresh();
+            ((ComboBox) sender).Refresh();
+            
+            inputManager.setSizeChanged();
+            executeButton_Click(null, null);
         }
     }
 

@@ -32,6 +32,7 @@ namespace WFC4All.DeBroglie.Wfc {
         private readonly IWaveConstraint[] constraints;
         private readonly Func<double> randomDouble;
         private readonly FrequencySet[] frequencySets;
+        private readonly int selectionHeuristic;
 
         // We evaluate constraints at the last possible minute, instead of eagerly like the model,
         // As they can potentially be expensive.
@@ -54,6 +55,7 @@ namespace WFC4All.DeBroglie.Wfc {
             ITopology topology,
             int outputWidth,
             int outputHeight,
+            int selectionHeuristic,
             int backtrackDepth = 0,
             IWaveConstraint[] constraints = null,
             Func<double> randomDouble = null,
@@ -72,6 +74,7 @@ namespace WFC4All.DeBroglie.Wfc {
             this.topology = topology;
             this.randomDouble = randomDouble ?? new Random().NextDouble;
             this.frequencySets = frequencySets;
+            this.selectionHeuristic = selectionHeuristic;
             directionsCount = topology.DirectionsCount;
 
             patternModelConstraint = new PatternModelConstraint(this, model);
@@ -240,7 +243,7 @@ namespace WFC4All.DeBroglie.Wfc {
                 EntropyTracker entropyTracker = new EntropyTracker(wave, frequencies, topology.Mask, outWidth, outHeight);
                 entropyTracker.reset();
                 addTracker(entropyTracker);
-                pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble);
+                pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble, selectionHeuristic);
             }
 
             patternModelConstraint.clear();

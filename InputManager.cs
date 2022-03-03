@@ -29,6 +29,8 @@ namespace WFC4All {
         private TileModel dbModel;
         private ITopoArray<Tile> tiles;
 
+        private static SelectionHeuristic currentSelectionHeuristic;
+
         public InputManager(Form1 formIn) {
             tileSize = 0;
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
@@ -40,6 +42,7 @@ namespace WFC4All {
             sizeHasChanged = true;
             dbModel = null;
             dbPropagator = null;
+            currentSelectionHeuristic = SelectionHeuristic.ENTROPY;
         }
 
         /*
@@ -175,7 +178,7 @@ namespace WFC4All {
                         selectedPeriodicity);
                     dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                         BackTrackDepth = -1,
-                    });
+                    }, (int) currentSelectionHeuristic);
                     Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                 } else {
@@ -462,6 +465,10 @@ namespace WFC4All {
 
         public void setSizeChanged() {
             sizeHasChanged = true;
+        }
+
+        public static void setSelectionHeuristic(SelectionHeuristic selectionHeuristic) {
+            currentSelectionHeuristic = selectionHeuristic;
         }
 
         /*
