@@ -13,6 +13,8 @@ using System.Xml.Linq;
 using WFC4All.DeBroglie;
 using WFC4All.DeBroglie.Models;
 using WFC4All.DeBroglie.Topo;
+using WFC4All.enums;
+using WFC4All.Properties;
 
 namespace WFC4All {
     public class InputManager {
@@ -30,19 +32,21 @@ namespace WFC4All {
         private ITopoArray<Tile> tiles;
 
         private static SelectionHeuristic currentSelectionHeuristic;
+        private static PatternHeuristic currentPatternHeuristic;
 
         public InputManager(Form1 formIn) {
             tileSize = 0;
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
             form = formIn;
             currentStep = 0;
-            xDoc = XDocument.Parse(Properties.Resources.samples);
+            xDoc = XDocument.Parse(Resources.samples);
             currentBitmap = null;
             inputHasChanged = true;
             sizeHasChanged = true;
             dbModel = null;
             dbPropagator = null;
             currentSelectionHeuristic = SelectionHeuristic.ENTROPY;
+            currentPatternHeuristic = PatternHeuristic.WEIGHTED;
         }
 
         /*
@@ -80,7 +84,7 @@ namespace WFC4All {
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
-                        
+
                         bool isCached = false;
 
                         foreach (PatternArray patternArray in patternList) {
@@ -178,7 +182,7 @@ namespace WFC4All {
                         selectedPeriodicity);
                     dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                         BackTrackDepth = -1,
-                    }, (int) currentSelectionHeuristic);
+                    }, (int) currentSelectionHeuristic, (int) currentPatternHeuristic);
                     Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                 } else {
@@ -412,7 +416,7 @@ namespace WFC4All {
             IEnumerable<XElement> xElements = xDoc.Root.elements("overlapping", "simpletiled");
             IEnumerable<int> matchingElements = xElements.Where(x =>
                 x.get<string>("name") == imageName).Select(t =>
-                t.get("N", 3));
+                t.get("patternSize", 3));
 
             List<object> patternDimensionsList = new();
             int j = 0;
@@ -427,11 +431,12 @@ namespace WFC4All {
             return (patternDimensionsList.ToArray(), j - 2);
         }
 
-        public string[] getImages(string modelType) {
+        public string[] getImages(string modelType, string category) {
             List<string> images = new();
             if (xDoc.Root != null) {
-                images = xDoc.Root.Elements(modelType).Select(xElement => xElement.get<string>("name"))
-                    .ToList();
+                images = xDoc.Root.Elements(modelType)
+                    .Where(xElement => xElement.get<string>("category").Equals(category))
+                    .Select(xElement => xElement.get<string>("name")).ToList();
             }
 
             images.Sort();
@@ -471,6 +476,10 @@ namespace WFC4All {
             currentSelectionHeuristic = selectionHeuristic;
         }
 
+        public static void setPatternHeuristic(PatternHeuristic patternHeuristic) {
+            currentPatternHeuristic = patternHeuristic;
+        }
+
         /*
          * Pattern Adaptation Simple
          */
@@ -492,6 +501,12 @@ namespace WFC4All {
 
         private static Color[] reflect(IReadOnlyList<Color> array, int tilesize) {
             return imTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
+        }
+
+        public string[] getCategories(string modelType) {
+            return modelType.Equals("overlapping")
+                ? new[] {"Textures", "Shapes", "Knots", "Fonts", "Worlds Side-View", "Worlds Top-Down"}
+                : new[] {"Textures", "Worlds Top-Down"};
         }
     }
 }

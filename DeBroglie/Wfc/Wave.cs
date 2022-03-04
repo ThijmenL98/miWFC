@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace WFC4All.DeBroglie.Wfc
@@ -42,6 +43,18 @@ namespace WFC4All.DeBroglie.Wfc
         public bool get(int index, int pattern)
         {
             return possibilities[index * patternCount + pattern];
+        }
+
+        public List<int> getPatternList(int index) {
+            List<int> retList = new();
+
+            for (int i = 0; i < patternCount; i++) {
+                if (possibilities[index * patternCount + i]) {
+                    retList.Add(i);
+                }
+            }
+
+            return retList;
         }
 
         public int getPatternCount(int index)

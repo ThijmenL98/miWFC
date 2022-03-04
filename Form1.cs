@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using WFC4All.DeBroglie.Models;
+using WFC4All.enums;
 using WFC4All.Properties;
 
 namespace WFC4All {
@@ -22,6 +23,9 @@ namespace WFC4All {
         private readonly XDocument xDoc;
 
         private Size oldSize;
+
+        private readonly string[] patternHeuristicDataSource = {"Weighted", "Random", "Least Used"},
+            selectionHeuristicDataSource = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
 
         public Form1() {
             Icon = Resources.icon;
@@ -44,15 +48,20 @@ namespace WFC4All {
 
             pbs = new[] {p1RotPB, p2RotPB, p3RotPB};
 
-            string[] inputImageDataSource = inputManager.getImages("overlapping"); // or "simpletiled"
+            string[] inputImageDataSource = inputManager.getImages("overlapping", "Textures"); // or "simpletiled"
             inputImageCB.DataSource = inputImageDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(inputImageDataSource[0]);
             patternSize.SelectedText = inputImageDataSource[0];
 
-            string[] selectionHeuristicDataSource =
-                {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
+            string[] categoriesDataSource = inputManager.getCategories("overlapping");
+            categoryCB.DataSource = categoriesDataSource;
+            categoryCB.SelectedIndex = 0;
+
             selectionHeuristicCB.DataSource = selectionHeuristicDataSource;
             InputManager.setSelectionHeuristic(SelectionHeuristic.ENTROPY);
+
+            patternHeuristicCB.DataSource = patternHeuristicDataSource;
+            InputManager.setPatternHeuristic(PatternHeuristic.WEIGHTED);
 
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(inputImageDataSource[0]);
             patternSize.DataSource = patternSizeDataSource;
@@ -62,14 +71,26 @@ namespace WFC4All {
         }
 
         protected override void OnResize(EventArgs e) {
-            base.OnResize(e);
-
-            foreach (Control cnt in Controls) {
-                resizeAll(cnt, Size);
+            Size minSize = new Size(1616, 939);
+            if (Size.Width < minSize.Width) {
+                Size = new Size(minSize.Width, Size.Height);
             }
 
-            foreach (Control cnt in inputTab.Controls) {
-                resizeAll(cnt, Size);
+            if (Size.Height < minSize.Height) {
+                Size = new Size(Size.Width, minSize.Height);
+            }
+
+            base.OnResize(e);
+
+            Control.ControlCollection[] allControls = {
+                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls,
+                selHeurPanel.Controls
+            };
+
+            foreach (var cList in allControls) {
+                foreach (Control cnt in cList) {
+                    resizeAll(cnt, Size);
+                }
             }
 
             oldSize = Size;
@@ -294,7 +315,8 @@ namespace WFC4All {
             showRotationalOptions(btn.Text.Equals("Overlapping Model"));
 
             string[] images
-                = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled");
+                = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
+                    "Textures");
 
             inputImageCB.DataSource = images;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(images[0]);
@@ -445,10 +467,8 @@ namespace WFC4All {
         }
 
         private void selectionHeuristicCB_SelectedIndexChanged(object sender, EventArgs e) {
-            //TODO
-            string[] allowedValues = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
-            switch (Array.FindIndex(allowedValues, x => x.Contains(newValue))) {
+            switch (Array.FindIndex(selectionHeuristicDataSource, x => x.Contains(newValue))) {
                 case 0: // Least Entropy
                     selectionHeuristicPB.Image = Resources.Entropy;
                     selectionHeuristicDesc.Text
@@ -473,14 +493,12 @@ namespace WFC4All {
                     break;
                 case 4: // Spiral
                     selectionHeuristicPB.Image = Resources.Spiral;
-                    selectionHeuristicDesc.Text
-                        = @"Select in an outwards spiral fashion";
+                    selectionHeuristicDesc.Text = @"Select in an outwards spiral fashion";
                     InputManager.setSelectionHeuristic(SelectionHeuristic.SPIRAL);
                     break;
                 case 5: // Hilbert Curve
                     selectionHeuristicPB.Image = Resources.Hilbert;
-                    selectionHeuristicDesc.Text
-                        = @"Select following a space-filling path";
+                    selectionHeuristicDesc.Text = @"Select following a space-filling path";
                     InputManager.setSelectionHeuristic(SelectionHeuristic.HILBERT);
                     break;
                 default:
@@ -490,9 +508,50 @@ namespace WFC4All {
             selectionHeuristicDesc.Refresh();
             selectionHeuristicPB.Refresh();
             ((ComboBox) sender).Refresh();
-            
+
             inputManager.setSizeChanged();
             executeButton_Click(null, null);
+        }
+
+        private void patternHeuristicCB_SelectedIndexChanged(object sender, EventArgs e) {
+            string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            switch (Array.FindIndex(patternHeuristicDataSource, x => x.Contains(newValue))) {
+                case 0: // Weighted Choice
+                    patternHeuristicPB.Image = Resources.Weighted;
+                    patternHeuristicDesc.Text = @"Select the next pattern though prominence in the input image";
+                    InputManager.setPatternHeuristic(PatternHeuristic.WEIGHTED);
+                    break;
+                case 1: // Random Choice
+                    patternHeuristicPB.Image = Resources.Random;
+                    patternHeuristicDesc.Text = @"Randomly select the pattern to use next";
+                    InputManager.setPatternHeuristic(PatternHeuristic.RANDOM);
+                    break;
+                case 2: // Least Used
+                    patternHeuristicPB.Image = Resources.LeastUsed;
+                    patternHeuristicDesc.Text = @"Select the pattern that has been used the least so far";
+                    InputManager.setPatternHeuristic(PatternHeuristic.LEAST_USED);
+                    break;
+                default:
+                    return;
+            }
+
+            patternHeuristicDesc.Refresh();
+            selectionHeuristicPB.Refresh();
+            ((ComboBox) sender).Refresh();
+
+            inputManager.setSizeChanged();
+            executeButton_Click(null, null);
+        }
+
+        private void categoryCB_SelectedIndexChanged(object sender, EventArgs e) {
+            //TODO
+            string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            string[] inputImageDataSource
+                = inputManager.getImages(modelChoice.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
+                    newValue); // or "simpletiled"
+            inputImageCB.DataSource = inputImageDataSource;
+
+           // throw new System.NotImplementedException();
         }
     }
 

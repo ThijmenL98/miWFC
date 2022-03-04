@@ -1,4 +1,4 @@
-﻿namespace WFC4All {
+﻿namespace WFC4All.enums {
     public enum SelectionHeuristic {
         ENTROPY = 0,
         LEXICAL = 1,

@@ -25,8 +25,9 @@ namespace WFC4All.DeBroglie.Trackers {
 
         private Queue<(int, int)> spiralIndices, hilbertIndices;
 
-        private int outputWidth;
-        private int outputHeight;
+        private readonly int outputWidth, outputHeight;
+
+        private int[] patternUsage;
 
         public EntropyTracker(
             Wave wave,
@@ -36,6 +37,7 @@ namespace WFC4All.DeBroglie.Trackers {
             int outHeight) {
             this.frequencies = frequencies;
             patternCount = frequencies.Length;
+            patternUsage = new int[patternCount];
             this.mask = mask;
 
             outputWidth = outWidth;
@@ -84,6 +86,8 @@ namespace WFC4All.DeBroglie.Trackers {
             cache = new List<int>();
 
             generateSpiralCoords();
+            generateHilbertCoords();
+            patternUsage = new int[patternCount];
         }
 
         public void undoBan(int index, int pattern) {
@@ -195,6 +199,9 @@ namespace WFC4All.DeBroglie.Trackers {
         }
 
         private int getQueuedIndex(Queue<(int, int)> queue) {
+            if (queue.Count == 0) {
+                return -1;
+            }
             (int, int) next = queue.Dequeue();
             int index = next.Item1 + next.Item2 * outputHeight;
 
@@ -290,7 +297,7 @@ namespace WFC4All.DeBroglie.Trackers {
             queue.Enqueue((x, y));
         }
 
-        public int getRandomPossiblePatternAt(int index, Func<double> randomDouble) {
+        public int getWeightedPatternAt(int index, Func<double> randomDouble) {
             double s = 0.0;
             for (int pattern = 0; pattern < patternCount; pattern++) {
                 if (wave.get(index, pattern)) {
@@ -302,6 +309,52 @@ namespace WFC4All.DeBroglie.Trackers {
             for (int pattern = 0; pattern < patternCount; pattern++) {
                 if (wave.get(index, pattern)) {
                     r -= frequencies[pattern];
+                }
+
+                if (r <= 0) {
+                    return pattern;
+                }
+            }
+
+            return patternCount - 1;
+        }
+
+        public int getLeastPatternAt(int index) {
+            Random r = new();
+            int lowestIndex = -1;
+            for (int i = 0; i < patternCount; i++) {
+                if (wave.get(index, i)) {
+                    lowestIndex = i;
+                    break;
+                }
+            }
+            
+            for (int i = 0; i < patternCount; i++) {
+                int curValue = patternUsage[i];
+                if (wave.get(index, i) && curValue < patternUsage[lowestIndex]) {
+                    lowestIndex = i;
+                }
+            }            
+            
+            List<int> lowestIndices = new();
+            
+            // If there are more than 1 patterns with this least amount of usage, randomly select one of them.
+            for (int i = 0; i < patternCount; i++) {
+                if (patternUsage[i] == patternUsage[lowestIndex] && wave.get(index, i)) {
+                    lowestIndices.Add(i);
+                }
+            }
+            
+            int next = lowestIndices[r.Next(lowestIndices.Count)];
+            patternUsage[next]++;
+            return next;
+        }
+
+        public int getRandomPatternAt(int index, Func<double> randomDouble) {
+            double r = randomDouble() * wave.getPatternList(index).Count;
+            for (int pattern = 0; pattern < patternCount; pattern++) {
+                if (wave.get(index, pattern)) {
+                    r--;
                 }
 
                 if (r <= 0) {

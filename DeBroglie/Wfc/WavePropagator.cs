@@ -32,7 +32,7 @@ namespace WFC4All.DeBroglie.Wfc {
         private readonly IWaveConstraint[] constraints;
         private readonly Func<double> randomDouble;
         private readonly FrequencySet[] frequencySets;
-        private readonly int selectionHeuristic;
+        private readonly int selectionHeuristic, patternHeuristic;
 
         // We evaluate constraints at the last possible minute, instead of eagerly like the model,
         // As they can potentially be expensive.
@@ -56,6 +56,7 @@ namespace WFC4All.DeBroglie.Wfc {
             int outputWidth,
             int outputHeight,
             int selectionHeuristic,
+            int patternHeuristic,
             int backtrackDepth = 0,
             IWaveConstraint[] constraints = null,
             Func<double> randomDouble = null,
@@ -75,6 +76,7 @@ namespace WFC4All.DeBroglie.Wfc {
             this.randomDouble = randomDouble ?? new Random().NextDouble;
             this.frequencySets = frequencySets;
             this.selectionHeuristic = selectionHeuristic;
+            this.patternHeuristic = patternHeuristic;
             directionsCount = topology.DirectionsCount;
 
             patternModelConstraint = new PatternModelConstraint(this, model);
@@ -153,7 +155,7 @@ namespace WFC4All.DeBroglie.Wfc {
                 status = Resolution.CONTRADICTION;
             }
         }
-        
+
         private void observeWith(int index, int pattern) {
             if (index == -1) {
                 return;
@@ -234,16 +236,16 @@ namespace WFC4All.DeBroglie.Wfc {
             status = Resolution.UNDECIDED;
             trackers = new List<ITracker>();
             if (frequencySets != null) {
-                ArrayPriorityEntropyTracker entropyTracker
-                    = new ArrayPriorityEntropyTracker(wave, frequencySets, topology.Mask);
+                ArrayPriorityEntropyTracker entropyTracker = new(wave, frequencySets, topology.Mask);
                 entropyTracker.reset();
                 addTracker(entropyTracker);
                 pickHeuristic = new ArrayPriorityEntropyHeuristic(entropyTracker, randomDouble);
             } else {
-                EntropyTracker entropyTracker = new EntropyTracker(wave, frequencies, topology.Mask, outWidth, outHeight);
+                EntropyTracker entropyTracker = new(wave, frequencies, topology.Mask, outWidth, outHeight);
                 entropyTracker.reset();
                 addTracker(entropyTracker);
-                pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble, selectionHeuristic);
+                pickHeuristic
+                    = new EntropyHeuristic(entropyTracker, randomDouble, selectionHeuristic, patternHeuristic);
             }
 
             patternModelConstraint.clear();

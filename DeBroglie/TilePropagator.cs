@@ -67,13 +67,15 @@ namespace WFC4All.DeBroglie
         /// <param name="topology">The dimensions of the output to generate</param>
         /// <param name="backtrack">If true, store additional information to allow rolling back choices that lead to a contradiction.</param>
         /// <param name="constraints">Extra constraints to control the generation process.</param>
-        public TilePropagator(TileModel tileModel, ITopology topology, int selectionHeuristic, bool backtrack = false,
-            ITileConstraint[] constraints = null)
+        /// <param name="selectionHeuristic">Currently selected selection heuristic</param>
+        /// <param name="patternHeuristic">Currently selected pattern heuristic</param>
+        public TilePropagator(TileModel tileModel, ITopology topology, int selectionHeuristic, int patternHeuristic,
+            bool backtrack = false, ITileConstraint[] constraints = null)
             : this(tileModel, topology, new TilePropagatorOptions
             {
                 BackTrackDepth = backtrack ? -1 : 0,
                 Constraints = constraints,
-            }, selectionHeuristic)
+            }, selectionHeuristic, patternHeuristic)
         {
 
         }
@@ -86,21 +88,24 @@ namespace WFC4All.DeBroglie
         /// <param name="backtrack">If true, store additional information to allow rolling back choices that lead to a contradiction.</param>
         /// <param name="constraints">Extra constraints to control the generation process.</param>
         /// <param name="random">Source of randomness</param>
+        /// <param name="selectionHeuristic">Currently selected selection heuristic</param>
+        /// <param name="patternHeuristic">Currently selected pattern heuristic</param>
         [Obsolete("Use TilePropagatorOptions")]
         public TilePropagator(TileModel tileModel, ITopology topology, bool backtrack,
             ITileConstraint[] constraints,
-            Random random, int selectionHeuristic)
+            Random random, int selectionHeuristic, int patternHeuristic)
             :this(tileModel, topology, new TilePropagatorOptions
             {
                 BackTrackDepth = backtrack ? -1 : 0,
                 Constraints = constraints,
                 Random = random,
-            }, selectionHeuristic)
+            }, selectionHeuristic, patternHeuristic)
         {
 
         }
 
-        public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, int selectionHeuristic)
+        public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, 
+            int selectionHeuristic, int patternHeuristic)
         {
             this.tileModel = tileModel;
             this.topology = topology;
@@ -124,9 +129,10 @@ namespace WFC4All.DeBroglie
                 topology.Width,
                 topology.Height, 
                 selectionHeuristic,
+                patternHeuristic,
                 options.BackTrackDepth, 
                 waveConstraints, 
-                options.RandomDouble ?? (options.Random == null ? (Func<double>)null : options.Random.NextDouble),
+                options.RandomDouble ?? (options.Random == null ? null : options.Random.NextDouble),
                 waveFrequencySets,
                 clear: false);
 #pragma warning restore CS0618 // Type or member is obsolete

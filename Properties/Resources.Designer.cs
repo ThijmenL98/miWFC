@@ -93,6 +93,16 @@ namespace WFC4All.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap LeastUsed {
+            get {
+                object obj = ResourceManager.GetObject("LeastUsed", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Lexical {
             get {
                 object obj = ResourceManager.GetObject("Lexical", resourceCulture);
@@ -183,6 +193,16 @@ namespace WFC4All.Properties {
         public static System.Drawing.Bitmap Spiral {
             get {
                 object obj = ResourceManager.GetObject("Spiral", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Weighted {
+            get {
+                object obj = ResourceManager.GetObject("Weighted", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
