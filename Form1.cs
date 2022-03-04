@@ -53,7 +53,7 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(inputImageDataSource[0]);
             patternSize.SelectedText = inputImageDataSource[0];
 
-            string[] categoriesDataSource = inputManager.getCategories("overlapping");
+            string[] categoriesDataSource = InputManager.getCategories("overlapping");
             categoryCB.DataSource = categoriesDataSource;
             categoryCB.SelectedIndex = 0;
 
@@ -311,12 +311,17 @@ namespace WFC4All {
             outputHeightValue.Value = 24;
             outputWidthValue.Value = 24;
 
+            categoryCB.DataSource
+                = InputManager.getCategories(modelChoice.Text.Equals("Overlapping Model")
+                    ? "simpletiled"
+                    : "overlapping");
+
             btn.Text = btn.Text.Equals("Overlapping Model") ? "Simple Model" : "Overlapping Model";
             showRotationalOptions(btn.Text.Equals("Overlapping Model"));
 
             string[] images
                 = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
-                    "Textures");
+                    "Worlds Top-Down");
 
             inputImageCB.DataSource = images;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(images[0]);
@@ -544,14 +549,11 @@ namespace WFC4All {
         }
 
         private void categoryCB_SelectedIndexChanged(object sender, EventArgs e) {
-            //TODO
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             string[] inputImageDataSource
                 = inputManager.getImages(modelChoice.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
-                    newValue); // or "simpletiled"
+                    newValue);
             inputImageCB.DataSource = inputImageDataSource;
-
-           // throw new System.NotImplementedException();
         }
     }
 

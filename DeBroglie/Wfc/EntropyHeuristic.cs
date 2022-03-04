@@ -23,7 +23,6 @@ namespace WFC4All.DeBroglie.Wfc
             this.randomDouble = randomDouble;
             this.selectionHeuristic = selectionHeuristic;
             this.patternHeuristic = patternHeuristic;
-            Console.WriteLine(@$"EYO Entropy heuristic created {selectionHeuristic} {patternHeuristic}");
         }
 
         public void pickObservation(out int index, out int pattern)

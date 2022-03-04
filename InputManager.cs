@@ -503,10 +503,10 @@ namespace WFC4All {
             return imTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
         }
 
-        public string[] getCategories(string modelType) {
+        public static string[] getCategories(string modelType) {
             return modelType.Equals("overlapping")
                 ? new[] {"Textures", "Shapes", "Knots", "Fonts", "Worlds Side-View", "Worlds Top-Down"}
-                : new[] {"Textures", "Worlds Top-Down"};
+                : new[] {"Worlds Top-Down", "Textures"};
         }
     }
 }
