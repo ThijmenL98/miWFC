@@ -183,7 +183,7 @@ namespace WFC4All
             this.animSpeedTrackbar.LargeChange = 100;
             this.animSpeedTrackbar.Location = new System.Drawing.Point(1316, 814);
             this.animSpeedTrackbar.Maximum = 2000;
-            this.animSpeedTrackbar.Minimum = 25;
+            this.animSpeedTrackbar.Minimum = 1;
             this.animSpeedTrackbar.Name = "animSpeedTrackbar";
             this.animSpeedTrackbar.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.animSpeedTrackbar.Size = new System.Drawing.Size(214, 45);
@@ -753,8 +753,8 @@ namespace WFC4All
         private System.Windows.Forms.Label patternSelectionLabel;
         private System.Windows.Forms.ComboBox patternHeuristicCB;
         private System.Windows.Forms.PictureBox patternHeuristicPB;
-        private PictureBox inputPaddingPB;
-        private TrackBar animSpeedTrackbar;
+        private System.Windows.Forms.PictureBox inputPaddingPB;
+        private System.Windows.Forms.TrackBar animSpeedTrackbar;
         private System.Windows.Forms.TrackBar stepSizeTrackbar;
         private System.Windows.Forms.PictureBox slowSpeedPB;
         private System.Windows.Forms.PictureBox fastSpeedPB;

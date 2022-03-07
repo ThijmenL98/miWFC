@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -79,7 +80,7 @@ namespace WFC4All {
         }
 
         protected override void OnResize(EventArgs e) {
-            Size minSize = new Size(1616, 939);
+            Size minSize = new(1616, 939);
             if (Size.Width < minSize.Width) {
                 Size = new Size(minSize.Width, Size.Height);
             }
@@ -213,7 +214,7 @@ namespace WFC4All {
                             resultPB.Image = InputManager.getImage("NoResultFound");
                         }
 
-                        myTimer.Start(); 
+                        myTimer.Start();
                     }
                 }
             }
@@ -393,6 +394,10 @@ namespace WFC4All {
         }
 
         private void updateInputPadding() {
+            if (!modelChoice.Text.Equals("Switch to Simple Model")) {
+                return;
+            }
+
             Color c;
             Bitmap bm;
             if (!defaultInputPadding) {
@@ -414,7 +419,7 @@ namespace WFC4All {
             }
         }
 
-        private void showRotationalOptions(bool hide) {
+        private void showRotationalOptions(bool show) {
             // TODO: Redo RF1
             // for (int i = 0; i < 3; i++) {
             //     pbs[i].Visible = hide;
@@ -423,8 +428,35 @@ namespace WFC4All {
             // originalRotPB.Visible = hide;
             // patternRotationLabel.Visible = hide;
             // periodicInput.Visible = hide;
-            patternSize.Enabled = hide;
-            patternSizeLabel.Enabled = hide;
+            patternSize.Enabled = show;
+            patternSizeLabel.Enabled = show;
+            inputPaddingPB.Enabled = show;
+
+            if (!show) {
+                inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB,
+                    toGrayScale(Resources.borderPaddingEnabled), 3, Color.Transparent);
+                inputPaddingPB.BackColor = Color.Transparent;
+            }
+        }
+
+        private static Bitmap toGrayScale(Image source) {
+            Bitmap grayImage = new(source.Width, source.Height, source.PixelFormat);
+            grayImage.SetResolution(source.HorizontalResolution, source.VerticalResolution);
+
+            ColorMatrix grayMatrix = new(new[] {
+                new[] {.2126f, .2126f, .2126f, 0f, 0f},
+                new[] {.7152f, .7152f, .7152f, 0f, 0f},
+                new[] {.0722f, .0722f, .0722f, 0f, 0f},
+                new[] {0f, 0f, 0f, 1f, 0f},
+                new[] {0f, 0f, 0f, 0f, 1f}
+            });
+
+            using Graphics g = Graphics.FromImage(grayImage);
+            using ImageAttributes attributes = new();
+            attributes.SetColorMatrix(grayMatrix);
+            g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height),
+                0, 0, source.Width, source.Height, GraphicsUnit.Pixel, attributes);
+            return grayImage;
         }
 
         private void initializeRotations() {
@@ -645,7 +677,8 @@ namespace WFC4All {
 
         public void saveCache() {
             Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.inputPaddingEnabled());
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(),
+                    myForm.inputPaddingEnabled());
             cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
@@ -655,7 +688,8 @@ namespace WFC4All {
 
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.inputPaddingEnabled());
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(),
+                    myForm.inputPaddingEnabled());
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
@@ -748,7 +782,8 @@ namespace WFC4All {
 
         public bool addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.inputPaddingEnabled());
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(),
+                    myForm.inputPaddingEnabled());
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
