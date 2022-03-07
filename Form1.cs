@@ -15,7 +15,7 @@ namespace WFC4All {
         public readonly PictureBox[] pbs;
         private int defaultSymmetry, savePoint;
         private readonly int initOutWidth, initInWidth, initOutHeight, initInHeight;
-        private bool defaultPeriodicity;
+        private bool defaultInputPadding;
         public bool isChangingModels;
 
         private Bitmap result;
@@ -36,7 +36,7 @@ namespace WFC4All {
             result = new Bitmap(1, 1);
             savePoint = 0;
             isChangingModels = false;
-            defaultPeriodicity = true;
+            defaultInputPadding = true;
             inputManager = new InputManager(this);
             bitMaps = new BitMaps(this);
             InitializeComponent();
@@ -68,10 +68,10 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
             Bitmap disabledInit = new(Resources.borderPaddingDisabled);
-            periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, disabledInit, 3, Color.Red);
-            periodicInputPB.BackColor = Color.Red;
-            periodicInputPB.Padding = new Padding(3);
-            periodicInputPB.MouseHover += (sender, eventArgs) => {
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, disabledInit, 3, Color.Red);
+            inputPaddingPB.BackColor = Color.Red;
+            inputPaddingPB.Padding = new Padding(3);
+            inputPaddingPB.MouseHover += (sender, eventArgs) => {
                 addHover(sender, eventArgs, "Toggle border padding");
             };
 
@@ -213,7 +213,7 @@ namespace WFC4All {
                             resultPB.Image = InputManager.getImage("NoResultFound");
                         }
 
-                        myTimer.Start(); /* optionally restart for periodic work */
+                        myTimer.Start(); 
                     }
                 }
             }
@@ -247,8 +247,8 @@ namespace WFC4All {
             return patternSize.SelectedIndex + 2;
         }
 
-        public bool getPeriodicEnabled() {
-            return periodicInputPB.BackColor.Equals(Color.LawnGreen);
+        public bool inputPaddingEnabled() {
+            return inputPaddingPB.BackColor.Equals(Color.LawnGreen);
         }
 
         private bool changingIndex;
@@ -266,7 +266,7 @@ namespace WFC4All {
                 patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
                 defaultSymmetry = curSelection.get("symmetry", 8);
-                defaultPeriodicity = curSelection.get("periodicInput", true);
+                defaultInputPadding = curSelection.get("periodicInput", true);
             }
 
             outputHeightValue.Value = 24;
@@ -278,7 +278,7 @@ namespace WFC4All {
             Refresh();
 
             updateRotations();
-            updatePeriodicity();
+            updateInputPadding();
 
             changingIndex = false;
             inputManager.setInputChanged("Changing image");
@@ -392,10 +392,10 @@ namespace WFC4All {
             toolTip.SetToolTip((PictureBox) sender, message);
         }
 
-        private void updatePeriodicity() {
+        private void updateInputPadding() {
             Color c;
             Bitmap bm;
-            if (!defaultPeriodicity) {
+            if (!defaultInputPadding) {
                 bm = new Bitmap(Resources.borderPaddingDisabled);
                 c = Color.Red;
             } else {
@@ -403,9 +403,9 @@ namespace WFC4All {
                 c = Color.LawnGreen;
             }
 
-            periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, bm, 3, c);
-            periodicInputPB.BackColor = c;
-            periodicInputPB.Padding = new Padding(3);
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
+            inputPaddingPB.BackColor = c;
+            inputPaddingPB.Padding = new Padding(3);
         }
 
         private void updateRotations() {
@@ -423,8 +423,8 @@ namespace WFC4All {
             // originalRotPB.Visible = hide;
             // patternRotationLabel.Visible = hide;
             // periodicInput.Visible = hide;
-            patternSize.Visible = hide;
-            patternSizeLabel.Visible = hide;
+            patternSize.Enabled = hide;
+            patternSizeLabel.Enabled = hide;
         }
 
         private void initializeRotations() {
@@ -456,10 +456,10 @@ namespace WFC4All {
             savePoint = inputManager.getCurrentStep();
         }
 
-        private void periodicInputPB_Click(object sender, EventArgs e) {
+        private void inputPaddingPB_Click(object sender, EventArgs e) {
             Color c;
             Bitmap bm;
-            if (getPeriodicEnabled()) {
+            if (inputPaddingEnabled()) {
                 bm = new Bitmap(Resources.borderPaddingDisabled);
                 c = Color.Red;
             } else {
@@ -467,13 +467,13 @@ namespace WFC4All {
                 c = Color.LawnGreen;
             }
 
-            periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, bm, 3, c);
-            periodicInputPB.BackColor = c;
-            periodicInputPB.Padding = new Padding(3);
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
+            inputPaddingPB.BackColor = c;
+            inputPaddingPB.Padding = new Padding(3);
 
             ((PictureBox) sender).Refresh();
 
-            inputManager.setInputChanged("Periodicity");
+            inputManager.setInputChanged("Input padding");
             executeButton_Click(null, null);
         }
 
@@ -645,7 +645,7 @@ namespace WFC4All {
 
         public void saveCache() {
             Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.getPeriodicEnabled());
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.inputPaddingEnabled());
             cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
@@ -655,7 +655,7 @@ namespace WFC4All {
 
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.getPeriodicEnabled());
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.inputPaddingEnabled());
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
@@ -748,7 +748,7 @@ namespace WFC4All {
 
         public bool addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.getPeriodicEnabled());
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.inputPaddingEnabled());
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);

@@ -32,6 +32,7 @@ namespace WFC4All
         /// </summary>
         private void InitializeComponent() {
             this.inputTab = new System.Windows.Forms.TabPage();
+            this.IconPB = new System.Windows.Forms.PictureBox();
             this.slowSpeedPB = new System.Windows.Forms.PictureBox();
             this.fastSpeedPB = new System.Windows.Forms.PictureBox();
             this.animSpeedTrackbar = new System.Windows.Forms.TrackBar();
@@ -73,12 +74,13 @@ namespace WFC4All
             this.resultPB = new System.Windows.Forms.PictureBox();
             this.restartButton = new System.Windows.Forms.Button();
             this.inputPanel = new System.Windows.Forms.Panel();
-            this.periodicInputPB = new System.Windows.Forms.PictureBox();
+            this.inputPaddingPB = new System.Windows.Forms.PictureBox();
             this.modelChoice = new System.Windows.Forms.Button();
             this.patternSize = new System.Windows.Forms.ComboBox();
             this.patternSizeLabel = new System.Windows.Forms.Label();
             this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize) (this.IconPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.fastSpeedPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.animSpeedTrackbar)).BeginInit();
@@ -97,7 +99,7 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize) (this.inputImagePB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.resultPB)).BeginInit();
             this.inputPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize) (this.periodicInputPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.inputPaddingPB)).BeginInit();
             this.tabSelection.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -105,6 +107,7 @@ namespace WFC4All
             // 
             this.inputTab.AutoScroll = true;
             this.inputTab.BackColor = System.Drawing.Color.DarkGray;
+            this.inputTab.Controls.Add(this.IconPB);
             this.inputTab.Controls.Add(this.slowSpeedPB);
             this.inputTab.Controls.Add(this.fastSpeedPB);
             this.inputTab.Controls.Add(this.animSpeedTrackbar);
@@ -144,8 +147,20 @@ namespace WFC4All
             this.inputTab.TabIndex = 0;
             this.inputTab.Text = "Input Manipulation";
             // 
+            // IconPB
+            // 
+            this.IconPB.BackgroundImage = global::WFC4All.Properties.Resources.iconPNG;
+            this.IconPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.IconPB.InitialImage = global::WFC4All.Properties.Resources.iconPNG;
+            this.IconPB.Location = new System.Drawing.Point(56, 550);
+            this.IconPB.Name = "IconPB";
+            this.IconPB.Size = new System.Drawing.Size(250, 250);
+            this.IconPB.TabIndex = 42;
+            this.IconPB.TabStop = false;
+            // 
             // slowSpeedPB
             // 
+            this.slowSpeedPB.BackgroundImage = global::WFC4All.Properties.Resources.slowSpeed;
             this.slowSpeedPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.slowSpeedPB.Location = new System.Drawing.Point(1283, 806);
             this.slowSpeedPB.Name = "slowSpeedPB";
@@ -155,6 +170,7 @@ namespace WFC4All
             // 
             // fastSpeedPB
             // 
+            this.fastSpeedPB.BackgroundImage = global::WFC4All.Properties.Resources.fastSpeed;
             this.fastSpeedPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.fastSpeedPB.Location = new System.Drawing.Point(1529, 806);
             this.fastSpeedPB.Name = "fastSpeedPB";
@@ -193,11 +209,11 @@ namespace WFC4All
             // categoryCB
             // 
             this.categoryCB.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.categoryCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.categoryCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.categoryCB.FormattingEnabled = true;
-            this.categoryCB.Location = new System.Drawing.Point(112, 23);
+            this.categoryCB.Location = new System.Drawing.Point(136, 21);
             this.categoryCB.Name = "categoryCB";
-            this.categoryCB.Size = new System.Drawing.Size(214, 21);
+            this.categoryCB.Size = new System.Drawing.Size(214, 26);
             this.categoryCB.TabIndex = 37;
             this.categoryCB.SelectedIndexChanged += new System.EventHandler(this.categoryCB_SelectedIndexChanged);
             // 
@@ -205,7 +221,7 @@ namespace WFC4All
             // 
             this.category.BackColor = System.Drawing.Color.Transparent;
             this.category.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.category.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.category.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.category.Location = new System.Drawing.Point(20, 24);
             this.category.Name = "category";
             this.category.Size = new System.Drawing.Size(180, 21);
@@ -234,6 +250,7 @@ namespace WFC4All
             this.pattHeurPanel.Name = "pattHeurPanel";
             this.pattHeurPanel.Size = new System.Drawing.Size(346, 112);
             this.pattHeurPanel.TabIndex = 35;
+            this.pattHeurPanel.Visible = false;
             // 
             // patternHeuristicDesc
             // 
@@ -302,6 +319,7 @@ namespace WFC4All
             this.selHeurPanel.Name = "selHeurPanel";
             this.selHeurPanel.Size = new System.Drawing.Size(346, 112);
             this.selHeurPanel.TabIndex = 34;
+            this.selHeurPanel.Visible = false;
             // 
             // selectionHeuristicDesc
             // 
@@ -352,10 +370,10 @@ namespace WFC4All
             // 
             this.outputImageWidthLabel.AutoSize = true;
             this.outputImageWidthLabel.BackColor = System.Drawing.Color.Transparent;
-            this.outputImageWidthLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputImageWidthLabel.Location = new System.Drawing.Point(1101, 34);
+            this.outputImageWidthLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputImageWidthLabel.Location = new System.Drawing.Point(1095, 32);
             this.outputImageWidthLabel.Name = "outputImageWidthLabel";
-            this.outputImageWidthLabel.Size = new System.Drawing.Size(23, 15);
+            this.outputImageWidthLabel.Size = new System.Drawing.Size(29, 18);
             this.outputImageWidthLabel.TabIndex = 6;
             this.outputImageWidthLabel.Text = "W:";
             // 
@@ -374,10 +392,10 @@ namespace WFC4All
             // 
             this.outputImageHeightLabel.AutoSize = true;
             this.outputImageHeightLabel.BackColor = System.Drawing.Color.Transparent;
-            this.outputImageHeightLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputImageHeightLabel.Location = new System.Drawing.Point(1192, 34);
+            this.outputImageHeightLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputImageHeightLabel.Location = new System.Drawing.Point(1186, 32);
             this.outputImageHeightLabel.Name = "outputImageHeightLabel";
-            this.outputImageHeightLabel.Size = new System.Drawing.Size(21, 15);
+            this.outputImageHeightLabel.Size = new System.Drawing.Size(25, 18);
             this.outputImageHeightLabel.TabIndex = 7;
             this.outputImageHeightLabel.Text = "H:";
             // 
@@ -396,16 +414,16 @@ namespace WFC4All
             // 
             this.outputSizeLabel.AutoSize = true;
             this.outputSizeLabel.BackColor = System.Drawing.Color.Transparent;
-            this.outputSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputSizeLabel.Location = new System.Drawing.Point(944, 34);
+            this.outputSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.outputSizeLabel.Location = new System.Drawing.Point(938, 32);
             this.outputSizeLabel.Name = "outputSizeLabel";
-            this.outputSizeLabel.Size = new System.Drawing.Size(125, 15);
+            this.outputSizeLabel.Size = new System.Drawing.Size(146, 18);
             this.outputSizeLabel.TabIndex = 5;
             this.outputSizeLabel.Text = "Output Image Size";
             // 
             // backButton
             // 
-            this.backButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.backButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.backButton.Location = new System.Drawing.Point(1129, 757);
             this.backButton.Name = "backButton";
             this.backButton.Size = new System.Drawing.Size(104, 40);
@@ -417,7 +435,7 @@ namespace WFC4All
             // animationSpeedLabel
             // 
             this.animationSpeedLabel.BackColor = System.Drawing.Color.Transparent;
-            this.animationSpeedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.animationSpeedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.animationSpeedLabel.Location = new System.Drawing.Point(1319, 786);
             this.animationSpeedLabel.Name = "animationSpeedLabel";
             this.animationSpeedLabel.Size = new System.Drawing.Size(211, 25);
@@ -439,7 +457,7 @@ namespace WFC4All
             // stepSizeLabel
             // 
             this.stepSizeLabel.BackColor = System.Drawing.Color.Transparent;
-            this.stepSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.stepSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.stepSizeLabel.Location = new System.Drawing.Point(1316, 699);
             this.stepSizeLabel.Name = "stepSizeLabel";
             this.stepSizeLabel.Size = new System.Drawing.Size(214, 27);
@@ -522,21 +540,21 @@ namespace WFC4All
             // patternsLabel
             // 
             this.patternsLabel.BackColor = System.Drawing.Color.Transparent;
-            this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.patternsLabel.Location = new System.Drawing.Point(14, 14);
             this.patternsLabel.Name = "patternsLabel";
             this.patternsLabel.Size = new System.Drawing.Size(459, 56);
             this.patternsLabel.TabIndex = 0;
-            this.patternsLabel.Text = "Extracted patterns, you can deselect patterns you don\'t want to show up in the fi" + "nal generated image (red = excluded). Duplicate patterns (such as rotated or fli" + "pped) are excluded!";
+            this.patternsLabel.Text = "Extracted patterns with current settings!";
             // 
             // inputImageCB
             // 
             this.inputImageCB.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.inputImageCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.inputImageCB.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.inputImageCB.FormattingEnabled = true;
-            this.inputImageCB.Location = new System.Drawing.Point(112, 53);
+            this.inputImageCB.Location = new System.Drawing.Point(136, 51);
             this.inputImageCB.Name = "inputImageCB";
-            this.inputImageCB.Size = new System.Drawing.Size(214, 21);
+            this.inputImageCB.Size = new System.Drawing.Size(214, 26);
             this.inputImageCB.TabIndex = 4;
             this.inputImageCB.SelectedIndexChanged += new System.EventHandler(this.inputImage_SelectedIndexChanged);
             // 
@@ -552,7 +570,7 @@ namespace WFC4All
             // 
             this.inputImage.BackColor = System.Drawing.Color.Transparent;
             this.inputImage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.inputImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.inputImage.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.inputImage.Location = new System.Drawing.Point(20, 54);
             this.inputImage.Name = "inputImage";
             this.inputImage.Size = new System.Drawing.Size(180, 21);
@@ -584,7 +602,7 @@ namespace WFC4All
             // inputPanel
             // 
             this.inputPanel.BackColor = System.Drawing.Color.Silver;
-            this.inputPanel.Controls.Add(this.periodicInputPB);
+            this.inputPanel.Controls.Add(this.inputPaddingPB);
             this.inputPanel.Controls.Add(this.modelChoice);
             this.inputPanel.Controls.Add(this.patternSize);
             this.inputPanel.Controls.Add(this.patternSizeLabel);
@@ -593,19 +611,19 @@ namespace WFC4All
             this.inputPanel.Size = new System.Drawing.Size(346, 100);
             this.inputPanel.TabIndex = 35;
             // 
-            // periodicInputPB
+            // inputPaddingPB
             // 
-            this.periodicInputPB.Location = new System.Drawing.Point(249, 3);
-            this.periodicInputPB.Name = "periodicInputPB";
-            this.periodicInputPB.Size = new System.Drawing.Size(94, 94);
-            this.periodicInputPB.TabIndex = 38;
-            this.periodicInputPB.TabStop = false;
-            this.periodicInputPB.Click += new System.EventHandler(this.periodicInputPB_Click);
+            this.inputPaddingPB.Location = new System.Drawing.Point(249, 3);
+            this.inputPaddingPB.Name = "inputPaddingPB";
+            this.inputPaddingPB.Size = new System.Drawing.Size(94, 94);
+            this.inputPaddingPB.TabIndex = 38;
+            this.inputPaddingPB.TabStop = false;
+            this.inputPaddingPB.Click += new System.EventHandler(this.inputPaddingPB_Click);
             // 
             // modelChoice
             // 
             this.modelChoice.BackColor = System.Drawing.Color.Transparent;
-            this.modelChoice.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.modelChoice.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.modelChoice.Location = new System.Drawing.Point(110, 3);
             this.modelChoice.Name = "modelChoice";
             this.modelChoice.Size = new System.Drawing.Size(129, 94);
@@ -617,11 +635,11 @@ namespace WFC4All
             // patternSize
             // 
             this.patternSize.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.patternSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.patternSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.patternSize.FormattingEnabled = true;
             this.patternSize.Location = new System.Drawing.Point(12, 61);
             this.patternSize.Name = "patternSize";
-            this.patternSize.Size = new System.Drawing.Size(87, 21);
+            this.patternSize.Size = new System.Drawing.Size(87, 26);
             this.patternSize.TabIndex = 0;
             this.patternSize.SelectedIndexChanged += new System.EventHandler(this.inputChanged);
             // 
@@ -629,13 +647,14 @@ namespace WFC4All
             // 
             this.patternSizeLabel.BackColor = System.Drawing.Color.Transparent;
             this.patternSizeLabel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.patternSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.patternSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.patternSizeLabel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.patternSizeLabel.Location = new System.Drawing.Point(14, 14);
+            this.patternSizeLabel.Location = new System.Drawing.Point(3, 14);
             this.patternSizeLabel.Name = "patternSizeLabel";
-            this.patternSizeLabel.Size = new System.Drawing.Size(96, 44);
+            this.patternSizeLabel.Size = new System.Drawing.Size(107, 44);
             this.patternSizeLabel.TabIndex = 1;
             this.patternSizeLabel.Text = "Pattern Size\r\n(n x n)";
+            this.patternSizeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // tabSelection
             // 
@@ -658,6 +677,7 @@ namespace WFC4All
             this.Text = "WFC4All";
             this.inputTab.ResumeLayout(false);
             this.inputTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize) (this.IconPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.fastSpeedPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.animSpeedTrackbar)).EndInit();
@@ -678,10 +698,12 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize) (this.inputImagePB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.resultPB)).EndInit();
             this.inputPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize) (this.periodicInputPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.inputPaddingPB)).EndInit();
             this.tabSelection.ResumeLayout(false);
             this.ResumeLayout(false);
         }
+
+        private System.Windows.Forms.PictureBox IconPB;
 
         private System.Windows.Forms.Label category;
         private System.Windows.Forms.ComboBox categoryCB;
@@ -711,9 +733,9 @@ namespace WFC4All
         private System.Windows.Forms.Label outputSizeLabel;
         private System.Windows.Forms.NumericUpDown outputHeightValue;
         private System.Windows.Forms.NumericUpDown outputWidthValue;
-        private ComboBox inputImageCB;
+        private System.Windows.Forms.ComboBox inputImageCB;
         private PictureBox inputImagePB;
-        private Label inputImage;
+        private System.Windows.Forms.Label inputImage;
         private System.Windows.Forms.Label patternSizeLabel;
         private System.Windows.Forms.ComboBox patternSize;
         public System.Windows.Forms.PictureBox resultPB;
@@ -731,10 +753,10 @@ namespace WFC4All
         private System.Windows.Forms.Label patternSelectionLabel;
         private System.Windows.Forms.ComboBox patternHeuristicCB;
         private System.Windows.Forms.PictureBox patternHeuristicPB;
-        private PictureBox periodicInputPB;
+        private PictureBox inputPaddingPB;
         private TrackBar animSpeedTrackbar;
         private System.Windows.Forms.TrackBar stepSizeTrackbar;
-        private PictureBox slowSpeedPB;
-        private PictureBox fastSpeedPB;
+        private System.Windows.Forms.PictureBox slowSpeedPB;
+        private System.Windows.Forms.PictureBox fastSpeedPB;
     }
 }

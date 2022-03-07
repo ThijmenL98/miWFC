@@ -61,7 +61,7 @@ namespace WFC4All {
             sw.Restart();
 
             if (reset || dbPropagator == null) {
-                bool selectedPeriodicity = form.isOverlappingModel() && form.getPeriodicEnabled();
+                bool inputPaddingEnabled = form.isOverlappingModel() && form.inputPaddingEnabled();
                 if (inputHasChanged) {
                     currentBitmap = getImage(form.getSelectedInput());
 
@@ -80,7 +80,7 @@ namespace WFC4All {
                     if (form.isOverlappingModel()) {
                         ITopoArray<Color> dbSample
                             = TopoArray.create(imageToColourArray(currentBitmap),
-                                selectedPeriodicity); //TODO Input Periodicity
+                                inputPaddingEnabled); //TODO Input Padding
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
@@ -176,8 +176,8 @@ namespace WFC4All {
                     sw.Restart();
                 }
                 
-                //TODO Output Periodicity
-                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), selectedPeriodicity); 
+                //TODO Output Padding
+                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), inputPaddingEnabled); 
                 int curSeed = Environment.TickCount;
                 dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                     BackTrackDepth = -1,
@@ -186,7 +186,7 @@ namespace WFC4All {
                 Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
                 sw.Restart();
 
-                if (form.isOverlappingModel() && selectedPeriodicity) {
+                if (form.isOverlappingModel() && inputPaddingEnabled) {
                     if ("flowers".Equals(form.getSelectedInput().ToLower())) {
                         // Set the bottom last 2 rows to be the ground tile
                         dbPropagator?.@select(0, form.getOutputHeight() - 1, 0,

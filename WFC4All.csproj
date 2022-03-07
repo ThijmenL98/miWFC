@@ -102,6 +102,7 @@
     <None Include="resources\borderPaddingDisabled.png" />
     <None Include="resources\borderPaddingEnabled.png" />
     <None Include="resources\fastSpeed.png" />
+    <None Include="resources\icon.png" />
     <Content Include="resources\LeastUsed.png" />
     <Content Include="resources\samples.xml" />
     <None Include="resources\slowSpeed.png" />
