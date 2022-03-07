@@ -274,4 +274,10 @@
   <data name="borderPaddingEnabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\borderPaddingEnabled.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="fastSpeed" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\fastSpeed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="slowSpeed" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\slowSpeed.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

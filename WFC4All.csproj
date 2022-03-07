@@ -87,7 +87,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="backup.txt" />
     <None Include="resources\Entropy.png" />
     <None Include="resources\Hilbert.png" />
     <None Include="resources\icon.ico" />
@@ -102,8 +101,10 @@
     <Content Include="README.md" />
     <None Include="resources\borderPaddingDisabled.png" />
     <None Include="resources\borderPaddingEnabled.png" />
+    <None Include="resources\fastSpeed.png" />
     <Content Include="resources\LeastUsed.png" />
     <Content Include="resources\samples.xml" />
+    <None Include="resources\slowSpeed.png" />
     <Content Include="resources\Weighted.png" />
     <Content Include="samples\3Bricks.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

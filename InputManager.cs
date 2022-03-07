@@ -175,9 +175,9 @@ namespace WFC4All {
                     Console.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                 }
-
-                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(),
-                    false); //TODO Output Periodicity
+                
+                //TODO Output Periodicity
+                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), selectedPeriodicity); 
                 int curSeed = Environment.TickCount;
                 dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                     BackTrackDepth = -1,
@@ -402,12 +402,15 @@ namespace WFC4All {
             IEnumerable<int> matchingElements = xElements.Where(x =>
                 x.get<string>("name") == imageName).Select(t =>
                 t.get("patternSize", 3));
+            
 
             List<object> patternDimensionsList = new();
             int j = 0;
             for (int i = 2; i < 6; i++) {
-                string append = matchingElements.Contains(i) ? " (recommended)" : "";
-                patternDimensionsList.Add("  " + i + append);
+                if (i >= 4 && !matchingElements.Contains(5) && !matchingElements.Contains(4)) {
+                    break;
+                }
+                patternDimensionsList.Add("  " + i);
                 if (j == 0 && matchingElements.Contains(i)) {
                     j = i;
                 }

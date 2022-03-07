@@ -93,6 +93,16 @@ namespace WFC4All.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap fastSpeed {
+            get {
+                object obj = ResourceManager.GetObject("fastSpeed", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Hilbert {
             get {
                 object obj = ResourceManager.GetObject("Hilbert", resourceCulture);
@@ -203,6 +213,16 @@ namespace WFC4All.Properties {
         public static System.Drawing.Bitmap Simple {
             get {
                 object obj = ResourceManager.GetObject("Simple", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap slowSpeed {
+            get {
+                object obj = ResourceManager.GetObject("slowSpeed", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

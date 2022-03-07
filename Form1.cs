@@ -71,6 +71,9 @@ namespace WFC4All {
             periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, disabledInit, 3, Color.Red);
             periodicInputPB.BackColor = Color.Red;
             periodicInputPB.Padding = new Padding(3);
+            periodicInputPB.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Toggle border padding");
+            };
 
             //TODO Re-enable initializeRotations();
         }
@@ -255,7 +258,7 @@ namespace WFC4All {
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             updateInputImage(newValue);
 
-            if (modelChoice.Text.Equals("Overlapping Model")) {
+            if (modelChoice.Text.Equals("Switch to Simple Model")) {
                 XElement curSelection = xDoc.Root.elements("overlapping").Where(x =>
                     x.get<string>("name") == getSelectedInput()).ElementAtOrDefault(0);
                 (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
@@ -265,6 +268,12 @@ namespace WFC4All {
                 defaultSymmetry = curSelection.get("symmetry", 8);
                 defaultPeriodicity = curSelection.get("periodicInput", true);
             }
+
+            outputHeightValue.Value = 24;
+            outputWidthValue.Value = 24;
+
+            outputHeightValue.Refresh();
+            outputWidthValue.Refresh();
 
             Refresh();
 
@@ -281,11 +290,14 @@ namespace WFC4All {
         }
 
         private int getStepAmount() {
-            return (int) stepValue.Value;
+            int value = stepSizeTrackbar.Value;
+            bool instant = value == 100;
+            return instant ? -1 : value;
         }
 
         private int getAnimationSpeed() {
-            return (int) animationSpeedValue.Value;
+            int rawValue = animSpeedTrackbar.Value;
+            return (int) Math.Exp(3.21887d + rawValue / 25d * 0.05546d);
         }
 
         public int getOutputHeight() {
@@ -313,24 +325,27 @@ namespace WFC4All {
             outputWidthValue.Value = 24;
 
             categoryCB.DataSource
-                = InputManager.getCategories(modelChoice.Text.Equals("Overlapping Model")
+                = InputManager.getCategories(modelChoice.Text.Equals("Switch to Simple Model")
                     ? "simpletiled"
                     : "overlapping");
 
-            btn.Text = btn.Text.Equals("Overlapping Model") ? "Simple Model" : "Overlapping Model";
-            showRotationalOptions(btn.Text.Equals("Overlapping Model"));
+            btn.Text = btn.Text.Equals("Switch to Simple Model")
+                ? "Switch to Overlapping Model"
+                : "Switch to Simple Model";
+            showRotationalOptions(btn.Text.Equals("Switch to Simple Model"));
 
-            string[] images
-                = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
-                    "Worlds Top-Down");
+            string[] images = inputManager.getImages(
+                btn.Text.Equals("Switch to Simple Model") ? "overlapping" : "simpletiled",
+                btn.Text.Equals("Switch to Simple Model") ? "Textures" : "Worlds Top-Down");
 
             inputImageCB.DataSource = images;
-            patternSize.SelectedIndex = patternSize.Items.IndexOf(images[0]);
-            patternSize.SelectedText = images[0];
-
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[0]);
             patternSize.DataSource = patternSizeDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
+            patternSize.SelectedText = images[i];
+
+            patternSize.Refresh();
+            inputImageCB.Refresh();
 
             isChangingModels = false;
             inputManager.setInputChanged("Model change");
@@ -346,7 +361,7 @@ namespace WFC4All {
         }
 
         public bool isOverlappingModel() {
-            return modelChoice.Text.Equals("Overlapping Model");
+            return modelChoice.Text.Equals("Switch to Simple Model");
         }
 
         private void inputChanged(object sender, EventArgs e) {
@@ -413,6 +428,7 @@ namespace WFC4All {
         }
 
         private void initializeRotations() {
+            // TODO maybe re-enable
             Bitmap referenceImg = new(Resources.rotationRef);
             const int padding = 3;
             originalRotPB.BackColor = Color.Black;
@@ -436,21 +452,6 @@ namespace WFC4All {
             }
         }
 
-        private void stepCountValueChanged(object sender, EventArgs e) {
-            int value = (int) stepValue.Value;
-            if (value is 0 or -1) {
-                stepValue.Value = -1;
-            }
-
-            advanceButton.Visible = value is not (0 or -1);
-            backButton.Visible = value is not (0 or -1);
-            animateButton.Visible = value is not (0 or -1);
-            animationSpeedLabel.Visible = value is not (0 or -1);
-            animationSpeedValue.Visible = value is not (0 or -1);
-            markerButton.Visible = value is not (0 or -1);
-            revertMarkerButton.Visible = value is not (0 or -1);
-        }
-
         private void markerButton_Click(object sender, EventArgs e) {
             savePoint = inputManager.getCurrentStep();
         }
@@ -469,11 +470,25 @@ namespace WFC4All {
             periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, bm, 3, c);
             periodicInputPB.BackColor = c;
             periodicInputPB.Padding = new Padding(3);
-            
+
             ((PictureBox) sender).Refresh();
 
             inputManager.setInputChanged("Periodicity");
             executeButton_Click(null, null);
+        }
+
+        private void stepSizeTrackbar_Scroll(object sender, EventArgs e) {
+            int value = stepSizeTrackbar.Value;
+            bool instant = value == 100;
+
+            const string instantStr = "All";
+            stepSizeLabel.Text = @$"Amount of steps to take: {(instant ? instantStr : value)}";
+
+            advanceButton.Enabled = !instant;
+            backButton.Enabled = !instant;
+            animateButton.Enabled = !instant;
+            markerButton.Enabled = !instant;
+            revertMarkerButton.Enabled = !instant;
         }
 
         private void revertMarkerButton_Click(object sender, EventArgs e) {
@@ -581,9 +596,16 @@ namespace WFC4All {
         private void categoryCB_SelectedIndexChanged(object sender, EventArgs e) {
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             string[] inputImageDataSource
-                = inputManager.getImages(modelChoice.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
+                = inputManager.getImages(
+                    modelChoice.Text.Equals("Switch to Simple Model") ? "overlapping" : "simpletiled",
                     newValue);
             inputImageCB.DataSource = inputImageDataSource;
+        }
+
+        private void outputHeightValue_ValueChanged(object sender, EventArgs e) {
+            if (categoryCB.Text.Equals("Fonts")) {
+                ((NumericUpDown) sender).Value = Math.Min(((NumericUpDown) sender).Value, 25);
+            }
         }
     }
 
@@ -593,7 +615,7 @@ namespace WFC4All {
         private HashSet<ImageR> curBitmaps;
         private Dictionary<int, List<Bitmap>> similarityMap;
         private List<PictureBox> pictureBoxes;
-        private readonly Dictionary<Tuple<string, int,bool>, Tuple<List<PictureBox>, int>> cache;
+        private readonly Dictionary<Tuple<string, int, bool>, Tuple<List<PictureBox>, int>> cache;
 
         public BitMaps(Form1 form) {
             myForm = form;
