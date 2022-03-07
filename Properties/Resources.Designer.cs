@@ -63,6 +63,26 @@ namespace WFC4All.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap borderPaddingDisabled {
+            get {
+                object obj = ResourceManager.GetObject("borderPaddingDisabled", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap borderPaddingEnabled {
+            get {
+                object obj = ResourceManager.GetObject("borderPaddingEnabled", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap Entropy {
             get {
                 object obj = ResourceManager.GetObject("Entropy", resourceCulture);
@@ -87,6 +107,16 @@ namespace WFC4All.Properties {
             get {
                 object obj = ResourceManager.GetObject("icon", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap LeastUsed {
+            get {
+                object obj = ResourceManager.GetObject("LeastUsed", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -152,14 +182,14 @@ namespace WFC4All.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to &lt;samples&gt;
-        ///      &lt;overlapping name=&quot;Chess&quot; N=&quot;2&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;Skyline&quot; N=&quot;3&quot; symmetry=&quot;2&quot; ground=&quot;-1&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;Flowers&quot; N=&quot;3&quot; symmetry=&quot;2&quot; ground=&quot;-4&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;Hogs&quot; N=&quot;3&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;Hogs&quot; N=&quot;2&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;Knot&quot; N=&quot;3&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;LessRooms&quot; N=&quot;3&quot; periodic=&quot;True&quot;/&gt;
-        ///      &lt;overlapping name=&quot;Mountains&quot; N=&quot;3&quot; symme [rest of string was truncated]&quot;;.
+        ///    &lt;overlapping category=&quot;Fonts&quot; name=&quot;BrownFox&quot; patternSize=&quot;4&quot;/&gt;
+        ///    &lt;overlapping category=&quot;Fonts&quot; name=&quot;Font&quot; patternSize=&quot;5&quot; periodic=&quot;True&quot;/&gt;
+        ///
+        ///    &lt;overlapping category=&quot;Knots&quot; name=&quot;Knot&quot; patternSize=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///    &lt;overlapping category=&quot;Knots&quot; name=&quot;Link&quot; patternSize=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///    &lt;overlapping category=&quot;Knots&quot; name=&quot;Link2&quot; patternSize=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///    &lt;overlapping category=&quot;Knots&quot; name=&quot;Nested&quot; patternSize=&quot;3&quot; periodic=&quot;True&quot;/&gt;
+        ///    &lt;overlapping categ [rest of string was truncated]&quot;;.
         /// </summary>
         public static string samples {
             get {
@@ -183,6 +213,16 @@ namespace WFC4All.Properties {
         public static System.Drawing.Bitmap Spiral {
             get {
                 object obj = ResourceManager.GetObject("Spiral", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap Weighted {
+            get {
+                object obj = ResourceManager.GetObject("Weighted", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

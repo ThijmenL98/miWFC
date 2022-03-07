@@ -13,6 +13,8 @@ using System.Xml.Linq;
 using WFC4All.DeBroglie;
 using WFC4All.DeBroglie.Models;
 using WFC4All.DeBroglie.Topo;
+using WFC4All.enums;
+using WFC4All.Properties;
 
 namespace WFC4All {
     public class InputManager {
@@ -20,7 +22,7 @@ namespace WFC4All {
         private Bitmap currentBitmap;
         private int currentStep, tileSize;
         private readonly Form1 form;
-        private bool inputHasChanged, sizeHasChanged;
+        private bool inputHasChanged;
         private Dictionary<int, Tuple<Color[], Tile>> tileCache;
 
         private XElement xRoot;
@@ -30,19 +32,20 @@ namespace WFC4All {
         private ITopoArray<Tile> tiles;
 
         private static SelectionHeuristic currentSelectionHeuristic;
+        private static PatternHeuristic currentPatternHeuristic;
 
         public InputManager(Form1 formIn) {
             tileSize = 0;
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
             form = formIn;
             currentStep = 0;
-            xDoc = XDocument.Parse(Properties.Resources.samples);
+            xDoc = XDocument.Parse(Resources.samples);
             currentBitmap = null;
             inputHasChanged = true;
-            sizeHasChanged = true;
             dbModel = null;
             dbPropagator = null;
             currentSelectionHeuristic = SelectionHeuristic.ENTROPY;
+            currentPatternHeuristic = PatternHeuristic.WEIGHTED;
         }
 
         /*
@@ -76,11 +79,12 @@ namespace WFC4All {
 
                     if (form.isOverlappingModel()) {
                         ITopoArray<Color> dbSample
-                            = TopoArray.create(imageToColourArray(currentBitmap), selectedPeriodicity);
+                            = TopoArray.create(imageToColourArray(currentBitmap),
+                                selectedPeriodicity); //TODO Input Periodicity
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
-                        
+
                         bool isCached = false;
 
                         foreach (PatternArray patternArray in patternList) {
@@ -170,21 +174,17 @@ namespace WFC4All {
 
                     Console.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
-                    sizeHasChanged = true;
                 }
 
-                if (sizeHasChanged) {
-                    GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(),
-                        selectedPeriodicity);
-                    dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
-                        BackTrackDepth = -1,
-                    }, (int) currentSelectionHeuristic);
-                    Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
-                    sw.Restart();
-                } else {
-                    dbPropagator?.clear();
-                    Console.WriteLine(@$"Clearing took {sw.ElapsedMilliseconds}ms.");
-                }
+                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(),
+                    false); //TODO Output Periodicity
+                int curSeed = Environment.TickCount;
+                dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
+                    BackTrackDepth = -1,
+                    RandomDouble = new Random(curSeed).NextDouble,
+                }, (int) currentSelectionHeuristic, (int) currentPatternHeuristic);
+                Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
+                sw.Restart();
 
                 if (form.isOverlappingModel() && selectedPeriodicity) {
                     if ("flowers".Equals(form.getSelectedInput().ToLower())) {
@@ -213,7 +213,6 @@ namespace WFC4All {
                 }
 
                 inputHasChanged = false;
-                sizeHasChanged = false;
             }
 
             return runWfcDB(steps);
@@ -245,8 +244,10 @@ namespace WFC4All {
                 ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
-                        Color cur = dbOutput.get(x, y);
-                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.DarkGray);
+                        Color cur = dbOutput.get(x, y); // TODO Check if colour is made from multiple?
+                        if (currentColors.Contains(cur)) {
+                            outputBitmap.SetPixel(x, y, cur);
+                        }
                     }
                 }
             } else {
@@ -291,7 +292,9 @@ namespace WFC4All {
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
                         Color cur = dbOutput.get(x, y);
-                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.DarkGray);
+                        if (currentColors.Contains(cur)) {
+                            outputBitmap.SetPixel(x, y, cur);
+                        }
                     }
                 }
             } else {
@@ -318,26 +321,12 @@ namespace WFC4All {
             return outputBitmap;
         }
 
-        public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int w1, int h1, int w2, int h2,
-            int padding) {
-            int marginX = (int) Math.Floor((pictureBox.Width - w2) / 2d) + padding;
-            int marginY = (int) Math.Floor((pictureBox.Height - h2) / 2d) + padding;
+        public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int padding, Color borderColor) {
+            int w2 = pictureBox.Width, h2 = pictureBox.Height, w1 = bitmap.Width, h1 = bitmap.Height;
 
             Bitmap outputBM = new(pictureBox.Width, pictureBox.Height);
             double xRatio = w1 / (double) (w2 - padding * 2);
             double yRatio = h1 / (double) (h2 - padding * 2);
-
-            for (int x = 0; x < pictureBox.Width - padding; x++) {
-                for (int y = 0; y < pictureBox.Height - padding; y++) {
-                    if (y <= marginY || x <= marginX || y >= pictureBox.Height - marginY ||
-                        x >= pictureBox.Width - marginX) {
-                        outputBM.SetPixel(x, y, Color.DarkGray);
-                    } else {
-                        // Skip ahead horizontally
-                        y = pictureBox.Height - marginY - 1;
-                    }
-                }
-            }
 
             for (int i = 0; i < h2 - padding; i++) {
                 int py = (int) Math.Floor(i * yRatio);
@@ -345,12 +334,12 @@ namespace WFC4All {
                     int px = (int) Math.Floor(j * xRatio);
                     Color nextC;
                     if (px >= bitmap.Width || py >= bitmap.Height) {
-                        nextC = Color.Transparent;
+                        nextC = borderColor;
                     } else {
                         nextC = bitmap.GetPixel(px, py);
                     }
 
-                    outputBM.SetPixel(j + marginX - padding, i + marginY - padding, nextC);
+                    outputBM.SetPixel(j + padding - padding, i + padding - padding, nextC);
                 }
             }
 
@@ -412,7 +401,7 @@ namespace WFC4All {
             IEnumerable<XElement> xElements = xDoc.Root.elements("overlapping", "simpletiled");
             IEnumerable<int> matchingElements = xElements.Where(x =>
                 x.get<string>("name") == imageName).Select(t =>
-                t.get("N", 3));
+                t.get("patternSize", 3));
 
             List<object> patternDimensionsList = new();
             int j = 0;
@@ -427,11 +416,12 @@ namespace WFC4All {
             return (patternDimensionsList.ToArray(), j - 2);
         }
 
-        public string[] getImages(string modelType) {
+        public string[] getImages(string modelType, string category) {
             List<string> images = new();
             if (xDoc.Root != null) {
-                images = xDoc.Root.Elements(modelType).Select(xElement => xElement.get<string>("name"))
-                    .ToList();
+                images = xDoc.Root.Elements(modelType)
+                    .Where(xElement => xElement.get<string>("category").Equals(category))
+                    .Select(xElement => xElement.get<string>("name")).ToList();
             }
 
             images.Sort();
@@ -463,12 +453,12 @@ namespace WFC4All {
             }
         }
 
-        public void setSizeChanged() {
-            sizeHasChanged = true;
-        }
-
         public static void setSelectionHeuristic(SelectionHeuristic selectionHeuristic) {
             currentSelectionHeuristic = selectionHeuristic;
+        }
+
+        public static void setPatternHeuristic(PatternHeuristic patternHeuristic) {
+            currentPatternHeuristic = patternHeuristic;
         }
 
         /*
@@ -492,6 +482,12 @@ namespace WFC4All {
 
         private static Color[] reflect(IReadOnlyList<Color> array, int tilesize) {
             return imTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
+        }
+
+        public static string[] getCategories(string modelType) {
+            return modelType.Equals("overlapping")
+                ? new[] {"Textures", "Shapes", "Knots", "Fonts", "Worlds Side-View", "Worlds Top-Down"}
+                : new[] {"Worlds Top-Down", "Textures"};
         }
     }
 }

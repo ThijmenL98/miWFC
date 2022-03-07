@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using WFC4All.DeBroglie.Models;
+using WFC4All.enums;
 using WFC4All.Properties;
 
 namespace WFC4All {
@@ -22,6 +23,9 @@ namespace WFC4All {
         private readonly XDocument xDoc;
 
         private Size oldSize;
+
+        private readonly string[] patternHeuristicDataSource = {"Weighted", "Random", "Least Used"},
+            selectionHeuristicDataSource = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
 
         public Form1() {
             Icon = Resources.icon;
@@ -44,32 +48,54 @@ namespace WFC4All {
 
             pbs = new[] {p1RotPB, p2RotPB, p3RotPB};
 
-            string[] inputImageDataSource = inputManager.getImages("overlapping"); // or "simpletiled"
+            string[] inputImageDataSource = inputManager.getImages("overlapping", "Textures"); // or "simpletiled"
             inputImageCB.DataSource = inputImageDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(inputImageDataSource[0]);
             patternSize.SelectedText = inputImageDataSource[0];
 
-            string[] selectionHeuristicDataSource =
-                {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
+            string[] categoriesDataSource = InputManager.getCategories("overlapping");
+            categoryCB.DataSource = categoriesDataSource;
+            categoryCB.SelectedIndex = 0;
+
             selectionHeuristicCB.DataSource = selectionHeuristicDataSource;
             InputManager.setSelectionHeuristic(SelectionHeuristic.ENTROPY);
+
+            patternHeuristicCB.DataSource = patternHeuristicDataSource;
+            InputManager.setPatternHeuristic(PatternHeuristic.WEIGHTED);
 
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(inputImageDataSource[0]);
             patternSize.DataSource = patternSizeDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
-            initializeRotations();
+            Bitmap disabledInit = new(Resources.borderPaddingDisabled);
+            periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, disabledInit, 3, Color.Red);
+            periodicInputPB.BackColor = Color.Red;
+            periodicInputPB.Padding = new Padding(3);
+
+            //TODO Re-enable initializeRotations();
         }
 
         protected override void OnResize(EventArgs e) {
-            base.OnResize(e);
-
-            foreach (Control cnt in Controls) {
-                resizeAll(cnt, Size);
+            Size minSize = new Size(1616, 939);
+            if (Size.Width < minSize.Width) {
+                Size = new Size(minSize.Width, Size.Height);
             }
 
-            foreach (Control cnt in inputTab.Controls) {
-                resizeAll(cnt, Size);
+            if (Size.Height < minSize.Height) {
+                Size = new Size(Size.Width, minSize.Height);
+            }
+
+            base.OnResize(e);
+
+            Control.ControlCollection[] allControls = {
+                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls,
+                selHeurPanel.Controls
+            };
+
+            foreach (Control.ControlCollection cList in allControls) {
+                foreach (Control cnt in cList) {
+                    resizeAll(cnt, Size);
+                }
             }
 
             oldSize = Size;
@@ -219,7 +245,7 @@ namespace WFC4All {
         }
 
         public bool getPeriodicEnabled() {
-            return periodicInput.Checked;
+            return periodicInputPB.BackColor.Equals(Color.LawnGreen);
         }
 
         private bool changingIndex;
@@ -248,10 +274,6 @@ namespace WFC4All {
             changingIndex = false;
             inputManager.setInputChanged("Changing image");
             executeButton_Click(null, null);
-        }
-
-        private void outputSizeChanged(object sender, EventArgs e) {
-            inputManager.setSizeChanged();
         }
 
         public int getOutputWidth() {
@@ -290,11 +312,17 @@ namespace WFC4All {
             outputHeightValue.Value = 24;
             outputWidthValue.Value = 24;
 
+            categoryCB.DataSource
+                = InputManager.getCategories(modelChoice.Text.Equals("Overlapping Model")
+                    ? "simpletiled"
+                    : "overlapping");
+
             btn.Text = btn.Text.Equals("Overlapping Model") ? "Simple Model" : "Overlapping Model";
             showRotationalOptions(btn.Text.Equals("Overlapping Model"));
 
             string[] images
-                = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled");
+                = inputManager.getImages(btn.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
+                    "Worlds Top-Down");
 
             inputImageCB.DataSource = images;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(images[0]);
@@ -350,7 +378,19 @@ namespace WFC4All {
         }
 
         private void updatePeriodicity() {
-            periodicInput.Checked = defaultPeriodicity;
+            Color c;
+            Bitmap bm;
+            if (!defaultPeriodicity) {
+                bm = new Bitmap(Resources.borderPaddingDisabled);
+                c = Color.Red;
+            } else {
+                bm = new Bitmap(Resources.borderPaddingEnabled);
+                c = Color.LawnGreen;
+            }
+
+            periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, bm, 3, c);
+            periodicInputPB.BackColor = c;
+            periodicInputPB.Padding = new Padding(3);
         }
 
         private void updateRotations() {
@@ -415,6 +455,27 @@ namespace WFC4All {
             savePoint = inputManager.getCurrentStep();
         }
 
+        private void periodicInputPB_Click(object sender, EventArgs e) {
+            Color c;
+            Bitmap bm;
+            if (getPeriodicEnabled()) {
+                bm = new Bitmap(Resources.borderPaddingDisabled);
+                c = Color.Red;
+            } else {
+                bm = new Bitmap(Resources.borderPaddingEnabled);
+                c = Color.LawnGreen;
+            }
+
+            periodicInputPB.Image = InputManager.resizePixels(periodicInputPB, bm, 3, c);
+            periodicInputPB.BackColor = c;
+            periodicInputPB.Padding = new Padding(3);
+            
+            ((PictureBox) sender).Refresh();
+
+            inputManager.setInputChanged("Periodicity");
+            executeButton_Click(null, null);
+        }
+
         private void revertMarkerButton_Click(object sender, EventArgs e) {
             int stepsToRevert = inputManager.getCurrentStep() - savePoint;
             try {
@@ -445,10 +506,8 @@ namespace WFC4All {
         }
 
         private void selectionHeuristicCB_SelectedIndexChanged(object sender, EventArgs e) {
-            //TODO
-            string[] allowedValues = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
-            switch (Array.FindIndex(allowedValues, x => x.Contains(newValue))) {
+            switch (Array.FindIndex(selectionHeuristicDataSource, x => x.Contains(newValue))) {
                 case 0: // Least Entropy
                     selectionHeuristicPB.Image = Resources.Entropy;
                     selectionHeuristicDesc.Text
@@ -473,14 +532,12 @@ namespace WFC4All {
                     break;
                 case 4: // Spiral
                     selectionHeuristicPB.Image = Resources.Spiral;
-                    selectionHeuristicDesc.Text
-                        = @"Select in an outwards spiral fashion";
+                    selectionHeuristicDesc.Text = @"Select in an outwards spiral fashion";
                     InputManager.setSelectionHeuristic(SelectionHeuristic.SPIRAL);
                     break;
                 case 5: // Hilbert Curve
                     selectionHeuristicPB.Image = Resources.Hilbert;
-                    selectionHeuristicDesc.Text
-                        = @"Select following a space-filling path";
+                    selectionHeuristicDesc.Text = @"Select following a space-filling path";
                     InputManager.setSelectionHeuristic(SelectionHeuristic.HILBERT);
                     break;
                 default:
@@ -490,9 +547,43 @@ namespace WFC4All {
             selectionHeuristicDesc.Refresh();
             selectionHeuristicPB.Refresh();
             ((ComboBox) sender).Refresh();
-            
-            inputManager.setSizeChanged();
             executeButton_Click(null, null);
+        }
+
+        private void patternHeuristicCB_SelectedIndexChanged(object sender, EventArgs e) {
+            string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            switch (Array.FindIndex(patternHeuristicDataSource, x => x.Contains(newValue))) {
+                case 0: // Weighted Choice
+                    patternHeuristicPB.Image = Resources.Weighted;
+                    patternHeuristicDesc.Text = @"Select the next pattern though prominence in the input image";
+                    InputManager.setPatternHeuristic(PatternHeuristic.WEIGHTED);
+                    break;
+                case 1: // Random Choice
+                    patternHeuristicPB.Image = Resources.Random;
+                    patternHeuristicDesc.Text = @"Randomly select the pattern to use next";
+                    InputManager.setPatternHeuristic(PatternHeuristic.RANDOM);
+                    break;
+                case 2: // Least Used
+                    patternHeuristicPB.Image = Resources.LeastUsed;
+                    patternHeuristicDesc.Text = @"Select the pattern that has been used the least so far";
+                    InputManager.setPatternHeuristic(PatternHeuristic.LEAST_USED);
+                    break;
+                default:
+                    return;
+            }
+
+            patternHeuristicDesc.Refresh();
+            selectionHeuristicPB.Refresh();
+            ((ComboBox) sender).Refresh();
+            executeButton_Click(null, null);
+        }
+
+        private void categoryCB_SelectedIndexChanged(object sender, EventArgs e) {
+            string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            string[] inputImageDataSource
+                = inputManager.getImages(modelChoice.Text.Equals("Overlapping Model") ? "overlapping" : "simpletiled",
+                    newValue);
+            inputImageCB.DataSource = inputImageDataSource;
         }
     }
 
@@ -502,14 +593,14 @@ namespace WFC4All {
         private HashSet<ImageR> curBitmaps;
         private Dictionary<int, List<Bitmap>> similarityMap;
         private List<PictureBox> pictureBoxes;
-        private readonly Dictionary<Tuple<string, int>, Tuple<List<PictureBox>, int>> cache;
+        private readonly Dictionary<Tuple<string, int,bool>, Tuple<List<PictureBox>, int>> cache;
 
         public BitMaps(Form1 form) {
             myForm = form;
             patternCount = 0;
             curBitmaps = new HashSet<ImageR>();
             similarityMap = new Dictionary<int, List<Bitmap>>();
-            cache = new Dictionary<Tuple<string, int>, Tuple<List<PictureBox>, int>>();
+            cache = new Dictionary<Tuple<string, int, bool>, Tuple<List<PictureBox>, int>>();
             pictureBoxes = new List<PictureBox>();
         }
 
@@ -531,8 +622,8 @@ namespace WFC4All {
         }
 
         public void saveCache() {
-            Tuple<string, int> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            Tuple<string, int, bool> key
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.getPeriodicEnabled());
             cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
@@ -541,8 +632,8 @@ namespace WFC4All {
         }
 
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
-            Tuple<string, int> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            Tuple<string, int, bool> key
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.getPeriodicEnabled());
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
@@ -608,7 +699,7 @@ namespace WFC4All {
             }
 
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, pattern.Width, pattern.Height, size, size, padding);
+            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray);
             pattern.Dispose();
             newPB.BackColor = Color.DimGray; //TODO Re-Enable for CF Color.LawnGreen;
             newPB.Padding = new Padding(padding);
@@ -634,8 +725,8 @@ namespace WFC4All {
         };
 
         public bool addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
-            Tuple<string, int> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension());
+            Tuple<string, int, bool> key
+                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(), myForm.getPeriodicEnabled());
             if (cache.ContainsKey(key)) {
                 foreach (PictureBox pb in cache[key].Item1) {
                     myForm.patternPanel.Controls.Add(pb);
@@ -659,9 +750,9 @@ namespace WFC4All {
             newPB.Name = "patternPB_" + patternCount;
 
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, pattern.Width, pattern.Height, size, size, padding);
+            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray);
             pattern.Dispose();
-            newPB.BackColor = Color.LawnGreen;
+            newPB.BackColor = Color.DimGray;
             newPB.Padding = new Padding(padding);
             newPB.MouseDown += pictureBoxMouseDown;
 

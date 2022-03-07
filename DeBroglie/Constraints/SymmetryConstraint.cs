@@ -54,9 +54,8 @@ namespace WFC4All.DeBroglie.Constraints
                         propagator.@select(x, y, z, allowedTiles);
                         continue;
                     }
-
-
-                    // TODO: Support overlapped model?
+                    
+                    // TOODO: Support overlapped model?
                     if (propagator.TileModel is AdjacentModel adjacentModel)
                     {
                         for (int d = 0; d < topology.DirectionsCount; d++)

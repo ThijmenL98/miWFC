@@ -43,7 +43,7 @@ namespace WFC4All.DeBroglie.Trackers
 
         public void reset()
         {
-            // TODO: Perf boost by assuming wave is truly fresh?
+            // TOODO: Perf boost by assuming wave is truly fresh?
             EntropyValues initial;
             initial.priorityIndex = 0;
             initial.plogpSum = 0;
@@ -104,7 +104,7 @@ namespace WFC4All.DeBroglie.Trackers
         public int getRandomMinEntropyIndex(Func<double> randomDouble)
         {
             int selectedIndex = -1;
-            // TODO: At the moment this is a linear scan, but potentially
+            // TOODO: At the moment this is a linear scan, but potentially
             // could use some data structure
             int minPriorityIndex = int.MaxValue;
             double minEntropy = double.PositiveInfinity;

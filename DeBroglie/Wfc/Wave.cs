@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace WFC4All.DeBroglie.Wfc
@@ -44,6 +45,18 @@ namespace WFC4All.DeBroglie.Wfc
             return possibilities[index * patternCount + pattern];
         }
 
+        public List<int> getPatternList(int index) {
+            List<int> retList = new();
+
+            for (int i = 0; i < patternCount; i++) {
+                if (possibilities[index * patternCount + i]) {
+                    retList.Add(i);
+                }
+            }
+
+            return retList;
+        }
+
         public int getPatternCount(int index)
         {
             return patternCounts[index];
@@ -65,10 +78,10 @@ namespace WFC4All.DeBroglie.Wfc
             patternCounts[index]++;
         }
 
-        // TODO: This should respect mask. Maybe move out of Wave
+        // TOODO: This should respect mask. Maybe move out of Wave
         public double getProgress()
         {
-            // TODO: Use patternCount info?
+            // TOODO: Use patternCount info?
             int c = 0;
             foreach(bool b in possibilities)
             {

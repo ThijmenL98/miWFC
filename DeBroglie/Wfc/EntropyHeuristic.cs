@@ -14,14 +14,15 @@ namespace WFC4All.DeBroglie.Wfc
 
         private readonly Func<double> randomDouble;
 
-        private readonly int selectionHeuristic;
-        
-        public EntropyHeuristic(EntropyTracker entropyTracker, Func<double> randomDouble, int selectionHeuristic)
+        private readonly int selectionHeuristic, patternHeuristic;
+
+        public EntropyHeuristic(EntropyTracker entropyTracker, Func<double> randomDouble, int selectionHeuristic,
+            int patternHeuristic)
         {
             this.entropyTracker = entropyTracker;
             this.randomDouble = randomDouble;
             this.selectionHeuristic = selectionHeuristic;
-            Console.WriteLine(@$"EYO Entropy heuristic created {selectionHeuristic}");
+            this.patternHeuristic = patternHeuristic;
         }
 
         public void pickObservation(out int index, out int pattern)
@@ -44,11 +45,13 @@ namespace WFC4All.DeBroglie.Wfc
             }
             
             // Choose a random pattern
-            //TODO RF8
-            // Weighted - Pick weighted pattern (although randomly) = entropyTracker.getWeightedPatternAt(index, randomDouble);
-            // Random - Pick random pattern                         = entropyTracker.getRandomPatternAt(index, randomDouble);
-            // Least - Pick least used pattern next
-            pattern = entropyTracker.getWeightedPatternAt(index, randomDouble);
+            // RF8
+            pattern = patternHeuristic switch {
+                0 => entropyTracker.getWeightedPatternAt(index, randomDouble), // Weighted Choice
+                1 => entropyTracker.getRandomPatternAt(index, randomDouble),   // Random Choice
+                2 => entropyTracker.getLeastPatternAt(index),                  // Least Used
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
     }
 }

@@ -33,7 +33,7 @@
         /// </summary>
         int Depth { get; }
 
-        // TODO: We do not need all these overloads, surely
+        // TOODO: We do not need all these overloads, surely
 
         /// <summary>
         /// Given an index and a direction, gives the index that is one step in that direction,

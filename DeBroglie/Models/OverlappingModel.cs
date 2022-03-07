@@ -69,7 +69,7 @@ namespace WFC4All.DeBroglie.Models {
             // Update the model based on the collected data
             DirectionSet directions = topology.Directions;
 
-            // TODO: Don't regenerate this from scratch every time
+            // TOODO: Don't regenerate this from scratch every time
             propagator = new List<HashSet<int>[]>(patternArrays.Count);
             for (int p = 0; p < patternArrays.Count; p++) {
                 propagator.Add(new HashSet<int>[directions.Count]);
@@ -243,7 +243,7 @@ namespace WFC4All.DeBroglie.Models {
             // See TestTileMaskWithThinOverlapping for an example of the problem, and
             // https://github.com/BorisTheBrave/DeBroglie/issues/7 for a possible solution.
             if (topology.Mask != null) {
-                // TODO: This could probably do with some cleanup
+                // TOODO: This could probably do with some cleanup
                 bool getTopologyMask(int x, int y, int z) {
                     if (!gridTopology.PeriodicX && x >= topology.Width) {
                         return false;
