@@ -47,9 +47,10 @@ namespace WFC4All {
             cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
         }
 
-        public int getFloorIndex() {
-            return curFloorIndex == 0 ? 0 : curFloorIndex;
-        }
+        //TODO Maybe re-enable?
+        // public int getFloorIndex() {
+        //     return curFloorIndex == 0 ? 0 : curFloorIndex;
+        // }
 
         public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
             Tuple<string, int, bool> key
@@ -68,12 +69,15 @@ namespace WFC4All {
             const int size = 50;
             const int patternsPerRow = 6;
             PictureBox newPB = new();
-
-            int idxX = patternCount % patternsPerRow;
-            int idxY = (int) Math.Floor(patternCount / (double) patternsPerRow);
             const int distance = 20;
 
-            newPB.Location = new Point(size + (size + distance) * idxX, size + 30 + (size + distance) * idxY);
+            int pPerRow = (int) Math.Floor((myForm.patternPanel.Width - distance) / (float) (distance + size));
+            int spacing = (myForm.patternPanel.Width - (size * pPerRow)) / (pPerRow + 3);
+
+            int idxX = patternCount % pPerRow;
+            int idxY = (int) Math.Floor(patternCount / (double) pPerRow);
+
+            newPB.Location = new Point(size + (size + spacing) * idxX - spacing/2, size + 30 + (size + distance) * idxY);
             newPB.Size = new Size(size, size);
             newPB.Name = "patternPB_" + patternCount;
 

@@ -109,6 +109,7 @@
     <None Include="resources\Restart.png" />
     <None Include="resources\RestartClick.png" />
     <None Include="resources\RestartHover.png" />
+    <None Include="resources\Loading.png" />
     <Content Include="resources\samples.xml" />
     <None Include="resources\slowSpeed.png" />
     <Content Include="resources\Weighted.png" />

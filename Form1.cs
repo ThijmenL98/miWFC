@@ -13,10 +13,13 @@ namespace WFC4All {
     public partial class Form1 : Form {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
-        public readonly PictureBox[] pbs;
+        private readonly PictureBox[] pbs;
 
         private int defaultSymmetry, savePoint, lastRanForced;
-        private readonly int initOutWidth, initInWidth, initOutHeight, initInHeight;
+        private readonly int initOutWidth;
+        private readonly int initInWidth;
+        private readonly int initOutHeight;
+        private readonly int initInHeight;
 
         private bool defaultInputPadding, changingIndex;
         public bool isChangingModels;
@@ -27,7 +30,7 @@ namespace WFC4All {
 
         private Size oldSize;
 
-        private Timer myTimer = new();
+        private Timer animationTimer = new();
 
         private readonly string[] patternHeuristicDataSource = {"Weighted", "Random", "Least Used"},
             selectionHeuristicDataSource = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
@@ -87,29 +90,18 @@ namespace WFC4All {
         }
 
         protected override void OnResize(EventArgs e) {
-            Size minSize = new(1616, 939);
-            if (Size.Width < minSize.Width) {
-                Size = new Size(minSize.Width, Size.Height);
-            }
-
-            if (Size.Height < minSize.Height) {
-                Size = new Size(Size.Width, minSize.Height);
-            }
-
-            base.OnResize(e);
-
             Control.ControlCollection[] allControls = {
-                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls,
+                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls, 
                 selHeurPanel.Controls
             };
-
+            
             foreach (Control.ControlCollection cList in allControls) {
                 foreach (Control cnt in cList) {
                     resizeAll(cnt, Size);
                 }
             }
 
-            oldSize = Size;
+            oldSize = new Size(Size.Width, Size.Height);
         }
 
         private void resizeAll(Control control, Size newSize) {
@@ -136,7 +128,7 @@ namespace WFC4All {
                 while (result2 == null) {
                     (result2, _) = inputManager.initAndRunWfcDB(true, getStepAmount());
                 }
-
+                
                 try {
                     resultPB.Image = InputManager.resizeBitmap(result2,
                         Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result.Width));
@@ -159,7 +151,7 @@ namespace WFC4All {
                 lastRanForced = now;
                 return;
             }
-
+            
             try {
                 (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
                 if (finished) {
@@ -203,18 +195,18 @@ namespace WFC4All {
             }
 
             if (animateButton.BackgroundImage.Tag.Equals("Animate")) {
-                lock (myTimer) {
-                    myTimer.Interval = getAnimationSpeed();
-                    myTimer.Tick += myTimer_Tick;
-                    myTimer.Start();
+                lock (animationTimer) {
+                    animationTimer.Interval = getAnimationSpeed();
+                    animationTimer.Tick += animationAnimationTimerTick;
+                    animationTimer.Start();
                 }
 
                 animateButton.BackgroundImage = Resources.PauseHover;
                 animateButton.BackgroundImage.Tag = "Pause";
             } else {
-                lock (myTimer) {
-                    myTimer.Stop();
-                    myTimer = new Timer();
+                lock (animationTimer) {
+                    animationTimer.Stop();
+                    animationTimer = new Timer();
                 }
 
                 animateButton.BackgroundImage = Resources.AnimateHover;
@@ -321,8 +313,8 @@ namespace WFC4All {
         private void resultPB_Click(object sender, EventArgs e) {
             Point clickPos = ((PictureBox) sender).PointToClient(Cursor.Position);
             int clickX = clickPos.X, clickY = clickPos.Y, width = getOutputWidth(), height = getOutputHeight();
-            int a = (int) Math.Floor((double) clickX * width / 600d),
-                b = (int) Math.Floor((double) clickY * height / 600d);
+            int a = (int) Math.Floor((double) clickX * width / ((PictureBox) sender).Width),
+                b = (int) Math.Floor((double) clickY * height / ((PictureBox) sender).Height);
             Console.WriteLine($@"(x:{clickX}, y:{clickY}) -> (a:{a}, b:{b})");
 
             //TODO CF2
@@ -519,20 +511,25 @@ namespace WFC4All {
             inputImagePB.Refresh();
         }
 
+        public void displayLoading(bool display) {
+            loadingPB.Visible = display;
+            loadingPB.Refresh();
+        }
+
         /* ------------------------------------------------------------------------
          * Utils
          * ------------------------------------------------------------------------ */
 
-        private void myTimer_Tick(object sender, EventArgs e) {
+        private void animationAnimationTimerTick(object sender, EventArgs e) {
             if (InvokeRequired) {
                 /* Not on UI thread, reenter there... */
-                BeginInvoke(new EventHandler(myTimer_Tick), sender, e);
+                BeginInvoke(new EventHandler(animationAnimationTimerTick), sender, e);
             } else {
-                lock (myTimer) {
+                lock (animationTimer) {
                     /* only work when this is no reentry while we are already working */
-                    if (myTimer.Enabled) {
-                        myTimer.Stop();
-                        myTimer.Interval = getAnimationSpeed();
+                    if (animationTimer.Enabled) {
+                        animationTimer.Stop();
+                        animationTimer.Interval = getAnimationSpeed();
                         try {
                             (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
                             resultPB.Image = InputManager.resizeBitmap(result2,
@@ -551,7 +548,7 @@ namespace WFC4All {
                             resultPB.Image = InputManager.getImage("NoResultFound");
                         }
 
-                        myTimer.Start();
+                        animationTimer.Start();
                     }
                 }
             }
@@ -648,10 +645,8 @@ namespace WFC4All {
             revertMarkerButton.MouseHover += (sender, eventArgs) => {
                 addHover(sender, eventArgs, "Revert back to save");
             };
-            
-            restartButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Generate a new image");
-            };
+
+            restartButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Generate a new image"); };
         }
 
         /* ------------------------------------------------------------------------
@@ -713,30 +708,30 @@ namespace WFC4All {
             }
         }
 
-        private void initializeRotations() {
-            // TODO maybe re-enable
-            Bitmap referenceImg = new(Resources.rotationRef);
-            const int padding = 3;
-            originalRotPB.BackColor = Color.Black;
-            originalRotPB.Padding = new Padding(padding);
-            originalRotPB.Image = referenceImg;
-
-            Bitmap[] rfs = {
-                Resources.rotationRef1, Resources.rotationRef2, Resources.rotationRef3
-            };
-            string[] rfsString = {
-                "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
-                "Rotate Clockwise 270°\nand Horizontally Flipped"
-            };
-            for (int i = 0; i < 3; i++) {
-                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
-                pbs[i].Padding = new Padding(padding);
-                pbs[i].Image = new Bitmap(rfs[i]);
-                pbs[i].MouseDown += pictureBoxMouseDown;
-                int nonLocalI = i;
-                pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[nonLocalI]); };
-            }
-        }
+        // private void initializeRotations() {
+        //     // TODO maybe re-enable
+        //     Bitmap referenceImg = new(Resources.rotationRef);
+        //     const int padding = 3;
+        //     originalRotPB.BackColor = Color.Black;
+        //     originalRotPB.Padding = new Padding(padding);
+        //     originalRotPB.Image = referenceImg;
+        //
+        //     Bitmap[] rfs = {
+        //         Resources.rotationRef1, Resources.rotationRef2, Resources.rotationRef3
+        //     };
+        //     string[] rfsString = {
+        //         "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
+        //         "Rotate Clockwise 270°\nand Horizontally Flipped"
+        //     };
+        //     for (int i = 0; i < 3; i++) {
+        //         pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
+        //         pbs[i].Padding = new Padding(padding);
+        //         pbs[i].Image = new Bitmap(rfs[i]);
+        //         pbs[i].MouseDown += pictureBoxMouseDown;
+        //         int nonLocalI = i;
+        //         pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[nonLocalI]); };
+        //     }
+        // }
 
         /* ------------------------------------------------------------------------
          * Unsorted

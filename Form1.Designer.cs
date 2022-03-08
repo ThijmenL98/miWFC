@@ -32,6 +32,7 @@ namespace WFC4All
         /// </summary>
         private void InitializeComponent() {
             this.inputTab = new System.Windows.Forms.TabPage();
+            this.loadingPB = new System.Windows.Forms.PictureBox();
             this.IconPB = new System.Windows.Forms.PictureBox();
             this.slowSpeedPB = new System.Windows.Forms.PictureBox();
             this.fastSpeedPB = new System.Windows.Forms.PictureBox();
@@ -80,6 +81,7 @@ namespace WFC4All
             this.patternSizeLabel = new System.Windows.Forms.Label();
             this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.IconPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.fastSpeedPB)).BeginInit();
@@ -107,6 +109,7 @@ namespace WFC4All
             // 
             this.inputTab.AutoScroll = true;
             this.inputTab.BackColor = System.Drawing.Color.DarkGray;
+            this.inputTab.Controls.Add(this.loadingPB);
             this.inputTab.Controls.Add(this.IconPB);
             this.inputTab.Controls.Add(this.slowSpeedPB);
             this.inputTab.Controls.Add(this.fastSpeedPB);
@@ -146,6 +149,18 @@ namespace WFC4All
             this.inputTab.Size = new System.Drawing.Size(1592, 874);
             this.inputTab.TabIndex = 0;
             this.inputTab.Text = "Input Manipulation";
+            // 
+            // loadingPB
+            // 
+            this.loadingPB.BackColor = System.Drawing.Color.Transparent;
+            this.loadingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.loadingPB.Image = global::WFC4All.Properties.Resources.Loading;
+            this.loadingPB.Location = new System.Drawing.Point(617, 307);
+            this.loadingPB.Name = "loadingPB";
+            this.loadingPB.Size = new System.Drawing.Size(632, 186);
+            this.loadingPB.TabIndex = 39;
+            this.loadingPB.TabStop = false;
+            this.loadingPB.WaitOnLoad = true;
             // 
             // IconPB
             // 
@@ -222,7 +237,7 @@ namespace WFC4All
             this.category.BackColor = System.Drawing.Color.Transparent;
             this.category.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.category.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.category.Location = new System.Drawing.Point(20, 24);
+            this.category.Location = new System.Drawing.Point(21, 21);
             this.category.Name = "category";
             this.category.Size = new System.Drawing.Size(180, 21);
             this.category.TabIndex = 36;
@@ -230,6 +245,7 @@ namespace WFC4All
             // 
             // outputWidthValue
             // 
+            this.outputWidthValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.outputWidthValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.outputWidthValue.Location = new System.Drawing.Point(1123, 36);
             this.outputWidthValue.Maximum = new decimal(new int[] {500, 0, 0, 0});
@@ -299,6 +315,7 @@ namespace WFC4All
             // 
             // outputHeightValue
             // 
+            this.outputHeightValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.outputHeightValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.outputHeightValue.Location = new System.Drawing.Point(1213, 36);
             this.outputHeightValue.Minimum = new decimal(new int[] {10, 0, 0, 0});
@@ -468,17 +485,17 @@ namespace WFC4All
             // 
             this.animateButton.BackColor = System.Drawing.Color.Transparent;
             this.animateButton.BackgroundImage = global::WFC4All.Properties.Resources.Animate;
-            this.animateButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.animateButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.animateButton.FlatAppearance.BorderSize = 0;
             this.animateButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
             this.animateButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
             this.animateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.animateButton.ForeColor = System.Drawing.Color.Transparent;
-            this.animateButton.Location = new System.Drawing.Point(934, 709);
+            this.animateButton.Location = new System.Drawing.Point(954, 719);
             this.animateButton.Margin = new System.Windows.Forms.Padding(0);
             this.animateButton.Name = "animateButton";
-            this.animateButton.Size = new System.Drawing.Size(150, 150);
+            this.animateButton.Size = new System.Drawing.Size(125, 125);
             this.animateButton.TabIndex = 24;
             this.animateButton.UseVisualStyleBackColor = false;
             this.animateButton.Click += new System.EventHandler(this.animateButton_Click);
@@ -567,6 +584,7 @@ namespace WFC4All
             this.patternPanel.AutoScroll = true;
             this.patternPanel.AutoScrollMargin = new System.Drawing.Size(0, 50);
             this.patternPanel.BackColor = System.Drawing.Color.Silver;
+            this.patternPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.patternPanel.Controls.Add(this.patternsLabel);
             this.patternPanel.Location = new System.Drawing.Point(365, 24);
             this.patternPanel.Name = "patternPanel";
@@ -575,11 +593,12 @@ namespace WFC4All
             // 
             // patternsLabel
             // 
+            this.patternsLabel.AutoSize = true;
             this.patternsLabel.BackColor = System.Drawing.Color.Transparent;
             this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.patternsLabel.Location = new System.Drawing.Point(14, 14);
+            this.patternsLabel.Location = new System.Drawing.Point(15, 14);
             this.patternsLabel.Name = "patternsLabel";
-            this.patternsLabel.Size = new System.Drawing.Size(510, 56);
+            this.patternsLabel.Size = new System.Drawing.Size(306, 18);
             this.patternsLabel.TabIndex = 0;
             this.patternsLabel.Text = "Extracted patterns with current settings!";
             // 
@@ -615,7 +634,7 @@ namespace WFC4All
             // 
             // resultPB
             // 
-            this.resultPB.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.resultPB.BackColor = System.Drawing.Color.Silver;
             this.resultPB.Location = new System.Drawing.Point(954, 89);
             this.resultPB.Name = "resultPB";
             this.resultPB.Size = new System.Drawing.Size(600, 600);
@@ -635,7 +654,7 @@ namespace WFC4All
             this.restartButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.restartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.restartButton.ForeColor = System.Drawing.Color.Transparent;
-            this.restartButton.Location = new System.Drawing.Point(1378, 22);
+            this.restartButton.Location = new System.Drawing.Point(1382, 22);
             this.restartButton.Name = "restartButton";
             this.restartButton.Size = new System.Drawing.Size(125, 50);
             this.restartButton.TabIndex = 1;
@@ -645,6 +664,7 @@ namespace WFC4All
             // inputPanel
             // 
             this.inputPanel.BackColor = System.Drawing.Color.Silver;
+            this.inputPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.inputPanel.Controls.Add(this.inputPaddingPB);
             this.inputPanel.Controls.Add(this.modelChoice);
             this.inputPanel.Controls.Add(this.patternSize);
@@ -656,7 +676,7 @@ namespace WFC4All
             // 
             // inputPaddingPB
             // 
-            this.inputPaddingPB.Location = new System.Drawing.Point(249, 3);
+            this.inputPaddingPB.Location = new System.Drawing.Point(247, 1);
             this.inputPaddingPB.Name = "inputPaddingPB";
             this.inputPaddingPB.Size = new System.Drawing.Size(94, 94);
             this.inputPaddingPB.TabIndex = 38;
@@ -667,9 +687,9 @@ namespace WFC4All
             // 
             this.modelChoice.BackColor = System.Drawing.Color.Transparent;
             this.modelChoice.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.modelChoice.Location = new System.Drawing.Point(110, 3);
+            this.modelChoice.Location = new System.Drawing.Point(114, 14);
             this.modelChoice.Name = "modelChoice";
-            this.modelChoice.Size = new System.Drawing.Size(129, 94);
+            this.modelChoice.Size = new System.Drawing.Size(129, 73);
             this.modelChoice.TabIndex = 8;
             this.modelChoice.Text = "Switch to Simple Model";
             this.modelChoice.UseVisualStyleBackColor = false;
@@ -716,10 +736,13 @@ namespace WFC4All
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(1600, 900);
             this.Controls.Add(this.tabSelection);
+            this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(1616, 939);
             this.Name = "Form1";
             this.Text = "WFC4All";
             this.inputTab.ResumeLayout(false);
             this.inputTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.IconPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.fastSpeedPB)).EndInit();
@@ -738,6 +761,7 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize) (this.p1RotPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.originalRotPB)).EndInit();
             this.patternPanel.ResumeLayout(false);
+            this.patternPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize) (this.inputImagePB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.resultPB)).EndInit();
             this.inputPanel.ResumeLayout(false);
@@ -745,6 +769,8 @@ namespace WFC4All
             this.tabSelection.ResumeLayout(false);
             this.ResumeLayout(false);
         }
+
+        private System.Windows.Forms.PictureBox loadingPB;
 
         private System.Windows.Forms.PictureBox IconPB;
 
@@ -777,13 +803,13 @@ namespace WFC4All
         private System.Windows.Forms.NumericUpDown outputHeightValue;
         private System.Windows.Forms.NumericUpDown outputWidthValue;
         private System.Windows.Forms.ComboBox inputImageCB;
-        private PictureBox inputImagePB;
+        private System.Windows.Forms.PictureBox inputImagePB;
         private System.Windows.Forms.Label inputImage;
         private System.Windows.Forms.Label patternSizeLabel;
         private System.Windows.Forms.ComboBox patternSize;
         public System.Windows.Forms.PictureBox resultPB;
         private System.Windows.Forms.Button restartButton;
-        private TabControl tabSelection;
+        private System.Windows.Forms.TabControl tabSelection;
         private System.Windows.Forms.Label stepSizeLabel;
         private System.Windows.Forms.Button advanceButton;
         private System.Windows.Forms.Button animateButton;

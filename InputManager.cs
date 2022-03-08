@@ -61,6 +61,7 @@ namespace WFC4All {
             sw.Restart();
 
             if (reset || dbPropagator == null) {
+                form.displayLoading(true);
                 bool inputPaddingEnabled = form.isOverlappingModel() && form.inputPaddingEnabled();
                 if (inputHasChanged) {
                     currentBitmap = getImage(form.getSelectedInput());
@@ -214,7 +215,9 @@ namespace WFC4All {
 
                 inputHasChanged = false;
             }
-
+            
+            form.displayLoading(false);
+            
             return runWfcDB(steps);
         }
 
@@ -432,14 +435,15 @@ namespace WFC4All {
             return new Bitmap($"samples/{name}.png");
         }
 
-        private bool transformationIsEnabled(int i) {
-            if (i == 0) {
-                return true;
-            }
-
-            PictureBox currentPB = form.pbs[i - 1];
-            return currentPB.BackColor.Equals(Color.LawnGreen);
-        }
+        //TODO Maybe re-enable
+        // private bool transformationIsEnabled(int i) {
+        //     if (i == 0) {
+        //         return true;
+        //     }
+        //
+        //     PictureBox currentPB = form.pbs[i - 1];
+        //     return currentPB.BackColor.Equals(Color.LawnGreen);
+        // }
 
         /*
          * Setters
