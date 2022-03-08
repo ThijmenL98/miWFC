@@ -394,10 +394,6 @@ namespace WFC4All
             this.markerButton.TabIndex = 29;
             this.markerButton.UseVisualStyleBackColor = false;
             this.markerButton.Click += new System.EventHandler(this.markerButton_Click);
-            this.markerButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.markerButton_MouseDown);
-            this.markerButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.markerButton_MouseEnter);
-            this.markerButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.markerButton_MouseLeave);
-            this.markerButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.markerButton_MouseUp);
             // 
             // outputImageHeightLabel
             // 
@@ -427,10 +423,6 @@ namespace WFC4All
             this.revertMarkerButton.TabIndex = 28;
             this.revertMarkerButton.UseVisualStyleBackColor = false;
             this.revertMarkerButton.Click += new System.EventHandler(this.revertMarkerButton_Click);
-            this.revertMarkerButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseDown);
-            this.revertMarkerButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseEnter);
-            this.revertMarkerButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseLeave);
-            this.revertMarkerButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseUp);
             // 
             // outputSizeLabel
             // 
@@ -460,10 +452,6 @@ namespace WFC4All
             this.backButton.TabIndex = 27;
             this.backButton.UseVisualStyleBackColor = false;
             this.backButton.Click += new System.EventHandler(this.backButton_Click);
-            this.backButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.backButton_MouseDown);
-            this.backButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.backButton_MouseEnter);
-            this.backButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.backButton_MouseLeave);
-            this.backButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.backButton_MouseUp);
             // 
             // animationSpeedLabel
             // 
@@ -494,17 +482,14 @@ namespace WFC4All
             this.animateButton.TabIndex = 24;
             this.animateButton.UseVisualStyleBackColor = false;
             this.animateButton.Click += new System.EventHandler(this.animateButton_Click);
-            this.animateButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.animateButton_MouseDown);
-            this.animateButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.animateButton_MouseEnter);
-            this.animateButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.animateButton_MouseLeave);
             // 
             // stepSizeLabel
             // 
             this.stepSizeLabel.BackColor = System.Drawing.Color.Transparent;
             this.stepSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.stepSizeLabel.Location = new System.Drawing.Point(1316, 708);
+            this.stepSizeLabel.Location = new System.Drawing.Point(1283, 708);
             this.stepSizeLabel.Name = "stepSizeLabel";
-            this.stepSizeLabel.Size = new System.Drawing.Size(214, 27);
+            this.stepSizeLabel.Size = new System.Drawing.Size(281, 27);
             this.stepSizeLabel.TabIndex = 23;
             this.stepSizeLabel.Text = "Amount of steps to take: 1";
             this.stepSizeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -526,10 +511,6 @@ namespace WFC4All
             this.advanceButton.TabIndex = 21;
             this.advanceButton.UseVisualStyleBackColor = false;
             this.advanceButton.Click += new System.EventHandler(this.advanceButton_Click);
-            this.advanceButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.advanceButton_MouseDown);
-            this.advanceButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.advanceButton_MouseEnter);
-            this.advanceButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.advanceButton_MouseLeave);
-            this.advanceButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.advanceButton_MouseUp);
             // 
             // patternRotationLabel
             // 
@@ -660,10 +641,6 @@ namespace WFC4All
             this.restartButton.TabIndex = 1;
             this.restartButton.UseVisualStyleBackColor = false;
             this.restartButton.Click += new System.EventHandler(this.executeButton_Click);
-            this.restartButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.restartButton_MouseDown);
-            this.restartButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.restartButton_MouseEnter);
-            this.restartButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.restartButton_MouseLeave);
-            this.restartButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.restartButton_MouseUp);
             // 
             // inputPanel
             // 

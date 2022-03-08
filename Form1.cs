@@ -44,7 +44,10 @@ namespace WFC4All {
             defaultInputPadding = true;
             inputManager = new InputManager(this);
             bitMaps = new BitMaps(this);
+
             InitializeComponent();
+            initializeAnimations();
+            initializeToolTips();
 
             initInWidth = inputImagePB.Width;
             initInHeight = inputImagePB.Height;
@@ -244,7 +247,6 @@ namespace WFC4All {
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[0]);
             patternSize.DataSource = patternSizeDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
-            patternSize.SelectedText = images[i];
 
             patternSize.Refresh();
             inputImageCB.Refresh();
@@ -584,7 +586,11 @@ namespace WFC4All {
             toolTip.ReshowDelay = 500;
             toolTip.ShowAlways = true;
 
-            toolTip.SetToolTip((PictureBox) sender, message);
+            if (sender.GetType() == typeof(PictureBox)) {
+                toolTip.SetToolTip((PictureBox) sender, message);
+            } else if (sender.GetType() == typeof(Button)) {
+                toolTip.SetToolTip((Button) sender, message);
+            }
         }
 
         public bool addPattern(Bitmap bitmap) {
@@ -593,6 +599,59 @@ namespace WFC4All {
 
         public bool addPattern(PatternArray pixels, List<Color> distinctColors) {
             return bitMaps.addPattern(pixels, distinctColors, pictureBoxMouseDown);
+        }
+
+        private void initializeAnimations() {
+            markerButton.MouseDown += ButtonVisualEventHandler.markerButton_MouseDown;
+            markerButton.MouseEnter += ButtonVisualEventHandler.markerButton_MouseEnter;
+            markerButton.MouseLeave += ButtonVisualEventHandler.markerButton_MouseLeave;
+            markerButton.MouseUp += ButtonVisualEventHandler.markerButton_MouseUp;
+
+            revertMarkerButton.MouseDown += ButtonVisualEventHandler.revertMarkerButton_MouseDown;
+            revertMarkerButton.MouseEnter += ButtonVisualEventHandler.revertMarkerButton_MouseEnter;
+            revertMarkerButton.MouseLeave += ButtonVisualEventHandler.revertMarkerButton_MouseLeave;
+            revertMarkerButton.MouseUp += ButtonVisualEventHandler.revertMarkerButton_MouseUp;
+
+            backButton.MouseDown += ButtonVisualEventHandler.backButton_MouseDown;
+            backButton.MouseEnter += ButtonVisualEventHandler.backButton_MouseEnter;
+            backButton.MouseLeave += ButtonVisualEventHandler.backButton_MouseLeave;
+            backButton.MouseUp += ButtonVisualEventHandler.backButton_MouseUp;
+
+            animateButton.MouseDown += ButtonVisualEventHandler.animateButton_MouseDown;
+            animateButton.MouseEnter += ButtonVisualEventHandler.animateButton_MouseEnter;
+            animateButton.MouseLeave += ButtonVisualEventHandler.animateButton_MouseLeave;
+
+            advanceButton.MouseDown += ButtonVisualEventHandler.advanceButton_MouseDown;
+            advanceButton.MouseEnter += ButtonVisualEventHandler.advanceButton_MouseEnter;
+            advanceButton.MouseLeave += ButtonVisualEventHandler.advanceButton_MouseLeave;
+            advanceButton.MouseUp += ButtonVisualEventHandler.advanceButton_MouseUp;
+
+            restartButton.MouseDown += ButtonVisualEventHandler.restartButton_MouseDown;
+            restartButton.MouseEnter += ButtonVisualEventHandler.restartButton_MouseEnter;
+            restartButton.MouseLeave += ButtonVisualEventHandler.restartButton_MouseLeave;
+            restartButton.MouseUp += ButtonVisualEventHandler.restartButton_MouseUp;
+        }
+
+        private void initializeToolTips() {
+            animateButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Animate generation"); };
+
+            backButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Take a single step back"); };
+
+            advanceButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Advance a single step");
+            };
+
+            markerButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Save the current progress");
+            };
+
+            revertMarkerButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Revert back to save");
+            };
+            
+            restartButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Generate a new image");
+            };
         }
 
         /* ------------------------------------------------------------------------

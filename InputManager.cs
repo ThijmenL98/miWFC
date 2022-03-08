@@ -245,9 +245,7 @@ namespace WFC4All {
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
                         Color cur = dbOutput.get(x, y); // TODO Check if colour is made from multiple?
-                        if (currentColors.Contains(cur)) {
-                            outputBitmap.SetPixel(x, y, cur);
-                        }
+                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.Silver);
                     }
                 }
             } else {
@@ -258,7 +256,7 @@ namespace WFC4All {
                         int value = dbOutput.get(x, y);
                         Color[] outputPattern = value >= 0
                             ? tileCache.ElementAt(value).Value.Item1
-                            : Enumerable.Repeat(Color.DarkGray, tileSize * tileSize).ToArray();
+                            : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
 
                         for (int yy = 0; yy < tileSize; yy++) {
                             for (int xx = 0; xx < tileSize; xx++) {
@@ -292,9 +290,7 @@ namespace WFC4All {
                 for (int y = 0; y < form.getOutputHeight(); y++) {
                     for (int x = 0; x < form.getOutputWidth(); x++) {
                         Color cur = dbOutput.get(x, y);
-                        if (currentColors.Contains(cur)) {
-                            outputBitmap.SetPixel(x, y, cur);
-                        }
+                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.Silver);
                     }
                 }
             } else {
@@ -305,7 +301,7 @@ namespace WFC4All {
                         int value = dbOutput.get(x, y);
                         Color[] outputPattern = value >= 0
                             ? tileCache.ElementAt(value).Value.Item1
-                            : Enumerable.Repeat(Color.DarkGray, tileSize * tileSize).ToArray();
+                            : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
                         for (int yy = 0; yy < tileSize; yy++) {
                             for (int xx = 0; xx < tileSize; xx++) {
                                 Color cur = outputPattern[yy * tileSize + xx];
