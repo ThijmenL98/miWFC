@@ -85,7 +85,7 @@ namespace WFC4All {
             inputPaddingPB.MouseHover += (sender, eventArgs) => {
                 addHover(sender, eventArgs, "Toggle border padding");
             };
-
+            
             //TODO Re-enable initializeRotations();
         }
 

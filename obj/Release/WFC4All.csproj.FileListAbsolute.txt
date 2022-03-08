@@ -1,5 +1,3 @@
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.exe.config
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.exe
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.DeBroglie.dll
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.AssemblyReference.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.SuggestedBindingRedirects.cache
@@ -8,7 +6,6 @@ C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.Properties.
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.GenerateResource.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.CoreCompileInputs.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.csproj.CopyComplete
-C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.exe
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\3Bricks.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Angular.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\BrownFox.png
@@ -131,3 +128,6 @@ C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Wall.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\WalledDot.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Water.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Wrinkles.png
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4AllProj.exe.config
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4AllProj.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4AllProj.exe

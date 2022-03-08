@@ -155,9 +155,9 @@ namespace WFC4All
             this.loadingPB.BackColor = System.Drawing.Color.Transparent;
             this.loadingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.loadingPB.Image = global::WFC4All.Properties.Resources.Loading;
-            this.loadingPB.Location = new System.Drawing.Point(617, 307);
+            this.loadingPB.Location = new System.Drawing.Point(602, 283);
             this.loadingPB.Name = "loadingPB";
-            this.loadingPB.Size = new System.Drawing.Size(632, 186);
+            this.loadingPB.Size = new System.Drawing.Size(663, 218);
             this.loadingPB.TabIndex = 39;
             this.loadingPB.TabStop = false;
             this.loadingPB.WaitOnLoad = true;
