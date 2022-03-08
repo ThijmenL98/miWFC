@@ -3,7 +3,7 @@ using System.Windows.Forms;
 using WFC4All.Properties;
 
 namespace WFC4All {
-    public class ButtonEventHandler {
+    public static class ButtonVisualEventHandler {
         public static void animateButton_MouseEnter(object sender, EventArgs e) {
             if (((Button) sender).BackgroundImage.Tag == null 
                 || ((Button) sender).BackgroundImage.Tag.Equals("Animate")) {
@@ -99,6 +99,21 @@ namespace WFC4All {
 
         public static void markerButton_MouseUp(object sender, MouseEventArgs e) {
             ((Button) sender).BackgroundImage = Resources.SaveHover;
+        }
+        public static void restartButton_MouseDown(object sender, MouseEventArgs e) {
+            ((Button) sender).BackgroundImage = Resources.RestartClick;
+        }
+
+        public static void restartButton_MouseEnter(object sender, EventArgs e) {
+            ((Button) sender).BackgroundImage = Resources.RestartHover;
+        }
+
+        public static void restartButton_MouseLeave(object sender, EventArgs e) {
+            ((Button) sender).BackgroundImage = Resources.Restart;
+        }
+
+        public static void restartButton_MouseUp(object sender, MouseEventArgs e) {
+            ((Button) sender).BackgroundImage = Resources.RestartHover;
         }
     }
 }

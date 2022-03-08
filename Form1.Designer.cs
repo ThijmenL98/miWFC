@@ -195,7 +195,7 @@ namespace WFC4All
             // stepSizeTrackbar
             // 
             this.stepSizeTrackbar.LargeChange = 10;
-            this.stepSizeTrackbar.Location = new System.Drawing.Point(1316, 730);
+            this.stepSizeTrackbar.Location = new System.Drawing.Point(1316, 739);
             this.stepSizeTrackbar.Maximum = 100;
             this.stepSizeTrackbar.Minimum = 1;
             this.stepSizeTrackbar.Name = "stepSizeTrackbar";
@@ -231,7 +231,7 @@ namespace WFC4All
             // outputWidthValue
             // 
             this.outputWidthValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputWidthValue.Location = new System.Drawing.Point(1122, 30);
+            this.outputWidthValue.Location = new System.Drawing.Point(1123, 36);
             this.outputWidthValue.Maximum = new decimal(new int[] {500, 0, 0, 0});
             this.outputWidthValue.Minimum = new decimal(new int[] {10, 0, 0, 0});
             this.outputWidthValue.Name = "outputWidthValue";
@@ -300,7 +300,7 @@ namespace WFC4All
             // outputHeightValue
             // 
             this.outputHeightValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputHeightValue.Location = new System.Drawing.Point(1212, 30);
+            this.outputHeightValue.Location = new System.Drawing.Point(1213, 36);
             this.outputHeightValue.Minimum = new decimal(new int[] {10, 0, 0, 0});
             this.outputHeightValue.Name = "outputHeightValue";
             this.outputHeightValue.Size = new System.Drawing.Size(60, 24);
@@ -371,7 +371,7 @@ namespace WFC4All
             this.outputImageWidthLabel.AutoSize = true;
             this.outputImageWidthLabel.BackColor = System.Drawing.Color.Transparent;
             this.outputImageWidthLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputImageWidthLabel.Location = new System.Drawing.Point(1095, 32);
+            this.outputImageWidthLabel.Location = new System.Drawing.Point(1096, 38);
             this.outputImageWidthLabel.Name = "outputImageWidthLabel";
             this.outputImageWidthLabel.Size = new System.Drawing.Size(29, 18);
             this.outputImageWidthLabel.TabIndex = 6;
@@ -388,19 +388,23 @@ namespace WFC4All
             this.markerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.markerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.markerButton.ForeColor = System.Drawing.Color.Transparent;
-            this.markerButton.Location = new System.Drawing.Point(1095, 784);
+            this.markerButton.Location = new System.Drawing.Point(1095, 789);
             this.markerButton.Name = "markerButton";
             this.markerButton.Size = new System.Drawing.Size(70, 70);
             this.markerButton.TabIndex = 29;
             this.markerButton.UseVisualStyleBackColor = false;
             this.markerButton.Click += new System.EventHandler(this.markerButton_Click);
+            this.markerButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.markerButton_MouseDown);
+            this.markerButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.markerButton_MouseEnter);
+            this.markerButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.markerButton_MouseLeave);
+            this.markerButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.markerButton_MouseUp);
             // 
             // outputImageHeightLabel
             // 
             this.outputImageHeightLabel.AutoSize = true;
             this.outputImageHeightLabel.BackColor = System.Drawing.Color.Transparent;
             this.outputImageHeightLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputImageHeightLabel.Location = new System.Drawing.Point(1186, 32);
+            this.outputImageHeightLabel.Location = new System.Drawing.Point(1187, 38);
             this.outputImageHeightLabel.Name = "outputImageHeightLabel";
             this.outputImageHeightLabel.Size = new System.Drawing.Size(25, 18);
             this.outputImageHeightLabel.TabIndex = 7;
@@ -417,19 +421,23 @@ namespace WFC4All
             this.revertMarkerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.revertMarkerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.revertMarkerButton.ForeColor = System.Drawing.Color.Transparent;
-            this.revertMarkerButton.Location = new System.Drawing.Point(1186, 784);
+            this.revertMarkerButton.Location = new System.Drawing.Point(1186, 789);
             this.revertMarkerButton.Name = "revertMarkerButton";
             this.revertMarkerButton.Size = new System.Drawing.Size(70, 70);
             this.revertMarkerButton.TabIndex = 28;
             this.revertMarkerButton.UseVisualStyleBackColor = false;
             this.revertMarkerButton.Click += new System.EventHandler(this.revertMarkerButton_Click);
+            this.revertMarkerButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseDown);
+            this.revertMarkerButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseEnter);
+            this.revertMarkerButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseLeave);
+            this.revertMarkerButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.revertMarkerButton_MouseUp);
             // 
             // outputSizeLabel
             // 
             this.outputSizeLabel.AutoSize = true;
             this.outputSizeLabel.BackColor = System.Drawing.Color.Transparent;
             this.outputSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.outputSizeLabel.Location = new System.Drawing.Point(938, 32);
+            this.outputSizeLabel.Location = new System.Drawing.Point(939, 38);
             this.outputSizeLabel.Name = "outputSizeLabel";
             this.outputSizeLabel.Size = new System.Drawing.Size(146, 18);
             this.outputSizeLabel.TabIndex = 5;
@@ -446,12 +454,16 @@ namespace WFC4All
             this.backButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.backButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.backButton.ForeColor = System.Drawing.Color.Transparent;
-            this.backButton.Location = new System.Drawing.Point(1095, 704);
+            this.backButton.Location = new System.Drawing.Point(1095, 709);
             this.backButton.Name = "backButton";
             this.backButton.Size = new System.Drawing.Size(70, 70);
             this.backButton.TabIndex = 27;
             this.backButton.UseVisualStyleBackColor = false;
             this.backButton.Click += new System.EventHandler(this.backButton_Click);
+            this.backButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.backButton_MouseDown);
+            this.backButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.backButton_MouseEnter);
+            this.backButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.backButton_MouseLeave);
+            this.backButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.backButton_MouseUp);
             // 
             // animationSpeedLabel
             // 
@@ -475,19 +487,22 @@ namespace WFC4All
             this.animateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.animateButton.ForeColor = System.Drawing.Color.Transparent;
-            this.animateButton.Location = new System.Drawing.Point(934, 704);
+            this.animateButton.Location = new System.Drawing.Point(934, 709);
             this.animateButton.Margin = new System.Windows.Forms.Padding(0);
             this.animateButton.Name = "animateButton";
             this.animateButton.Size = new System.Drawing.Size(150, 150);
             this.animateButton.TabIndex = 24;
             this.animateButton.UseVisualStyleBackColor = false;
             this.animateButton.Click += new System.EventHandler(this.animateButton_Click);
+            this.animateButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.animateButton_MouseDown);
+            this.animateButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.animateButton_MouseEnter);
+            this.animateButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.animateButton_MouseLeave);
             // 
             // stepSizeLabel
             // 
             this.stepSizeLabel.BackColor = System.Drawing.Color.Transparent;
             this.stepSizeLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.stepSizeLabel.Location = new System.Drawing.Point(1316, 699);
+            this.stepSizeLabel.Location = new System.Drawing.Point(1316, 708);
             this.stepSizeLabel.Name = "stepSizeLabel";
             this.stepSizeLabel.Size = new System.Drawing.Size(214, 27);
             this.stepSizeLabel.TabIndex = 23;
@@ -505,12 +520,16 @@ namespace WFC4All
             this.advanceButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.advanceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.advanceButton.ForeColor = System.Drawing.Color.Transparent;
-            this.advanceButton.Location = new System.Drawing.Point(1186, 704);
+            this.advanceButton.Location = new System.Drawing.Point(1186, 709);
             this.advanceButton.Name = "advanceButton";
             this.advanceButton.Size = new System.Drawing.Size(70, 70);
             this.advanceButton.TabIndex = 21;
             this.advanceButton.UseVisualStyleBackColor = false;
             this.advanceButton.Click += new System.EventHandler(this.advanceButton_Click);
+            this.advanceButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.advanceButton_MouseDown);
+            this.advanceButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.advanceButton_MouseEnter);
+            this.advanceButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.advanceButton_MouseLeave);
+            this.advanceButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.advanceButton_MouseUp);
             // 
             // patternRotationLabel
             // 
@@ -570,7 +589,7 @@ namespace WFC4All
             this.patternPanel.Controls.Add(this.patternsLabel);
             this.patternPanel.Location = new System.Drawing.Point(365, 24);
             this.patternPanel.Name = "patternPanel";
-            this.patternPanel.Size = new System.Drawing.Size(500, 825);
+            this.patternPanel.Size = new System.Drawing.Size(551, 825);
             this.patternPanel.TabIndex = 11;
             // 
             // patternsLabel
@@ -579,7 +598,7 @@ namespace WFC4All
             this.patternsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
             this.patternsLabel.Location = new System.Drawing.Point(14, 14);
             this.patternsLabel.Name = "patternsLabel";
-            this.patternsLabel.Size = new System.Drawing.Size(459, 56);
+            this.patternsLabel.Size = new System.Drawing.Size(510, 56);
             this.patternsLabel.TabIndex = 0;
             this.patternsLabel.Text = "Extracted patterns with current settings!";
             // 
@@ -616,7 +635,7 @@ namespace WFC4All
             // resultPB
             // 
             this.resultPB.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.resultPB.Location = new System.Drawing.Point(938, 80);
+            this.resultPB.Location = new System.Drawing.Point(954, 89);
             this.resultPB.Name = "resultPB";
             this.resultPB.Size = new System.Drawing.Size(600, 600);
             this.resultPB.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -626,14 +645,25 @@ namespace WFC4All
             // 
             // restartButton
             // 
+            this.restartButton.BackColor = System.Drawing.Color.Transparent;
+            this.restartButton.BackgroundImage = global::WFC4All.Properties.Resources.Restart;
+            this.restartButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.restartButton.FlatAppearance.BorderSize = 0;
+            this.restartButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.restartButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.restartButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.restartButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.restartButton.Location = new System.Drawing.Point(1434, 23);
+            this.restartButton.ForeColor = System.Drawing.Color.Transparent;
+            this.restartButton.Location = new System.Drawing.Point(1378, 22);
             this.restartButton.Name = "restartButton";
-            this.restartButton.Size = new System.Drawing.Size(104, 40);
+            this.restartButton.Size = new System.Drawing.Size(125, 50);
             this.restartButton.TabIndex = 1;
-            this.restartButton.Text = "Restart";
-            this.restartButton.UseVisualStyleBackColor = true;
+            this.restartButton.UseVisualStyleBackColor = false;
             this.restartButton.Click += new System.EventHandler(this.executeButton_Click);
+            this.restartButton.MouseDown += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.restartButton_MouseDown);
+            this.restartButton.MouseEnter += new System.EventHandler(ButtonVisualEventHandler.restartButton_MouseEnter);
+            this.restartButton.MouseLeave += new System.EventHandler(ButtonVisualEventHandler.restartButton_MouseLeave);
+            this.restartButton.MouseUp += new System.Windows.Forms.MouseEventHandler(ButtonVisualEventHandler.restartButton_MouseUp);
             // 
             // inputPanel
             // 

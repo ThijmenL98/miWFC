@@ -106,6 +106,9 @@
     <None Include="resources\fastSpeed.png" />
     <None Include="resources\icon.png" />
     <Content Include="resources\LeastUsed.png" />
+    <None Include="resources\Restart.png" />
+    <None Include="resources\RestartClick.png" />
+    <None Include="resources\RestartHover.png" />
     <Content Include="resources\samples.xml" />
     <None Include="resources\slowSpeed.png" />
     <Content Include="resources\Weighted.png" />

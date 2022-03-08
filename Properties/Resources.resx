@@ -352,4 +352,13 @@
   <data name="SaveHover" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\SaveHover.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="Restart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\Restart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RestartClick" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\RestartClick.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RestartHover" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\RestartHover.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
