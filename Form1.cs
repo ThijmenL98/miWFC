@@ -14,9 +14,11 @@ namespace WFC4All {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
         public readonly PictureBox[] pbs;
-        private int defaultSymmetry, savePoint;
+
+        private int defaultSymmetry, savePoint, lastRanForced;
         private readonly int initOutWidth, initInWidth, initOutHeight, initInHeight;
-        private bool defaultInputPadding;
+
+        private bool defaultInputPadding, changingIndex;
         public bool isChangingModels;
 
         private Bitmap result;
@@ -24,6 +26,8 @@ namespace WFC4All {
         private readonly XDocument xDoc;
 
         private Size oldSize;
+
+        private Timer myTimer = new();
 
         private readonly string[] patternHeuristicDataSource = {"Weighted", "Random", "Least Used"},
             selectionHeuristicDataSource = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
@@ -115,7 +119,9 @@ namespace WFC4All {
             control.Height += control.Height * height / oldSize.Height;
         }
 
-        private int lastRanForced;
+        /* ------------------------------------------------------------------------
+         * Button Click Functions
+         * ------------------------------------------------------------------------ */
 
         private void executeButton_Click(object sender, EventArgs e) {
             if (changingIndex) {
@@ -185,41 +191,6 @@ namespace WFC4All {
             }
         }
 
-        private Timer myTimer = new();
-
-        private void myTimer_Tick(object sender, EventArgs e) {
-            if (InvokeRequired) {
-                /* Not on UI thread, reenter there... */
-                BeginInvoke(new EventHandler(myTimer_Tick), sender, e);
-            } else {
-                lock (myTimer) {
-                    /* only work when this is no reentry while we are already working */
-                    if (myTimer.Enabled) {
-                        myTimer.Stop();
-                        myTimer.Interval = getAnimationSpeed();
-                        try {
-                            (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
-                            resultPB.Image = InputManager.resizeBitmap(result2,
-                                Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
-
-                            result = new Bitmap(result2);
-                            result2.Dispose();
-                            resultPB.Refresh();
-                            if (finished) {
-                                animateButton.Text = @"Animate";
-                                return;
-                            }
-                        } catch (Exception exception) {
-                            Console.WriteLine(exception);
-                            resultPB.Image = InputManager.getImage("NoResultFound");
-                        }
-
-                        myTimer.Start();
-                    }
-                }
-            }
-        }
-
         private void animateButton_Click(object sender, EventArgs e) {
             int now = DateTime.Now.Millisecond;
 
@@ -228,94 +199,24 @@ namespace WFC4All {
                 return;
             }
 
-            if (animateButton.Text.Equals("Animate")) {
+            if (animateButton.BackgroundImage.Tag.Equals("Animate")) {
                 lock (myTimer) {
                     myTimer.Interval = getAnimationSpeed();
                     myTimer.Tick += myTimer_Tick;
                     myTimer.Start();
                 }
+
+                animateButton.BackgroundImage = Resources.PauseHover;
+                animateButton.BackgroundImage.Tag = "Pause";
             } else {
                 lock (myTimer) {
                     myTimer.Stop();
                     myTimer = new Timer();
                 }
+
+                animateButton.BackgroundImage = Resources.AnimateHover;
+                animateButton.BackgroundImage.Tag = "Animate";
             }
-
-            animateButton.Text = animateButton.Text.Equals("Animate") ? "Pause" : "Animate";
-        }
-
-        public int getSelectedOverlapTileDimension() {
-            return patternSize.SelectedIndex + 2;
-        }
-
-        public bool inputPaddingEnabled() {
-            return inputPaddingPB.BackColor.Equals(Color.LawnGreen);
-        }
-
-        private bool changingIndex;
-
-        private void inputImage_SelectedIndexChanged(object sender, EventArgs e) {
-            changingIndex = true;
-            string newValue = ((ComboBox) sender).SelectedItem.ToString();
-            updateInputImage(newValue);
-
-            if (modelChoice.Text.Equals("Switch to Simple Model")) {
-                XElement curSelection = xDoc.Root.elements("overlapping").Where(x =>
-                    x.get<string>("name") == getSelectedInput()).ElementAtOrDefault(0);
-                (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
-                patternSize.DataSource = patternSizeDataSource;
-                patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
-
-                defaultSymmetry = curSelection.get("symmetry", 8);
-                defaultInputPadding = curSelection.get("periodicInput", true);
-            }
-
-            outputHeightValue.Value = 24;
-            outputWidthValue.Value = 24;
-
-            outputHeightValue.Refresh();
-            outputWidthValue.Refresh();
-
-            Refresh();
-
-            updateRotations();
-            updateInputPadding();
-
-            changingIndex = false;
-            inputManager.setInputChanged("Changing image");
-            executeButton_Click(null, null);
-        }
-
-        public int getOutputWidth() {
-            return (int) outputWidthValue.Value;
-        }
-
-        private int getStepAmount() {
-            int value = stepSizeTrackbar.Value;
-            bool instant = value == 100;
-            return instant ? -1 : value;
-        }
-
-        private int getAnimationSpeed() {
-            int rawValue = animSpeedTrackbar.Value;
-            return (int) Math.Exp(3.21887d + rawValue / 25d * 0.05546d);
-        }
-
-        public int getOutputHeight() {
-            return (int) outputHeightValue.Value;
-        }
-
-        private void updateInputImage(string imageName) {
-            Bitmap newImage = InputManager.getImage(imageName);
-
-            inputImagePB.Image = InputManager.resizeBitmap(newImage,
-                Math.Min(initInHeight / (float) newImage.Height, initInWidth / (float) newImage.Width));
-
-            inputImagePB.Refresh();
-        }
-
-        public string getSelectedInput() {
-            return inputImageCB.SelectedItem.ToString();
         }
 
         private void modelChoice_Click(object sender, EventArgs e) {
@@ -353,174 +254,8 @@ namespace WFC4All {
             executeButton_Click(null, null);
         }
 
-        public bool addPattern(Bitmap bitmap) {
-            return bitMaps.addPattern(bitmap, pictureBoxMouseDown);
-        }
-
-        public bool addPattern(PatternArray pixels, List<Color> distinctColors) {
-            return bitMaps.addPattern(pixels, distinctColors, pictureBoxMouseDown);
-        }
-
-        public bool isOverlappingModel() {
-            return modelChoice.Text.Equals("Switch to Simple Model");
-        }
-
-        private void inputChanged(object sender, EventArgs e) {
-            if (!Visible) {
-                return;
-            }
-
-            inputManager.setInputChanged(sender.GetType().ToString());
-            executeButton_Click(null, null);
-        }
-
-        private static void pictureBoxMouseDown(object sender, MouseEventArgs e) {
-            if ((e.Button & MouseButtons.Left) == MouseButtons.Left) {
-                PictureBox pb = (PictureBox) sender;
-                pb.BackColor = pb.BackColor.Equals(Color.LawnGreen) ? Color.Red : Color.LawnGreen;
-            }
-        }
-
-        // ReSharper disable once UnusedParameter.Local
-        private static void addHover(object sender, EventArgs e, string message) {
-            ToolTip toolTip = new();
-
-            toolTip.AutoPopDelay = 5000;
-            toolTip.InitialDelay = 0;
-            toolTip.ReshowDelay = 500;
-            toolTip.ShowAlways = true;
-
-            toolTip.SetToolTip((PictureBox) sender, message);
-        }
-
-        private void updateInputPadding() {
-            if (!modelChoice.Text.Equals("Switch to Simple Model")) {
-                return;
-            }
-
-            Color c;
-            Bitmap bm;
-            if (!defaultInputPadding) {
-                bm = new Bitmap(Resources.borderPaddingDisabled);
-                c = Color.Red;
-            } else {
-                bm = new Bitmap(Resources.borderPaddingEnabled);
-                c = Color.LawnGreen;
-            }
-
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
-            inputPaddingPB.BackColor = c;
-            inputPaddingPB.Padding = new Padding(3);
-        }
-
-        private void updateRotations() {
-            for (int i = 0; i < 3; i++) {
-                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
-            }
-        }
-
-        private void showRotationalOptions(bool show) {
-            // TODO: Redo RF1
-            // for (int i = 0; i < 3; i++) {
-            //     pbs[i].Visible = hide;
-            // }
-            //
-            // originalRotPB.Visible = hide;
-            // patternRotationLabel.Visible = hide;
-            // periodicInput.Visible = hide;
-            patternSize.Enabled = show;
-            patternSizeLabel.Enabled = show;
-            inputPaddingPB.Enabled = show;
-
-            if (!show) {
-                inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB,
-                    toGrayScale(Resources.borderPaddingEnabled), 3, Color.Transparent);
-                inputPaddingPB.BackColor = Color.Transparent;
-            }
-        }
-
-        private static Bitmap toGrayScale(Image source) {
-            Bitmap grayImage = new(source.Width, source.Height, source.PixelFormat);
-            grayImage.SetResolution(source.HorizontalResolution, source.VerticalResolution);
-
-            ColorMatrix grayMatrix = new(new[] {
-                new[] {.2126f, .2126f, .2126f, 0f, 0f},
-                new[] {.7152f, .7152f, .7152f, 0f, 0f},
-                new[] {.0722f, .0722f, .0722f, 0f, 0f},
-                new[] {0f, 0f, 0f, 1f, 0f},
-                new[] {0f, 0f, 0f, 0f, 1f}
-            });
-
-            using Graphics g = Graphics.FromImage(grayImage);
-            using ImageAttributes attributes = new();
-            attributes.SetColorMatrix(grayMatrix);
-            g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height),
-                0, 0, source.Width, source.Height, GraphicsUnit.Pixel, attributes);
-            return grayImage;
-        }
-
-        private void initializeRotations() {
-            // TODO maybe re-enable
-            Bitmap referenceImg = new(Resources.rotationRef);
-            const int padding = 3;
-            originalRotPB.BackColor = Color.Black;
-            originalRotPB.Padding = new Padding(padding);
-            originalRotPB.Image = referenceImg;
-
-            Bitmap[] rfs = {
-                Resources.rotationRef1, Resources.rotationRef2, Resources.rotationRef3
-            };
-            string[] rfsString = {
-                "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
-                "Rotate Clockwise 270°\nand Horizontally Flipped"
-            };
-            for (int i = 0; i < 3; i++) {
-                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
-                pbs[i].Padding = new Padding(padding);
-                pbs[i].Image = new Bitmap(rfs[i]);
-                pbs[i].MouseDown += pictureBoxMouseDown;
-                int nonLocalI = i;
-                pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[nonLocalI]); };
-            }
-        }
-
         private void markerButton_Click(object sender, EventArgs e) {
             savePoint = inputManager.getCurrentStep();
-        }
-
-        private void inputPaddingPB_Click(object sender, EventArgs e) {
-            Color c;
-            Bitmap bm;
-            if (inputPaddingEnabled()) {
-                bm = new Bitmap(Resources.borderPaddingDisabled);
-                c = Color.Red;
-            } else {
-                bm = new Bitmap(Resources.borderPaddingEnabled);
-                c = Color.LawnGreen;
-            }
-
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
-            inputPaddingPB.BackColor = c;
-            inputPaddingPB.Padding = new Padding(3);
-
-            ((PictureBox) sender).Refresh();
-
-            inputManager.setInputChanged("Input padding");
-            executeButton_Click(null, null);
-        }
-
-        private void stepSizeTrackbar_Scroll(object sender, EventArgs e) {
-            int value = stepSizeTrackbar.Value;
-            bool instant = value == 100;
-
-            const string instantStr = "All";
-            stepSizeLabel.Text = @$"Amount of steps to take: {(instant ? instantStr : value)}";
-
-            advanceButton.Enabled = !instant;
-            backButton.Enabled = !instant;
-            animateButton.Enabled = !instant;
-            markerButton.Enabled = !instant;
-            revertMarkerButton.Enabled = !instant;
         }
 
         private void revertMarkerButton_Click(object sender, EventArgs e) {
@@ -536,6 +271,49 @@ namespace WFC4All {
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
+        }
+
+        /* ------------------------------------------------------------------------
+         * Other Input Interaction Functions
+         * ------------------------------------------------------------------------ */
+
+        private static void pictureBoxMouseDown(object sender, MouseEventArgs e) {
+            if ((e.Button & MouseButtons.Left) == MouseButtons.Left) {
+                PictureBox pb = (PictureBox) sender;
+                pb.BackColor = pb.BackColor.Equals(Color.LawnGreen) ? Color.Red : Color.LawnGreen;
+            }
+        }
+
+        private void inputImage_SelectedIndexChanged(object sender, EventArgs e) {
+            changingIndex = true;
+            string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            updateInputImage(newValue);
+
+            if (modelChoice.Text.Equals("Switch to Simple Model")) {
+                XElement curSelection = xDoc.Root.elements("overlapping").Where(x =>
+                    x.get<string>("name") == getSelectedInput()).ElementAtOrDefault(0);
+                (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
+                patternSize.DataSource = patternSizeDataSource;
+                patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
+
+                defaultSymmetry = curSelection.get("symmetry", 8);
+                defaultInputPadding = curSelection.get("periodicInput", true);
+            }
+
+            outputHeightValue.Value = 24;
+            outputWidthValue.Value = 24;
+
+            outputHeightValue.Refresh();
+            outputWidthValue.Refresh();
+
+            Refresh();
+
+            updateRotations();
+            updateInputPadding();
+
+            changingIndex = false;
+            inputManager.setInputChanged("Changing image");
+            executeButton_Click(null, null);
         }
 
         private void resultPB_Click(object sender, EventArgs e) {
@@ -639,190 +417,270 @@ namespace WFC4All {
                 ((NumericUpDown) sender).Value = Math.Min(((NumericUpDown) sender).Value, 25);
             }
         }
-    }
 
-    public class BitMaps {
-        private readonly Form1 myForm;
-
-        private HashSet<ImageR> curBitmaps;
-        private Dictionary<int, List<Bitmap>> similarityMap;
-        private List<PictureBox> pictureBoxes;
-        private readonly Dictionary<Tuple<string, int, bool>, Tuple<List<PictureBox>, int>> cache;
-
-        public BitMaps(Form1 form) {
-            myForm = form;
-            patternCount = 0;
-            curBitmaps = new HashSet<ImageR>();
-            similarityMap = new Dictionary<int, List<Bitmap>>();
-            cache = new Dictionary<Tuple<string, int, bool>, Tuple<List<PictureBox>, int>>();
-            pictureBoxes = new List<PictureBox>();
-        }
-
-        private int patternCount;
-        private int totalPatternCount;
-        private int curFloorIndex;
-
-        public int getPatternCount() {
-            return patternCount;
-        }
-
-        public void reset() {
-            patternCount = 0;
-            totalPatternCount = 0;
-            curFloorIndex = 0;
-            curBitmaps = new HashSet<ImageR>();
-            similarityMap = new Dictionary<int, List<Bitmap>>();
-            pictureBoxes = new List<PictureBox>();
-        }
-
-        public void saveCache() {
-            Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(),
-                    myForm.inputPaddingEnabled());
-            cache[key] = new Tuple<List<PictureBox>, int>(pictureBoxes.ToList(), curFloorIndex);
-        }
-
-        public int getFloorIndex() {
-            return curFloorIndex == 0 ? 0 : curFloorIndex;
-        }
-
-        public bool addPattern(PatternArray colors, List<Color> distinctColors, MouseEventHandler pictureBoxMouseDown) {
-            Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(),
-                    myForm.inputPaddingEnabled());
-            if (cache.ContainsKey(key)) {
-                foreach (PictureBox pb in cache[key].Item1) {
-                    myForm.patternPanel.Controls.Add(pb);
-                }
-
-                patternCount = cache[key].Item1.Count;
-                curFloorIndex = cache[key].Item2;
-                return true;
+        private void inputPaddingPB_Click(object sender, EventArgs e) {
+            Color c;
+            Bitmap bm;
+            if (inputPaddingEnabled()) {
+                bm = new Bitmap(Resources.borderPaddingDisabled);
+                c = Color.Red;
+            } else {
+                bm = new Bitmap(Resources.borderPaddingEnabled);
+                c = Color.LawnGreen;
             }
 
-            const int size = 50;
-            const int patternsPerRow = 6;
-            PictureBox newPB = new();
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
+            inputPaddingPB.BackColor = c;
+            inputPaddingPB.Padding = new Padding(3);
 
-            int idxX = patternCount % patternsPerRow;
-            int idxY = (int) Math.Floor(patternCount / (double) patternsPerRow);
-            const int distance = 20;
+            ((PictureBox) sender).Refresh();
 
-            newPB.Location = new Point(size + (size + distance) * idxX, size + 30 + (size + distance) * idxY);
-            newPB.Size = new Size(size, size);
-            newPB.Name = "patternPB_" + patternCount;
+            inputManager.setInputChanged("Input padding");
+            executeButton_Click(null, null);
+        }
 
-            int n = colors.Height;
-            Bitmap pattern = new(n, n);
+        /* ------------------------------------------------------------------------
+         * Mouse & Keyboard Interaction
+         * ------------------------------------------------------------------------ */
 
-            bool isGroundPattern = true;
-            Dictionary<Point, Color> data = new();
+        private void stepSizeTrackbar_Scroll(object sender, EventArgs e) {
+            int value = stepSizeTrackbar.Value;
+            bool instant = value == 100;
 
-            for (int x = 0; x < n; x++) {
-                for (int y = 0; y < n; y++) {
-                    Color tileColor = (Color) colors.getTileAt(x, y).Value;
-                    pattern.SetPixel(x, y, tileColor);
-                    int colorIdx = distinctColors.IndexOf(tileColor);
-                    data[new Point(x, y)] = tileColor;
+            const string instantStr = "All";
+            stepSizeLabel.Text = @$"Amount of steps to take: {(instant ? instantStr : value)}";
 
-                    if (y != n - 1 && colorIdx != 0) {
-                        isGroundPattern = false;
+            advanceButton.Enabled = !instant;
+            backButton.Enabled = !instant;
+            animateButton.Enabled = !instant;
+            markerButton.Enabled = !instant;
+            revertMarkerButton.Enabled = !instant;
+
+            animateButton.BackgroundImage = instant ? Resources.AnimateDisabled : Resources.Animate;
+            animateButton.BackgroundImage.Tag = "Animate";
+
+            advanceButton.BackgroundImage = instant ? Resources.AdvanceDisabled : Resources.Advance;
+            backButton.BackgroundImage = instant ? Resources.RevertDisabled : Resources.Revert;
+            markerButton.BackgroundImage = instant ? Resources.SaveDisabled : Resources.Save;
+            revertMarkerButton.BackgroundImage = instant ? Resources.LoadDisabled : Resources.Load;
+        }
+
+        /* ------------------------------------------------------------------------
+         * Interface value retrieval
+         * ------------------------------------------------------------------------ */
+
+        public int getOutputWidth() {
+            return (int) outputWidthValue.Value;
+        }
+
+        private int getStepAmount() {
+            int value = stepSizeTrackbar.Value;
+            bool instant = value == 100;
+            return instant ? -1 : value;
+        }
+
+        private int getAnimationSpeed() {
+            int rawValue = animSpeedTrackbar.Value;
+            return (int) Math.Exp(3.21887d + rawValue / 25d * 0.05546d);
+        }
+
+        public int getOutputHeight() {
+            return (int) outputHeightValue.Value;
+        }
+
+        public bool inputPaddingEnabled() {
+            return inputPaddingPB.BackColor.Equals(Color.LawnGreen);
+        }
+
+        public string getSelectedInput() {
+            return inputImageCB.SelectedItem.ToString();
+        }
+
+        public bool isOverlappingModel() {
+            return modelChoice.Text.Equals("Switch to Simple Model");
+        }
+
+        public int getSelectedOverlapTileDimension() {
+            return patternSize.SelectedIndex + 2;
+        }
+
+        /* ------------------------------------------------------------------------
+         * Setters
+         * ------------------------------------------------------------------------ */
+
+        private void updateInputImage(string imageName) {
+            Bitmap newImage = InputManager.getImage(imageName);
+
+            inputImagePB.Image = InputManager.resizeBitmap(newImage,
+                Math.Min(initInHeight / (float) newImage.Height, initInWidth / (float) newImage.Width));
+
+            inputImagePB.Refresh();
+        }
+
+        /* ------------------------------------------------------------------------
+         * Utils
+         * ------------------------------------------------------------------------ */
+
+        private void myTimer_Tick(object sender, EventArgs e) {
+            if (InvokeRequired) {
+                /* Not on UI thread, reenter there... */
+                BeginInvoke(new EventHandler(myTimer_Tick), sender, e);
+            } else {
+                lock (myTimer) {
+                    /* only work when this is no reentry while we are already working */
+                    if (myTimer.Enabled) {
+                        myTimer.Stop();
+                        myTimer.Interval = getAnimationSpeed();
+                        try {
+                            (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
+                            resultPB.Image = InputManager.resizeBitmap(result2,
+                                Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
+
+                            result = new Bitmap(result2);
+                            result2.Dispose();
+                            resultPB.Refresh();
+                            if (finished) {
+                                animateButton.BackgroundImage = Resources.Animate;
+                                animateButton.BackgroundImage.Tag = "Animate";
+                                return;
+                            }
+                        } catch (Exception exception) {
+                            Console.WriteLine(exception);
+                            resultPB.Image = InputManager.getImage("NoResultFound");
+                        }
+
+                        myTimer.Start();
                     }
-
-                    if (y == n - 1 && colorIdx != distinctColors.Count - 1) {
-                        isGroundPattern = false;
-                    }
                 }
             }
+        }
 
-            ImageR cur = new(pattern.Size, data);
+        private static Bitmap toGrayScale(Image source) {
+            Bitmap grayImage = new(source.Width, source.Height, source.PixelFormat);
+            grayImage.SetResolution(source.HorizontalResolution, source.VerticalResolution);
 
-            foreach ((ImageR reference, int i) in curBitmaps.Select((reference, i) => (reference, i))) {
-                if (transforms.Select(transform => cur.Data.All(x =>
-                        x.Value == reference.Data[
-                            transform.Invoke(cur.Size.Width - 1, cur.Size.Height - 1, x.Key.X, x.Key.Y)]))
-                    .Any(match => match)) {
-                    similarityMap[i].Add(pattern);
-                    return false;
-                }
+            ColorMatrix grayMatrix = new(new[] {
+                new[] {.2126f, .2126f, .2126f, 0f, 0f},
+                new[] {.7152f, .7152f, .7152f, 0f, 0f},
+                new[] {.0722f, .0722f, .0722f, 0f, 0f},
+                new[] {0f, 0f, 0f, 1f, 0f},
+                new[] {0f, 0f, 0f, 0f, 1f}
+            });
+
+            using Graphics g = Graphics.FromImage(grayImage);
+            using ImageAttributes attributes = new();
+            attributes.SetColorMatrix(grayMatrix);
+            g.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height),
+                0, 0, source.Width, source.Height, GraphicsUnit.Pixel, attributes);
+            return grayImage;
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static void addHover(object sender, EventArgs e, string message) {
+            ToolTip toolTip = new();
+
+            toolTip.AutoPopDelay = 5000;
+            toolTip.InitialDelay = 0;
+            toolTip.ReshowDelay = 500;
+            toolTip.ShowAlways = true;
+
+            toolTip.SetToolTip((PictureBox) sender, message);
+        }
+
+        public bool addPattern(Bitmap bitmap) {
+            return bitMaps.addPattern(bitmap, pictureBoxMouseDown);
+        }
+
+        public bool addPattern(PatternArray pixels, List<Color> distinctColors) {
+            return bitMaps.addPattern(pixels, distinctColors, pictureBoxMouseDown);
+        }
+
+        /* ------------------------------------------------------------------------
+         * Miscellaneous
+         * ------------------------------------------------------------------------ */
+
+        private void inputChanged(object sender, EventArgs e) {
+            if (!Visible) {
+                return;
             }
 
-            curBitmaps.Add(cur);
-            similarityMap[patternCount] = new List<Bitmap> {pattern};
+            inputManager.setInputChanged(sender.GetType().ToString());
+            executeButton_Click(null, null);
+        }
 
-            if (isGroundPattern) {
-                curFloorIndex = totalPatternCount;
+        private void updateInputPadding() {
+            if (!modelChoice.Text.Equals("Switch to Simple Model")) {
+                return;
             }
 
+            Color c;
+            Bitmap bm;
+            if (!defaultInputPadding) {
+                bm = new Bitmap(Resources.borderPaddingDisabled);
+                c = Color.Red;
+            } else {
+                bm = new Bitmap(Resources.borderPaddingEnabled);
+                c = Color.LawnGreen;
+            }
+
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
+            inputPaddingPB.BackColor = c;
+            inputPaddingPB.Padding = new Padding(3);
+        }
+
+        private void updateRotations() {
+            for (int i = 0; i < 3; i++) {
+                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
+            }
+        }
+
+        private void showRotationalOptions(bool show) {
+            // TODO: Redo RF1
+            // for (int i = 0; i < 3; i++) {
+            //     pbs[i].Visible = hide;
+            // }
+            //
+            // originalRotPB.Visible = hide;
+            // patternRotationLabel.Visible = hide;
+            // periodicInput.Visible = hide;
+            patternSize.Enabled = show;
+            patternSizeLabel.Enabled = show;
+            inputPaddingPB.Enabled = show;
+
+            if (!show) {
+                inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB,
+                    toGrayScale(Resources.borderPaddingEnabled), 3, Color.Transparent);
+                inputPaddingPB.BackColor = Color.Transparent;
+            }
+        }
+
+        private void initializeRotations() {
+            // TODO maybe re-enable
+            Bitmap referenceImg = new(Resources.rotationRef);
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray);
-            pattern.Dispose();
-            newPB.BackColor = Color.DimGray; //TODO Re-Enable for CF Color.LawnGreen;
-            newPB.Padding = new Padding(padding);
-            //newPB.MouseDown += pictureBoxMouseDown;
+            originalRotPB.BackColor = Color.Black;
+            originalRotPB.Padding = new Padding(padding);
+            originalRotPB.Image = referenceImg;
 
-            pictureBoxes.Add(newPB);
-            myForm.patternPanel.Controls.Add(newPB);
-
-            patternCount++;
-            totalPatternCount++;
-            return false;
-        }
-
-        private readonly List<Func<int, int, int, int, Point>> transforms = new() {
-            (_, _, x, y) => new Point(x, y), // rotated 0
-            (w, _, x, y) => new Point(w - y, x), // rotated 90
-            (w, h, x, y) => new Point(w - x, h - y), // rotated 180
-            (_, h, x, y) => new Point(y, h - x), // rotated 270
-            (w, _, x, y) => new Point(w - x, y), // rotated 0 and mirrored
-            (w, _, x, y) => new Point(w - (w - y), x), // rotated 90 and mirrored
-            (w, h, x, y) => new Point(w - (w - x), h - y), // rotated 180 and mirrored
-            (w, h, x, y) => new Point(w - y, h - x), // rotated 270 and mirrored
-        };
-
-        public bool addPattern(Bitmap pattern, MouseEventHandler pictureBoxMouseDown) {
-            Tuple<string, int, bool> key
-                = new(myForm.getSelectedInput(), myForm.getSelectedOverlapTileDimension(),
-                    myForm.inputPaddingEnabled());
-            if (cache.ContainsKey(key)) {
-                foreach (PictureBox pb in cache[key].Item1) {
-                    myForm.patternPanel.Controls.Add(pb);
-                }
-
-                patternCount = cache[key].Item1.Count;
-                curFloorIndex = cache[key].Item2;
-                return true;
+            Bitmap[] rfs = {
+                Resources.rotationRef1, Resources.rotationRef2, Resources.rotationRef3
+            };
+            string[] rfsString = {
+                "Rotate Clockwise 90°\nand Horizontally Flipped", "Rotate 180°\nand Horizontally Flipped",
+                "Rotate Clockwise 270°\nand Horizontally Flipped"
+            };
+            for (int i = 0; i < 3; i++) {
+                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
+                pbs[i].Padding = new Padding(padding);
+                pbs[i].Image = new Bitmap(rfs[i]);
+                pbs[i].MouseDown += pictureBoxMouseDown;
+                int nonLocalI = i;
+                pbs[i].MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, rfsString[nonLocalI]); };
             }
-
-            const int size = 50;
-            const int patternsPerRow = 6;
-            PictureBox newPB = new();
-
-            int idxX = patternCount % patternsPerRow;
-            int idxY = (int) Math.Floor(patternCount / (double) patternsPerRow);
-            const int distance = 20;
-
-            newPB.Location = new Point(size + (size + distance) * idxX, size + 30 + (size + distance) * idxY);
-            newPB.Size = new Size(size, size);
-            newPB.Name = "patternPB_" + patternCount;
-
-            const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray);
-            pattern.Dispose();
-            newPB.BackColor = Color.DimGray;
-            newPB.Padding = new Padding(padding);
-            newPB.MouseDown += pictureBoxMouseDown;
-
-            pictureBoxes.Add(newPB);
-            myForm.patternPanel.Controls.Add(newPB);
-            patternCount++;
-            totalPatternCount++;
-            return false;
         }
 
-        private record ImageR(Size Size, Dictionary<Point, Color> Data) {
-            public Size Size { get; } = Size;
-            public Dictionary<Point, Color> Data { get; } = Data;
-        }
+        /* ------------------------------------------------------------------------
+         * Unsorted
+         * ------------------------------------------------------------------------ */
     }
 }

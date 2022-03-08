@@ -48,6 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BitMaps.cs" />
+    <Compile Include="ButtonVisualEventHandler.cs" />
     <Compile Include="enums\PatternHeuristic.cs" />
     <Compile Include="enums\SelectionHeuristic.cs" />
     <Compile Include="Form1.cs">

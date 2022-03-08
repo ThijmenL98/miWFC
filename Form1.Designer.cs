@@ -379,13 +379,20 @@ namespace WFC4All
             // 
             // markerButton
             // 
+            this.markerButton.BackColor = System.Drawing.Color.Transparent;
+            this.markerButton.BackgroundImage = global::WFC4All.Properties.Resources.Save;
+            this.markerButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.markerButton.FlatAppearance.BorderSize = 0;
+            this.markerButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.markerButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.markerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.markerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.markerButton.Location = new System.Drawing.Point(947, 814);
+            this.markerButton.ForeColor = System.Drawing.Color.Transparent;
+            this.markerButton.Location = new System.Drawing.Point(1095, 784);
             this.markerButton.Name = "markerButton";
-            this.markerButton.Size = new System.Drawing.Size(150, 40);
+            this.markerButton.Size = new System.Drawing.Size(70, 70);
             this.markerButton.TabIndex = 29;
-            this.markerButton.Text = "Save";
-            this.markerButton.UseVisualStyleBackColor = true;
+            this.markerButton.UseVisualStyleBackColor = false;
             this.markerButton.Click += new System.EventHandler(this.markerButton_Click);
             // 
             // outputImageHeightLabel
@@ -401,13 +408,20 @@ namespace WFC4All
             // 
             // revertMarkerButton
             // 
+            this.revertMarkerButton.BackColor = System.Drawing.Color.Transparent;
+            this.revertMarkerButton.BackgroundImage = global::WFC4All.Properties.Resources.Load;
+            this.revertMarkerButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.revertMarkerButton.FlatAppearance.BorderSize = 0;
+            this.revertMarkerButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.revertMarkerButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.revertMarkerButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.revertMarkerButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.revertMarkerButton.Location = new System.Drawing.Point(1104, 814);
+            this.revertMarkerButton.ForeColor = System.Drawing.Color.Transparent;
+            this.revertMarkerButton.Location = new System.Drawing.Point(1186, 784);
             this.revertMarkerButton.Name = "revertMarkerButton";
-            this.revertMarkerButton.Size = new System.Drawing.Size(150, 40);
+            this.revertMarkerButton.Size = new System.Drawing.Size(70, 70);
             this.revertMarkerButton.TabIndex = 28;
-            this.revertMarkerButton.Text = "Load";
-            this.revertMarkerButton.UseVisualStyleBackColor = true;
+            this.revertMarkerButton.UseVisualStyleBackColor = false;
             this.revertMarkerButton.Click += new System.EventHandler(this.revertMarkerButton_Click);
             // 
             // outputSizeLabel
@@ -423,13 +437,20 @@ namespace WFC4All
             // 
             // backButton
             // 
+            this.backButton.BackColor = System.Drawing.Color.Transparent;
+            this.backButton.BackgroundImage = global::WFC4All.Properties.Resources.Revert;
+            this.backButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.backButton.FlatAppearance.BorderSize = 0;
+            this.backButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.backButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.backButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.backButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.backButton.Location = new System.Drawing.Point(1129, 757);
+            this.backButton.ForeColor = System.Drawing.Color.Transparent;
+            this.backButton.Location = new System.Drawing.Point(1095, 704);
             this.backButton.Name = "backButton";
-            this.backButton.Size = new System.Drawing.Size(104, 40);
+            this.backButton.Size = new System.Drawing.Size(70, 70);
             this.backButton.TabIndex = 27;
-            this.backButton.Text = "Step Back";
-            this.backButton.UseVisualStyleBackColor = true;
+            this.backButton.UseVisualStyleBackColor = false;
             this.backButton.Click += new System.EventHandler(this.backButton_Click);
             // 
             // animationSpeedLabel
@@ -445,13 +466,21 @@ namespace WFC4All
             // 
             // animateButton
             // 
+            this.animateButton.BackColor = System.Drawing.Color.Transparent;
+            this.animateButton.BackgroundImage = global::WFC4All.Properties.Resources.Animate;
+            this.animateButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.animateButton.FlatAppearance.BorderSize = 0;
+            this.animateButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.animateButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.animateButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.animateButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.animateButton.Location = new System.Drawing.Point(975, 711);
+            this.animateButton.ForeColor = System.Drawing.Color.Transparent;
+            this.animateButton.Location = new System.Drawing.Point(934, 704);
+            this.animateButton.Margin = new System.Windows.Forms.Padding(0);
             this.animateButton.Name = "animateButton";
-            this.animateButton.Size = new System.Drawing.Size(104, 86);
+            this.animateButton.Size = new System.Drawing.Size(150, 150);
             this.animateButton.TabIndex = 24;
-            this.animateButton.Text = "Animate";
-            this.animateButton.UseVisualStyleBackColor = true;
+            this.animateButton.UseVisualStyleBackColor = false;
             this.animateButton.Click += new System.EventHandler(this.animateButton_Click);
             // 
             // stepSizeLabel
@@ -467,13 +496,20 @@ namespace WFC4All
             // 
             // advanceButton
             // 
+            this.advanceButton.BackColor = System.Drawing.Color.Transparent;
+            this.advanceButton.BackgroundImage = global::WFC4All.Properties.Resources.Advance;
+            this.advanceButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.advanceButton.FlatAppearance.BorderSize = 0;
+            this.advanceButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.advanceButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.advanceButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.advanceButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.advanceButton.Location = new System.Drawing.Point(1129, 711);
+            this.advanceButton.ForeColor = System.Drawing.Color.Transparent;
+            this.advanceButton.Location = new System.Drawing.Point(1186, 704);
             this.advanceButton.Name = "advanceButton";
-            this.advanceButton.Size = new System.Drawing.Size(104, 40);
+            this.advanceButton.Size = new System.Drawing.Size(70, 70);
             this.advanceButton.TabIndex = 21;
-            this.advanceButton.Text = "Advance";
-            this.advanceButton.UseVisualStyleBackColor = true;
+            this.advanceButton.UseVisualStyleBackColor = false;
             this.advanceButton.Click += new System.EventHandler(this.advanceButton_Click);
             // 
             // patternRotationLabel
