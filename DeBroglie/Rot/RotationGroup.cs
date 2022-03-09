@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace WFC4All.DeBroglie.Rot
@@ -52,10 +53,10 @@ namespace WFC4All.DeBroglie.Rot
         {
             if(rotation.RotateCw / smallestAngle * smallestAngle != rotation.RotateCw)
             {
-                throw new System.Exception($"Rotation angle {rotation.RotateCw} not permitted.");
+                throw new Exception($"Rotation angle {rotation.RotateCw} not permitted.");
             }
             if(rotation.ReflectX && ! reflectionalSymmetry) {
-                throw new System.Exception($"Reflections are not permitted.");
+                throw new Exception("Reflections are not permitted.");
             }
         }
 

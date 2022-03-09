@@ -1,19 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace WFC4All.DeBroglie.Topo
 {
     public static class TopologyExtensions
     {
-        public static GridTopology asGridTopology(this ITopology topology)
-        {
+        public static GridTopology asGridTopology(this ITopology topology) {
             if(topology is GridTopology t)
             {
                 return t;
             }
-            else
-            {
-                throw new System.Exception("Expected a grid-based topology");
-            }
+
+            throw new Exception("Expected a grid-based topology");
         }
 
         /// <summary>

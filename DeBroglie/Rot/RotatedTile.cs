@@ -25,20 +25,18 @@
             }
         }
 
-        public override bool Equals(object obj)
-        {
+        public override bool Equals(object obj) {
             if (obj is RotatedTile other)
             {
                 return Rotation.Equals(other.Rotation) && Tile == other.Tile;
             }
-            else {
-                return base.Equals(obj);
-            }
+
+            return base.Equals(obj);
         }
 
         public override string ToString()
         {
-            return Tile.ToString() + Rotation.ToString();
+            return Tile + Rotation.ToString();
         }
     }
 }

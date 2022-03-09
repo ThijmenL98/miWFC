@@ -283,7 +283,7 @@ namespace WFC4All.DeBroglie
         /// Then it propagates that information to other nearby tiles.
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
-        public Resolution @select(int x, int y, int z, Tile tile)
+        public Resolution select(int x, int y, int z, Tile tile)
         {
             tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
             ISet<int> patterns = tileModelMapping.getPatterns(tile, o);
@@ -307,9 +307,9 @@ namespace WFC4All.DeBroglie
         /// Then it propagates that information to other nearby tiles.
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
-        public Resolution @select(int x, int y, int z, IEnumerable<Tile> tiles)
+        public Resolution select(int x, int y, int z, IEnumerable<Tile> tiles)
         {
-            return @select(x, y, z, createTileSet(tiles));
+            return select(x, y, z, createTileSet(tiles));
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace WFC4All.DeBroglie
         /// Then it propagates that information to other nearby tiles.
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
-        public Resolution @select(int x, int y, int z, TilePropagatorTileSet tiles)
+        public Resolution select(int x, int y, int z, TilePropagatorTileSet tiles)
         {
             tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
             ISet<int> patterns = tileModelMapping.getPatterns(tiles, o);

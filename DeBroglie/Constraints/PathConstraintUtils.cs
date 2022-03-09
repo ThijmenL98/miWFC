@@ -68,7 +68,7 @@ namespace WFC4All.DeBroglie.Constraints
             int indices = walkable.Length;
 
             if (indices != graph.NodeCount) {
-                throw new Exception($"Length of walkable doesn't match count of nodes");
+                throw new Exception("Length of walkable doesn't match count of nodes");
             }
 
             int[] low = new int[indices];
@@ -143,10 +143,8 @@ namespace WFC4All.DeBroglie.Constraints
                                     stack[frameIndex] = frame;
                                     break;
                                 }
-                                else
-                                {
-                                    low[u] = Math.Min(low[u], dfsNum[v]);
-                                }
+
+                                low[u] = Math.Min(low[u], dfsNum[v]);
 
                                 // continue to next iteration of loop
                                 frame.neighbourIndex = neighbourIndex + 1;
@@ -279,13 +277,11 @@ namespace WFC4All.DeBroglie.Constraints
                     // There can only be a single relevant component, so can stop
                     break;
                 }
-                else
-                {
-                    // The root of the tree is an exception to CutVertex's calculations
-                    // It's an articulation point if it has multiple children
-                    // as removing it would give multiple subtrees.
-                    isArticulation[i] = childCount > 1;
-                }
+
+                // The root of the tree is an exception to CutVertex's calculations
+                // It's an articulation point if it has multiple children
+                // as removing it would give multiple subtrees.
+                isArticulation[i] = childCount > 1;
             }
 
             // Check we've visited every relevant point.

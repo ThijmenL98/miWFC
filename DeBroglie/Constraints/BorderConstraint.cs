@@ -97,7 +97,7 @@ namespace WFC4All.DeBroglie.Constraints
                             }
                             else
                             {
-                                propagator.@select(x, y, z, tiles);
+                                propagator.select(x, y, z, tiles);
                             }
                         }
                     }

@@ -61,9 +61,9 @@ namespace WFC4All {
             sw.Restart();
 
             if (reset || dbPropagator == null) {
-                form.displayLoading(true);
                 bool inputPaddingEnabled = form.isOverlappingModel() && form.inputPaddingEnabled();
                 if (inputHasChanged) {
+                    form.displayLoading(true);
                     currentBitmap = getImage(form.getSelectedInput());
 
                     for (int i = 0; i < form.bitMaps.getPatternCount(); i++) {
@@ -176,9 +176,9 @@ namespace WFC4All {
                     Console.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
                     sw.Restart();
                 }
-                
+
                 //TODO Output Padding
-                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), inputPaddingEnabled); 
+                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), inputPaddingEnabled);
                 int curSeed = Environment.TickCount;
                 dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                     BackTrackDepth = -1,
@@ -190,9 +190,9 @@ namespace WFC4All {
                 if (form.isOverlappingModel() && inputPaddingEnabled) {
                     if ("flowers".Equals(form.getSelectedInput().ToLower())) {
                         // Set the bottom last 2 rows to be the ground tile
-                        dbPropagator?.@select(0, form.getOutputHeight() - 1, 0,
+                        dbPropagator?.select(0, form.getOutputHeight() - 1, 0,
                             new Tile(currentColors.ElementAt(currentColors.Count - 1)));
-                        dbPropagator?.@select(0, form.getOutputHeight() - 2, 0,
+                        dbPropagator?.select(0, form.getOutputHeight() - 2, 0,
                             new Tile(currentColors.ElementAt(currentColors.Count - 1)));
 
                         // And ban it elsewhere
@@ -203,7 +203,7 @@ namespace WFC4All {
 
                     if ("skyline".Equals(form.getSelectedInput().ToLower())) {
                         // Set the bottom last row to be the ground tile
-                        dbPropagator?.@select(0, form.getOutputHeight() - 1, 0,
+                        dbPropagator?.select(0, form.getOutputHeight() - 1, 0,
                             new Tile(currentColors.ElementAt(currentColors.Count - 1)));
 
                         // And ban it elsewhere
@@ -215,14 +215,10 @@ namespace WFC4All {
 
                 inputHasChanged = false;
             }
-            
-            form.displayLoading(false);
-            
-            return runWfcDB(steps);
-        }
 
-        public int getCurrentStep() {
-            return currentStep;
+            form.displayLoading(false);
+
+            return runWfcDB(steps);
         }
 
         private (Bitmap, bool) runWfcDB(int steps) {
@@ -320,27 +316,34 @@ namespace WFC4All {
             return outputBitmap;
         }
 
-        public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int padding, Color borderColor) {
+        public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int padding, Color borderColor, bool drawLines) {
             int w2 = pictureBox.Width, h2 = pictureBox.Height, w1 = bitmap.Width, h1 = bitmap.Height;
 
             Bitmap outputBM = new(pictureBox.Width, pictureBox.Height);
             double xRatio = w1 / (double) (w2 - padding * 2);
             double yRatio = h1 / (double) (h2 - padding * 2);
 
-            for (int i = 0; i < h2 - padding; i++) {
-                int py = (int) Math.Floor(i * yRatio);
-                for (int j = 0; j < w2 - padding; j++) {
-                    int px = (int) Math.Floor(j * xRatio);
-                    Color nextC;
-                    if (px >= bitmap.Width || py >= bitmap.Height) {
-                        nextC = borderColor;
-                    } else {
-                        nextC = bitmap.GetPixel(px, py);
-                    }
+            try {
+                for (int i = 0; i < h2 - padding; i++) {
+                    int py = (int) Math.Floor(i * yRatio);
+                    for (int j = 0; j < w2 - padding; j++) {
+                        int px = (int) Math.Floor(j * xRatio);
+                        Color nextC;
+                        if (px >= bitmap.Width || py >= bitmap.Height) {
+                            nextC = borderColor;
+                        } else if (drawLines && w1 != 2 && (i % ((h2 - padding) / h1) == 0 && i != 0 ||
+                                                        j % ((w2 - padding) / w1) == 0 && j != 0)) {
+                            Color c1 = Color.Gray;
+                            Color c2 = bitmap.GetPixel(px, py);
+                            nextC = Color.FromArgb((c1.A + c2.A)/2, (c1.R+c2.R)/2, (c1.G+c2.G)/2, (c1.B+c2.B)/2);
+                        } else {
+                            nextC = bitmap.GetPixel(px, py);
+                        }
 
-                    outputBM.SetPixel(j + padding - padding, i + padding - padding, nextC);
+                        outputBM.SetPixel(j + padding - padding, i + padding - padding, nextC);
+                    }
                 }
-            }
+            } catch (DivideByZeroException e) { }
 
             return outputBM;
         }
@@ -376,8 +379,8 @@ namespace WFC4All {
         }
 
         public static Bitmap resizeBitmap(Bitmap source, float scale) {
-            int width = (int) (source.Width * scale);
-            int height = (int) (source.Height * scale);
+            int width = source.Width * (int) scale;
+            int height = source.Height * (int) scale;
 
             Bitmap bmp = new(width, height);
 
@@ -386,6 +389,19 @@ namespace WFC4All {
             g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
             g.DrawImage(source, new Rectangle(0, 0, width, height));
+
+            Pen semiTransPen = new(Color.FromArgb(100, 20, 20, 20), 1);
+
+            for (int i = 0; i < source.Width; i++) {
+                // Vertical gridlines
+                g.DrawLine(semiTransPen, i * (int) scale, 0, i * (int) scale, source.Height * (int) scale);
+            }
+
+            for (int i = 0; i < source.Height; i++) {
+                // Horizontal gridlines
+                g.DrawLine(semiTransPen, 0, i * (int) scale, source.Width * (int) scale, i * (int) scale);
+            }
+
             g.Save();
 
             return bmp;
@@ -395,13 +411,21 @@ namespace WFC4All {
          * Getters
          */
 
+        public int getCurrentStep() {
+            return currentStep;
+        }
+
+        public bool isCollapsed() {
+            return dbPropagator.Status == Resolution.DECIDED;
+        }
+
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public (object[], int) getImagePatternDimensions(string imageName) {
             IEnumerable<XElement> xElements = xDoc.Root.elements("overlapping", "simpletiled");
             IEnumerable<int> matchingElements = xElements.Where(x =>
                 x.get<string>("name") == imageName).Select(t =>
                 t.get("patternSize", 3));
-            
+
 
             List<object> patternDimensionsList = new();
             int j = 0;
@@ -409,6 +433,7 @@ namespace WFC4All {
                 if (i >= 4 && !matchingElements.Contains(5) && !matchingElements.Contains(4)) {
                     break;
                 }
+
                 patternDimensionsList.Add("  " + i);
                 if (j == 0 && matchingElements.Contains(i)) {
                     j = i;

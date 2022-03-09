@@ -34,7 +34,7 @@ namespace WFC4All.DeBroglie.Constraints
                 {
                     topology.getCoord(i, out int x, out int y, out int z);
 
-                    propagator.@select(x, y, z, propagator.TileModel.Tiles
+                    propagator.select(x, y, z, propagator.TileModel.Tiles
                         .Where(tile => tryMapTile(tile, out Tile _)));
                 }
             }
@@ -51,7 +51,7 @@ namespace WFC4All.DeBroglie.Constraints
                         // index maps to itself, so only allow tiles that map to themselves
                         IEnumerable<Tile> allowedTiles = propagator.TileModel.Tiles
                            .Where(tile => tryMapTile(tile, out Tile tile2) && tile == tile2);
-                        propagator.@select(x, y, z, allowedTiles);
+                        propagator.select(x, y, z, allowedTiles);
                         continue;
                     }
                     
@@ -66,8 +66,7 @@ namespace WFC4All.DeBroglie.Constraints
                                 List<Tile> allowedTiles = propagator.TileModel.Tiles
                                     .Where(tile => tryMapTile(tile, out Tile tile2) && adjacentModel.isAdjacent(tile, tile2, (Direction)d))
                                     .ToList();
-                                propagator.@select(x, y, z, allowedTiles);
-                                continue;
+                                propagator.select(x, y, z, allowedTiles);
                             }
                         }
                     }
@@ -81,8 +80,7 @@ namespace WFC4All.DeBroglie.Constraints
                                 // index maps adjacent to itself, so only allow tiles that can be placed adjacent to themselves
                                 IEnumerable<Tile> allowedTiles = propagator.TileModel.Tiles
                                     .Where(tile => tryMapTile(tile, out Tile tile2) && graphAdjacentModel.isAdjacent(tile, tile2, edgeLabel));
-                                propagator.@select(x, y, z, allowedTiles);
-                                continue;
+                                propagator.select(x, y, z, allowedTiles);
                             }
                         }
                     }

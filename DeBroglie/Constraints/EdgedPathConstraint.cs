@@ -184,13 +184,13 @@ namespace WFC4All.DeBroglie.Constraints
                 topology.getCoord(i, out int x, out int y, out int z);
                 if (isArticulation[i * nodesPerIndex] && !mustBePath[i * nodesPerIndex])
                 {
-                    propagator.@select(x, y, z, pathTileSet);
+                    propagator.select(x, y, z, pathTileSet);
                 }
                 for (int d = 0; d < topology.DirectionsCount; d++)
                 {
                     if(isArticulation[i * nodesPerIndex + 1 + d] && !exitMustBePath[i * nodesPerIndex + 1 + d])
                     {
-                        propagator.@select(x, y, z, tilesByExit[(Direction)d]);
+                        propagator.select(x, y, z, tilesByExit[(Direction)d]);
                     }
                 }
             }

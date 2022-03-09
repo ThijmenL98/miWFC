@@ -134,8 +134,7 @@ namespace WFC4All.DeBroglie.Rot
         /// For a rotated tile, finds the canonical representation.
         /// Leaves all other tiles unchanged.
         /// </summary>
-        public Tile canonicalize(Tile t)
-        {
+        public Tile canonicalize(Tile t) {
             if(t.Value is RotatedTile rt)
             {
                 if (!rotate(rt.Tile, rt.Rotation, out Tile result)) {
@@ -144,10 +143,8 @@ namespace WFC4All.DeBroglie.Rot
 
                 return result;
             }
-            else
-            {
-                return t;
-            }
+
+            return t;
         }
 
     }

@@ -122,7 +122,8 @@ namespace WFC4All.DeBroglie.Trackers
                 {
                     continue;
                 }
-                else if (pi < minPriorityIndex || pi == minPriorityIndex && e < minEntropy)
+
+                if (pi < minPriorityIndex || pi == minPriorityIndex && e < minEntropy)
                 {
                     countAtMinEntropy = 1;
                     minEntropy = e;
@@ -148,7 +149,8 @@ namespace WFC4All.DeBroglie.Trackers
                 {
                     continue;
                 }
-                else if (pi == minPriorityIndex && e == minEntropy)
+
+                if (pi == minPriorityIndex && e == minEntropy)
                 {
                     if (n == 0)
                     {

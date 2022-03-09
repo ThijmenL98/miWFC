@@ -79,22 +79,65 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
             Bitmap disabledInit = new(Resources.borderPaddingDisabled);
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, disabledInit, 3, Color.Red);
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, disabledInit, 3, Color.Red, false);
             inputPaddingPB.BackColor = Color.Red;
             inputPaddingPB.Padding = new Padding(3);
             inputPaddingPB.MouseHover += (sender, eventArgs) => {
                 addHover(sender, eventArgs, "Toggle border padding");
             };
-            
+
+            KeyPreview = true;
             //TODO Re-enable initializeRotations();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e) {
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (e.KeyData) {
+                case Keys.Left:
+                case Keys.Delete:
+                case Keys.Back:
+                    backButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.Right:
+                    advanceButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.PageDown:
+                case Keys.PageUp:
+                case Keys.Up:
+                case Keys.Down:
+                    e.Handled = true;
+                    break;
+                case Keys.Space:
+                case Keys.P:
+                    animateButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.S:
+                    markerButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.L:
+                    revertMarkerButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.R:
+                    executeButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                default:
+                    base.OnKeyDown(e);
+                    break;
+            }
         }
 
         protected override void OnResize(EventArgs e) {
             Control.ControlCollection[] allControls = {
-                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls, 
+                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls,
                 selHeurPanel.Controls
             };
-            
+
             foreach (Control.ControlCollection cList in allControls) {
                 foreach (Control cnt in cList) {
                     resizeAll(cnt, Size);
@@ -128,7 +171,7 @@ namespace WFC4All {
                 while (result2 == null) {
                     (result2, _) = inputManager.initAndRunWfcDB(true, getStepAmount());
                 }
-                
+
                 try {
                     resultPB.Image = InputManager.resizeBitmap(result2,
                         Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result.Width));
@@ -151,7 +194,7 @@ namespace WFC4All {
                 lastRanForced = now;
                 return;
             }
-            
+
             try {
                 (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
                 if (finished) {
@@ -189,19 +232,23 @@ namespace WFC4All {
         private void animateButton_Click(object sender, EventArgs e) {
             int now = DateTime.Now.Millisecond;
 
+            if (inputManager.isCollapsed()) {
+                executeButton_Click(sender, e);
+            }
+
             if (sender == null && now - lastRanForced <= 50) {
                 lastRanForced = now;
                 return;
             }
 
-            if (animateButton.BackgroundImage.Tag.Equals("Animate")) {
+            if (animateButton.BackgroundImage.Tag == null || animateButton.BackgroundImage.Tag.Equals("Animate")) {
                 lock (animationTimer) {
                     animationTimer.Interval = getAnimationSpeed();
                     animationTimer.Tick += animationAnimationTimerTick;
                     animationTimer.Start();
                 }
 
-                animateButton.BackgroundImage = Resources.PauseHover;
+                animateButton.BackgroundImage = sender == null ? Resources.Pause : Resources.PauseHover;
                 animateButton.BackgroundImage.Tag = "Pause";
             } else {
                 lock (animationTimer) {
@@ -209,7 +256,7 @@ namespace WFC4All {
                     animationTimer = new Timer();
                 }
 
-                animateButton.BackgroundImage = Resources.AnimateHover;
+                animateButton.BackgroundImage = sender == null ? Resources.Animate : Resources.AnimateHover;
                 animateButton.BackgroundImage.Tag = "Animate";
             }
         }
@@ -410,6 +457,8 @@ namespace WFC4All {
             if (categoryCB.Text.Equals("Fonts")) {
                 ((NumericUpDown) sender).Value = Math.Min(((NumericUpDown) sender).Value, 25);
             }
+
+            executeButton_Click(sender, e);
         }
 
         private void inputPaddingPB_Click(object sender, EventArgs e) {
@@ -423,7 +472,7 @@ namespace WFC4All {
                 c = Color.LawnGreen;
             }
 
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c, false);
             inputPaddingPB.BackColor = c;
             inputPaddingPB.Padding = new Padding(3);
 
@@ -441,8 +490,7 @@ namespace WFC4All {
             int value = stepSizeTrackbar.Value;
             bool instant = value == 100;
 
-            const string instantStr = "All";
-            stepSizeLabel.Text = @$"Amount of steps to take: {(instant ? instantStr : value)}";
+            stepSizeLabel.Text = instant ? @"Instantly generate an image" : @$"Number of steps to take: {value}";
 
             advanceButton.Enabled = !instant;
             backButton.Enabled = !instant;
@@ -630,23 +678,28 @@ namespace WFC4All {
         }
 
         private void initializeToolTips() {
-            animateButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Animate generation"); };
+            animateButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Start/Stop generation animation\nShortcut(s): Space bar & 'P' Key");
+            };
 
-            backButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Take a single step back"); };
+            backButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs,
+                    "Take a single step back\nShortcut(s): Left Arrow Key, Backspace or Delete");
+            };
 
             advanceButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Advance a single step");
+                addHover(sender, eventArgs, "Advance a single step\nShortcut(s): Right Arrow Key");
             };
 
             markerButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Save the current progress");
+                addHover(sender, eventArgs, "Save the current progress\nShortcut(s): 'S' Key");
             };
 
             revertMarkerButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Revert back to save");
+                addHover(sender, eventArgs, "Revert back to save\nShortcut(s): 'L' Key");
             };
 
-            restartButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Generate a new image"); };
+            restartButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Generate a new image\nShortcut(s): 'R' Key"); };
         }
 
         /* ------------------------------------------------------------------------
@@ -677,7 +730,7 @@ namespace WFC4All {
                 c = Color.LawnGreen;
             }
 
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c);
+            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c, true);
             inputPaddingPB.BackColor = c;
             inputPaddingPB.Padding = new Padding(3);
         }
@@ -703,7 +756,7 @@ namespace WFC4All {
 
             if (!show) {
                 inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB,
-                    toGrayScale(Resources.borderPaddingEnabled), 3, Color.Transparent);
+                    toGrayScale(Resources.borderPaddingEnabled), 3, Color.Transparent, false);
                 inputPaddingPB.BackColor = Color.Transparent;
             }
         }

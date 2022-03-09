@@ -196,8 +196,6 @@ namespace WFC4All.DeBroglie.Wfc {
                     return;
                 }
             }
-
-            return;
         }
 
         private void stepConstraints() {
@@ -366,11 +364,11 @@ namespace WFC4All.DeBroglie.Wfc {
                         // If still in contradiction, repeat backtracking
 
                         continue;
-                    } else {
-                        // Include the last ban as part of the previous backtrack
-                        backtrackItemsLengths.pop();
-                        backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
                     }
+
+                    // Include the last ban as part of the previous backtrack
+                    backtrackItemsLengths.pop();
+                    backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
 
                     goto restart;
                 }
@@ -457,11 +455,11 @@ namespace WFC4All.DeBroglie.Wfc {
                         // If still in contradiction, repeat backtracking
 
                         continue;
-                    } else {
-                        // Include the last ban as part of the previous backtrack
-                        backtrackItemsLengths.pop();
-                        backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
                     }
+
+                    // Include the last ban as part of the previous backtrack
+                    backtrackItemsLengths.pop();
+                    backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
 
                     goto restart;
                 }

@@ -39,11 +39,9 @@ namespace WFC4All.DeBroglie.Trackers
             {
                 return currentChangedIndices;
             }
-            else
-            {
-                return currentChangedIndices.SelectMany(i =>
-                    tileModelMapping.PatternCoordToTileCoordIndexAndOffset.get(i).Select(x => x.Item2));
-            }
+
+            return currentChangedIndices.SelectMany(i =>
+                tileModelMapping.PatternCoordToTileCoordIndexAndOffset.get(i).Select(x => x.Item2));
         }
 
         public void doBan(int index, int pattern)

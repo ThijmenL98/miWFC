@@ -173,7 +173,6 @@ namespace WFC4All.DeBroglie.Wfc
                     return;
                 }
             }
-            return;
         }
 
     }

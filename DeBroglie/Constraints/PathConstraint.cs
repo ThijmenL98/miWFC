@@ -123,7 +123,7 @@ namespace WFC4All.DeBroglie.Constraints
                 if (isArticulation[i] && !mustBePath[i])
                 {
                     topology.getCoord(i, out int x, out int y, out int z);
-                    propagator.@select(x, y, z, tileSet);
+                    propagator.select(x, y, z, tileSet);
                 }
             }
 

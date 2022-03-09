@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
@@ -224,7 +223,7 @@ namespace WFC4All.DeBroglie.Models {
                 patternTopology = gridTopology;
                 tileCoordToPatternCoordIndexAndOffset = null;
                 patternCoordToTileCoordIndexAndOffset = null;
-                tilesToPatternsByOffset = new Dictionary<int, IReadOnlyDictionary<Tile, ISet<int>>>() {
+                tilesToPatternsByOffset = new Dictionary<int, IReadOnlyDictionary<Tile, ISet<int>>> {
                     {0, tilesToPatterns.ToDictionary(g => g.Key, g => (ISet<int>) new HashSet<int>(g))}
                 };
                 patternsToTilesByOffset = new Dictionary<int, IReadOnlyDictionary<int, Tile>> {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
 namespace WFC4All.DeBroglie.Models {
     public struct PatternArray {

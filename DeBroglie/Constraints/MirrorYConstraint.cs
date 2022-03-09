@@ -1,4 +1,5 @@
-﻿using WFC4All.DeBroglie.Rot;
+﻿using System;
+using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
 
 namespace WFC4All.DeBroglie.Constraints
@@ -14,7 +15,7 @@ namespace WFC4All.DeBroglie.Constraints
             DirectionSetType directionsType = propagator.Topology.asGridTopology().Directions.Type;
             if (directionsType != DirectionSetType.CARTESIAN2D && directionsType != DirectionSetType.CARTESIAN3D)
             {
-                throw new System.Exception($"MirrorYConstraint not supported on {directionsType}");
+                throw new Exception($"MirrorYConstraint not supported on {directionsType}");
             }
             base.init(propagator);
         }

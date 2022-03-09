@@ -45,7 +45,7 @@ namespace WFC4All.DeBroglie.Constraints
             if (Axes == null || Axes.Contains(Axis.X))
             {
                 int y = 0, z = 0;
-                StateMachine sm = new StateMachine((x) => propagator.ban(x, y, z, tileSet), topology.PeriodicX, width, MaxCount);
+                StateMachine sm = new StateMachine(x => propagator.ban(x, y, z, tileSet), topology.PeriodicX, width, MaxCount);
 
                 for (z = 0; z < depth; z++)
                 {
@@ -81,7 +81,7 @@ namespace WFC4All.DeBroglie.Constraints
             if (Axes == null || Axes.Contains(Axis.Y))
             {
                 int x = 0, z = 0;
-                StateMachine sm = new StateMachine((y) => propagator.ban(x, y, z, tileSet), topology.PeriodicY, height, MaxCount);
+                StateMachine sm = new StateMachine(y => propagator.ban(x, y, z, tileSet), topology.PeriodicY, height, MaxCount);
 
                 for (z = 0; z < depth; z++)
                 {
@@ -117,7 +117,7 @@ namespace WFC4All.DeBroglie.Constraints
             if (Axes == null || Axes.Contains(Axis.Z))
             {
                 int x = 0, y = 0;
-                StateMachine sm = new StateMachine((z) => propagator.ban(x, y, z, tileSet), topology.PeriodicZ, depth, MaxCount);
+                StateMachine sm = new StateMachine(z => propagator.ban(x, y, z, tileSet), topology.PeriodicZ, depth, MaxCount);
 
                 for (y = 0; y < height; y++)
                 {

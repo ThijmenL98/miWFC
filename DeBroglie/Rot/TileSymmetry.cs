@@ -1,4 +1,6 @@
-﻿namespace WFC4All.DeBroglie.Rot
+﻿using System;
+
+namespace WFC4All.DeBroglie.Rot
 {
     /// <summary>
     /// Specifies the way in which a tile can be symmetric.
@@ -86,7 +88,7 @@
                 case "cyclic":
                     return TileSymmetry.CYCLIC;
             }
-            throw new System.Exception($"Cannot parse {ts} as a TileSymmetry.");
+            throw new Exception($"Cannot parse {ts} as a TileSymmetry.");
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace WFC4All.DeBroglie.Topo
+﻿using System;
+
+namespace WFC4All.DeBroglie.Topo
 {
     /// <summary>
     /// A grid topology is a topology with a regular repeating pattern.
@@ -51,7 +53,7 @@
         public GridTopology withMask(bool[] mask)
         {
             if (Width * Height * Depth != mask.Length) {
-                throw new System.Exception("Mask size doesn't fit the topology");
+                throw new Exception("Mask size doesn't fit the topology");
             }
 
             return new GridTopology(Directions, Width, Height, Depth, PeriodicX, PeriodicY, PeriodicZ, mask);
@@ -63,7 +65,7 @@
         public GridTopology withMask(ITopoArray<bool> mask)
         {
             if (!isSameSize(mask.Topology.asGridTopology())) {
-                throw new System.Exception("Mask size doesn't fit the topology");
+                throw new Exception("Mask size doesn't fit the topology");
             }
 
             bool[] boolMask = new bool[Width * Height * Depth];
@@ -177,7 +179,7 @@
         public bool tryMove(int index, Direction direction, out int dest, out Direction inverseDirection, out EdgeLabel edgeLabel)
         {
             inverseDirection = Directions.inverse(direction);
-            edgeLabel = (EdgeLabel)(Direction)direction;
+            edgeLabel = (EdgeLabel)direction;
             return tryMove(index, direction, out dest);
         }
 
@@ -191,7 +193,7 @@
         public bool tryMove(int x, int y, int z, Direction direction, out int dest, out Direction inverseDirection, out EdgeLabel edgeLabel)
         {
             inverseDirection = Directions.inverse(direction);
-            edgeLabel = (EdgeLabel)(Direction)direction;
+            edgeLabel = (EdgeLabel)direction;
             return tryMove(x, y, z, direction, out dest);
         }
 
@@ -199,18 +201,15 @@
         /// Given a co-ordinate and a direction, gives the index that is one step in that direction,
         /// if it exists and is not masked out. Otherwise, it returns false.
         /// </summary>
-        public bool tryMove(int x, int y, int z, Direction direction, out int dest)
-        {
+        public bool tryMove(int x, int y, int z, Direction direction, out int dest) {
             if (tryMove(x, y, z, direction, out x, out y, out z))
             {
                 dest = getIndex(x, y, z);
                 return true;
             }
-            else
-            {
-                dest = -1;
-                return false;
-            }
+
+            dest = -1;
+            return false;
         }
 
         /// <summary>
@@ -282,10 +281,8 @@
                 int index2 = getIndex(x, y, z);
                 return Mask[index2];
             }
-            else
-            {
-                return true;
-            }
+
+            return true;
         }
     }
 }

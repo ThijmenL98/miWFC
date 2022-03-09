@@ -295,8 +295,7 @@ namespace WFC4All.DeBroglie.Models
                 Propagator = propagator.Select(x => x.Select(y => y.ToArray()).ToArray()).ToArray(),
                 Frequencies = frequencies.ToArray(),
             };
-            Dictionary<int, IReadOnlyDictionary<Tile, ISet<int>>> tilesToPatternsByOffset = new Dictionary<int, IReadOnlyDictionary<Tile, ISet<int>>>()
-                {
+            Dictionary<int, IReadOnlyDictionary<Tile, ISet<int>>> tilesToPatternsByOffset = new Dictionary<int, IReadOnlyDictionary<Tile, ISet<int>>> {
                     {0, tilesToPatterns.ToLookup(x=>x.Key, x=>x.Value).ToDictionary(g=>g.Key, g=>(ISet<int>)new HashSet<int>(g)) }
                 };
             Dictionary<int, IReadOnlyDictionary<int, Tile>> patternsToTilesByOffset = new Dictionary<int, IReadOnlyDictionary<int, Tile>>

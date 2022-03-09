@@ -72,7 +72,7 @@ namespace WFC4All {
             const int distance = 20;
 
             int pPerRow = (int) Math.Floor((myForm.patternPanel.Width - distance) / (float) (distance + size));
-            int spacing = (myForm.patternPanel.Width - (size * pPerRow)) / (pPerRow + 3);
+            int spacing = (myForm.patternPanel.Width - size * pPerRow) / (pPerRow + 3);
 
             int idxX = patternCount % pPerRow;
             int idxY = (int) Math.Floor(patternCount / (double) pPerRow);
@@ -124,7 +124,7 @@ namespace WFC4All {
             }
 
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray);
+            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray, true);
             pattern.Dispose();
             newPB.BackColor = Color.DimGray; //TODO Re-Enable for CF Color.LawnGreen;
             newPB.Padding = new Padding(padding);
@@ -176,7 +176,7 @@ namespace WFC4All {
             newPB.Name = "patternPB_" + patternCount;
 
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray);
+            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray, true);
             pattern.Dispose();
             newPB.BackColor = Color.DimGray;
             newPB.Padding = new Padding(padding);

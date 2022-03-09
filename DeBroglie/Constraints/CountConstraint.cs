@@ -94,7 +94,7 @@ namespace WFC4All.DeBroglie.Constraints
                         if (selected.isMaybe())
                         {
                             propagator.Topology.getCoord(index, out int x, out int y, out int z);
-                            propagator.@select(x, y, z, tileSet);
+                            propagator.select(x, y, z, tileSet);
                         }
                     }
                 }
@@ -198,7 +198,7 @@ namespace WFC4All.DeBroglie.Constraints
                         }
                         int pickedIndex = maybeList[(int)(propagator.RandomDouble() * maybeList.Count)];
                         topology.getCoord(pickedIndex, out int x, out int y, out int z);
-                        propagator.@select(x, y, z, tileSet);
+                        propagator.select(x, y, z, tileSet);
                     }
                     else if (Comparison == CountComparison.AT_LEAST || Comparison == CountComparison.EXACTLY)
                     {

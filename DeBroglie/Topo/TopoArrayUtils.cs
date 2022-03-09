@@ -6,21 +6,19 @@ namespace WFC4All.DeBroglie.Topo
 
     public static class TopoArrayUtils
     {
-        public static ValueTuple<int, int> rotateVector(DirectionSetType type, int x, int y, Rotation rotation)
-        {
+        public static ValueTuple<int, int> rotateVector(DirectionSetType type, int x, int y, Rotation rotation) {
             if (type == DirectionSetType.CARTESIAN2D ||
                 type == DirectionSetType.CARTESIAN3D)
             {
                 return squareRotateVector(x, y, rotation);
             }
-            else if (type == DirectionSetType.HEXAGONAL2D)
+
+            if (type == DirectionSetType.HEXAGONAL2D)
             {
                 return hexRotateVector(x, y, rotation);
             }
-            else
-            {
-                throw new Exception($"Unknown directions type {type}");
-            }
+
+            throw new Exception($"Unknown directions type {type}");
         }
 
         public static ValueTuple<int, int> squareRotateVector(int x, int y, Rotation rotation)
@@ -102,14 +100,13 @@ namespace WFC4All.DeBroglie.Topo
             {
                 return squareRotate(original, rotation, tileRotation);
             }
-            else if (type == DirectionSetType.HEXAGONAL2D)
+
+            if (type == DirectionSetType.HEXAGONAL2D)
             {
                 return hexRotate(original, rotation, tileRotation);
             }
-            else
-            {
-                throw new Exception($"Unknown directions type {type}");
-            }
+
+            throw new Exception($"Unknown directions type {type}");
         }
 
         public static ITopoArray<T> rotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T> tileRotate = null)
@@ -121,14 +118,13 @@ namespace WFC4All.DeBroglie.Topo
             {
                 return squareRotate(original, rotation, tileRotate);
             }
-            else if (type == DirectionSetType.HEXAGONAL2D)
+
+            if (type == DirectionSetType.HEXAGONAL2D)
             {
                 return hexRotate(original, rotation, tileRotate);
             }
-            else
-            {
-                throw new Exception($"Unknown directions type {type}");
-            }
+
+            throw new Exception($"Unknown directions type {type}");
 
         }
 
@@ -139,7 +135,7 @@ namespace WFC4All.DeBroglie.Topo
             {
                 return tileRotation.rotate(tile, rotation, out result);
             }
-            return squareRotate<Tile>(original, rotation, tileRotation == null ? null : (TileRotate<Tile> )tileRotate);
+            return squareRotate(original, rotation, tileRotation == null ? null : tileRotate);
         }
 
         public static ITopoArray<T> squareRotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T> tileRotate = null)
@@ -162,7 +158,7 @@ namespace WFC4All.DeBroglie.Topo
             {
                 return tileRotation.rotate(tile, rotation, out result);
             }
-            return hexRotate<Tile>(original, rotation, tileRotation == null ? null : (TileRotate<Tile>)tileRotate);
+            return hexRotate(original, rotation, tileRotation == null ? null : tileRotate);
         }
 
         public static ITopoArray<T> hexRotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T> tileRotate = null)

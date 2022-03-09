@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using WFC4All.DeBroglie.Topo;
 
 namespace WFC4All.DeBroglie.Constraints
@@ -19,7 +20,7 @@ namespace WFC4All.DeBroglie.Constraints
 
             Point point = Point ?? getRandomPoint(propagator, tileSet);
 
-            propagator.@select(point.x, point.y, point.z, tileSet);
+            propagator.select(point.x, point.y, point.z, tileSet);
         }
 
         public Point getRandomPoint(TilePropagator propagator, TilePropagatorTileSet tileSet)
@@ -53,7 +54,7 @@ namespace WFC4All.DeBroglie.Constraints
 
             // Choose a random point to select
             if (points.Count == 0) {
-                throw new System.Exception($"No legal placement of {tileSet}");
+                throw new Exception($"No legal placement of {tileSet}");
             }
 
             int i = (int)(propagator.RandomDouble() * points.Count);

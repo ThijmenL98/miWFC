@@ -108,7 +108,7 @@ namespace WFC4All.DeBroglie.Rot
                     getGroup(tile, out SubGroup _);
                     break;
                 case TileSymmetry.N:
-                    add(tile, new Rotation(2 * 90, false), tile);
+                    add(tile, new Rotation(2 * 90), tile);
                     break;
 
                 case TileSymmetry.T:
@@ -126,20 +126,20 @@ namespace WFC4All.DeBroglie.Rot
 
                 case TileSymmetry.I:
                     add(tile, new Rotation(0 * 90, true), tile);
-                    add(tile, new Rotation(2 * 90, false), tile);
+                    add(tile, new Rotation(2 * 90), tile);
                     break;
                 case TileSymmetry.SLASH:
                     add(tile, new Rotation(1 * 90, true), tile);
-                    add(tile, new Rotation(2 * 90, false), tile);
+                    add(tile, new Rotation(2 * 90), tile);
                     break;
 
                 case TileSymmetry.CYCLIC:
-                    add(tile, new Rotation(1 * 90, false), tile);
+                    add(tile, new Rotation(1 * 90), tile);
                     break;
 
                 case TileSymmetry.X:
                     add(tile, new Rotation(0 * 90, true), tile);
-                    add(tile, new Rotation(1 * 90, false), tile);
+                    add(tile, new Rotation(1 * 90), tile);
                     break;
             }
         }

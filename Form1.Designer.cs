@@ -1,5 +1,5 @@
-﻿using System.Windows.Forms;
-using System.Drawing;
+﻿using System.ComponentModel;
+using System.Windows.Forms;
 
 namespace WFC4All
 {
@@ -8,7 +8,7 @@ namespace WFC4All
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -153,7 +153,7 @@ namespace WFC4All
             // loadingPB
             // 
             this.loadingPB.BackColor = System.Drawing.Color.Transparent;
-            this.loadingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.loadingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.loadingPB.Image = global::WFC4All.Properties.Resources.Loading;
             this.loadingPB.Location = new System.Drawing.Point(602, 283);
             this.loadingPB.Name = "loadingPB";
@@ -254,6 +254,7 @@ namespace WFC4All
             this.outputWidthValue.Size = new System.Drawing.Size(60, 24);
             this.outputWidthValue.TabIndex = 4;
             this.outputWidthValue.Value = new decimal(new int[] {24, 0, 0, 0});
+            this.outputWidthValue.ValueChanged += new System.EventHandler(this.executeButton_Click);
             // 
             // pattHeurPanel
             // 
@@ -788,44 +789,44 @@ namespace WFC4All
 
         #endregion
 
-        private System.Windows.Forms.TabPage inputTab;
-        private System.Windows.Forms.Label patternRotationLabel;
-        private System.Windows.Forms.PictureBox p3RotPB;
-        private System.Windows.Forms.PictureBox p2RotPB;
-        private System.Windows.Forms.PictureBox p1RotPB;
-        private System.Windows.Forms.PictureBox originalRotPB;
-        public System.Windows.Forms.Panel patternPanel;
-        private System.Windows.Forms.Label patternsLabel;
-        private System.Windows.Forms.Button modelChoice;
-        private System.Windows.Forms.Label outputImageHeightLabel;
-        private System.Windows.Forms.Label outputImageWidthLabel;
-        private System.Windows.Forms.Label outputSizeLabel;
-        private System.Windows.Forms.NumericUpDown outputHeightValue;
-        private System.Windows.Forms.NumericUpDown outputWidthValue;
-        private System.Windows.Forms.ComboBox inputImageCB;
-        private System.Windows.Forms.PictureBox inputImagePB;
-        private System.Windows.Forms.Label inputImage;
-        private System.Windows.Forms.Label patternSizeLabel;
-        private System.Windows.Forms.ComboBox patternSize;
-        public System.Windows.Forms.PictureBox resultPB;
-        private System.Windows.Forms.Button restartButton;
-        private System.Windows.Forms.TabControl tabSelection;
-        private System.Windows.Forms.Label stepSizeLabel;
-        private System.Windows.Forms.Button advanceButton;
-        private System.Windows.Forms.Button animateButton;
-        private System.Windows.Forms.Label animationSpeedLabel;
-        private System.Windows.Forms.Button backButton;
-        private System.Windows.Forms.Panel inputPanel;
-        private System.Windows.Forms.Panel selHeurPanel;
-        private System.Windows.Forms.Panel pattHeurPanel;
+        private TabPage inputTab;
+        private Label patternRotationLabel;
+        private PictureBox p3RotPB;
+        private PictureBox p2RotPB;
+        private PictureBox p1RotPB;
+        private PictureBox originalRotPB;
+        public Panel patternPanel;
+        private Label patternsLabel;
+        private Button modelChoice;
+        private Label outputImageHeightLabel;
+        private Label outputImageWidthLabel;
+        private Label outputSizeLabel;
+        private NumericUpDown outputHeightValue;
+        private NumericUpDown outputWidthValue;
+        private ComboBox inputImageCB;
+        private PictureBox inputImagePB;
+        private Label inputImage;
+        private Label patternSizeLabel;
+        private ComboBox patternSize;
+        public PictureBox resultPB;
+        private Button restartButton;
+        private TabControl tabSelection;
+        private Label stepSizeLabel;
+        private Button advanceButton;
+        private Button animateButton;
+        private Label animationSpeedLabel;
+        private Button backButton;
+        private Panel inputPanel;
+        private Panel selHeurPanel;
+        private Panel pattHeurPanel;
         private Label patternHeuristicDesc;
-        private System.Windows.Forms.Label patternSelectionLabel;
-        private System.Windows.Forms.ComboBox patternHeuristicCB;
-        private System.Windows.Forms.PictureBox patternHeuristicPB;
-        private System.Windows.Forms.PictureBox inputPaddingPB;
-        private System.Windows.Forms.TrackBar animSpeedTrackbar;
-        private System.Windows.Forms.TrackBar stepSizeTrackbar;
-        private System.Windows.Forms.PictureBox slowSpeedPB;
-        private System.Windows.Forms.PictureBox fastSpeedPB;
+        private Label patternSelectionLabel;
+        private ComboBox patternHeuristicCB;
+        private PictureBox patternHeuristicPB;
+        private PictureBox inputPaddingPB;
+        private TrackBar animSpeedTrackbar;
+        private TrackBar stepSizeTrackbar;
+        private PictureBox slowSpeedPB;
+        private PictureBox fastSpeedPB;
     }
 }
