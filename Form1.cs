@@ -23,6 +23,7 @@ namespace WFC4All {
 
         private bool defaultInputPadding, changingIndex;
         public bool isChangingModels;
+        private bool infoClicked;
 
         private Bitmap result;
 
@@ -46,7 +47,7 @@ namespace WFC4All {
             isChangingModels = false;
             defaultInputPadding = true;
             inputManager = new InputManager(this);
-            bitMaps = new BitMaps(this);
+            bitMaps = new BitMaps(this, inputManager);
 
             InitializeComponent();
             initializeAnimations();
@@ -79,7 +80,7 @@ namespace WFC4All {
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
             Bitmap disabledInit = new(Resources.borderPaddingDisabled);
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, disabledInit, 3, Color.Red, false);
+            inputPaddingPB.Image = inputManager.resizePixels(inputPaddingPB, disabledInit, 3, Color.Red, false);
             inputPaddingPB.BackColor = Color.Red;
             inputPaddingPB.Padding = new Padding(3);
             inputPaddingPB.MouseHover += (sender, eventArgs) => {
@@ -87,6 +88,8 @@ namespace WFC4All {
             };
 
             KeyPreview = true;
+            infoGraphicPB.Visible = false;
+            closeButton.Visible = false;
             //TODO Re-enable initializeRotations();
         }
 
@@ -96,7 +99,12 @@ namespace WFC4All {
                 case Keys.Left:
                 case Keys.Delete:
                 case Keys.Back:
-                    backButton_Click(null, e);
+                    if (infoClicked) {
+                        infoButton_Click(null, e);
+                    } else {
+                        backButton_Click(null, e);
+                    }
+
                     e.Handled = true;
                     break;
                 case Keys.Right:
@@ -124,6 +132,13 @@ namespace WFC4All {
                     break;
                 case Keys.R:
                     executeButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.Escape:
+                    if (infoClicked) {
+                        infoButton_Click(null, e);
+                    }
+
                     e.Handled = true;
                     break;
                 default:
@@ -173,7 +188,7 @@ namespace WFC4All {
                 }
 
                 try {
-                    resultPB.Image = InputManager.resizeBitmap(result2,
+                    resultPB.Image = inputManager.resizeBitmap(result2,
                         Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result.Width));
                 } catch (Exception exception) {
                     Console.WriteLine(exception);
@@ -201,7 +216,7 @@ namespace WFC4All {
                     return;
                 }
 
-                resultPB.Image = InputManager.resizeBitmap(result2,
+                resultPB.Image = inputManager.resizeBitmap(result2,
                     Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                 result = new Bitmap(result2);
@@ -214,7 +229,7 @@ namespace WFC4All {
         private void backButton_Click(object sender, EventArgs e) {
             try {
                 Bitmap result2 = inputManager.stepBackWfc(getStepAmount());
-                resultPB.Image = InputManager.resizeBitmap(result2,
+                resultPB.Image = inputManager.resizeBitmap(result2,
                     Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                 int curStep = inputManager.getCurrentStep();
@@ -269,18 +284,18 @@ namespace WFC4All {
             outputWidthValue.Value = 24;
 
             categoryCB.DataSource
-                = InputManager.getCategories(modelChoice.Text.Equals("Switch to Simple Model")
+                = InputManager.getCategories(modelChoice.Text.Equals("Switch to Tile Mode")
                     ? "simpletiled"
                     : "overlapping");
 
-            btn.Text = btn.Text.Equals("Switch to Simple Model")
-                ? "Switch to Overlapping Model"
-                : "Switch to Simple Model";
-            showRotationalOptions(btn.Text.Equals("Switch to Simple Model"));
+            btn.Text = btn.Text.Equals("Switch to Tile Mode")
+                ? "Switch to Smart Mode"
+                : "Switch to Tile Mode";
+            showRotationalOptions(btn.Text.Equals("Switch to Tile Mode"));
 
             string[] images = inputManager.getImages(
-                btn.Text.Equals("Switch to Simple Model") ? "overlapping" : "simpletiled",
-                btn.Text.Equals("Switch to Simple Model") ? "Textures" : "Worlds Top-Down");
+                btn.Text.Equals("Switch to Tile Mode") ? "overlapping" : "simpletiled",
+                btn.Text.Equals("Switch to Tile Mode") ? "Textures" : "Worlds Top-Down");
 
             inputImageCB.DataSource = images;
             (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[0]);
@@ -303,7 +318,7 @@ namespace WFC4All {
             int stepsToRevert = inputManager.getCurrentStep() - savePoint;
             try {
                 result = inputManager.stepBackWfc(stepsToRevert);
-                resultPB.Image = InputManager.resizeBitmap(result,
+                resultPB.Image = inputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
 
                 markerButton_Click(null, null);
@@ -312,6 +327,23 @@ namespace WFC4All {
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
+        }
+
+        private void infoButton_Click(object sender, EventArgs e) {
+            infoClicked = !infoClicked;
+            
+            closeButton.Visible = infoClicked;
+            infoGraphicPB.Visible = infoClicked;
+            
+            foreach (Control c in inputTab.Controls) {
+                if (c != loadingPB && c != patternRotationLabel && c != p1RotPB && c != p2RotPB && c != p3RotPB &&
+                    c != originalRotPB && c != selHeurPanel && c != pattHeurPanel && c != closeButton && c != infoGraphicPB) {
+                    c.Visible = !infoClicked;
+                }
+            }
+        }
+        private void closeButton_Click(object sender, EventArgs e) {
+            infoButton_Click(sender, e);
         }
 
         /* ------------------------------------------------------------------------
@@ -330,7 +362,7 @@ namespace WFC4All {
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             updateInputImage(newValue);
 
-            if (modelChoice.Text.Equals("Switch to Simple Model")) {
+            if (modelChoice.Text.Equals("Switch to Tile Mode")) {
                 XElement curSelection = xDoc.Root.elements("overlapping").Where(x =>
                     x.get<string>("name") == getSelectedInput()).ElementAtOrDefault(0);
                 (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
@@ -448,7 +480,7 @@ namespace WFC4All {
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             string[] inputImageDataSource
                 = inputManager.getImages(
-                    modelChoice.Text.Equals("Switch to Simple Model") ? "overlapping" : "simpletiled",
+                    modelChoice.Text.Equals("Switch to Tile Mode") ? "overlapping" : "simpletiled",
                     newValue);
             inputImageCB.DataSource = inputImageDataSource;
         }
@@ -472,7 +504,7 @@ namespace WFC4All {
                 c = Color.LawnGreen;
             }
 
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c, false);
+            inputPaddingPB.Image = inputManager.resizePixels(inputPaddingPB, bm, 3, c, false);
             inputPaddingPB.BackColor = c;
             inputPaddingPB.Padding = new Padding(3);
 
@@ -539,7 +571,7 @@ namespace WFC4All {
         }
 
         public bool isOverlappingModel() {
-            return modelChoice.Text.Equals("Switch to Simple Model");
+            return modelChoice.Text.Equals("Switch to Tile Mode");
         }
 
         public int getSelectedOverlapTileDimension() {
@@ -553,7 +585,7 @@ namespace WFC4All {
         private void updateInputImage(string imageName) {
             Bitmap newImage = InputManager.getImage(imageName);
 
-            inputImagePB.Image = InputManager.resizeBitmap(newImage,
+            inputImagePB.Image = inputManager.resizeBitmap(newImage,
                 Math.Min(initInHeight / (float) newImage.Height, initInWidth / (float) newImage.Width));
 
             inputImagePB.Refresh();
@@ -580,7 +612,7 @@ namespace WFC4All {
                         animationTimer.Interval = getAnimationSpeed();
                         try {
                             (Bitmap result2, bool finished) = inputManager.initAndRunWfcDB(false, getStepAmount());
-                            resultPB.Image = InputManager.resizeBitmap(result2,
+                            resultPB.Image = inputManager.resizeBitmap(result2,
                                 Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                             result = new Bitmap(result2);
@@ -675,6 +707,16 @@ namespace WFC4All {
             restartButton.MouseEnter += ButtonVisualEventHandler.restartButton_MouseEnter;
             restartButton.MouseLeave += ButtonVisualEventHandler.restartButton_MouseLeave;
             restartButton.MouseUp += ButtonVisualEventHandler.restartButton_MouseUp;
+
+            infoButton.MouseDown += ButtonVisualEventHandler.infoButton_MouseDown;
+            infoButton.MouseEnter += ButtonVisualEventHandler.infoButton_MouseEnter;
+            infoButton.MouseLeave += ButtonVisualEventHandler.infoButton_MouseLeave;
+            infoButton.MouseUp += ButtonVisualEventHandler.infoButton_MouseUp;
+            
+            closeButton.MouseDown += ButtonVisualEventHandler.closeButton_MouseDown;
+            closeButton.MouseEnter += ButtonVisualEventHandler.closeButton_MouseEnter;
+            closeButton.MouseLeave += ButtonVisualEventHandler.closeButton_MouseLeave;
+            closeButton.MouseUp += ButtonVisualEventHandler.closeButton_MouseUp;
         }
 
         private void initializeToolTips() {
@@ -699,7 +741,9 @@ namespace WFC4All {
                 addHover(sender, eventArgs, "Revert back to save\nShortcut(s): 'L' Key");
             };
 
-            restartButton.MouseHover += (sender, eventArgs) => { addHover(sender, eventArgs, "Generate a new image\nShortcut(s): 'R' Key"); };
+            restartButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Generate a new image\nShortcut(s): 'R' Key");
+            };
         }
 
         /* ------------------------------------------------------------------------
@@ -716,13 +760,13 @@ namespace WFC4All {
         }
 
         private void updateInputPadding() {
-            if (!modelChoice.Text.Equals("Switch to Simple Model")) {
+            if (!modelChoice.Text.Equals("Switch to Tile Mode")) {
                 return;
             }
 
             Color c;
             Bitmap bm;
-            if (!defaultInputPadding) {
+            if (inputPaddingEnabled()) {
                 bm = new Bitmap(Resources.borderPaddingDisabled);
                 c = Color.Red;
             } else {
@@ -730,9 +774,11 @@ namespace WFC4All {
                 c = Color.LawnGreen;
             }
 
-            inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB, bm, 3, c, true);
+            inputPaddingPB.Image = inputManager.resizePixels(inputPaddingPB, bm, 3, c, false);
             inputPaddingPB.BackColor = c;
             inputPaddingPB.Padding = new Padding(3);
+
+            inputPaddingPB.Refresh();
         }
 
         private void updateRotations() {
@@ -755,7 +801,7 @@ namespace WFC4All {
             inputPaddingPB.Enabled = show;
 
             if (!show) {
-                inputPaddingPB.Image = InputManager.resizePixels(inputPaddingPB,
+                inputPaddingPB.Image = inputManager.resizePixels(inputPaddingPB,
                     toGrayScale(Resources.borderPaddingEnabled), 3, Color.Transparent, false);
                 inputPaddingPB.BackColor = Color.Transparent;
             }

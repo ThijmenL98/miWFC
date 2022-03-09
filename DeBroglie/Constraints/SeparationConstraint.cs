@@ -73,7 +73,7 @@ namespace WFC4All.DeBroglie.Constraints
             public void visitNearby(int index, bool undo)
             {
                 // Dijkstra's with fixed weights is just a queue
-                Queue<(int, int)> queue = new Queue<(int, int)>();
+                Queue<(int, int)> queue = new();
                 queue.Enqueue((index, 0));
 
                 while (queue.Count > 0)

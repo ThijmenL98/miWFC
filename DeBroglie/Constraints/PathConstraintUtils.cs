@@ -22,7 +22,7 @@ namespace WFC4All.DeBroglie.Constraints
                     neighbours[i] = emtpy;
                 }
 
-                List<int> n = new List<int>();
+                List<int> n = new();
                 for (int d=0; d < topology.DirectionsCount; d++)
                 {
                     if (topology.tryMove(i, (Direction)d, out int dest))
@@ -81,7 +81,7 @@ namespace WFC4All.DeBroglie.Constraints
             // Unfortunately, the recursive version tends to blow the stack for large graphs
             int cutVertex(int initialU)
             {
-                List<CutVertexFrame> stack = new List<CutVertexFrame>();
+                List<CutVertexFrame> stack = new();
 
                 stack.Add(new CutVertexFrame { u = initialU });
 

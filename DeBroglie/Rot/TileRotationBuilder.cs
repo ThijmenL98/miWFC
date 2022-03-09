@@ -14,7 +14,7 @@ namespace WFC4All.DeBroglie.Rot
     /// </summary>
     public class TileRotationBuilder
     {
-        private readonly Dictionary<Tile, SubGroup> tileToSubGroup = new Dictionary<Tile, SubGroup>();
+        private readonly Dictionary<Tile, SubGroup> tileToSubGroup = new();
 
         private readonly RotationGroup rotationGroup;
 
@@ -161,7 +161,7 @@ namespace WFC4All.DeBroglie.Rot
                     generate(sg);
                 }
                 Rotation r1 = sg.getRotations(t)[0];
-                Dictionary<Rotation, Tile> result = new Dictionary<Rotation, Tile>();
+                Dictionary<Rotation, Tile> result = new();
                 foreach(Rotation r2 in rotationGroup)
                 {
                     if (!sg.Tiles.TryGetValue(r2, out Tile dest))
@@ -239,7 +239,7 @@ namespace WFC4All.DeBroglie.Rot
             {
                 for (int rot = 0; rot < 360; rot += rotationGroup.SmallestAngle)
                 {
-                    Rotation rotation = new Rotation(rot, refl > 0);
+                    Rotation rotation = new(rot, refl > 0);
                     if (sg.Tiles.ContainsKey(rotation)) {
                         continue;
                     }
@@ -249,7 +249,7 @@ namespace WFC4All.DeBroglie.Rot
                     {
                         for (int rot2 = 0; rot2 < 360; rot2 += rotationGroup.SmallestAngle)
                         {
-                            Rotation rotation2 = new Rotation(rot2, refl2 > 0 != refl > 0);
+                            Rotation rotation2 = new(rot2, refl2 > 0 != refl > 0);
                             if (!sg.Tiles.TryGetValue(rotation2, out Tile srcTile)) {
                                 continue;
                             }
@@ -303,8 +303,8 @@ namespace WFC4All.DeBroglie.Rot
         /// </summary>
         private class SubGroup
         {
-            public List<Entry> Entries { get; set; } = new List<Entry>();
-            public Dictionary<Rotation, Tile> Tiles { get; set; } = new Dictionary<Rotation, Tile>();
+            public List<Entry> Entries { get; set; } = new();
+            public Dictionary<Rotation, Tile> Tiles { get; set; } = new();
             public TileRotationTreatment? Treatment { get; set; }
             public Tile TreatmentSetBy { get; set; }
 

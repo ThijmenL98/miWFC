@@ -6,7 +6,7 @@ namespace WFC4All.DeBroglie.Constraints
 {
     public class MirrorYConstraint : SymmetryConstraint
     {
-        private readonly static Rotation reflectY = new Rotation(180, true);
+        private readonly static Rotation reflectY = new(180, true);
 
         public TileRotation TileRotation { get; set; }
 

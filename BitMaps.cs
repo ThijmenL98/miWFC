@@ -13,14 +13,16 @@ namespace WFC4All {
         private Dictionary<int, List<Bitmap>> similarityMap;
         private List<PictureBox> pictureBoxes;
         private readonly Dictionary<Tuple<string, int, bool>, Tuple<List<PictureBox>, int>> cache;
+        private readonly InputManager inputManager;
 
-        public BitMaps(Form1 form) {
+        public BitMaps(Form1 form, InputManager inputManager) {
             myForm = form;
             patternCount = 0;
             curBitmaps = new HashSet<ImageR>();
             similarityMap = new Dictionary<int, List<Bitmap>>();
             cache = new Dictionary<Tuple<string, int, bool>, Tuple<List<PictureBox>, int>>();
             pictureBoxes = new List<PictureBox>();
+            this.inputManager = inputManager;
         }
 
         private int patternCount;
@@ -124,7 +126,7 @@ namespace WFC4All {
             }
 
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray, true);
+            newPB.Image = inputManager.resizePixels(newPB, pattern, padding, Color.DimGray, true);
             pattern.Dispose();
             newPB.BackColor = Color.DimGray; //TODO Re-Enable for CF Color.LawnGreen;
             newPB.Padding = new Padding(padding);
@@ -176,7 +178,7 @@ namespace WFC4All {
             newPB.Name = "patternPB_" + patternCount;
 
             const int padding = 3;
-            newPB.Image = InputManager.resizePixels(newPB, pattern, padding, Color.DimGray, true);
+            newPB.Image = inputManager.resizePixels(newPB, pattern, padding, Color.DimGray, true);
             pattern.Dispose();
             newPB.BackColor = Color.DimGray;
             newPB.Padding = new Padding(padding);

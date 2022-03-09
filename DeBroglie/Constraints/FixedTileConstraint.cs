@@ -27,7 +27,7 @@ namespace WFC4All.DeBroglie.Constraints
         {
             ITopology topology = propagator.Topology;
 
-            List<Point> points = new List<Point>();
+            List<Point> points = new();
             for (int z = 0; z < topology.Depth; z++)
             {
                 for (int y = 0; y < topology.Height; y++)

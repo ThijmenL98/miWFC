@@ -77,7 +77,7 @@ namespace WFC4All.DeBroglie.Constraints
                             {
                                 return TopoArrayUtils.rotateDirection(propagator.Topology.asGridTopology().Directions, d, rot);
                             }
-                            HashSet<Direction> rexits = new HashSet<Direction>(kv.Value.Select(rotate));
+                            HashSet<Direction> rexits = new(kv.Value.Select(rotate));
                             ActualExits[rtile] = rexits;
                         }
                     }
@@ -230,7 +230,7 @@ namespace WFC4All.DeBroglie.Constraints
 
             foreach (int i in topology.getIndices())
             {
-                List<int> n = new List<int>();
+                List<int> n = new();
                 for(int d=0;d<topology.DirectionsCount;d++)
                 {
                     Direction direction = (Direction)d;

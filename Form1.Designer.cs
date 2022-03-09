@@ -32,6 +32,10 @@ namespace WFC4All
         /// </summary>
         private void InitializeComponent() {
             this.inputTab = new System.Windows.Forms.TabPage();
+            this.imUsefulPB = new System.Windows.Forms.PictureBox();
+            this.closeButton = new System.Windows.Forms.Button();
+            this.infoGraphicPB = new System.Windows.Forms.PictureBox();
+            this.infoButton = new System.Windows.Forms.Button();
             this.loadingPB = new System.Windows.Forms.PictureBox();
             this.IconPB = new System.Windows.Forms.PictureBox();
             this.slowSpeedPB = new System.Windows.Forms.PictureBox();
@@ -81,6 +85,8 @@ namespace WFC4All
             this.patternSizeLabel = new System.Windows.Forms.Label();
             this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize) (this.imUsefulPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.infoGraphicPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.IconPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).BeginInit();
@@ -109,6 +115,10 @@ namespace WFC4All
             // 
             this.inputTab.AutoScroll = true;
             this.inputTab.BackColor = System.Drawing.Color.DarkGray;
+            this.inputTab.Controls.Add(this.imUsefulPB);
+            this.inputTab.Controls.Add(this.closeButton);
+            this.inputTab.Controls.Add(this.infoGraphicPB);
+            this.inputTab.Controls.Add(this.infoButton);
             this.inputTab.Controls.Add(this.loadingPB);
             this.inputTab.Controls.Add(this.IconPB);
             this.inputTab.Controls.Add(this.slowSpeedPB);
@@ -149,6 +159,65 @@ namespace WFC4All
             this.inputTab.Size = new System.Drawing.Size(1592, 874);
             this.inputTab.TabIndex = 0;
             this.inputTab.Text = "Input Manipulation";
+            // 
+            // imUsefulPB
+            // 
+            this.imUsefulPB.BackColor = System.Drawing.Color.Transparent;
+            this.imUsefulPB.BackgroundImage = global::WFC4All.Properties.Resources.TryMe;
+            this.imUsefulPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.imUsefulPB.Location = new System.Drawing.Point(65, 806);
+            this.imUsefulPB.Name = "imUsefulPB";
+            this.imUsefulPB.Size = new System.Drawing.Size(120, 50);
+            this.imUsefulPB.TabIndex = 46;
+            this.imUsefulPB.TabStop = false;
+            // 
+            // closeButton
+            // 
+            this.closeButton.BackColor = System.Drawing.Color.Transparent;
+            this.closeButton.BackgroundImage = global::WFC4All.Properties.Resources.Close;
+            this.closeButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.closeButton.FlatAppearance.BorderSize = 0;
+            this.closeButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.closeButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.closeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.closeButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.closeButton.ForeColor = System.Drawing.Color.Transparent;
+            this.closeButton.Location = new System.Drawing.Point(1168, 13);
+            this.closeButton.Name = "closeButton";
+            this.closeButton.Size = new System.Drawing.Size(50, 50);
+            this.closeButton.TabIndex = 45;
+            this.closeButton.UseVisualStyleBackColor = false;
+            this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
+            // 
+            // infoGraphicPB
+            // 
+            this.infoGraphicPB.BackColor = System.Drawing.Color.Transparent;
+            this.infoGraphicPB.BackgroundImage = global::WFC4All.Properties.Resources.InfoGraphic;
+            this.infoGraphicPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.infoGraphicPB.Location = new System.Drawing.Point(358, 0);
+            this.infoGraphicPB.Name = "infoGraphicPB";
+            this.infoGraphicPB.Size = new System.Drawing.Size(874, 874);
+            this.infoGraphicPB.TabIndex = 44;
+            this.infoGraphicPB.TabStop = false;
+            this.infoGraphicPB.WaitOnLoad = true;
+            // 
+            // infoButton
+            // 
+            this.infoButton.BackColor = System.Drawing.Color.Transparent;
+            this.infoButton.BackgroundImage = global::WFC4All.Properties.Resources.Info;
+            this.infoButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.infoButton.FlatAppearance.BorderSize = 0;
+            this.infoButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.infoButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.infoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.infoButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.infoButton.ForeColor = System.Drawing.Color.Transparent;
+            this.infoButton.Location = new System.Drawing.Point(9, 816);
+            this.infoButton.Name = "infoButton";
+            this.infoButton.Size = new System.Drawing.Size(50, 50);
+            this.infoButton.TabIndex = 43;
+            this.infoButton.UseVisualStyleBackColor = false;
+            this.infoButton.Click += new System.EventHandler(this.infoButton_Click);
             // 
             // loadingPB
             // 
@@ -677,6 +746,7 @@ namespace WFC4All
             // 
             // inputPaddingPB
             // 
+            this.inputPaddingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.inputPaddingPB.Location = new System.Drawing.Point(247, 1);
             this.inputPaddingPB.Name = "inputPaddingPB";
             this.inputPaddingPB.Size = new System.Drawing.Size(94, 94);
@@ -692,7 +762,7 @@ namespace WFC4All
             this.modelChoice.Name = "modelChoice";
             this.modelChoice.Size = new System.Drawing.Size(129, 73);
             this.modelChoice.TabIndex = 8;
-            this.modelChoice.Text = "Switch to Simple Model";
+            this.modelChoice.Text = "Switch to Tile Mode";
             this.modelChoice.UseVisualStyleBackColor = false;
             this.modelChoice.Click += new System.EventHandler(this.modelChoice_Click);
             // 
@@ -743,6 +813,8 @@ namespace WFC4All
             this.Text = "WFC4All";
             this.inputTab.ResumeLayout(false);
             this.inputTab.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize) (this.imUsefulPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.infoGraphicPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.IconPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).EndInit();
@@ -771,6 +843,14 @@ namespace WFC4All
             this.ResumeLayout(false);
         }
 
+        private System.Windows.Forms.PictureBox imUsefulPB;
+
+        private System.Windows.Forms.Button closeButton;
+
+        private System.Windows.Forms.PictureBox infoGraphicPB;
+
+        private System.Windows.Forms.Button infoButton;
+
         private System.Windows.Forms.PictureBox loadingPB;
 
         private System.Windows.Forms.PictureBox IconPB;
@@ -789,12 +869,12 @@ namespace WFC4All
 
         #endregion
 
-        private TabPage inputTab;
+        private System.Windows.Forms.TabPage inputTab;
         private Label patternRotationLabel;
         private PictureBox p3RotPB;
         private PictureBox p2RotPB;
         private PictureBox p1RotPB;
-        private PictureBox originalRotPB;
+        private System.Windows.Forms.PictureBox originalRotPB;
         public Panel patternPanel;
         private Label patternsLabel;
         private Button modelChoice;
@@ -810,7 +890,7 @@ namespace WFC4All
         private ComboBox patternSize;
         public PictureBox resultPB;
         private Button restartButton;
-        private TabControl tabSelection;
+        private System.Windows.Forms.TabControl tabSelection;
         private Label stepSizeLabel;
         private Button advanceButton;
         private Button animateButton;
@@ -818,12 +898,12 @@ namespace WFC4All
         private Button backButton;
         private Panel inputPanel;
         private Panel selHeurPanel;
-        private Panel pattHeurPanel;
+        private System.Windows.Forms.Panel pattHeurPanel;
         private Label patternHeuristicDesc;
         private Label patternSelectionLabel;
         private ComboBox patternHeuristicCB;
         private PictureBox patternHeuristicPB;
-        private PictureBox inputPaddingPB;
+        private System.Windows.Forms.PictureBox inputPaddingPB;
         private TrackBar animSpeedTrackbar;
         private TrackBar stepSizeTrackbar;
         private PictureBox slowSpeedPB;

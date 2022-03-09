@@ -105,6 +105,13 @@
     <None Include="resources\borderPaddingEnabled.png" />
     <None Include="resources\fastSpeed.png" />
     <None Include="resources\icon.png" />
+    <None Include="resources\Close.png" />
+    <None Include="resources\CloseClick.png" />
+    <None Include="resources\CloseHover.png" />
+    <None Include="resources\Info.png" />
+    <None Include="resources\InfoClick.png" />
+    <None Include="resources\InfoGraphic.png" />
+    <None Include="resources\InfoHover.png" />
     <Content Include="resources\LeastUsed.png" />
     <None Include="resources\Restart.png" />
     <None Include="resources\RestartClick.png" />
@@ -112,6 +119,7 @@
     <None Include="resources\Loading.png" />
     <Content Include="resources\samples.xml" />
     <None Include="resources\slowSpeed.png" />
+    <None Include="resources\TryMe.png" />
     <Content Include="resources\Weighted.png" />
     <Content Include="samples\3Bricks.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

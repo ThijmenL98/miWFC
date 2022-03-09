@@ -73,7 +73,7 @@ namespace WFC4All.DeBroglie.Models {
             for (int p = 0; p < patternArrays.Count; p++) {
                 propagator.Add(new HashSet<int>[directions.Count]);
                 for (int d = 0; d < directions.Count; d++) {
-                    HashSet<int> l = new HashSet<int>();
+                    HashSet<int> l = new();
                     for (int p2 = 0; p2 < patternArrays.Count; p2++) {
                         int dx = directions.Dx[d];
                         int dy = directions.Dy[d];
@@ -130,7 +130,7 @@ namespace WFC4All.DeBroglie.Models {
 
         internal override TileModelMapping getTileModelMapping(ITopology topology) {
             GridTopology gridTopology = topology.asGridTopology();
-            PatternModel patternModel = new PatternModel {
+            PatternModel patternModel = new() {
                 Propagator = propagator.Select(x => x.Select(y => y.ToArray()).ToArray()).ToArray(),
                 Frequencies = frequencies.ToArray(),
             };
@@ -202,9 +202,9 @@ namespace WFC4All.DeBroglie.Models {
                     for (int oy = 0; oy < Ny; oy++) {
                         for (int oz = 0; oz < Nz; oz++) {
                             int o = combineOffsets(ox, oy, oz);
-                            Dictionary<Tile, ISet<int>> tilesToPatterns = new Dictionary<Tile, ISet<int>>();
+                            Dictionary<Tile, ISet<int>> tilesToPatterns = new();
                             tilesToPatternsByOffset[o] = tilesToPatterns;
-                            Dictionary<int, Tile> patternsToTiles = new Dictionary<int, Tile>();
+                            Dictionary<int, Tile> patternsToTiles = new();
                             patternsToTilesByOffset[o] = patternsToTiles;
                             for (int pattern = 0; pattern < patternArrays.Count; pattern++) {
                                 PatternArray patternArray = patternArrays[pattern];

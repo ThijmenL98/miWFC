@@ -59,8 +59,7 @@ namespace WFC4All.DeBroglie.Topo
         /// <summary>
         /// The Directions associated with square grids.
         /// </summary>
-        public static readonly DirectionSet cartesian2d = new DirectionSet
-        {
+        public static readonly DirectionSet cartesian2d = new() {
             Dx = new[] { 1, -1, 0, 0 },
             Dy = new[] { 0, 0, 1, -1 },
             Dz = new[] { 0, 0, 0, 0 },
@@ -74,8 +73,7 @@ namespace WFC4All.DeBroglie.Topo
         /// But the same Directions object will work just as well will several other conventions
         /// as long as you are consistent.
         /// </summary>
-        public static readonly DirectionSet hexagonal2d = new DirectionSet
-        {
+        public static readonly DirectionSet hexagonal2d = new() {
             Dx = new[] { 1, -1, 0, 0, 1, -1 },
             Dy = new[] { 0, 0, 1, -1, 1, -1 },
             Dz = new[] { 0, 0, 0, 0, 0, 0 },
@@ -86,8 +84,7 @@ namespace WFC4All.DeBroglie.Topo
         /// <summary>
         /// The Directions associated with cubic grids.
         /// </summary>
-        public static readonly DirectionSet cartesian3d = new DirectionSet
-        {
+        public static readonly DirectionSet cartesian3d = new() {
             Dx = new[] { 1, -1, 0, 0, 0, 0 },
             Dy = new[] { 0, 0, 1, -1, 0, 0 },
             Dz = new[] { 0, 0, 0, 0, 1, -1 },

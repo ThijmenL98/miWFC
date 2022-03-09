@@ -147,14 +147,14 @@ namespace WFC4All.DeBroglie.Constraints
                 int width = topology.Width;
                 int height = topology.Height;
                 int depth = topology.Depth;
-                List<int> pickedIndices = new List<int>();
-                List<int> remainingIndices = new List<int>(topology.getIndices());
+                List<int> pickedIndices = new();
+                List<int> remainingIndices = new(topology.getIndices());
 
                 while (true)
                 {
                     int noCount = 0;
                     int yesCount = 0;
-                    List<int> maybeList = new List<int>();
+                    List<int> maybeList = new();
                     for (int z = 0; z < depth; z++)
                     {
                         for (int y = 0; y < height; y++)

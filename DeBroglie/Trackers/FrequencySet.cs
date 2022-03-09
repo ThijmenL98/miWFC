@@ -23,7 +23,7 @@ namespace WFC4All.DeBroglie.Trackers
                 priorities = Enumerable.Repeat(0, weights.Length).ToArray();
             }
 
-            Dictionary<int, Group> groupsByPriority = new Dictionary<int, Group>();
+            Dictionary<int, Group> groupsByPriority = new();
             for(int i=0;i<weights.Length;i++)
             {
                 int priority = priorities[i];

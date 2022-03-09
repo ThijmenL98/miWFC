@@ -18,7 +18,7 @@ namespace WFC4All.DeBroglie.Constraints
 
         private ChangeTracker changeTracker;
 
-        private static Tile sentinel = new Tile(new object());
+        private static Tile sentinel = new(new object());
 
         public virtual void init(TilePropagator propagator)
         {
@@ -72,7 +72,7 @@ namespace WFC4All.DeBroglie.Constraints
                     }
                     if (propagator.TileModel is GraphAdjacentModel graphAdjacentModel)
                     {
-                        Tile sentinel = new Tile(new object());
+                        Tile sentinel = new(new object());
                         for (int d = 0; d < topology.DirectionsCount; d++)
                         {
                             if (topology.tryMove(i, (Direction)d, out int dest, out Direction _, out EdgeLabel edgeLabel) && dest == i2)

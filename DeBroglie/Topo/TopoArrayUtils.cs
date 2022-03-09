@@ -203,7 +203,7 @@ namespace WFC4All.DeBroglie.Topo
             int depth = originalTopology.Depth;
 
             bool[] mask = new bool[width * height * depth];
-            GridTopology topology = new GridTopology(originalTopology.Directions, width, height, originalTopology.Depth, false, false, false, mask);
+            GridTopology topology = new(originalTopology.Directions, width, height, originalTopology.Depth, false, false, false, mask);
             T[,,] values = new T[width, height, depth];
 
             // Copy from original to values based on the rotation, setting up the mask as we go.

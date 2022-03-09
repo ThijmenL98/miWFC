@@ -32,7 +32,7 @@ namespace WFC4All.DeBroglie.Models
         /// </summary>
         public virtual void multiplyFrequency(Tile tile, double multiplier, TileRotation tileRotation)
         {
-            HashSet<Tile> rotatedTiles = new HashSet<Tile>();
+            HashSet<Tile> rotatedTiles = new();
             foreach (Rotation rotation in tileRotation.RotationGroup)
             {
                 if (tileRotation.rotate(tile, rotation, out Tile result))

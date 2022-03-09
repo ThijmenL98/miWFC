@@ -374,7 +374,7 @@ namespace WFC4All.DeBroglie
 
         internal SelectedTracker createSelectedTracker(TilePropagatorTileSet tileSet)
         {
-            SelectedTracker tracker = new SelectedTracker(this, wavePropagator, tileModelMapping, tileSet);
+            SelectedTracker tracker = new(this, wavePropagator, tileModelMapping, tileSet);
             tracker.reset();
             wavePropagator.addTracker(tracker);
             return tracker;
@@ -382,7 +382,7 @@ namespace WFC4All.DeBroglie
 
         internal SelectedChangeTracker createSelectedChangeTracker(TilePropagatorTileSet tileSet, ITristateChanged onChange)
         {
-            SelectedChangeTracker tracker = new SelectedChangeTracker(this, wavePropagator, tileModelMapping, tileSet, onChange);
+            SelectedChangeTracker tracker = new(this, wavePropagator, tileModelMapping, tileSet, onChange);
             tracker.reset();
             wavePropagator.addTracker(tracker);
             return tracker;
@@ -395,7 +395,7 @@ namespace WFC4All.DeBroglie
         /// </summary>
         internal ChangeTracker createChangeTracker()
         {
-            ChangeTracker tracker = new ChangeTracker(tileModelMapping);
+            ChangeTracker tracker = new(tileModelMapping);
             tracker.reset();
             wavePropagator.addTracker(tracker);
             return tracker;
@@ -584,7 +584,7 @@ namespace WFC4All.DeBroglie
 
                 tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
                 ISet<int> patterns = patternArray.get(px, py, pz);
-                HashSet<Tile> hs = new HashSet<Tile>();
+                HashSet<Tile> hs = new();
                 IReadOnlyDictionary<int, Tile> patternToTiles = tileModelMapping.PatternsToTilesByOffset[o];
                 foreach (int pattern in patterns)
                 {
@@ -616,7 +616,7 @@ namespace WFC4All.DeBroglie
 
                 tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
                 ISet<int> patterns = patternArray.get(px, py, pz);
-                HashSet<T> hs = new HashSet<T>();
+                HashSet<T> hs = new();
                 IReadOnlyDictionary<int, Tile> patternToTiles = tileModelMapping.PatternsToTilesByOffset[o];
                 foreach (int pattern in patterns)
                 {

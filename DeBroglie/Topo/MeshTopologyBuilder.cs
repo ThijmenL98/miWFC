@@ -17,7 +17,7 @@ namespace WFC4All.DeBroglie.Topo
         // By index, direction
         private GraphTopology.NeighbourDetails[,] neighbours;
 
-        private readonly Dictionary<(int, int), Direction> pendingInverses = new Dictionary<(int, int), Direction>();
+        private readonly Dictionary<(int, int), Direction> pendingInverses = new();
 
         public MeshTopologyBuilder(DirectionSet directions)
         {

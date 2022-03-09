@@ -8,7 +8,7 @@ namespace WFC4All.DeBroglie.Constraints
     /// </summary>
     public class MirrorXConstraint : SymmetryConstraint
     {
-        private readonly static Rotation reflectX = new Rotation(0, true);
+        private readonly static Rotation reflectX = new(0, true);
 
         public TileRotation TileRotation { get; set; }
 

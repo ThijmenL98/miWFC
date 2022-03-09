@@ -555,7 +555,7 @@ namespace WFC4All.DeBroglie.Wfc {
          */
         public ITopoArray<ISet<int>> toTopoArraySets() {
             return TopoArray.createByIndex(index => {
-                HashSet<int> hs = new HashSet<int>();
+                HashSet<int> hs = new();
                 for (int pattern = 0; pattern < patternCount; pattern++) {
                     if (wave.get(index, pattern)) {
                         hs.Add(pattern);

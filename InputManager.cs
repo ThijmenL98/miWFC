@@ -126,7 +126,7 @@ namespace WFC4All {
 
                             Color[] cur = imTile((x, y) => bitmap.GetPixel(x, y), tileSize);
                             int val = tileCache.Count;
-                            Tile curTile = new Tile(val);
+                            Tile curTile = new(val);
                             tileCache.Add(val, new Tuple<Color[], Tile>(cur, curTile));
 
                             for (int t = 1; t < cardinality; t++) {
@@ -316,7 +316,8 @@ namespace WFC4All {
             return outputBitmap;
         }
 
-        public static Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int padding, Color borderColor, bool drawLines) {
+        public Bitmap resizePixels(PictureBox pictureBox, Bitmap bitmap, int padding, Color borderColor,
+            bool drawLines) {
             int w2 = pictureBox.Width, h2 = pictureBox.Height, w1 = bitmap.Width, h1 = bitmap.Height;
 
             Bitmap outputBM = new(pictureBox.Width, pictureBox.Height);
@@ -331,11 +332,13 @@ namespace WFC4All {
                         Color nextC;
                         if (px >= bitmap.Width || py >= bitmap.Height) {
                             nextC = borderColor;
-                        } else if (drawLines && w1 != 2 && (i % ((h2 - padding) / h1) == 0 && i != 0 ||
-                                                        j % ((w2 - padding) / w1) == 0 && j != 0)) {
+                        } else if (drawLines && form.isOverlappingModel() && w1 != 2 &&
+                                   (i % ((h2 - padding) / h1) == 0 && i != 0 ||
+                                    j % ((w2 - padding) / w1) == 0 && j != 0)) {
                             Color c1 = Color.Gray;
                             Color c2 = bitmap.GetPixel(px, py);
-                            nextC = Color.FromArgb((c1.A + c2.A)/2, (c1.R+c2.R)/2, (c1.G+c2.G)/2, (c1.B+c2.B)/2);
+                            nextC = Color.FromArgb((c1.A + c2.A) / 2, (c1.R + c2.R) / 2, (c1.G + c2.G) / 2,
+                                (c1.B + c2.B) / 2);
                         } else {
                             nextC = bitmap.GetPixel(px, py);
                         }
@@ -343,7 +346,7 @@ namespace WFC4All {
                         outputBM.SetPixel(j + padding - padding, i + padding - padding, nextC);
                     }
                 }
-            } catch (DivideByZeroException e) { }
+            } catch (DivideByZeroException) { }
 
             return outputBM;
         }
@@ -378,9 +381,15 @@ namespace WFC4All {
             return result;
         }
 
-        public static Bitmap resizeBitmap(Bitmap source, float scale) {
-            int width = source.Width * (int) scale;
-            int height = source.Height * (int) scale;
+        public Bitmap resizeBitmap(Bitmap source, float scale) {
+            int width, height;
+            if (form.isOverlappingModel()) {
+                width = source.Width * (int) scale;
+                height = source.Height * (int) scale;
+            } else {
+                width = (int) (source.Width * scale);
+                height = (int) (source.Height * scale);
+            }
 
             Bitmap bmp = new(width, height);
 
@@ -392,14 +401,16 @@ namespace WFC4All {
 
             Pen semiTransPen = new(Color.FromArgb(100, 20, 20, 20), 1);
 
-            for (int i = 0; i < source.Width; i++) {
-                // Vertical gridlines
-                g.DrawLine(semiTransPen, i * (int) scale, 0, i * (int) scale, source.Height * (int) scale);
-            }
+            if (form.isOverlappingModel()) {
+                for (int i = 0; i < source.Width; i++) {
+                    // Vertical gridlines
+                    g.DrawLine(semiTransPen, i * (int) scale, 0, i * (int) scale, source.Height * (int) scale);
+                }
 
-            for (int i = 0; i < source.Height; i++) {
-                // Horizontal gridlines
-                g.DrawLine(semiTransPen, 0, i * (int) scale, source.Width * (int) scale, i * (int) scale);
+                for (int i = 0; i < source.Height; i++) {
+                    // Horizontal gridlines
+                    g.DrawLine(semiTransPen, 0, i * (int) scale, source.Width * (int) scale, i * (int) scale);
+                }
             }
 
             g.Save();

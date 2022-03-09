@@ -64,7 +64,7 @@ namespace WFC4All.DeBroglie.Models
         /// </summary>
         public TilePropagatorTileSet createTileSet(IEnumerable<Tile> tiles)
         {
-            TilePropagatorTileSet set = new TilePropagatorTileSet(tiles);
+            TilePropagatorTileSet set = new(tiles);
             // Quick optimization for size one sets
             if (set.Tiles.Count == 1)
             {
