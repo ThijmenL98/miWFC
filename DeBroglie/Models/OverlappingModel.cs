@@ -162,19 +162,13 @@ namespace WFC4All.DeBroglie.Models {
                     return ox + oy * Nx + oz * Nx * Ny;
                 }
 
-                (Point, int, int) map(Point t) {
-                    overlapCoord(t.x, patternTopology.Width, out int px, out int ox);
-                    overlapCoord(t.y, patternTopology.Height, out int py, out int oy);
-                    overlapCoord(t.z, patternTopology.Depth, out int pz, out int oz);
-                    int patternIndex = patternTopology.getIndex(px, py, pz);
-                    return (new Point(px, py, pz), patternIndex, combineOffsets(ox, oy, oz));
-                }
+                GridTopology refTopology = patternTopology;
 
-                (Point, int, int) rMap(Point t) {
-                    overlapCoord(t.x, patternTopology.Width, out int px, out int ox);
-                    overlapCoord(t.y, patternTopology.Height, out int py, out int oy);
-                    overlapCoord(t.z, patternTopology.Depth, out int pz, out int oz);
-                    int patternIndex = patternTopology.getIndex(px, py, pz);
+                (Point, int, int) map(Point t) {
+                    overlapCoord(t.x, refTopology.Width, out int px, out int ox);
+                    overlapCoord(t.y, refTopology.Height, out int py, out int oy);
+                    overlapCoord(t.z, refTopology.Depth, out int pz, out int oz);
+                    int patternIndex = refTopology.getIndex(px, py, pz);
                     return (new Point(px, py, pz), patternIndex, combineOffsets(ox, oy, oz));
                 }
 

@@ -32,6 +32,8 @@ namespace WFC4All {
         private Size oldSize;
 
         private Timer animationTimer = new();
+        
+        private Tuple<string, string> lastOverlapSelection, lastSimpleSelection;
 
         private readonly string[] patternHeuristicDataSource = {"Weighted", "Random", "Least Used"},
             selectionHeuristicDataSource = {"Least Entropy", "Simple", "Lexical", "Random", "Spiral", "Hilbert Curve"};
@@ -48,6 +50,9 @@ namespace WFC4All {
             defaultInputPadding = true;
             inputManager = new InputManager(this);
             bitMaps = new BitMaps(this, inputManager);
+
+            lastOverlapSelection = new Tuple<string, string>("Textures","3Bricks");
+            lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down","Castle");
 
             InitializeComponent();
             initializeAnimations();
@@ -84,7 +89,7 @@ namespace WFC4All {
             inputPaddingPB.BackColor = Color.Red;
             inputPaddingPB.Padding = new Padding(3);
             inputPaddingPB.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Toggle border padding");
+                addHover(sender, eventArgs, "Toggle boundary padding");
             };
 
             KeyPreview = true;
@@ -279,35 +284,51 @@ namespace WFC4All {
         private void modelChoice_Click(object sender, EventArgs e) {
             isChangingModels = true;
             Button btn = (Button) sender;
+            
+            string lastCat = categoryCB.Text;
+            string lastImg = inputImageCB.Text;
 
             outputHeightValue.Value = 24;
             outputWidthValue.Value = 24;
 
-            categoryCB.DataSource
-                = InputManager.getCategories(modelChoice.Text.Equals("Switch to Tile Mode")
-                    ? "simpletiled"
-                    : "overlapping");
+            string[] catDataSource = InputManager.getCategories(modelChoice.Text.Equals("Switch to Tile Mode")
+                ? "simpletiled"
+                : "overlapping");
+            categoryCB.DataSource = catDataSource;
 
-            btn.Text = btn.Text.Equals("Switch to Tile Mode")
-                ? "Switch to Smart Mode"
-                : "Switch to Tile Mode";
-            showRotationalOptions(btn.Text.Equals("Switch to Tile Mode"));
+            btn.Text = btn.Text.Equals("Switch to Tile Mode") ? "Switch to Smart Mode" : "Switch to Tile Mode";
+            bool switchingToOverlap = btn.Text.Equals("Switch to Tile Mode");
+            
+            showRotationalOptions(switchingToOverlap);
+            
+            int catIndex = switchingToOverlap ? Array.IndexOf(catDataSource, lastOverlapSelection.Item2) : Array.IndexOf(catDataSource, lastSimpleSelection.Item2);
+            categoryCB.SelectedIndex = catIndex;
+            categoryCB.Text = switchingToOverlap ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1;
 
             string[] images = inputManager.getImages(
-                btn.Text.Equals("Switch to Tile Mode") ? "overlapping" : "simpletiled",
-                btn.Text.Equals("Switch to Tile Mode") ? "Textures" : "Worlds Top-Down");
+                switchingToOverlap ? "overlapping" : "simpletiled",
+                switchingToOverlap ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1);
 
             inputImageCB.DataSource = images;
-            (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[0]);
+            int index = switchingToOverlap ? Array.IndexOf(images, lastOverlapSelection.Item2) : Array.IndexOf(images, lastSimpleSelection.Item2);
+            inputImageCB.SelectedIndex = index;
+            (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[index]);
             patternSize.DataSource = patternSizeDataSource;
             patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
-            patternSize.Refresh();
-            inputImageCB.Refresh();
+            if (switchingToOverlap) {
+                lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
+            } else{
+                lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
+            }
 
             isChangingModels = false;
+
+            patternSize.Refresh();
+            inputImageCB.Refresh();
+            categoryCB.Refresh();
             inputManager.setInputChanged("Model change");
-            executeButton_Click(null, null);
+            inputImage_SelectedIndexChanged(inputImageCB, e);
         }
 
         private void markerButton_Click(object sender, EventArgs e) {
@@ -356,8 +377,11 @@ namespace WFC4All {
                 pb.BackColor = pb.BackColor.Equals(Color.LawnGreen) ? Color.Red : Color.LawnGreen;
             }
         }
-
+        
         private void inputImage_SelectedIndexChanged(object sender, EventArgs e) {
+            if (isChangingModels) {
+                return;
+            }
             changingIndex = true;
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             updateInputImage(newValue);
@@ -371,6 +395,7 @@ namespace WFC4All {
 
                 defaultSymmetry = curSelection.get("symmetry", 8);
                 defaultInputPadding = curSelection.get("periodicInput", true);
+                inputPaddingPB.BackColor = defaultInputPadding ? Color.LawnGreen : Color.Red;
             }
 
             outputHeightValue.Value = 24;
@@ -477,6 +502,9 @@ namespace WFC4All {
         }
 
         private void categoryCB_SelectedIndexChanged(object sender, EventArgs e) {
+            if (isChangingModels) {
+                return;
+            }
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             string[] inputImageDataSource
                 = inputManager.getImages(

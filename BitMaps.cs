@@ -69,7 +69,6 @@ namespace WFC4All {
             }
 
             const int size = 50;
-            const int patternsPerRow = 6;
             PictureBox newPB = new();
             const int distance = 20;
 
