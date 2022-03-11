@@ -32,12 +32,6 @@ namespace WFC4All
         /// </summary>
         private void InitializeComponent() {
             this.inputTab = new System.Windows.Forms.TabPage();
-            this.imUsefulPB = new System.Windows.Forms.PictureBox();
-            this.closeButton = new System.Windows.Forms.Button();
-            this.infoGraphicPB = new System.Windows.Forms.PictureBox();
-            this.infoButton = new System.Windows.Forms.Button();
-            this.loadingPB = new System.Windows.Forms.PictureBox();
-            this.IconPB = new System.Windows.Forms.PictureBox();
             this.slowSpeedPB = new System.Windows.Forms.PictureBox();
             this.fastSpeedPB = new System.Windows.Forms.PictureBox();
             this.animSpeedTrackbar = new System.Windows.Forms.TrackBar();
@@ -83,12 +77,14 @@ namespace WFC4All
             this.modelChoice = new System.Windows.Forms.Button();
             this.patternSize = new System.Windows.Forms.ComboBox();
             this.patternSizeLabel = new System.Windows.Forms.Label();
+            this.loadingPB = new System.Windows.Forms.PictureBox();
+            this.IconPB = new System.Windows.Forms.PictureBox();
+            this.imUsefulPB = new System.Windows.Forms.PictureBox();
+            this.closeButton = new System.Windows.Forms.Button();
+            this.infoGraphicPB = new System.Windows.Forms.PictureBox();
+            this.infoButton = new System.Windows.Forms.Button();
             this.tabSelection = new System.Windows.Forms.TabControl();
             this.inputTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize) (this.imUsefulPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.infoGraphicPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize) (this.IconPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.fastSpeedPB)).BeginInit();
             ((System.ComponentModel.ISupportInitialize) (this.animSpeedTrackbar)).BeginInit();
@@ -108,6 +104,10 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize) (this.resultPB)).BeginInit();
             this.inputPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize) (this.inputPaddingPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.IconPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.imUsefulPB)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize) (this.infoGraphicPB)).BeginInit();
             this.tabSelection.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -115,12 +115,6 @@ namespace WFC4All
             // 
             this.inputTab.AutoScroll = true;
             this.inputTab.BackColor = System.Drawing.Color.DarkGray;
-            this.inputTab.Controls.Add(this.imUsefulPB);
-            this.inputTab.Controls.Add(this.closeButton);
-            this.inputTab.Controls.Add(this.infoGraphicPB);
-            this.inputTab.Controls.Add(this.infoButton);
-            this.inputTab.Controls.Add(this.loadingPB);
-            this.inputTab.Controls.Add(this.IconPB);
             this.inputTab.Controls.Add(this.slowSpeedPB);
             this.inputTab.Controls.Add(this.fastSpeedPB);
             this.inputTab.Controls.Add(this.animSpeedTrackbar);
@@ -159,88 +153,6 @@ namespace WFC4All
             this.inputTab.Size = new System.Drawing.Size(1592, 874);
             this.inputTab.TabIndex = 0;
             this.inputTab.Text = "Input Manipulation";
-            // 
-            // imUsefulPB
-            // 
-            this.imUsefulPB.BackColor = System.Drawing.Color.Transparent;
-            this.imUsefulPB.BackgroundImage = global::WFC4All.Properties.Resources.TryMe;
-            this.imUsefulPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.imUsefulPB.Location = new System.Drawing.Point(65, 806);
-            this.imUsefulPB.Name = "imUsefulPB";
-            this.imUsefulPB.Size = new System.Drawing.Size(120, 50);
-            this.imUsefulPB.TabIndex = 46;
-            this.imUsefulPB.TabStop = false;
-            // 
-            // closeButton
-            // 
-            this.closeButton.BackColor = System.Drawing.Color.Transparent;
-            this.closeButton.BackgroundImage = global::WFC4All.Properties.Resources.Close;
-            this.closeButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.closeButton.FlatAppearance.BorderSize = 0;
-            this.closeButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
-            this.closeButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.closeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.closeButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.closeButton.ForeColor = System.Drawing.Color.Transparent;
-            this.closeButton.Location = new System.Drawing.Point(1168, 13);
-            this.closeButton.Name = "closeButton";
-            this.closeButton.Size = new System.Drawing.Size(50, 50);
-            this.closeButton.TabIndex = 45;
-            this.closeButton.UseVisualStyleBackColor = false;
-            this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
-            // 
-            // infoGraphicPB
-            // 
-            this.infoGraphicPB.BackColor = System.Drawing.Color.Transparent;
-            this.infoGraphicPB.BackgroundImage = global::WFC4All.Properties.Resources.InfoGraphic;
-            this.infoGraphicPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.infoGraphicPB.Location = new System.Drawing.Point(358, 0);
-            this.infoGraphicPB.Name = "infoGraphicPB";
-            this.infoGraphicPB.Size = new System.Drawing.Size(874, 874);
-            this.infoGraphicPB.TabIndex = 44;
-            this.infoGraphicPB.TabStop = false;
-            this.infoGraphicPB.WaitOnLoad = true;
-            // 
-            // infoButton
-            // 
-            this.infoButton.BackColor = System.Drawing.Color.Transparent;
-            this.infoButton.BackgroundImage = global::WFC4All.Properties.Resources.Info;
-            this.infoButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.infoButton.FlatAppearance.BorderSize = 0;
-            this.infoButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
-            this.infoButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.infoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.infoButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
-            this.infoButton.ForeColor = System.Drawing.Color.Transparent;
-            this.infoButton.Location = new System.Drawing.Point(9, 816);
-            this.infoButton.Name = "infoButton";
-            this.infoButton.Size = new System.Drawing.Size(50, 50);
-            this.infoButton.TabIndex = 43;
-            this.infoButton.UseVisualStyleBackColor = false;
-            this.infoButton.Click += new System.EventHandler(this.infoButton_Click);
-            // 
-            // loadingPB
-            // 
-            this.loadingPB.BackColor = System.Drawing.Color.Transparent;
-            this.loadingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.loadingPB.Image = global::WFC4All.Properties.Resources.Loading;
-            this.loadingPB.Location = new System.Drawing.Point(602, 283);
-            this.loadingPB.Name = "loadingPB";
-            this.loadingPB.Size = new System.Drawing.Size(663, 218);
-            this.loadingPB.TabIndex = 39;
-            this.loadingPB.TabStop = false;
-            this.loadingPB.WaitOnLoad = true;
-            // 
-            // IconPB
-            // 
-            this.IconPB.BackgroundImage = global::WFC4All.Properties.Resources.iconPNG;
-            this.IconPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-            this.IconPB.InitialImage = global::WFC4All.Properties.Resources.iconPNG;
-            this.IconPB.Location = new System.Drawing.Point(56, 550);
-            this.IconPB.Name = "IconPB";
-            this.IconPB.Size = new System.Drawing.Size(250, 250);
-            this.IconPB.TabIndex = 42;
-            this.IconPB.TabStop = false;
             // 
             // slowSpeedPB
             // 
@@ -790,6 +702,88 @@ namespace WFC4All
             this.patternSizeLabel.Text = "Pattern Size\r\n(n x n)";
             this.patternSizeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
+            // loadingPB
+            // 
+            this.loadingPB.BackColor = System.Drawing.Color.Transparent;
+            this.loadingPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.loadingPB.Image = global::WFC4All.Properties.Resources.Loading;
+            this.loadingPB.Location = new System.Drawing.Point(602, 305);
+            this.loadingPB.Name = "loadingPB";
+            this.loadingPB.Size = new System.Drawing.Size(663, 218);
+            this.loadingPB.TabIndex = 39;
+            this.loadingPB.TabStop = false;
+            this.loadingPB.WaitOnLoad = true;
+            // 
+            // IconPB
+            // 
+            this.IconPB.BackgroundImage = global::WFC4All.Properties.Resources.iconPNG;
+            this.IconPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.IconPB.InitialImage = global::WFC4All.Properties.Resources.iconPNG;
+            this.IconPB.Location = new System.Drawing.Point(56, 572);
+            this.IconPB.Name = "IconPB";
+            this.IconPB.Size = new System.Drawing.Size(250, 250);
+            this.IconPB.TabIndex = 42;
+            this.IconPB.TabStop = false;
+            // 
+            // imUsefulPB
+            // 
+            this.imUsefulPB.BackColor = System.Drawing.Color.Transparent;
+            this.imUsefulPB.BackgroundImage = global::WFC4All.Properties.Resources.TryMe;
+            this.imUsefulPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.imUsefulPB.Location = new System.Drawing.Point(65, 828);
+            this.imUsefulPB.Name = "imUsefulPB";
+            this.imUsefulPB.Size = new System.Drawing.Size(120, 50);
+            this.imUsefulPB.TabIndex = 46;
+            this.imUsefulPB.TabStop = false;
+            // 
+            // closeButton
+            // 
+            this.closeButton.BackColor = System.Drawing.Color.Transparent;
+            this.closeButton.BackgroundImage = global::WFC4All.Properties.Resources.Close;
+            this.closeButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.closeButton.FlatAppearance.BorderSize = 0;
+            this.closeButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.closeButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.closeButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.closeButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.closeButton.ForeColor = System.Drawing.Color.Transparent;
+            this.closeButton.Location = new System.Drawing.Point(1168, 13);
+            this.closeButton.Name = "closeButton";
+            this.closeButton.Size = new System.Drawing.Size(50, 50);
+            this.closeButton.TabIndex = 45;
+            this.closeButton.UseVisualStyleBackColor = false;
+            this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
+            // 
+            // infoGraphicPB
+            // 
+            this.infoGraphicPB.BackColor = System.Drawing.Color.Transparent;
+            this.infoGraphicPB.BackgroundImage = global::WFC4All.Properties.Resources.InfoGraphic;
+            this.infoGraphicPB.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.infoGraphicPB.Location = new System.Drawing.Point(358, 22);
+            this.infoGraphicPB.Name = "infoGraphicPB";
+            this.infoGraphicPB.Size = new System.Drawing.Size(874, 874);
+            this.infoGraphicPB.TabIndex = 44;
+            this.infoGraphicPB.TabStop = false;
+            this.infoGraphicPB.WaitOnLoad = true;
+            // 
+            // infoButton
+            // 
+            this.infoButton.BackColor = System.Drawing.Color.Transparent;
+            this.infoButton.BackgroundImage = global::WFC4All.Properties.Resources.Info;
+            this.infoButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
+            this.infoButton.FlatAppearance.BorderSize = 0;
+            this.infoButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.infoButton.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.infoButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.infoButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte) (0)));
+            this.infoButton.ForeColor = System.Drawing.Color.Transparent;
+            this.infoButton.Location = new System.Drawing.Point(9, 838);
+            this.infoButton.Name = "infoButton";
+            this.infoButton.Size = new System.Drawing.Size(50, 50);
+            this.infoButton.TabIndex = 43;
+            this.infoButton.UseVisualStyleBackColor = false;
+            this.infoButton.Click += new System.EventHandler(this.infoButton_Click);
+            // 
             // tabSelection
             // 
             this.tabSelection.Controls.Add(this.inputTab);
@@ -804,8 +798,14 @@ namespace WFC4All
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.BackColor = System.Drawing.Color.DarkGray;
             this.ClientSize = new System.Drawing.Size(1600, 900);
+            this.Controls.Add(this.loadingPB);
+            this.Controls.Add(this.IconPB);
+            this.Controls.Add(this.imUsefulPB);
+            this.Controls.Add(this.closeButton);
+            this.Controls.Add(this.infoGraphicPB);
+            this.Controls.Add(this.infoButton);
             this.Controls.Add(this.tabSelection);
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(1616, 939);
@@ -813,10 +813,6 @@ namespace WFC4All
             this.Text = "WFC4All";
             this.inputTab.ResumeLayout(false);
             this.inputTab.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize) (this.imUsefulPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.infoGraphicPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).EndInit();
-            ((System.ComponentModel.ISupportInitialize) (this.IconPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.slowSpeedPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.fastSpeedPB)).EndInit();
             ((System.ComponentModel.ISupportInitialize) (this.animSpeedTrackbar)).EndInit();
@@ -839,6 +835,10 @@ namespace WFC4All
             ((System.ComponentModel.ISupportInitialize) (this.resultPB)).EndInit();
             this.inputPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize) (this.inputPaddingPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.loadingPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.IconPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.imUsefulPB)).EndInit();
+            ((System.ComponentModel.ISupportInitialize) (this.infoGraphicPB)).EndInit();
             this.tabSelection.ResumeLayout(false);
             this.ResumeLayout(false);
         }
@@ -875,7 +875,7 @@ namespace WFC4All
         private PictureBox p2RotPB;
         private PictureBox p1RotPB;
         private System.Windows.Forms.PictureBox originalRotPB;
-        public Panel patternPanel;
+        public System.Windows.Forms.Panel patternPanel;
         private Label patternsLabel;
         private Button modelChoice;
         private Label outputImageHeightLabel;

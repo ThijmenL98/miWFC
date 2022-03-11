@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using WFC4All.DeBroglie;
 using WFC4All.DeBroglie.Models;
+using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
 using WFC4All.enums;
 using WFC4All.Properties;
@@ -84,7 +85,7 @@ namespace WFC4All {
                                 inputPaddingEnabled); //TODO Input Padding
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
-                        List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles);
+                        List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles, new TileRotation(1, false));
 
                         bool isCached = false;
 
@@ -186,8 +187,8 @@ namespace WFC4All {
                 }, (int) currentSelectionHeuristic, (int) currentPatternHeuristic);
                 Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
                 sw.Restart();
-
-                if (form.isOverlappingModel() && inputPaddingEnabled) {
+                
+                if (form.isOverlappingModel() && inputPaddingEnabled ) {
                     if ("flowers".Equals(form.getSelectedInput().ToLower())) {
                         // Set the bottom last 2 rows to be the ground tile
                         dbPropagator?.select(0, form.getOutputHeight() - 1, 0,
