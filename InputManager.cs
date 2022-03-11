@@ -35,6 +35,8 @@ namespace WFC4All {
         private static SelectionHeuristic currentSelectionHeuristic;
         private static PatternHeuristic currentPatternHeuristic;
 
+        private Bitmap latestOutput;
+
         public InputManager(Form1 formIn) {
             tileSize = 0;
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
@@ -47,6 +49,7 @@ namespace WFC4All {
             dbPropagator = null;
             currentSelectionHeuristic = SelectionHeuristic.ENTROPY;
             currentPatternHeuristic = PatternHeuristic.WEIGHTED;
+            latestOutput = new Bitmap(1, 1);
         }
 
         /*
@@ -85,7 +88,8 @@ namespace WFC4All {
                                 inputPaddingEnabled); //TODO Input Padding
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
-                        List<PatternArray> patternList = ((OverlappingModel) dbModel).addSample(tiles, new TileRotation(1, false));
+                        List<PatternArray> patternList
+                            = ((OverlappingModel) dbModel).addSample(tiles, new TileRotation(1, false));
 
                         bool isCached = false;
 
@@ -174,7 +178,9 @@ namespace WFC4All {
                         dbModel = new AdjacentModel(sample.toTiles());
                     }
 
+#if (DEBUG)
                     Console.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
+#endif
                     sw.Restart();
                 }
 
@@ -185,10 +191,12 @@ namespace WFC4All {
                     BackTrackDepth = -1,
                     RandomDouble = new Random(curSeed).NextDouble,
                 }, (int) currentSelectionHeuristic, (int) currentPatternHeuristic);
+#if (DEBUG)
                 Console.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
+#endif
                 sw.Restart();
-                
-                if (form.isOverlappingModel() && inputPaddingEnabled ) {
+
+                if (form.isOverlappingModel() && inputPaddingEnabled) {
                     if ("flowers".Equals(form.getSelectedInput().ToLower())) {
                         // Set the bottom last 2 rows to be the ground tile
                         dbPropagator?.select(0, form.getOutputHeight() - 1, 0,
@@ -219,7 +227,9 @@ namespace WFC4All {
 
             form.displayLoading(false);
 
-            return runWfcDB(steps);
+            bool decided;
+            (latestOutput, decided) = runWfcDB(steps);
+            return (latestOutput, decided);
         }
 
         private (Bitmap, bool) runWfcDB(int steps) {
@@ -235,7 +245,9 @@ namespace WFC4All {
                 }
             }
 
+#if (DEBUG)
             Console.WriteLine(@$"Stepping forward took {sw.ElapsedMilliseconds}ms.");
+#endif
             sw.Restart();
 
             Bitmap outputBitmap;
@@ -269,7 +281,9 @@ namespace WFC4All {
                 }
             }
 
+#if (DEBUG)
             Console.WriteLine(@$"Bitmap took {sw.ElapsedMilliseconds}ms. {dbStatus}");
+#endif
             return (outputBitmap, dbStatus == Resolution.DECIDED);
         }
 
@@ -280,7 +294,9 @@ namespace WFC4All {
                 dbPropagator.doBacktrack();
             }
 
+#if (DEBUG)
             Console.WriteLine(@$"Stepping back took {sw.ElapsedMilliseconds}ms.");
+#endif
             sw.Restart();
 
             Bitmap outputBitmap;
@@ -312,7 +328,9 @@ namespace WFC4All {
                 }
             }
 
+#if (DEBUG)
             Console.WriteLine(@$"Bitmap took {sw.ElapsedMilliseconds}ms.");
+#endif
 
             return outputBitmap;
         }
@@ -334,8 +352,8 @@ namespace WFC4All {
                         if (px >= bitmap.Width || py >= bitmap.Height) {
                             nextC = borderColor;
                         } else if (drawLines && form.isOverlappingModel() && w1 != 2 &&
-                                   (i % ((h2 - padding) / h1) == 0 && i != 0 ||
-                                    j % ((w2 - padding) / w1) == 0 && j != 0)) {
+                            (i % ((h2 - padding) / h1) == 0 && i != 0 ||
+                                j % ((w2 - padding) / w1) == 0 && j != 0)) {
                             Color c1 = Color.Gray;
                             Color c2 = bitmap.GetPixel(px, py);
                             nextC = Color.FromArgb((c1.A + c2.A) / 2, (c1.R + c2.R) / 2, (c1.G + c2.G) / 2,
@@ -427,6 +445,10 @@ namespace WFC4All {
             return currentStep;
         }
 
+        public Bitmap getLatestOutput() {
+            return latestOutput;
+        }
+
         public bool isCollapsed() {
             return dbPropagator.Status == Resolution.DECIDED;
         }
@@ -488,7 +510,9 @@ namespace WFC4All {
 
         public void setInputChanged(string source) {
             if (!form.isChangingModels) {
+#if (DEBUG)
                 Console.WriteLine(@$"Input changed on {source}");
+#endif
                 inputHasChanged = true;
             }
         }

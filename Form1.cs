@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -13,7 +14,6 @@ namespace WFC4All {
     public partial class Form1 : Form {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
-        private readonly PictureBox[] pbs;
 
         private int defaultSymmetry, savePoint, lastRanForced;
         private readonly int initOutWidth;
@@ -32,7 +32,7 @@ namespace WFC4All {
         private Size oldSize;
 
         private Timer animationTimer = new();
-        
+
         private Tuple<string, string> lastOverlapSelection, lastSimpleSelection;
 
         private readonly string[] patternHeuristicDataSource = {"Weighted", "Random", "Least Used"},
@@ -51,8 +51,8 @@ namespace WFC4All {
             inputManager = new InputManager(this);
             bitMaps = new BitMaps(this, inputManager);
 
-            lastOverlapSelection = new Tuple<string, string>("Textures","3Bricks");
-            lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down","Castle");
+            lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
+            lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
 
             InitializeComponent();
             initializeAnimations();
@@ -62,8 +62,6 @@ namespace WFC4All {
             initInHeight = inputImagePB.Height;
             initOutWidth = resultPB.Width;
             initOutHeight = resultPB.Height;
-
-            pbs = new[] {p1RotPB, p2RotPB, p3RotPB};
 
             string[] inputImageDataSource = inputManager.getImages("overlapping", "Textures"); // or "simpletiled"
             inputImageCB.DataSource = inputImageDataSource;
@@ -96,6 +94,7 @@ namespace WFC4All {
             infoGraphicPB.Visible = false;
             closeButton.Visible = false;
             //TODO Re-enable initializeRotations();
+            tabSelection_SelectedIndexChanged(tabSelection, null);
         }
 
         protected override void OnKeyDown(KeyEventArgs e) {
@@ -154,7 +153,7 @@ namespace WFC4All {
 
         protected override void OnResize(EventArgs e) {
             Control.ControlCollection[] allControls = {
-                Controls, inputTab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls,
+                Controls, task1Tab.Controls, patternPanel.Controls, inputPanel.Controls, pattHeurPanel.Controls,
                 selHeurPanel.Controls
             };
 
@@ -196,13 +195,16 @@ namespace WFC4All {
                     resultPB.Image = inputManager.resizeBitmap(result2,
                         Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result.Width));
                 } catch (Exception exception) {
+#if (DEBUG)
                     Console.WriteLine(exception);
+#endif
                 }
 
                 result = new Bitmap(result2);
-                result2.Dispose();
             } catch (Exception exception) {
+#if (DEBUG)
                 Console.WriteLine(exception);
+#endif
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
         }
@@ -225,7 +227,6 @@ namespace WFC4All {
                     Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                 result = new Bitmap(result2);
-                result2.Dispose();
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
@@ -243,7 +244,6 @@ namespace WFC4All {
                 }
 
                 result = new Bitmap(result2);
-                result2.Dispose();
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
@@ -284,12 +284,6 @@ namespace WFC4All {
         private void modelChoice_Click(object sender, EventArgs e) {
             isChangingModels = true;
             Button btn = (Button) sender;
-            
-            string lastCat = categoryCB.Text;
-            string lastImg = inputImageCB.Text;
-
-            outputHeightValue.Value = 24;
-            outputWidthValue.Value = 24;
 
             string[] catDataSource = InputManager.getCategories(modelChoice.Text.Equals("Switch to Tile Mode")
                 ? "simpletiled"
@@ -298,28 +292,36 @@ namespace WFC4All {
 
             btn.Text = btn.Text.Equals("Switch to Tile Mode") ? "Switch to Smart Mode" : "Switch to Tile Mode";
             bool switchingToOverlap = btn.Text.Equals("Switch to Tile Mode");
-            
+
             showRotationalOptions(switchingToOverlap);
-            
-            int catIndex = switchingToOverlap ? Array.IndexOf(catDataSource, lastOverlapSelection.Item2) : Array.IndexOf(catDataSource, lastSimpleSelection.Item2);
-            categoryCB.SelectedIndex = catIndex;
-            categoryCB.Text = switchingToOverlap ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1;
 
-            string[] images = inputManager.getImages(
-                switchingToOverlap ? "overlapping" : "simpletiled",
-                switchingToOverlap ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1);
+            if (tabSelection.SelectedIndex == 2) {
+                string lastCat = categoryCB.Text;
+                string lastImg = inputImageCB.Text;
+                int catIndex = switchingToOverlap
+                    ? Array.IndexOf(catDataSource, lastOverlapSelection.Item2)
+                    : Array.IndexOf(catDataSource, lastSimpleSelection.Item2);
+                categoryCB.SelectedIndex = catIndex;
+                categoryCB.Text = switchingToOverlap ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1;
 
-            inputImageCB.DataSource = images;
-            int index = switchingToOverlap ? Array.IndexOf(images, lastOverlapSelection.Item2) : Array.IndexOf(images, lastSimpleSelection.Item2);
-            inputImageCB.SelectedIndex = index;
-            (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[index]);
-            patternSize.DataSource = patternSizeDataSource;
-            patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
+                string[] images = inputManager.getImages(
+                    switchingToOverlap ? "overlapping" : "simpletiled",
+                    switchingToOverlap ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1);
 
-            if (switchingToOverlap) {
-                lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
-            } else{
-                lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
+                inputImageCB.DataSource = images;
+                int index = switchingToOverlap
+                    ? Array.IndexOf(images, lastOverlapSelection.Item2)
+                    : Array.IndexOf(images, lastSimpleSelection.Item2);
+                inputImageCB.SelectedIndex = index;
+                (object[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[index]);
+                patternSize.DataSource = patternSizeDataSource;
+                patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
+
+                if (switchingToOverlap) {
+                    lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
+                } else {
+                    lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
+                }
             }
 
             isChangingModels = false;
@@ -343,8 +345,6 @@ namespace WFC4All {
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
 
                 markerButton_Click(null, null);
-
-                result.Dispose();
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
@@ -352,19 +352,91 @@ namespace WFC4All {
 
         private void infoButton_Click(object sender, EventArgs e) {
             infoClicked = !infoClicked;
-            
+
             closeButton.Visible = infoClicked;
             infoGraphicPB.Visible = infoClicked;
-            
-            foreach (Control c in inputTab.Controls) {
-                if (c != loadingPB && c != patternRotationLabel && c != p1RotPB && c != p2RotPB && c != p3RotPB &&
-                    c != originalRotPB && c != selHeurPanel && c != pattHeurPanel && c != closeButton && c != infoGraphicPB) {
+
+            foreach (Control c in Controls) {
+                if (c != loadingPB && c != selHeurPanel && c != pattHeurPanel && c != closeButton
+                    && c != infoGraphicPB) {
                     c.Visible = !infoClicked;
                 }
             }
         }
+
         private void closeButton_Click(object sender, EventArgs e) {
             infoButton_Click(sender, e);
+        }
+        private void tabSelection_SelectedIndexChanged(object sender, EventArgs e) {
+            int selIndex = ((TabControl) sender).SelectedIndex; // 0 = Task1, 1 = Task2, 2 = Sandbox
+
+            bool notTask1Selected = selIndex != 0;
+            bool sandboxSelected = selIndex == 2;
+
+            inputPanel.Visible = notTask1Selected;
+            inputImage.Visible = notTask1Selected;
+            inputImageCB.Visible = notTask1Selected;
+            inputPaddingPB.Visible = notTask1Selected;
+
+            categoryCB.Visible = sandboxSelected;
+            category.Visible = sandboxSelected;
+            patternSize.Visible = sandboxSelected;
+            patternSizeLabel.Visible = sandboxSelected;
+            modelChoice.Visible = sandboxSelected;
+
+            string selectedCategory, selectedImage;
+            isChangingModels = true;
+
+            if (selIndex == 0) {
+                // Fixate Coloured City -> Cat: "Worlds Top-Down", inputImage: "ColoredCity"
+                selectedCategory = "Worlds Top-Down";
+                selectedImage = "ColoredCity";
+
+                outputHeightValue.Value = 80;
+                outputWidthValue.Value = 80;
+            } else {
+                selectedCategory = "Textures";
+                selectedImage = "3Bricks";
+
+                if (selIndex == 1) {
+                    outputHeightValue.Value = 32;
+                    outputWidthValue.Value = 32;
+                }
+            }
+
+            changingIndex = true;
+            string[] catDataSource = InputManager.getCategories("overlapping");
+            categoryCB.DataSource = catDataSource;
+            int catIndex = Array.IndexOf(catDataSource, selectedCategory);
+            categoryCB.SelectedIndex = catIndex;
+            categoryCB.Text = selectedCategory;
+
+            string[] images = inputManager.getImages("overlapping", selectedCategory);
+
+            inputImageCB.DataSource = images;
+            int index = Array.IndexOf(images, selectedImage);
+            inputImageCB.SelectedIndex = index;
+
+            patternSize.Refresh();
+            inputImageCB.Refresh();
+            categoryCB.Refresh();
+
+            isChangingModels = false;
+
+            inputManager.setInputChanged("Tab change");
+            inputImage_SelectedIndexChanged(inputImageCB, e);
+        }
+
+        private void exportButton_Click(object sender, EventArgs e) {
+            SaveFileDialog sfd = new();
+            sfd.DefaultExt = ".png";
+            sfd.Filter = "JPeg Image|*.jpg";
+            sfd.Title = "Select export location & file name";  
+
+            DialogResult dialogResult = sfd.ShowDialog();
+            if (dialogResult == DialogResult.OK && !sfd.FileName.Equals("")) {
+                inputManager.getLatestOutput().Save(sfd.FileName, ImageFormat.Jpeg);
+            }
         }
 
         /* ------------------------------------------------------------------------
@@ -377,11 +449,12 @@ namespace WFC4All {
                 pb.BackColor = pb.BackColor.Equals(Color.LawnGreen) ? Color.Red : Color.LawnGreen;
             }
         }
-        
+
         private void inputImage_SelectedIndexChanged(object sender, EventArgs e) {
             if (isChangingModels) {
                 return;
             }
+
             changingIndex = true;
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
             updateInputImage(newValue);
@@ -398,15 +471,11 @@ namespace WFC4All {
                 inputPaddingPB.BackColor = defaultInputPadding ? Color.LawnGreen : Color.Red;
             }
 
-            outputHeightValue.Value = 24;
-            outputWidthValue.Value = 24;
-
             outputHeightValue.Refresh();
             outputWidthValue.Refresh();
 
             Refresh();
 
-            updateRotations();
             updateInputPadding();
 
             changingIndex = false;
@@ -419,7 +488,9 @@ namespace WFC4All {
             int clickX = clickPos.X, clickY = clickPos.Y, width = getOutputWidth(), height = getOutputHeight();
             int a = (int) Math.Floor((double) clickX * width / ((PictureBox) sender).Width),
                 b = (int) Math.Floor((double) clickY * height / ((PictureBox) sender).Height);
+#if (DEBUG)
             Console.WriteLine($@"(x:{clickX}, y:{clickY}) -> (a:{a}, b:{b})");
+#endif
 
             //TODO CF2
             // result.SetPixel(a, b, Color.Red);
@@ -505,7 +576,9 @@ namespace WFC4All {
             if (isChangingModels) {
                 return;
             }
+
             string newValue = ((ComboBox) sender).SelectedItem.ToString();
+            inputPaddingPB.Visible = newValue.Equals("Textures");
             string[] inputImageDataSource
                 = inputManager.getImages(
                     modelChoice.Text.Equals("Switch to Tile Mode") ? "overlapping" : "simpletiled",
@@ -644,7 +717,6 @@ namespace WFC4All {
                                 Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                             result = new Bitmap(result2);
-                            result2.Dispose();
                             resultPB.Refresh();
                             if (finished) {
                                 animateButton.BackgroundImage = Resources.Animate;
@@ -652,7 +724,9 @@ namespace WFC4All {
                                 return;
                             }
                         } catch (Exception exception) {
+#if (DEBUG)
                             Console.WriteLine(exception);
+#endif
                             resultPB.Image = InputManager.getImage("NoResultFound");
                         }
 
@@ -740,11 +814,16 @@ namespace WFC4All {
             infoButton.MouseEnter += ButtonVisualEventHandler.infoButton_MouseEnter;
             infoButton.MouseLeave += ButtonVisualEventHandler.infoButton_MouseLeave;
             infoButton.MouseUp += ButtonVisualEventHandler.infoButton_MouseUp;
-            
+
             closeButton.MouseDown += ButtonVisualEventHandler.closeButton_MouseDown;
             closeButton.MouseEnter += ButtonVisualEventHandler.closeButton_MouseEnter;
             closeButton.MouseLeave += ButtonVisualEventHandler.closeButton_MouseLeave;
             closeButton.MouseUp += ButtonVisualEventHandler.closeButton_MouseUp;
+
+            exportButton.MouseDown += ButtonVisualEventHandler.exportButton_MouseDown;
+            exportButton.MouseEnter += ButtonVisualEventHandler.exportButton_MouseEnter;
+            exportButton.MouseLeave += ButtonVisualEventHandler.exportButton_MouseLeave;
+            exportButton.MouseUp += ButtonVisualEventHandler.exportButton_MouseUp;
         }
 
         private void initializeToolTips() {
@@ -771,6 +850,10 @@ namespace WFC4All {
 
             restartButton.MouseHover += (sender, eventArgs) => {
                 addHover(sender, eventArgs, "Generate a new image\nShortcut(s): 'R' Key");
+            };
+
+            exportButton.MouseHover += (sender, eventArgs) => {
+                addHover(sender, eventArgs, "Export the current output\nShortcut(s): 'E' key");
             };
         }
 
@@ -807,12 +890,6 @@ namespace WFC4All {
             inputPaddingPB.Padding = new Padding(3);
 
             inputPaddingPB.Refresh();
-        }
-
-        private void updateRotations() {
-            for (int i = 0; i < 3; i++) {
-                pbs[i].BackColor = Math.Ceiling(defaultSymmetry / 2f) - 1 <= i ? Color.Red : Color.LawnGreen;
-            }
         }
 
         private void showRotationalOptions(bool show) {
