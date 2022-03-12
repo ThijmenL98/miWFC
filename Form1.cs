@@ -127,7 +127,12 @@ namespace WFC4All {
                     e.Handled = true;
                     break;
                 case Keys.S:
+                case Keys.M:
                     markerButton_Click(null, e);
+                    e.Handled = true;
+                    break;
+                case Keys.E:
+                    exportButton_Click(null, e);
                     e.Handled = true;
                     break;
                 case Keys.L:
@@ -835,19 +840,19 @@ namespace WFC4All {
 
             backButton.MouseHover += (sender, eventArgs) => {
                 addHover(sender, eventArgs,
-                    "Take a single step back\nShortcut(s): Left Arrow Key, Backspace or Delete");
+                    "Take a specified number of steps back\nShortcut(s): Left Arrow Key, Backspace or Delete");
             };
 
             advanceButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Advance a single step\nShortcut(s): Right Arrow Key");
+                addHover(sender, eventArgs, "Advance a specified number of steps\nShortcut(s): Right Arrow Key");
             };
 
             markerButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Save the current progress\nShortcut(s): 'S' Key");
+                addHover(sender, eventArgs, "Place a new marker\nShortcut(s): 'M' Key, 'S' Key");
             };
 
             revertMarkerButton.MouseHover += (sender, eventArgs) => {
-                addHover(sender, eventArgs, "Revert back to save\nShortcut(s): 'L' Key");
+                addHover(sender, eventArgs, "Revert back to last marker\nShortcut(s): 'L' Key");
             };
 
             restartButton.MouseHover += (sender, eventArgs) => {
