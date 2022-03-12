@@ -149,19 +149,19 @@ namespace WFC4All {
         }
         
         public static void exportButton_MouseDown(object sender, MouseEventArgs e) {
-            ((Button) sender).BackgroundImage = Resources.CloseClick; //TODO
+            ((Button) sender).BackgroundImage = Resources.ExportClick;
         }
 
         public static void exportButton_MouseEnter(object sender, EventArgs e) {
-            ((Button) sender).BackgroundImage = Resources.CloseHover; //TODO
+            ((Button) sender).BackgroundImage = Resources.ExportHover;
         }
 
         public static void exportButton_MouseLeave(object sender, EventArgs e) {
-            ((Button) sender).BackgroundImage = Resources.Close; //TODO
+            ((Button) sender).BackgroundImage = Resources.Export;
         }
 
         public static void exportButton_MouseUp(object sender, MouseEventArgs e) {
-            ((Button) sender).BackgroundImage = Resources.CloseHover; //TODO
+            ((Button) sender).BackgroundImage = Resources.ExportHover;
         }
     }
 }

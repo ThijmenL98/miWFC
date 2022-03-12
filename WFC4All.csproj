@@ -112,6 +112,9 @@
     <None Include="resources\InfoClick.png" />
     <None Include="resources\InfoGraphic.png" />
     <None Include="resources\InfoHover.png" />
+    <None Include="resources\Export.png" />
+    <None Include="resources\ExportClick.png" />
+    <None Include="resources\ExportHover.png" />
     <Content Include="resources\LeastUsed.png" />
     <None Include="resources\Restart.png" />
     <None Include="resources\RestartClick.png" />

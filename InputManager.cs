@@ -74,16 +74,13 @@ namespace WFC4All {
                     inputPaddingEnabled = form.getSelectedCategory().Equals("Worlds Top-Down")
                         || form.getSelectedCategory().Equals("Worlds Side-View")
                         || form.getSelectedInput().Equals("Font")
-                        || (form.getSelectedCategory().Equals("Knots") && !form.getSelectedInput().Equals("Nested")
-                            && !form.getSelectedInput().Equals("NotKnot"));
+                        || form.getSelectedCategory().Equals("Knots") && !form.getSelectedInput().Equals("Nested")
+                                                                      && !form.getSelectedInput().Equals("NotKnot");
                     outputPaddingEnabled = form.getSelectedCategory().Equals("Worlds Side-View")
                         || form.getSelectedInput().Equals("Font")
-                        || (form.getSelectedCategory().Equals("Knots") && !form.getSelectedInput().Equals("Nested"));
-                          //  && !form.getSelectedInput().Equals("NotKnot"));
+                        || form.getSelectedCategory().Equals("Knots") && !form.getSelectedInput().Equals("Nested");
                 }
-
-                Console.WriteLine(inputPaddingEnabled + " - " + outputPaddingEnabled);
-
+                
                 if (inputHasChanged) {
                     form.displayLoading(true);
                     currentBitmap = getImage(form.getSelectedInput());
@@ -107,7 +104,8 @@ namespace WFC4All {
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
                         bool hasRotations = form.getSelectedCategory().Equals("Worlds Top-Down")
-                            || form.getSelectedCategory().Equals("Knots") || form.getSelectedCategory().Equals("Knots");
+                            || form.getSelectedCategory().Equals("Knots") || form.getSelectedCategory().Equals("Knots")
+                            || form.getSelectedInput().Equals("Mazelike");
                         List<PatternArray> patternList
                             = ((OverlappingModel) dbModel).addSample(tiles, new TileRotation(hasRotations ? 4 : 1, false));
 
