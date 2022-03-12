@@ -65,7 +65,25 @@ namespace WFC4All {
             sw.Restart();
 
             if (reset || dbPropagator == null) {
-                bool inputPaddingEnabled = form.isOverlappingModel() && form.inputPaddingEnabled();
+                bool inputPaddingEnabled, outputPaddingEnabled;
+
+                if (form.getSelectedCategory().Equals("Textures")) {
+                    inputPaddingEnabled = form.isOverlappingModel() && form.inputPaddingEnabled();
+                    outputPaddingEnabled = inputPaddingEnabled;
+                } else {
+                    inputPaddingEnabled = form.getSelectedCategory().Equals("Worlds Top-Down")
+                        || form.getSelectedCategory().Equals("Worlds Side-View")
+                        || form.getSelectedInput().Equals("Font")
+                        || (form.getSelectedCategory().Equals("Knots") && !form.getSelectedInput().Equals("Nested")
+                            && !form.getSelectedInput().Equals("NotKnot"));
+                    outputPaddingEnabled = form.getSelectedCategory().Equals("Worlds Side-View")
+                        || form.getSelectedInput().Equals("Font")
+                        || (form.getSelectedCategory().Equals("Knots") && !form.getSelectedInput().Equals("Nested"));
+                          //  && !form.getSelectedInput().Equals("NotKnot"));
+                }
+
+                Console.WriteLine(inputPaddingEnabled + " - " + outputPaddingEnabled);
+
                 if (inputHasChanged) {
                     form.displayLoading(true);
                     currentBitmap = getImage(form.getSelectedInput());
@@ -88,8 +106,10 @@ namespace WFC4All {
                                 inputPaddingEnabled); //TODO Input Padding
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(form.getSelectedOverlapTileDimension());
+                        bool hasRotations = form.getSelectedCategory().Equals("Worlds Top-Down")
+                            || form.getSelectedCategory().Equals("Knots") || form.getSelectedCategory().Equals("Knots");
                         List<PatternArray> patternList
-                            = ((OverlappingModel) dbModel).addSample(tiles, new TileRotation(1, false));
+                            = ((OverlappingModel) dbModel).addSample(tiles, new TileRotation(hasRotations ? 4 : 1, false));
 
                         bool isCached = false;
 
@@ -185,7 +205,7 @@ namespace WFC4All {
                 }
 
                 //TODO Output Padding
-                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), inputPaddingEnabled);
+                GridTopology dbTopology = new(form.getOutputWidth(), form.getOutputHeight(), outputPaddingEnabled);
                 int curSeed = Environment.TickCount;
                 dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
                     BackTrackDepth = -1,
@@ -196,7 +216,7 @@ namespace WFC4All {
 #endif
                 sw.Restart();
 
-                if (form.isOverlappingModel() && inputPaddingEnabled) {
+                if (form.isOverlappingModel()) {
                     if ("flowers".Equals(form.getSelectedInput().ToLower())) {
                         // Set the bottom last 2 rows to be the ground tile
                         dbPropagator?.select(0, form.getOutputHeight() - 1, 0,

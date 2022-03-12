@@ -397,11 +397,9 @@ namespace WFC4All {
             } else {
                 selectedCategory = "Textures";
                 selectedImage = "3Bricks";
-
-                if (selIndex == 1) {
-                    outputHeightValue.Value = 32;
-                    outputWidthValue.Value = 32;
-                }
+                
+                outputHeightValue.Value = 32;
+                outputWidthValue.Value = 32;
             }
 
             changingIndex = true;
@@ -669,6 +667,10 @@ namespace WFC4All {
 
         public string getSelectedInput() {
             return inputImageCB.SelectedItem.ToString();
+        }
+
+        public string getSelectedCategory() {
+            return categoryCB.SelectedItem.ToString();
         }
 
         public bool isOverlappingModel() {
