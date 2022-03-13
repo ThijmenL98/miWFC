@@ -463,6 +463,10 @@ namespace WFC4All {
             return currentStep;
         }
 
+        public void setCurrentStep(int newCurStep) {
+            currentStep = newCurStep;
+        }
+
         public Bitmap getLatestOutput() {
             return latestOutput;
         }

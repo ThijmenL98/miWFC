@@ -7,7 +7,7 @@
     <ProjectGuid>{BECF0F2B-8670-4266-8CA0-3935442D7674}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>WFC4All</RootNamespace>
-    <AssemblyName>WFC4AllProj</AssemblyName>
+    <AssemblyName>WFC4All</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

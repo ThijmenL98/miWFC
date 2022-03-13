@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -15,11 +14,13 @@ namespace WFC4All {
         private readonly InputManager inputManager;
         public readonly BitMaps bitMaps;
 
-        private int defaultSymmetry, savePoint, lastRanForced;
+        private int lastRanForced;
         private readonly int initOutWidth;
         private readonly int initInWidth;
         private readonly int initOutHeight;
         private readonly int initInHeight;
+
+        private Stack<int> savePoints;
 
         private bool defaultInputPadding, changingIndex;
         public bool isChangingModels;
@@ -42,10 +43,9 @@ namespace WFC4All {
             Icon = Resources.icon;
 
             xDoc = XDocument.Parse(Resources.samples);
-            defaultSymmetry = 8;
             oldSize = new Size(1616, 939);
             result = new Bitmap(1, 1);
-            savePoint = 0;
+            savePoints = new Stack<int>();
             isChangingModels = false;
             defaultInputPadding = true;
             inputManager = new InputManager(this);
@@ -244,8 +244,8 @@ namespace WFC4All {
                     Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
 
                 int curStep = inputManager.getCurrentStep();
-                if (curStep < savePoint) {
-                    savePoint = curStep;
+                if (curStep < savePoints.Peek()) {
+                    savePoints.Pop();
                 }
 
                 result = new Bitmap(result2);
@@ -289,6 +289,7 @@ namespace WFC4All {
         private void modelChoice_Click(object sender, EventArgs e) {
             isChangingModels = true;
             Button btn = (Button) sender;
+            string lastCat = categoryCB.Text;
 
             string[] catDataSource = InputManager.getCategories(modelChoice.Text.Equals("Switch to Tile Mode")
                 ? "simpletiled"
@@ -301,7 +302,6 @@ namespace WFC4All {
             showRotationalOptions(switchingToOverlap);
 
             if (tabSelection.SelectedIndex == 2) {
-                string lastCat = categoryCB.Text;
                 string lastImg = inputImageCB.Text;
                 int catIndex = switchingToOverlap
                     ? Array.IndexOf(catDataSource, lastOverlapSelection.Item2)
@@ -339,17 +339,30 @@ namespace WFC4All {
         }
 
         private void markerButton_Click(object sender, EventArgs e) {
-            savePoint = inputManager.getCurrentStep();
+            int curStep = inputManager.getCurrentStep();
+            while (true) {
+                if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
+                    savePoints.Pop();
+                } else {
+                    savePoints.Push(curStep);
+                    return;
+                }
+            }
         }
 
         private void revertMarkerButton_Click(object sender, EventArgs e) {
-            int stepsToRevert = inputManager.getCurrentStep() - savePoint;
+            int prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
+            if (inputManager.getCurrentStep() == prevTimePoint && savePoints.Count != 0) {
+                savePoints.Pop();
+                prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
+            }
+
+            int stepsToRevert = inputManager.getCurrentStep() - prevTimePoint;
+            inputManager.setCurrentStep(prevTimePoint);
             try {
                 result = inputManager.stepBackWfc(stepsToRevert);
                 resultPB.Image = inputManager.resizeBitmap(result,
                     Math.Min(initOutHeight / (float) result.Height, initOutWidth / (float) result.Width));
-
-                markerButton_Click(null, null);
             } catch (Exception) {
                 resultPB.Image = InputManager.getImage("NoResultFound");
             }
@@ -372,6 +385,7 @@ namespace WFC4All {
         private void closeButton_Click(object sender, EventArgs e) {
             infoButton_Click(sender, e);
         }
+
         private void tabSelection_SelectedIndexChanged(object sender, EventArgs e) {
             int selIndex = ((TabControl) sender).SelectedIndex; // 0 = Task1, 1 = Task2, 2 = Sandbox
 
@@ -402,7 +416,7 @@ namespace WFC4All {
             } else {
                 selectedCategory = "Textures";
                 selectedImage = "3Bricks";
-                
+
                 outputHeightValue.Value = 32;
                 outputWidthValue.Value = 32;
             }
@@ -432,9 +446,9 @@ namespace WFC4All {
 
         private void exportButton_Click(object sender, EventArgs e) {
             SaveFileDialog sfd = new();
-            sfd.DefaultExt = ".png";
-            sfd.Filter = "JPeg Image|*.jpg";
-            sfd.Title = "Select export location & file name";  
+            sfd.DefaultExt = @".png";
+            sfd.Filter = @"JPeg Image|*.jpg";
+            sfd.Title = @"Select export location & file name";
 
             DialogResult dialogResult = sfd.ShowDialog();
             if (dialogResult == DialogResult.OK && !sfd.FileName.Equals("")) {
@@ -469,7 +483,6 @@ namespace WFC4All {
                 patternSize.DataSource = patternSizeDataSource;
                 patternSize.SelectedIndex = patternSize.Items.IndexOf(patternSizeDataSource[i]);
 
-                defaultSymmetry = curSelection.get("symmetry", 8);
                 defaultInputPadding = curSelection.get("periodicInput", true);
                 inputPaddingPB.BackColor = defaultInputPadding ? Color.LawnGreen : Color.Red;
             }

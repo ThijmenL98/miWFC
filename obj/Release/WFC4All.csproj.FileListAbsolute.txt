@@ -128,6 +128,6 @@ C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Wall.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\WalledDot.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Water.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\samples\Wrinkles.png
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4AllProj.exe.config
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4AllProj.exe
-C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4AllProj.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.exe.config
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Release\WFC4All.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Release\WFC4All.exe

@@ -265,9 +265,6 @@ C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\samples\Wall.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\samples\WalledDot.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\samples\Water.png
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\samples\Wrinkles.png
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4AllProj.exe.config
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4AllProj.exe
-C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4AllProj.pdb
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.DeBroglie.dll
 C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.DeBroglie.pdb
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.AssemblyReference.cache
@@ -277,5 +274,8 @@ C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.Properties.Re
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.GenerateResource.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.CoreCompileInputs.cache
 C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.csproj.CopyComplete
-C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4AllProj.exe
-C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4AllProj.pdb
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.exe.config
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\bin\Debug\WFC4All.pdb
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.exe
+C:\Users\thijm\Documents\Git Repositories\thesis\obj\Debug\WFC4All.pdb
