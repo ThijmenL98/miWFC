@@ -1,0 +1,217 @@
+<UserControl mc:Ignorable="d"
+    x:Class="WFC4ALL.ContentControls.OutputControl"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	
+	<Grid Background="#F9F0DE" Grid.Column="1" Margin="10" RowDefinitions="Auto, *, Auto">
+		<Grid.Styles>
+			<Style Selector="Button">
+				<Setter Property="Background" Value="Transparent"/>
+			</Style>
+		</Grid.Styles>
+		
+		<Grid Background="#A9F0AE"
+            ColumnDefinitions="Auto, Auto, Auto, Auto, *, Auto, Auto"
+            Grid.Row="0" Margin="25,0,25,0">
+			<Grid.Styles>
+				<Style Selector="TextBlock">
+					<Setter Property="FontSize" Value="14"/>
+					<Setter Property="HorizontalAlignment" Value="Center"/>
+					<Setter Property="VerticalAlignment" Value="Center"/>
+					<Setter Property="Margin" Value="4"/>
+				</Style>
+				<Style Selector="Button">
+					<Setter Property="Margin" Value="4"/>
+					<Setter Property="HorizontalAlignment" Value="Center"/>
+					<Setter Property="Background" Value="Transparent"/>
+				</Style>
+			</Grid.Styles>
+			<TextBlock Grid.Column="0" VerticalAlignment="Center">
+				Output Image Size, Width:
+			</TextBlock>
+			<NumericUpDown Grid.Column="1" MaxHeight="10" MinWidth="65"
+                Value="{Binding ImageOutWidth}" x:Name="outputWidthNUD"/>
+			<TextBlock Grid.Column="2">
+				Height:
+			</TextBlock>
+			<NumericUpDown Grid.Column="3" MaxHeight="10" MinWidth="65"
+                Value="{Binding ImageOutHeight}" x:Name="outputHeightNUD"/>
+			<Button Grid.Column="5" MaxHeight="70">
+				<Button.Styles>
+					<Style Selector="Button:pointerover /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource hoverRestartKey}"/>
+						<Setter Property="Background" Value="Transparent"/>
+					</Style>
+					<Style Selector="Button:pressed /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource clickRestartKey}"/>
+						<Setter Property="Background" Value="Transparent"/>
+					</Style>
+				</Button.Styles>
+				<Panel>
+					<Image Source="/Assets/Restart.png"/>
+				</Panel>
+			</Button>
+			<Button Grid.Column="6" MaxWidth="70">
+				<Button.Styles>
+					<Style Selector="Button:pointerover /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource hoverExportKey}"/>
+						<Setter Property="Background" Value="Transparent"/>
+					</Style>
+					<Style Selector="Button:pressed /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource clickExportKey}"/>
+						<Setter Property="Background" Value="Transparent"/>
+					</Style>
+				</Button.Styles>
+				<Panel>
+					<Image Source="/Assets/Export.png"/>
+				</Panel>
+			</Button>
+		</Grid>
+		
+		<Image Grid.Row="1" Margin="10" MinHeight="600" RenderOptions.BitmapInterpolationMode="Default" 
+			   x:Name="outputImage" Source="{Binding OutputImage}"/>
+		
+		<Grid Background="#D9A0AE" ColumnDefinitions="Auto, Auto"
+            Grid.Row="2" HorizontalAlignment="Center">
+			<Grid Background="#D9D0AE" ColumnDefinitions="*, Auto, *, *"
+                Grid.Column="0" RowDefinitions="*, *">
+				<Button Background="Transparent"
+                    Command="{Binding OnAnimate}" Grid.Column="0"
+                    Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding !IsPlaying}" Margin="4" MaxWidth="120">
+					<Button.Styles>
+						<Style Selector="Button:pointerover /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource hoverAnimateKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+						<Style Selector="Button:pressed /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource clickAnimateKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					<Panel>
+						<Image Source="/Assets/Animate.png"/>
+					</Panel>
+					<ToolTip.Tip>
+						<StackPanel>
+							<TextBlock Classes="h1">Start/Stop generation animation</TextBlock>
+							<TextBlock Classes="h2">Shortcut(s): Space bar &amp; and 'P' Key</TextBlock>
+						</StackPanel>
+					</ToolTip.Tip>
+				</Button>
+				<Button Background="Transparent"
+                    Command="{Binding OnAnimate}" Grid.Column="0"
+                    Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding IsPlaying}" Margin="4" MaxWidth="120">
+					<Button.Styles>
+						<Style Selector="Button:pointerover /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource hoverPauseKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+						<Style Selector="Button:pressed /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource clickPauseKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					<Panel>
+						<Image Source="/Assets/Pause.png"/>
+					</Panel>
+					<ToolTip.Tip>
+						<StackPanel>
+							<TextBlock Classes="h1">Start/Stop generation animation</TextBlock>
+							<TextBlock Classes="h2">Shortcut(s): Space bar &amp; and 'P' Key</TextBlock>
+						</StackPanel>
+					</ToolTip.Tip>
+				</Button>
+				<Button Background="Transparent" Grid.Column="2"
+                    Grid.Row="0" HorizontalAlignment="Center" MaxWidth="90">
+					<Button.Styles>
+						<Style Selector="Button:pointerover /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource hoverRevertKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+						<Style Selector="Button:pressed /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource clickRevertKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					<Panel>
+						<Image Source="/Assets/Revert.png"/>
+					</Panel>
+				</Button>
+				<Button Background="Transparent" Grid.Column="2"
+                    Grid.Row="1" HorizontalAlignment="Center" MaxWidth="90">
+					<Button.Styles>
+						<Style Selector="Button:pointerover /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource hoverSaveKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+						<Style Selector="Button:pressed /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource clickSaveKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					<Panel>
+						<Image Source="/Assets/Save.png"/>
+					</Panel>
+				</Button>
+				<Button Background="Transparent" Grid.Column="3"
+                    Grid.Row="0" HorizontalAlignment="Center" MaxWidth="90">
+					<Button.Styles>
+						<Style Selector="Button:pointerover /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource hoverAdvanceKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+						<Style Selector="Button:pressed /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource clickAdvanceKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					<Panel>
+						<Image Source="/Assets/Advance.png"/>
+					</Panel>
+				</Button>
+				<Button Background="Transparent" Grid.Column="3"
+                    Grid.Row="1" HorizontalAlignment="Center" MaxWidth="90">
+					<Button.Styles>
+						<Style Selector="Button:pointerover /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource hoverLoadKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+						<Style Selector="Button:pressed /template/ ContentPresenter">
+							<Setter Property="Content" Value="{DynamicResource clickLoadKey}"/>
+							<Setter Property="Background" Value="Transparent"/>
+						</Style>
+					</Button.Styles>
+					<Panel>
+						<Image Source="/Assets/Load.png"/>
+					</Panel>
+				</Button>
+			</Grid>
+			<Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto">
+				<TextBlock FontSize="14" Grid.Row="0"
+                    HorizontalAlignment="Center" Margin="4" VerticalAlignment="Center">
+					Amount of steps to take: 1
+				</TextBlock>
+				<Slider Grid.Row="1" Margin="50, 0, 50, 0" Value="{Binding StepAmount}" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True"/>
+				<Grid Background="#D9A07E"
+                    ColumnDefinitions="Auto, *, Auto" Grid.Row="2">
+					<Image Grid.Column="0" Height="35" Margin="10"
+                        Source="/Assets/slowSpeed.png" Width="35"/>
+					<Grid Grid.Column="1" RowDefinitions="Auto, Auto">
+						<TextBlock FontSize="14" Grid.Row="0"
+                            HorizontalAlignment="Center" Margin="4" VerticalAlignment="Center">
+							Amount of steps to take: 1
+						</TextBlock>
+						<Slider Grid.Row="1" Value="{Binding AnimSpeed}" Minimum="25" Maximum="2000" TickFrequency="5" IsSnapToTickEnabled="True" />
+					</Grid>
+					<Image Grid.Column="2" Height="35" Margin="10"
+                        Source="/Assets/fastSpeed.png" Width="35"/>
+				</Grid>
+			</Grid>
+		</Grid>
+	</Grid>
+</UserControl>

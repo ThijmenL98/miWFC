@@ -1,0 +1,64 @@
+﻿<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	
+	<Design.PreviewWith>
+		<NumericUpDown MaxHeight="10"/>
+	</Design.PreviewWith>
+	
+	<Style Selector="ButtonSpinner">
+		<Setter Property="Template">
+			<ControlTemplate>
+				<DataValidationErrors>
+					<Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}" MinHeight="{TemplateBinding MinHeight}">
+						<Grid ColumnDefinitions="Auto,*,Auto">
+							<ContentPresenter
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Grid.Column="1"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                Name="PART_ContentPresenter"
+                                Padding="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+							<StackPanel
+                                IsVisible="{TemplateBinding ShowButtonSpinner}"
+                                Name="PART_SpinnerPanel"
+                                Orientation="Vertical" Width="22">
+								<RepeatButton
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    Classes="ButtonSpinnerRepeatButton"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Name="PART_IncreaseButton" VerticalContentAlignment="Center">
+									<Path
+                                    Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}"
+                                    Fill="{TemplateBinding Foreground}"
+                                    Height="4"
+                                    HorizontalAlignment="Center"
+                                    Stretch="Uniform"
+                                    VerticalAlignment="Center" Width="20"/>
+								</RepeatButton>
+								<RepeatButton
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    Classes="ButtonSpinnerRepeatButton"
+                                    FontSize="{TemplateBinding FontSize}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    Name="PART_DecreaseButton" VerticalContentAlignment="Center">
+									<Path
+                                    Data="{StaticResource ButtonSpinnerDecreaseButtonIcon}"
+                                    Fill="{TemplateBinding Foreground}"
+                                    Height="4"
+                                    HorizontalAlignment="Center"
+                                    Stretch="Uniform"
+                                    VerticalAlignment="Center" Width="20"/>
+								</RepeatButton>
+							</StackPanel>
+						</Grid>
+					</Border>
+				</DataValidationErrors>
+			</ControlTemplate>
+		</Setter>
+	</Style>
+</Styles>

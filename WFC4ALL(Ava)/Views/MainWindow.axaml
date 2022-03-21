@@ -1,0 +1,59 @@
+<Window Icon="/Assets/icon.ico" MinHeight="984" MinWidth="1904"
+    Title="WFC4ALL" d:DesignHeight="939" d:DesignWidth="1616"
+    mc:Ignorable="d" x:Class="WFC4ALL.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ucontrols="using:WFC4ALL.ContentControls"
+    xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	
+	<Window.Resources>
+		<!-- Hover resources -->
+		<Image Source="/Assets/AnimateHover.png" x:Key="hoverAnimateKey" x:Name="hoverAnimate"/>
+		<Image Source="/Assets/AdvanceHover.png" x:Key="hoverAdvanceKey" x:Name="hoverAdvance"/>
+		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose"/>
+		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad"/>
+		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport"/>
+		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave"/>
+		<Image Source="/Assets/RevertHover.png" x:Key="hoverRevertKey" x:Name="hoverRevert"/>
+		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart"/>
+		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo"/>
+		<Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause"/>
+		<!-- Click resources -->
+		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate"/>
+		<Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance"/>
+		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose"/>
+		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad"/>
+		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport"/>
+		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave"/>
+		<Image Source="/Assets/RevertClick.png" x:Key="clickRevertKey" x:Name="clickRevert"/>
+		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart"/>
+		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo"/>
+		<Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause"/>
+	</Window.Resources>
+	
+	<Window.Styles>
+		<StyleInclude Source="/Styles/CustomNumericUD.axaml"/>
+	</Window.Styles>
+	
+	<Design.DataContext>
+		<vm:MainWindowViewModel/>
+	</Design.DataContext>
+	
+	<Border Background="LightBlue" BorderBrush="Black"
+        BorderThickness="2" Padding="5">
+		<Grid Background="#DFF" ColumnDefinitions="65*, 35*" ShowGridLines="True">
+			<Grid Background="#FDF" ColumnDefinitions="Auto, *"
+                Grid.Column="0" ShowGridLines="True">
+				<ucontrols:InputControl DataContext="{Binding VM}"
+                    Grid.Row="0" x:Name="inputControl"/>
+				<StackPanel Background="#D9F0DE" Grid.Column="1"
+                    Grid.Row="0" HorizontalAlignment="Stretch"
+                    Margin="10, 10, 10, 30" Name="StackPanel2"
+                    Orientation="Vertical" VerticalAlignment="Top"/>
+			</Grid>
+			<ucontrols:OutputControl DataContext="{Binding VM}"
+                Grid.Column="1" x:Name="outputControl"/>
+		</Grid>
+	</Border>
+</Window>
