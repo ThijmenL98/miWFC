@@ -28,7 +28,6 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     Classes="ButtonSpinnerRepeatButton"
-                                    FontSize="{TemplateBinding FontSize}"
                                     Foreground="{TemplateBinding Foreground}"
                                     Name="PART_IncreaseButton" VerticalContentAlignment="Center">
 									<Path
@@ -43,7 +42,6 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     Classes="ButtonSpinnerRepeatButton"
-                                    FontSize="{TemplateBinding FontSize}"
                                     Foreground="{TemplateBinding Foreground}"
                                     Name="PART_DecreaseButton" VerticalContentAlignment="Center">
 									<Path

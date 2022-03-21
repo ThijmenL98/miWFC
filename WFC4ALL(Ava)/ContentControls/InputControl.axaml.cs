@@ -1,20 +1,16 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using System.Diagnostics;
-using System.Linq;
 using WFC4All;
 
-namespace WFC4ALL.ContentControls
-{
-    public partial class InputControl : UserControl
-    {
+// ReSharper disable SuggestBaseTypeForParameter
+// ReSharper disable UnusedParameter.Local
 
+namespace WFC4ALL.ContentControls {
+    public partial class InputControl : UserControl {
         private InputManager? inputManager;
-        private ComboBox _categoryCB, _inputCB, _patternSizeCB;
+        private readonly ComboBox _categoryCB, _inputCB, _patternSizeCB;
 
-        public InputControl()
-        {
+        public InputControl() {
             InitializeComponent();
 
             _categoryCB = this.Find<ComboBox>("categoryCB");
@@ -22,14 +18,12 @@ namespace WFC4ALL.ContentControls
             _patternSizeCB = this.Find<ComboBox>("patternSizeCB");
         }
 
-        public void setInputManager(InputManager im)
-        {
+        public void setInputManager(InputManager im) {
             inputManager = im;
             inImgCBChangeHandler(null, null);
         }
 
-        private void InitializeComponent()
-        {
+        private void InitializeComponent() {
             AvaloniaXamlLoader.Load(this);
         }
 
@@ -37,96 +31,94 @@ namespace WFC4ALL.ContentControls
          * Handlers
          */
 
-        private void catCBChangeHandler(object sender, SelectionChangedEventArgs e)
-        {
-            if (inputManager == null)
-            {
+        private void catCBChangeHandler(object _, SelectionChangedEventArgs e) {
+            if (inputManager == null || inputManager.isChangingModels()) {
                 return;
             }
+
+            inputManager.setInputChanged("Category CB");
 
             string newValue = getCategory();
 
             this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures");
             string[] inputImageDataSource
                 = inputManager.getImages(
-                    ((string)this.Find<Button>("modeToggle").Content).Contains("Tile") ? "overlapping" : "simpletiled",
+                    ((string) this.Find<Button>("modeToggle").Content).Contains("Tile") ? "overlapping" : "simpletiled",
                     newValue);
-            Trace.WriteLine(inputImageDataSource.Count());
             setInputImages(inputImageDataSource);
             e.Handled = true;
         }
 
-        private void inImgCBChangeHandler(object? sender, SelectionChangedEventArgs e)
-        {
-            if (inputManager == null)
-            {
+        public void inImgCBChangeHandler(object? _, SelectionChangedEventArgs? e) {
+            if (inputManager == null || inputManager.isChangingModels()) {
                 return;
             }
 
-            Trace.WriteLine("CHANGE Img");
             string newValue = getInputImage();
             inputManager.updateInputImage(newValue);
 
-            if (((string)this.Find<Button>("modeToggle").Content).Contains("Tile"))
-            {
+            inputManager.setInputChanged("Image CB");
+
+            if (((string) this.Find<Button>("modeToggle").Content).Contains("Tile")) {
                 (int[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
                 setPatternSizes(patternSizeDataSource, i);
             }
 
             //updateInputPadding();
-
-            inputManager.setInputChanged("Changing image");
-            //executeButton_Click(null, null);
-            if (e != null)
-            {
+            inputManager.restartSolution();
+            if (e != null) {
                 e.Handled = true;
             }
         }
 
-        private void pattSizeCBChangeHandler(object? sender, SelectionChangedEventArgs e)
-        {
-            Trace.WriteLine("CHANGE PattSize");
+        private void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {
+            inputManager?.setInputChanged("Pattern Size CB");
             e.Handled = true;
+            inputManager?.restartSolution();
         }
 
         /*
          * Setters
          */
 
-        public void setInputImages(string[] values)
-        {
-            _inputCB.Items = values;
-            _inputCB.SelectedIndex = 0;
+        public void setInputImages(string[]? values, int idx = 0) {
+            if (values != null) {
+                _inputCB.Items = values;
+            }
+
+            _inputCB.SelectedIndex = idx;
         }
-        public void setPatternSizes(int[] values, int idx)
-        {
-            _patternSizeCB.Items = values;
+
+        public void setPatternSizes(int[]? values, int idx = 0) {
+            if (values != null) {
+                _patternSizeCB.Items = values;
+            }
+
             _patternSizeCB.SelectedIndex = idx;
         }
 
-        public void setCategories(string[] values)
-        {
-            _categoryCB.Items = values;
-            _categoryCB.SelectedIndex = 0;
+        public void setCategories(string[]? values, int idx = 0) {
+            if (values != null) {
+                _categoryCB.Items = values;
+            }
+
+            _categoryCB.SelectedIndex = idx;
         }
 
         /*
          * Getters
          */
 
-        public string getInputImage()
-        {
+        public string getInputImage() {
             return _inputCB.SelectedItem as string ?? "3Bricks";
         }
 
-        public string getCategory()
-        {
+        public string getCategory() {
             return _categoryCB.SelectedItem as string ?? "Textures";
         }
 
-        public int getPatternSize()
-        {
-            return int.Parse(_patternSizeCB.SelectedItem as string ?? "3");
+        public int getPatternSize() {
+            return (int) (_patternSizeCB.SelectedItem ?? 3);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -12,6 +13,10 @@ namespace WFC4ALL
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+            
+        
+            var myWriter = new ConsoleTraceListener();
+            Trace.Listeners.Add(myWriter);
         }
 
         public override void OnFrameworkInitializationCompleted()

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="WFC4ALL(Ava)/App.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/ContentControls/InputControl.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/ContentControls/OutputControl.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/ContentControls/test.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/Styles/CustomNumericUD.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/Styles/TestStyle.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/Styles/test.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/Views/MainWindow.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

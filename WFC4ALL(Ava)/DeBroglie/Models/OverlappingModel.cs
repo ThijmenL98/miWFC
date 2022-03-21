@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
@@ -49,7 +51,7 @@ namespace WFC4All.DeBroglie.Models {
             propagator = new List<HashSet<int>[]>();
         }
 
-        public List<PatternArray> addSample(ITopoArray<Tile> sample, TileRotation tileRotation = null) {
+        public Tuple<List<PatternArray>,List<double>> addSample(ITopoArray<Tile> sample, TileRotation tileRotation = null) {
             if (sample.Topology.Depth == 1) {
                 nz = 1;
             }
@@ -64,7 +66,7 @@ namespace WFC4All.DeBroglie.Models {
                 OverlappingAnalysis.getPatterns(s, nx, ny, nz, periodicX, periodicY, periodicZ, patternIndices,
                     patternArrays, frequencies);
             }
-
+            
             // Update the model based on the collected data
             DirectionSet directions = topology.Directions;
 
@@ -93,7 +95,7 @@ namespace WFC4All.DeBroglie.Models {
 
             tilesToPatterns = patternsToTiles.ToLookup(x => x.Value, x => x.Key);
 
-            return patternArrays;
+            return new Tuple<List<PatternArray>, List<double>>(patternArrays, frequencies);
         }
 
         public int Nx => nx;

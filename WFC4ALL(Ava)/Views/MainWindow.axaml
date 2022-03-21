@@ -1,59 +1,135 @@
 <Window Icon="/Assets/icon.ico" MinHeight="984" MinWidth="1904"
-    Title="WFC4ALL" d:DesignHeight="939" d:DesignWidth="1616"
-    mc:Ignorable="d" x:Class="WFC4ALL.Views.MainWindow"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ucontrols="using:WFC4ALL.ContentControls"
-    xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	
-	<Window.Resources>
-		<!-- Hover resources -->
-		<Image Source="/Assets/AnimateHover.png" x:Key="hoverAnimateKey" x:Name="hoverAnimate"/>
-		<Image Source="/Assets/AdvanceHover.png" x:Key="hoverAdvanceKey" x:Name="hoverAdvance"/>
-		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose"/>
-		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad"/>
-		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport"/>
-		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave"/>
-		<Image Source="/Assets/RevertHover.png" x:Key="hoverRevertKey" x:Name="hoverRevert"/>
-		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart"/>
-		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo"/>
-		<Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause"/>
-		<!-- Click resources -->
-		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate"/>
-		<Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance"/>
-		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose"/>
-		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad"/>
-		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport"/>
-		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave"/>
-		<Image Source="/Assets/RevertClick.png" x:Key="clickRevertKey" x:Name="clickRevert"/>
-		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart"/>
-		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo"/>
-		<Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause"/>
-	</Window.Resources>
-	
-	<Window.Styles>
-		<StyleInclude Source="/Styles/CustomNumericUD.axaml"/>
-	</Window.Styles>
-	
-	<Design.DataContext>
-		<vm:MainWindowViewModel/>
-	</Design.DataContext>
-	
-	<Border Background="LightBlue" BorderBrush="Black"
-        BorderThickness="2" Padding="5">
-		<Grid Background="#DFF" ColumnDefinitions="65*, 35*" ShowGridLines="True">
-			<Grid Background="#FDF" ColumnDefinitions="Auto, *"
-                Grid.Column="0" ShowGridLines="True">
-				<ucontrols:InputControl DataContext="{Binding VM}"
-                    Grid.Row="0" x:Name="inputControl"/>
-				<StackPanel Background="#D9F0DE" Grid.Column="1"
-                    Grid.Row="0" HorizontalAlignment="Stretch"
-                    Margin="10, 10, 10, 30" Name="StackPanel2"
-                    Orientation="Vertical" VerticalAlignment="Top"/>
-			</Grid>
-			<ucontrols:OutputControl DataContext="{Binding VM}"
-                Grid.Column="1" x:Name="outputControl"/>
-		</Grid>
-	</Border>
+        Title="WFC4ALL" d:DesignHeight="939" d:DesignWidth="1616"
+        mc:Ignorable="d" x:Class="WFC4ALL.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ucontrols="using:WFC4ALL.ContentControls"
+        xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Window.Resources>
+        <!-- Hover resources -->
+        <Image Source="/Assets/AnimateHover.png" x:Key="hoverAnimateKey" x:Name="hoverAnimate" />
+        <Image Source="/Assets/AdvanceHover.png" x:Key="hoverAdvanceKey" x:Name="hoverAdvance" />
+        <Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
+        <Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
+        <Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
+        <Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
+        <Image Source="/Assets/RevertHover.png" x:Key="hoverRevertKey" x:Name="hoverRevert" />
+        <Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
+        <Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+        <Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause" />
+        <!-- Click resources -->
+        <Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
+        <Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance" />
+        <Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
+        <Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
+        <Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
+        <Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
+        <Image Source="/Assets/RevertClick.png" x:Key="clickRevertKey" x:Name="clickRevert" />
+        <Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
+        <Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+        <Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause" />
+        <!-- Disabled resources -->
+        <Image Source="/Assets/AnimateDisabled.png" x:Key="disabledAnimateKey" x:Name="disabledAnimate" />
+        <Image Source="/Assets/AdvanceDisabled.png" x:Key="disabledAdvanceKey" x:Name="disabledAdvance" />
+        <Image Source="/Assets/LoadDisabled.png" x:Key="disabledLoadKey" x:Name="disabledLoad" />
+        <Image Source="/Assets/RevertDisabled.png" x:Key="disabledRevertKey" x:Name="disabledRevert" />
+        <Image Source="/Assets/SaveDisabled.png" x:Key="disabledSaveKey" x:Name="disabledSave" />
+    </Window.Resources>
+
+    <Window.Styles>
+        <StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+
+        <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+    </Window.Styles>
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Border Background="LightBlue" BorderBrush="Black"
+            BorderThickness="2" Padding="5">
+        <Grid Background="#DFF" ColumnDefinitions="63*, 37*" ShowGridLines="True">
+            <Popup IsOpen="{Binding PopupVisible}" HorizontalAlignment="Center"
+                   VerticalAlignment="Top" PlacementMode="Pointer"
+                   PlacementTarget="{Binding ElementName=patternGrid}">
+                <Border Padding="1" Background="Gray">
+                    <Border Padding="1" Background="Black">
+                        <Grid Background="Gray" Margin="5">
+                            <Image HorizontalAlignment="Right" Source="../Assets/InfoGraphic.png" Stretch="None" />
+                            <Button Margin="5" MaxWidth="75" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                    x:Name="borderPaddingToggle" Background="Transparent"
+                                    Command="{Binding OnCloseClick}">
+                                <Button.Styles>
+                                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                        <Setter Property="Content" Value="{DynamicResource hoverCloseKey}" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                    </Style>
+                                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                                        <Setter Property="Content" Value="{DynamicResource clickCloseKey}" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                    </Style>
+                                </Button.Styles>
+                                <Panel>
+                                    <Image Source="/Assets/Close.png" />
+                                </Panel>
+                                <ToolTip.Tip>
+                                    <StackPanel>
+                                        <TextBlock>Close this popup</TextBlock>
+                                    </StackPanel>
+                                </ToolTip.Tip>
+                            </Button>
+                        </Grid>
+                    </Border>
+                </Border>
+            </Popup>
+
+            <Grid Background="#FDF" ColumnDefinitions="Auto, *"
+                  Grid.Column="0" ShowGridLines="True">
+                <ucontrols:InputControl DataContext="{Binding VM}"
+                                        Grid.Row="0" x:Name="inputControl" />
+
+                <Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid">
+                    <TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 10">Extracted patterns with the current settings</TextBlock>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl Items="{Binding Tiles}" Background="Pink">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="3" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Padding="1" Margin="7, 7, 7,7">
+                                        <Border Padding="1" Background="Gray">
+                                            <Border Padding="1" Background="White">
+                                                <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *, *"
+                                                      Margin="3">
+                                                    <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Padding="1"
+                                                            Background="Gray">
+                                                        <Image Width="50" Height="50" Source="{Binding PatternImage}"
+                                                               RenderOptions.BitmapInterpolationMode="Default" />
+                                                    </Border>
+                                                    <!-- <Button Grid.Column="1" Grid.Row="0" Margin="2, 0, 2, 2">⮔</Button> -->
+                                                    <!-- <Button Grid.Column="2" Grid.Row="0" Margin="2, 0, 2, 2">⇹</Button> -->
+                                                    <!-- <NumericUpDown MaxHeight="10" Minimum="0" Grid.Column="1" Grid.Row="1" -->
+                                                    <!--                Grid.ColumnSpan="2" Margin="2, 2, 2, 2" Value="{Binding PatternWeight}"/> -->
+                                                </Grid>
+                                            </Border>
+                                        </Border>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+            <ucontrols:OutputControl DataContext="{Binding VM}"
+                                     Grid.Column="1" x:Name="outputControl" />
+        </Grid>
+    </Border>
 </Window>
