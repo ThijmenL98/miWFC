@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4All.DeBroglie.Constraints;
 using WFC4All.DeBroglie.Models;

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 using WFC4ALL.ContentControls;
@@ -92,6 +93,16 @@ namespace WFC4ALL.Views {
             }
 
             e.Handled = true;
+        }
+
+        private void NumericUpDown_OnValueChanged(object sender, NumericUpDownValueChangedEventArgs e) {
+            if (!IsActive) {
+                return;
+            }
+            NumericUpDown changedNUD = (sender as NumericUpDown)!;
+            int value = (int) changedNUD.Value;
+            int indexChanged = (changedNUD.DataContext as TileViewModel)!.PatternIndex;
+            inputManager?.changeWeight(indexChanged, value);            
         }
     }
 }

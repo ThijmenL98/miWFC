@@ -16,7 +16,7 @@
 							<ContentPresenter
                                 Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Grid.Column="1"
+                                Grid.Column="1" 
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 Name="PART_ContentPresenter"
                                 Padding="{TemplateBinding Padding}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>

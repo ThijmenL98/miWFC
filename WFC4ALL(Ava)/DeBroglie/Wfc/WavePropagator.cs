@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using WFC4All.DeBroglie.Models;
 using WFC4All.DeBroglie.Topo;
 using WFC4All.DeBroglie.Trackers;
 
@@ -32,7 +34,6 @@ namespace WFC4All.DeBroglie.Wfc {
         private readonly IWaveConstraint[] constraints;
         private readonly Func<double> randomDouble;
         private readonly FrequencySet[] frequencySets;
-        private readonly int selectionHeuristic, patternHeuristic;
 
         // We evaluate constraints at the last possible minute, instead of eagerly like the model,
         // As they can potentially be expensive.
@@ -60,6 +61,7 @@ namespace WFC4All.DeBroglie.Wfc {
             Func<double> randomDouble = null,
             FrequencySet[] frequencySets = null,
             bool clear = true) {
+
             patternCount = model.PatternCount;
             frequencies = model.Frequencies;
 
@@ -239,7 +241,7 @@ namespace WFC4All.DeBroglie.Wfc {
                 entropyTracker.reset();
                 addTracker(entropyTracker);
                 pickHeuristic
-                    = new EntropyHeuristic(entropyTracker, randomDouble, selectionHeuristic, patternHeuristic);
+                    = new EntropyHeuristic(entropyTracker, randomDouble);
             }
 
             patternModelConstraint.clear();

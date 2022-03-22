@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -32,6 +33,7 @@ namespace WFC4All {
         private int currentStep, tileSize;
         private bool inputHasChanged;
         private Dictionary<int, Tuple<Color[], Tile>> tileCache;
+        private Dictionary<int, int[]> tileSymmetries;
 
         private XElement xRoot;
 
@@ -51,13 +53,14 @@ namespace WFC4All {
 
         private DispatcherTimer timer = new();
 
-        private bool _isChangingModels;
+        private bool _isChangingModels, _isChangingImages;
 
         public InputManager(MainWindowViewModel mainWindowVM, MainWindow mainWindow) {
             this.mainWindowVM = mainWindowVM;
             this.mainWindow = mainWindow;
 
             _isChangingModels = false;
+            _isChangingImages = false;
 
             inputControl = mainWindow.getInputControl();
 
@@ -67,6 +70,7 @@ namespace WFC4All {
 
             tileSize = 0;
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
+            tileSymmetries = new Dictionary<int, int[]>();
             currentStep = 0;
             xDoc = XDocument.Load("./Assets/samples.xml");
             currentBitmap = null;
@@ -117,6 +121,10 @@ namespace WFC4All {
 
         public void setModelChanging(bool isChanging) {
             _isChangingModels = isChanging;
+        }
+
+        public void setImageChanging(bool isChanging) {
+            _isChangingImages = isChanging;
         }
 
         public void restartSolution() {
@@ -322,13 +330,14 @@ namespace WFC4All {
                     mainWindowVM.Tiles.Clear();
                     resetPatterns();
 
+                    List<TileViewModel> toAdd = new();
+
                     if (isOverlappingModel()) {
                         ITopoArray<Color> dbSample
                             = TopoArray.create(imageToColourArray(currentBitmap),
                                 inputPaddingEnabled);
                         tiles = dbSample.toTiles();
                         dbModel = new OverlappingModel(inputControl.getPatternSize());
-
                         bool hasRotations = inputControl.getCategory().Equals("Worlds Top-Down")
                                             || category.Equals("Knots") || category.Equals("Knots") ||
                                             inputImage.Equals("Mazelike");
@@ -337,7 +346,10 @@ namespace WFC4All {
                                 new TileRotation(hasRotations ? 4 : 1, false));
 
                         for (int i = 0; i < patternList.Count; i++) {
-                            addPattern(patternList[i], patternWeights[i]);
+                            TileViewModel? nextTVM = addPattern(patternList[i], patternWeights[i]);
+                            if (nextTVM != null) {
+                                toAdd.Add(nextTVM);
+                            }
                         }
                     } else {
                         dbModel = new AdjacentModel();
@@ -348,6 +360,7 @@ namespace WFC4All {
                         List<double> simpleWeights = new();
 
                         tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
+                        tileSymmetries = new Dictionary<int, int[]>();
 
                         foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
                             Bitmap bitmap = new($"samples/{inputImage}/{xTile.Attribute("name")?.Value}.png");
@@ -359,11 +372,13 @@ namespace WFC4All {
                                 'F' => 8,
                                 _ => 1
                             };
-
+                            
                             Color[] cur = imTile((x, y) => bitmap.GetPixel(x, y), tileSize);
                             int val = tileCache.Count;
                             Tile curTile = new(val);
                             tileCache.Add(val, new Tuple<Color[], Tile>(cur, curTile));
+
+                            List<int> symmetries = new();
 
                             for (int t = 1; t < cardinality; t++) {
                                 int myIdx = tileCache.Count;
@@ -371,20 +386,17 @@ namespace WFC4All {
                                     ? rotate(tileCache[val + t - 1].Item1.ToArray(), tileSize)
                                     : reflect(tileCache[val + t - 4].Item1.ToArray(), tileSize);
                                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
+                                symmetries.Add(myIdx);
                             }
+                            
+                            tileSymmetries.Add(val, symmetries.ToArray());
 
                             double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0");
-                            mainWindowVM.Tiles.Add(new TileViewModel(ConvertToAvaloniaBitmap(bitmap), tileWeight));
+                            toAdd.Add(new TileViewModel(ConvertToAvaloniaBitmap(bitmap), tileWeight, val));
 
                             for (int t = 0; t < cardinality; t++) {
                                 simpleWeights.Add(tileWeight);
                             }
-                        }
-
-                        for (int i = 0; i < tileCache.Count; i++) {
-                            double refWeight = simpleWeights[i];
-                            Tile refTile = tileCache.ElementAt(i).Value.Item2;
-                            ((AdjacentModel) dbModel).setFrequency(refTile, refWeight);
                         }
 
                         int[][] values = new int[50][];
@@ -402,8 +414,15 @@ namespace WFC4All {
 
                         ITopoArray<int> sample = TopoArray.create(values, false);
                         dbModel = new AdjacentModel(sample.toTiles());
+                        
+                        for (int i = 0; i < tileCache.Count; i++) {
+                            double refWeight = simpleWeights[i];
+                            Tile refTile = tileCache.ElementAt(i).Value.Item2;
+                            ((AdjacentModel) dbModel).setFrequency(refTile, refWeight);
+                        }
                     }
 
+                    mainWindowVM.Tiles = new ObservableCollection<TileViewModel>(toAdd);
 #if (DEBUG)
                     Trace.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
 #endif
@@ -427,9 +446,9 @@ namespace WFC4All {
                     switch (inputImage.ToLower()) {
                         case "flowers": {
                             // Set the bottom last 2 rows to be the ground tile
-                            dbPropagator.@select(0, outputHeight - 1, 0,
+                            dbPropagator.select(0, outputHeight - 1, 0,
                                 new Tile(currentColors.ElementAt(currentColors.Count - 1)));
-                            dbPropagator.@select(0, outputHeight - 2, 0,
+                            dbPropagator.select(0, outputHeight - 2, 0,
                                 new Tile(currentColors.ElementAt(currentColors.Count - 1)));
 
                             // And ban it elsewhere
@@ -441,7 +460,7 @@ namespace WFC4All {
                         }
                         case "skyline": {
                             // Set the bottom last row to be the ground tile
-                            dbPropagator.@select(0, outputHeight - 1, 0,
+                            dbPropagator.select(0, outputHeight - 1, 0,
                                 new Tile(currentColors.ElementAt(currentColors.Count - 1)));
 
                             // And ban it elsewhere
@@ -582,7 +601,7 @@ namespace WFC4All {
             patternCount = 0;
         }
 
-        private void addPattern(PatternArray colors, double weight) {
+        private TileViewModel? addPattern(PatternArray colors, double weight) {
             int n = colors.Height;
             Bitmap pattern = new(n, n);
 
@@ -604,17 +623,18 @@ namespace WFC4All {
                             transform.Invoke(cur.Size.Width - 1, cur.Size.Height - 1, x.Key.X, x.Key.Y)]))
                     .Any(match => match)) {
                     similarityMap[i].Add(pattern);
-                    return;
+                    return null;
                 }
             }
-
+            
             curBitmaps.Add(cur);
             similarityMap[patternCount] = new List<Bitmap> {pattern};
 
             Avalonia.Media.Imaging.Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(pattern);
-            mainWindowVM.Tiles.Add(new TileViewModel(avaloniaBitmap, weight));
+            TileViewModel tvm = new(avaloniaBitmap, weight, patternCount);
 
             patternCount++;
+            return tvm;
         }
 
         private readonly List<Func<int, int, int, int, Point>> transforms = new() {
@@ -847,6 +867,21 @@ namespace WFC4All {
             //
             // resultPB.Image = inputManager.resizeBitmap(result2,
             //     Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
+        }
+
+        public void changeWeight(int indexChanged, int value) {
+            if (_isChangingModels || _isChangingImages) {
+                return;
+            }
+            //TODO
+            if (isOverlappingModel()) {
+                ((OverlappingModel) dbPropagator.TileModel).setFrequency(new Tile(indexChanged), value);
+            } else {
+                ((AdjacentModel) dbPropagator.TileModel).setFrequency(tileCache[indexChanged].Item2, value);
+                foreach (int i in tileSymmetries[indexChanged]) {
+                    ((AdjacentModel) dbPropagator.TileModel).setFrequency(tileCache[i].Item2, value);
+                }
+            }
         }
     }
 }

@@ -1,26 +1,33 @@
 ﻿using Avalonia.Media.Imaging;
 using ReactiveUI;
 
-namespace WFC4ALL.ContentControls; 
+namespace WFC4ALL.ContentControls {
+    public class TileViewModel : ReactiveObject {
 
-public class TileViewModel : ReactiveObject {
-    
-    private Bitmap _patternImage = null!;
-    private int _patternWeight = 0;
+        private readonly Bitmap _patternImage = null!;
+        private int _patternWeight;
+        private readonly int _patternIndex;
 
-    public Bitmap PatternImage {
-        get => _patternImage;
-        set => this.RaiseAndSetIfChanged(ref _patternImage, value);
+        public Bitmap PatternImage {
+            get => _patternImage;
+            private init => this.RaiseAndSetIfChanged(ref _patternImage, value);
+        }
+
+        public int PatternWeight {
+            get => _patternWeight;
+            set => this.RaiseAndSetIfChanged(ref _patternWeight, value);
+        }
+
+        public int PatternIndex {
+            get => _patternIndex;
+            private init => this.RaiseAndSetIfChanged(ref _patternIndex, value);
+        }
+
+        public TileViewModel(Bitmap image, double weight, int index) {
+            PatternImage = image;
+            PatternWeight = (int) weight;
+            PatternIndex = index;
+        }
+
     }
-
-    public int PatternWeight {
-        get => _patternWeight;
-        set => this.RaiseAndSetIfChanged(ref _patternWeight, value);
-    }
-
-    public TileViewModel(Bitmap image, double weight) {
-        PatternImage = image;
-        PatternWeight = (int) weight;
-    }
-    
 }

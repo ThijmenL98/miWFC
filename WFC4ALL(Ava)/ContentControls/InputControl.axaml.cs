@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using WFC4All;
@@ -54,6 +55,8 @@ namespace WFC4ALL.ContentControls {
                 return;
             }
 
+            inputManager.setImageChanging(true);
+
             string newValue = getInputImage();
             inputManager.updateInputImage(newValue);
 
@@ -69,6 +72,7 @@ namespace WFC4ALL.ContentControls {
             if (e != null) {
                 e.Handled = true;
             }
+            inputManager.setImageChanging(false);
         }
 
         private void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {

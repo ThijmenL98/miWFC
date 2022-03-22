@@ -155,8 +155,7 @@ namespace WFC4All.DeBroglie.Wfc
             while (toPropagate.Count > 0)
             {
                 IndexPatternItem item = toPropagate.Pop();
-                int x, y, z;
-                topology.getCoord(item.Index, out x, out y, out z);
+                topology.getCoord(item.Index, out int x, out int y, out int z);
                 for (int d = 0; d < directionsCount; d++)
                 {
                     if (!topology.tryMove(x, y, z, (Direction)d, out int i2, out Direction id, out EdgeLabel el))

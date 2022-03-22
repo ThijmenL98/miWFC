@@ -300,5 +300,21 @@ namespace WFC4All.DeBroglie.Models {
                 }
             }
         }
+
+        public void setFrequency(Tile tile, double value) {
+            for (int p = 0; p < patternArrays.Count; p++) {
+                PatternArray patternArray = patternArrays[p];
+                for (int x = 0; x < patternArray.Width; x++) {
+                    for (int y = 0; y < patternArray.Height; y++) {
+                        for (int z = 0; z < patternArray.Depth; z++) {
+                            if (patternArray.values[x, y, z] == tile) {
+                                Trace.WriteLine("Updating value");
+                                frequencies[p] = value;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

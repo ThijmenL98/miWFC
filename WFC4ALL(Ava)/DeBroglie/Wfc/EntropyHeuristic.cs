@@ -13,31 +13,28 @@ namespace WFC4All.DeBroglie.Wfc
         private readonly EntropyTracker entropyTracker;
 
         private readonly Func<double> randomDouble;
-
-        private readonly int selectionHeuristic, patternHeuristic;
-
-        public EntropyHeuristic(EntropyTracker entropyTracker, Func<double> randomDouble, int selectionHeuristic,
-            int patternHeuristic)
+        
+        public EntropyHeuristic(EntropyTracker entropyTracker, Func<double> randomDouble)
         {
             this.entropyTracker = entropyTracker;
             this.randomDouble = randomDouble;
-            this.selectionHeuristic = selectionHeuristic;
-            this.patternHeuristic = patternHeuristic;
         }
 
         public void pickObservation(out int index, out int pattern)
         {
-            index = selectionHeuristic switch {
-                // Choose a random cell
-                // RF7
-                0 => entropyTracker.getRandomMinEntropyIndex(randomDouble, false),    // Least Entropy Heuristic
-                1 => entropyTracker.getLexicalIndex(),                                      // Lexical Heuristic
-                2 => entropyTracker.getSpiralIndex(),                                       // Spiral Heuristic
-                3 => entropyTracker.getHilbertIndex(),                                      // Hilbert Heuristic
-                4 => entropyTracker.getRandomMinEntropyIndex(randomDouble, true),    // Simple Heuristic
-                5 => entropyTracker.getRandomIndex(randomDouble),                           // Random heuristic
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            // index = selectionHeuristic switch {
+            //     // Choose a random cell
+            //     // RF7
+            //     0 => entropyTracker.getRandomMinEntropyIndex(randomDouble, false),    // Least Entropy Heuristic
+            //     1 => entropyTracker.getLexicalIndex(),                                      // Lexical Heuristic
+            //     2 => entropyTracker.getSpiralIndex(),                                       // Spiral Heuristic
+            //     3 => entropyTracker.getHilbertIndex(),                                      // Hilbert Heuristic
+            //     4 => entropyTracker.getRandomMinEntropyIndex(randomDouble, true),    // Simple Heuristic
+            //     5 => entropyTracker.getRandomIndex(randomDouble),                           // Random heuristic
+            //     _ => throw new ArgumentOutOfRangeException()
+            // };
+
+            index = entropyTracker.getRandomMinEntropyIndex(randomDouble, false);
 
             if (index == -1) {
                 pattern = -1;
@@ -46,12 +43,14 @@ namespace WFC4All.DeBroglie.Wfc
             
             // Choose a random pattern
             // RF8
-            pattern = patternHeuristic switch {
-                0 => entropyTracker.getWeightedPatternAt(index, randomDouble), // Weighted Choice
-                1 => entropyTracker.getRandomPatternAt(index, randomDouble),   // Random Choice
-                2 => entropyTracker.getLeastPatternAt(index),                  // Least Used
-                _ => throw new ArgumentOutOfRangeException()
-            };
+            // pattern = patternHeuristic switch {
+            //     0 => entropyTracker.getWeightedPatternAt(index, randomDouble), // Weighted Choice
+            //     1 => entropyTracker.getRandomPatternAt(index, randomDouble),   // Random Choice
+            //     2 => entropyTracker.getLeastPatternAt(index),                  // Least Used
+            //     _ => throw new ArgumentOutOfRangeException()
+            // };
+            entropyTracker.updateZeroWeights(index);
+            pattern = entropyTracker.getWeightedPatternAt(index, randomDouble);
         }
     }
 }

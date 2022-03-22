@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
@@ -18,7 +19,7 @@ namespace WFC4All.DeBroglie.Models
     {
         private DirectionSet directions;
         private readonly Dictionary<Tile, int> tilesToPatterns;
-        private readonly List<double> frequencies;
+        public readonly List<double> frequencies;
         private readonly List<HashSet<int>[]> propagator;
 
         /// <summary>
