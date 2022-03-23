@@ -58,6 +58,10 @@ namespace WFC4All.DeBroglie.Trackers
             priorityIndices = priorities.Select(p => priorityToPriorityIndex[p]).ToArray();
         }
 
+        public void updateFrequency(int pattern, double value) {
+            frequencies[pattern] = value;
+        }
+
         private double toPLogP(double frequency)
         {
             return frequency > 0.0 ? frequency * Math.Log(frequency) : 0.0;

@@ -47,7 +47,7 @@ namespace WFC4All.DeBroglie.Wfc {
 
         private List<ITracker> trackers;
 
-        private IPickHeuristic pickHeuristic;
+        private EntropyHeuristic pickHeuristic;
 
         private readonly int outWidth, outHeight;
 
@@ -58,7 +58,7 @@ namespace WFC4All.DeBroglie.Wfc {
             int outputHeight,
             int backtrackDepth = 0,
             IWaveConstraint[] constraints = null,
-            Func<double> randomDouble = null,
+            Func<double>? randomDouble = null,
             FrequencySet[] frequencySets = null,
             bool clear = true) {
 
@@ -76,9 +76,9 @@ namespace WFC4All.DeBroglie.Wfc {
             this.randomDouble = randomDouble ?? new Random(1).NextDouble;
             this.frequencySets = frequencySets;
             directionsCount = topology.DirectionsCount;
-
+            
             patternModelConstraint = new PatternModelConstraint(this, model);
-
+            
             if (clear) {
                 this.clear();
             }
@@ -213,7 +213,11 @@ namespace WFC4All.DeBroglie.Wfc {
             deferredConstraintsStep = false;
         }
 
-        public Resolution Status => status;
+        public Resolution Status {
+            get => status;
+            set => status = value;
+        }
+
         public int BacktrackCount => backtrackCount;
 
         /**
@@ -231,19 +235,12 @@ namespace WFC4All.DeBroglie.Wfc {
 
             status = Resolution.UNDECIDED;
             trackers = new List<ITracker>();
-            if (frequencySets != null) {
-                ArrayPriorityEntropyTracker entropyTracker = new(wave, frequencySets, topology.Mask);
-                entropyTracker.reset();
-                addTracker(entropyTracker);
-                pickHeuristic = new ArrayPriorityEntropyHeuristic(entropyTracker, randomDouble);
-            } else {
-                EntropyTracker entropyTracker = new(wave, frequencies, topology.Mask, outWidth, outHeight);
-                entropyTracker.reset();
-                addTracker(entropyTracker);
-                pickHeuristic
-                    = new EntropyHeuristic(entropyTracker, randomDouble);
-            }
-
+            
+            EntropyTracker entropyTracker = new(wave, frequencies, topology.Mask, outWidth, outHeight);
+            entropyTracker.reset();
+            addTracker(entropyTracker);
+            pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble);
+            
             patternModelConstraint.clear();
 
             if (status == Resolution.CONTRADICTION) {
@@ -307,7 +304,7 @@ namespace WFC4All.DeBroglie.Wfc {
                     droppedBacktrackItemsCount = newDroppedCount;
                 }
             }
-
+            
             // Pick a tile and Select a pattern from it.
             observe(out index, out int pattern);
 
@@ -332,7 +329,7 @@ namespace WFC4All.DeBroglie.Wfc {
                 status = Resolution.DECIDED;
                 return status;
             }
-
+            
             if (backtrack && status == Resolution.CONTRADICTION) {
                 // After back tracking, it's no logner the case things are fully chosen
                 index = 0;

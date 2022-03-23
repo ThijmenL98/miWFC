@@ -49,7 +49,6 @@ namespace WFC4All.DeBroglie.Wfc
             //     2 => entropyTracker.getLeastPatternAt(index),                  // Least Used
             //     _ => throw new ArgumentOutOfRangeException()
             // };
-            entropyTracker.updateZeroWeights(index);
             pattern = entropyTracker.getWeightedPatternAt(index, randomDouble);
         }
     }

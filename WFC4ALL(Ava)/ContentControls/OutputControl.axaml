@@ -5,14 +5,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid Background="#F9F0DE" Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto, Auto, Auto">
+    <Grid Background="#F9F0DE" Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto, Auto, Auto, Auto, Auto">
         <Grid.Styles>
             <Style Selector="Button">
                 <Setter Property="Background" Value="Transparent" />
             </Style>
         </Grid.Styles>
-        
-        <GridSplitter Grid.Row="0"/>
+
+        <GridSplitter Grid.Row="0" />
 
         <Grid Background="#A9F0AE"
               ColumnDefinitions="Auto, Auto, Auto, Auto, *, Auto, Auto" VerticalAlignment="Center"
@@ -82,16 +82,49 @@
                 </ToolTip.Tip>
             </Button>
         </Grid>
-        
-        <GridSplitter Grid.Row="2"/>
-        
+
+        <GridSplitter Grid.Row="2" />
+
         <Image Grid.Row="3" Margin="10" RenderOptions.BitmapInterpolationMode="Default"
-               x:Name="outputImage" Source="{Binding OutputImage}" PointerPressed="OutputImageOnPointerPressed"/>
-        
-        <GridSplitter Grid.Row="4"/>
-        
+               x:Name="outputImage" Source="{Binding OutputImage}" PointerPressed="OutputImageOnPointerPressed" />
+
+        <GridSplitter Grid.Row="4" />
+
+        <Grid Grid.Row="5" ColumnDefinitions="*, 50*, *">
+            <GridSplitter Grid.Column="0" Background="Transparent" />
+            <Grid Grid.Column="1" RowDefinitions="*, *" x:Name="timeline" Margin="0 ,0, 0, 10">
+                <ItemsControl Items="{Binding Markers}" MinHeight="25" Margin="-10" Grid.Row="0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas HorizontalAlignment="Left" ClipToBounds="False" >
+                            </Canvas>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Image Height="25" Source="/Assets/TimeStamp.png">
+                                <Image.RenderTransform>
+                                    <TranslateTransform X="{Binding MarkerOffset}" />
+                                </Image.RenderTransform>
+                            </Image>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Image Grid.Row="1" Height="25" Margin="0" HorizontalAlignment="Left"
+                       Source="/Assets/NowMarker.png" Width="35">
+                    <Image.RenderTransform>
+                        <TranslateTransform X="{Binding TimeStampOffset}" Y="10"/>
+                    </Image.RenderTransform>
+                </Image>
+            </Grid>
+            <Separator Grid.Column="1" Background="Black" Height="4" CornerRadius="2" Margin="0,0,0,10"/>
+            <GridSplitter Grid.Column="2" Background="Transparent" />
+        </Grid>
+
+        <GridSplitter Grid.Row="6" />
+
         <Grid Background="#D9A0AF" ColumnDefinitions="Auto, *"
-              Grid.Row="5" HorizontalAlignment="Center" VerticalAlignment="Center">
+              Grid.Row="7" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid Background="#D9D0AE" ColumnDefinitions="*, Auto, *, *"
                   Grid.Column="0" RowDefinitions="Auto, Auto">
                 <Button Background="Transparent"
@@ -268,15 +301,15 @@
                                    HorizontalAlignment="Center" Margin="4" VerticalAlignment="Center">
                             Animation speed
                         </TextBlock>
-                        <Slider Grid.Row="1" Value="{Binding AnimSpeed}" Minimum="25" Maximum="2000" TickFrequency="5"
-                                IsSnapToTickEnabled="True" />
+                        <Slider Grid.Row="1" Value="{Binding AnimSpeed}" Minimum="1" Maximum="1000" TickFrequency="1"
+                                IsSnapToTickEnabled="True" IsDirectionReversed="True" />
                     </Grid>
                     <Image Grid.Column="2" Height="35" Margin="10"
                            Source="/Assets/fastSpeed.png" Width="35" />
                 </Grid>
             </Grid>
         </Grid>
-        
-        <GridSplitter Grid.Row="6"/>
+
+        <GridSplitter Grid.Row="8" />
     </Grid>
 </UserControl>

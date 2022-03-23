@@ -10,6 +10,19 @@
 	<PropertyGroup>
 		<ApplicationIcon>Assets\icon.ico</ApplicationIcon>
 	</PropertyGroup>
+	<PropertyGroup>
+		<CFBundleName>WFC4All</CFBundleName> 
+		<CFBundleDisplayName>WFC4All</CFBundleDisplayName>
+		<CFBundleIdentifier>com.wfc4all.tlangendam</CFBundleIdentifier>
+		<CFBundleVersion>1.0.0</CFBundleVersion>
+		<CFBundlePackageType>APPL</CFBundlePackageType>
+		<CFBundleSignature>4242</CFBundleSignature>
+		<CFBundleExecutable>WFC4All</CFBundleExecutable>
+		<CFBundleIconFile>icon.icns</CFBundleIconFile> 
+		<NSPrincipalClass>NSApplication</NSPrincipalClass>
+		<CFBundleShortVersionString>com.wfc4all.tlangendam</CFBundleShortVersionString>
+		<NSHighResolutionCapable>true</NSHighResolutionCapable>
+	</PropertyGroup>
 	<ItemGroup>
 		<Folder Include="Models\" />
 		<AvaloniaResource Include="Assets\**" />
@@ -29,6 +42,9 @@
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.12" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="0.10.12" />
 		<PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Dotnet.Bundle" Version="*" />
 	</ItemGroup>
 	<ItemGroup>
 		<Content Include="Assets\**">

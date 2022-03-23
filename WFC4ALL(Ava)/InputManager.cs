@@ -50,10 +50,13 @@ namespace WFC4All {
         private readonly Stack<int> savePoints;
 
         private readonly InputControl inputControl;
+        private readonly OutputControl outputControl;
 
         private DispatcherTimer timer = new();
 
         private bool _isChangingModels, _isChangingImages;
+
+        private double amountCollapsed;
 
         public InputManager(MainWindowViewModel mainWindowVM, MainWindow mainWindow) {
             this.mainWindowVM = mainWindowVM;
@@ -63,12 +66,14 @@ namespace WFC4All {
             _isChangingImages = false;
 
             inputControl = mainWindow.getInputControl();
+            outputControl = mainWindow.getOutputControl();
 
             noResultFoundBM = new Avalonia.Media.Imaging.Bitmap("Assets/NoResultFound.png");
             savePoints = new Stack<int>();
             savePoints.Push(0);
 
             tileSize = 0;
+            amountCollapsed = 0d;
             tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
             tileSymmetries = new Dictionary<int, int[]>();
             currentStep = 0;
@@ -99,6 +104,10 @@ namespace WFC4All {
             mainWindowVM.PopupVisible = true;
         }
 
+        public void setImageChanging(bool isChanging) {
+            _isChangingImages = isChanging;
+        }
+
         public void hidePopUp() {
             mainWindowVM.PopupVisible = false;
         }
@@ -106,7 +115,7 @@ namespace WFC4All {
         public bool popUpOpened() {
             return mainWindowVM.PopupVisible;
         }
-        
+
         public void updateCategories(string[]? values, int idx = 0) {
             mainWindow.getInputControl().setCategories(values, idx);
         }
@@ -123,18 +132,19 @@ namespace WFC4All {
             _isChangingModels = isChanging;
         }
 
-        public void setImageChanging(bool isChanging) {
-            _isChangingImages = isChanging;
-        }
+        public void restartSolution(bool force = false) {
+            if (_isChangingModels || _isChangingImages) {
+                return;
+            }
 
-        public void restartSolution() {
-            if (_isChangingModels) {
+            if (!getImages(isOverlappingModel() ? "overlapping" : "simpletiled", inputControl.getCategory())
+                    .Contains(inputControl.getInputImage())) {
                 return;
             }
 
             try {
                 int stepAmount = mainWindowVM.StepAmount;
-                (Bitmap result2, bool _) = initAndRunWfcDB(true, stepAmount == 100 ? -1 : stepAmount);
+                (Bitmap result2, bool _) = initAndRunWfcDB(true, stepAmount == 100 ? -1 : stepAmount, force);
                 Avalonia.Media.Imaging.Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(result2);
                 mainWindowVM.OutputImage = avaloniaBitmap;
             } catch (Exception exception) {
@@ -171,6 +181,12 @@ namespace WFC4All {
                 int curStep = getCurrentStep();
                 if (curStep < savePoints.Peek()) {
                     savePoints.Pop();
+                    int toRemove = savePoints.Count;
+                    foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
+                        if (marker.MarkerIndex.Equals(toRemove)) {
+                            mainWindowVM.Markers.Remove(marker);
+                        }
+                    }
                 }
             } catch (Exception exception) {
 #if (DEBUG)
@@ -182,11 +198,22 @@ namespace WFC4All {
 
         public void placeMarker() {
             int curStep = getCurrentStep();
+            mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
+                outputControl.getTimelineWidth() * amountCollapsed + 1));
             while (true) {
                 if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                     savePoints.Pop();
+                    int toRemove = savePoints.Count;
+                    foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
+                        if (marker.MarkerIndex.Equals(toRemove)) {
+                            mainWindowVM.Markers.Remove(marker);
+                        }
+                    }
                 } else {
-                    savePoints.Push(curStep);
+                    if (!savePoints.Contains(curStep)) {
+                        savePoints.Push(curStep);
+                    }
+
                     return;
                 }
             }
@@ -196,6 +223,13 @@ namespace WFC4All {
             int prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
             if (getCurrentStep() == prevTimePoint && savePoints.Count != 0) {
                 savePoints.Pop();
+                int toRemove = savePoints.Count;
+                foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
+                    if (marker.MarkerIndex.Equals(toRemove)) {
+                        mainWindowVM.Markers.Remove(marker);
+                    }
+                }
+
                 prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
             }
 
@@ -297,8 +331,8 @@ namespace WFC4All {
             return bitmap1;
         }
 
-        private (Bitmap, bool) initAndRunWfcDB(bool reset, int steps) {
-            if (_isChangingModels) {
+        private (Bitmap, bool) initAndRunWfcDB(bool reset, int steps, bool force = false) {
+            if (_isChangingModels || (!mainWindow.IsActive && !force)) {
                 return (new Bitmap(1, 1), true);
             }
 
@@ -372,7 +406,7 @@ namespace WFC4All {
                                 'F' => 8,
                                 _ => 1
                             };
-                            
+
                             Color[] cur = imTile((x, y) => bitmap.GetPixel(x, y), tileSize);
                             int val = tileCache.Count;
                             Tile curTile = new(val);
@@ -388,7 +422,7 @@ namespace WFC4All {
                                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
                                 symmetries.Add(myIdx);
                             }
-                            
+
                             tileSymmetries.Add(val, symmetries.ToArray());
 
                             double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0");
@@ -414,7 +448,7 @@ namespace WFC4All {
 
                         ITopoArray<int> sample = TopoArray.create(values, false);
                         dbModel = new AdjacentModel(sample.toTiles());
-                        
+
                         for (int i = 0; i < tileCache.Count; i++) {
                             double refWeight = simpleWeights[i];
                             Tile refTile = tileCache.ElementAt(i).Value.Item2;
@@ -424,7 +458,9 @@ namespace WFC4All {
 
                     mainWindowVM.Tiles = new ObservableCollection<TileViewModel>(toAdd);
 #if (DEBUG)
-                    Trace.WriteLine(@$"Init took {sw.ElapsedMilliseconds}ms.");
+                    if (sw.ElapsedMilliseconds >= 10) {
+                        Trace.Write(@$"Init took {sw.ElapsedMilliseconds}ms. - ");
+                    }
 #endif
                     sw.Restart();
                 }
@@ -438,7 +474,9 @@ namespace WFC4All {
                     RandomDouble = new Random(curSeed).NextDouble,
                 });
 #if (DEBUG)
-                Trace.WriteLine(@$"Assigning took {sw.ElapsedMilliseconds}ms.");
+                if (sw.ElapsedMilliseconds >= 10) {
+                    Trace.Write(@$"Assigning took {sw.ElapsedMilliseconds}ms. - ");
+                }
 #endif
                 sw.Restart();
 
@@ -498,12 +536,15 @@ namespace WFC4All {
             }
 
 #if (DEBUG)
-            Trace.WriteLine(@$"Stepping forward took {sw.ElapsedMilliseconds}ms.");
+            if (sw.ElapsedMilliseconds >= 10) {
+                Trace.WriteLine(@$"Stepping forward took {sw.ElapsedMilliseconds}ms.");
+            }
 #endif
             sw.Restart();
 
             Bitmap outputBitmap;
             int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
+            int collapsedTiles = 0;
 
             if (isOverlappingModel()) {
                 outputBitmap = new Bitmap(outputWidth, outputHeight);
@@ -511,7 +552,11 @@ namespace WFC4All {
                 for (int y = 0; y < outputHeight; y++) {
                     for (int x = 0; x < outputWidth; x++) {
                         Color cur = dbOutput.get(x, y);
-                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.Silver);
+                        Color toSet = currentColors.Contains(cur) ? cur : Color.Silver;
+                        outputBitmap.SetPixel(x, y, toSet);
+                        if (!toSet.Equals(Color.Silver)) {
+                            collapsedTiles++;
+                        }
                     }
                 }
             } else {
@@ -520,10 +565,10 @@ namespace WFC4All {
                 for (int y = 0; y < outputHeight; y++) {
                     for (int x = 0; x < outputWidth; x++) {
                         int value = dbOutput.get(x, y);
-                        Color[] outputPattern = value >= 0
+                        bool isCollapsed = value >= 0;
+                        Color[] outputPattern = isCollapsed
                             ? tileCache.ElementAt(value).Value.Item1
                             : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
-
                         for (int yy = 0; yy < tileSize; yy++) {
                             for (int xx = 0; xx < tileSize; xx++) {
                                 Color cur = outputPattern[yy * tileSize + xx];
@@ -531,13 +576,17 @@ namespace WFC4All {
                                     cur);
                             }
                         }
+
+                        if (isCollapsed) {
+                            collapsedTiles++;
+                        }
                     }
                 }
             }
 
-#if (DEBUG)
-            Trace.WriteLine(@$"Bitmap took {sw.ElapsedMilliseconds}ms. {dbStatus}");
-#endif
+            amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+            updateTimeStampPosition();
+
             return (outputBitmap, dbStatus == Resolution.DECIDED);
         }
 
@@ -549,12 +598,15 @@ namespace WFC4All {
             }
 
 #if (DEBUG)
-            Trace.WriteLine(@$"Stepping back took {sw.ElapsedMilliseconds}ms.");
+            if (sw.ElapsedMilliseconds >= 10) {
+                Trace.WriteLine(@$"Stepping back took {sw.ElapsedMilliseconds}ms.");
+            }
 #endif
             sw.Restart();
 
             Bitmap outputBitmap;
             int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
+            int collapsedTiles = 0;
 
             if (isOverlappingModel()) {
                 outputBitmap = new Bitmap(outputWidth, outputHeight);
@@ -562,7 +614,11 @@ namespace WFC4All {
                 for (int y = 0; y < outputHeight; y++) {
                     for (int x = 0; x < outputWidth; x++) {
                         Color cur = dbOutput.get(x, y);
-                        outputBitmap.SetPixel(x, y, currentColors.Contains(cur) ? cur : Color.Silver);
+                        Color toSet = currentColors.Contains(cur) ? cur : Color.Silver;
+                        outputBitmap.SetPixel(x, y, toSet);
+                        if (!toSet.Equals(Color.Silver)) {
+                            collapsedTiles++;
+                        }
                     }
                 }
             } else {
@@ -571,7 +627,8 @@ namespace WFC4All {
                 for (int y = 0; y < outputHeight; y++) {
                     for (int x = 0; x < outputWidth; x++) {
                         int value = dbOutput.get(x, y);
-                        Color[] outputPattern = value >= 0
+                        bool isCollapsed = value >= 0;
+                        Color[] outputPattern = isCollapsed
                             ? tileCache.ElementAt(value).Value.Item1
                             : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
                         for (int yy = 0; yy < tileSize; yy++) {
@@ -580,13 +637,16 @@ namespace WFC4All {
                                 outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy, cur);
                             }
                         }
+
+                        if (isCollapsed) {
+                            collapsedTiles++;
+                        }
                     }
                 }
             }
 
-#if (DEBUG)
-            Trace.WriteLine(@$"Bitmap took {sw.ElapsedMilliseconds}ms.");
-#endif
+            amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+            updateTimeStampPosition();
 
             return outputBitmap;
         }
@@ -623,10 +683,19 @@ namespace WFC4All {
                             transform.Invoke(cur.Size.Width - 1, cur.Size.Height - 1, x.Key.X, x.Key.Y)]))
                     .Any(match => match)) {
                     similarityMap[i].Add(pattern);
+                    List<int> syms;
+                    if (tileSymmetries.ContainsKey(i)) {
+                        syms = tileSymmetries[i].ToList();
+                    } else {
+                        syms = new List<int>();
+                    }
+
+                    syms.Add(patternCount);
+                    tileSymmetries[i] = syms.ToArray();
                     return null;
                 }
             }
-            
+
             curBitmaps.Add(cur);
             similarityMap[patternCount] = new List<Bitmap> {pattern};
 
@@ -820,9 +889,7 @@ namespace WFC4All {
             if (_isChangingModels) {
                 return;
             }
-#if (DEBUG)
-            Trace.WriteLine(@$"Input changed on {source}");
-#endif
+
             inputHasChanged = true;
         }
 
@@ -869,19 +936,9 @@ namespace WFC4All {
             //     Math.Min(initOutHeight / (float) result2.Height, initOutWidth / (float) result2.Width));
         }
 
-        public void changeWeight(int indexChanged, int value) {
-            if (_isChangingModels || _isChangingImages) {
-                return;
-            }
-            //TODO
-            if (isOverlappingModel()) {
-                ((OverlappingModel) dbPropagator.TileModel).setFrequency(new Tile(indexChanged), value);
-            } else {
-                ((AdjacentModel) dbPropagator.TileModel).setFrequency(tileCache[indexChanged].Item2, value);
-                foreach (int i in tileSymmetries[indexChanged]) {
-                    ((AdjacentModel) dbPropagator.TileModel).setFrequency(tileCache[i].Item2, value);
-                }
-            }
+        private void updateTimeStampPosition() {
+            double tWidth = outputControl.getTimelineWidth();
+            mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
         }
     }
 }

@@ -5,7 +5,6 @@ using Avalonia.Media.Imaging;
 using ReactiveUI;
 using WFC4All;
 using WFC4ALL.ContentControls;
-using WFC4All.DeBroglie;
 
 // ReSharper disable UnusedMember.Global
 
@@ -17,9 +16,11 @@ namespace WFC4ALL.ViewModels {
             _stepAmountString = "Steps to take: 1";
 
         private bool _isPlaying, _paddingEnabled, _instantCollapse, _popupVisible;
-        private int _stepAmount = 1, _animSpeed = 25, _imgOutWidth = 24, _imgOutHeight = 24, _patternSize = 3;
+        private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth = 24, _imgOutHeight = 24, _patternSize = 3;
         private Bitmap _inputImage, _outputImage;
         private ObservableCollection<TileViewModel> _tiles = new();
+        private ObservableCollection<MarkerViewModel> _markers = new();
+        private double _timeStampOffset = 0d, _timelineWidth = 600d;
 
         private InputManager inputManager;
         private Tuple<string, string> lastOverlapSelection, lastSimpleSelection;
@@ -84,6 +85,16 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _patternSize, value);
         }
 
+        public double TimeStampOffset {
+            get => _timeStampOffset;
+            set => this.RaiseAndSetIfChanged(ref _timeStampOffset, value);
+        }
+
+        public double TimelineWidth {
+            get => _timelineWidth;
+            set => this.RaiseAndSetIfChanged(ref _timelineWidth, value);
+        }
+
         public Bitmap InputImage {
             get => _inputImage;
             set => this.RaiseAndSetIfChanged(ref _inputImage, value);
@@ -97,6 +108,11 @@ namespace WFC4ALL.ViewModels {
         public ObservableCollection<TileViewModel> Tiles {
             get => _tiles;
             set => this.RaiseAndSetIfChanged(ref _tiles, value);
+        }
+
+        public ObservableCollection<MarkerViewModel> Markers {
+            get => _markers;
+            set => this.RaiseAndSetIfChanged(ref _markers, value);
         }
 
         public MainWindowViewModel VM => this;

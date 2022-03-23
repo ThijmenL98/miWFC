@@ -36,9 +36,7 @@ namespace WFC4ALL.ContentControls {
             if (inputManager == null || inputManager.isChangingModels()) {
                 return;
             }
-
-            inputManager.setInputChanged("Category CB");
-
+            
             string newValue = getCategory();
 
             this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures");
@@ -54,9 +52,8 @@ namespace WFC4ALL.ContentControls {
             if (inputManager == null || inputManager.isChangingModels()) {
                 return;
             }
-
             inputManager.setImageChanging(true);
-
+            
             string newValue = getInputImage();
             inputManager.updateInputImage(newValue);
 
@@ -68,11 +65,11 @@ namespace WFC4ALL.ContentControls {
             }
 
             //updateInputPadding();
+            inputManager.setImageChanging(false);
             inputManager.restartSolution();
             if (e != null) {
                 e.Handled = true;
             }
-            inputManager.setImageChanging(false);
         }
 
         private void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {

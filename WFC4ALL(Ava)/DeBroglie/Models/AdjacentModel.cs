@@ -19,7 +19,7 @@ namespace WFC4All.DeBroglie.Models
     {
         private DirectionSet directions;
         private readonly Dictionary<Tile, int> tilesToPatterns;
-        public readonly List<double> frequencies;
+        private readonly List<double> frequencies;
         private readonly List<HashSet<int>[]> propagator;
 
         /// <summary>

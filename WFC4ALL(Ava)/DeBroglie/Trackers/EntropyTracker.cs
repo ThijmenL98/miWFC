@@ -61,6 +61,10 @@ namespace WFC4All.DeBroglie.Trackers {
             entropyValues = new EntropyValues[indices];
         }
 
+        public void updateFrequency(int pattern, double value) {
+            frequencies[pattern] = value;
+        }
+
         public void doBan(int index, int pattern) {
             entropyValues[index].decrement(frequencies[pattern], plogp[pattern]);
         }
@@ -300,7 +304,6 @@ namespace WFC4All.DeBroglie.Trackers {
         public int getWeightedPatternAt(int index, Func<double> randomDouble) {
             double s = 0.0;
                         
-            Trace.WriteLine("Weights: " + string.Join(", ", frequencies));
             for (int pattern = 0; pattern < patternCount; pattern++) {
                 if (wave.get(index, pattern)) {
                     s += frequencies[pattern];
@@ -314,12 +317,15 @@ namespace WFC4All.DeBroglie.Trackers {
                 }
 
                 if (r <= 0) {
-                    Trace.WriteLine("Chose a weight of: " + frequencies[pattern]);
                     return pattern;
                 }
             }
 
             return patternCount - 1;
+        }
+
+        public double[] getFrequencies() {
+            return frequencies;
         }
 
         public int getLeastPatternAt(int index) {
@@ -391,14 +397,6 @@ namespace WFC4All.DeBroglie.Trackers {
                 plogpSum += plogp;
                 sum += p;
                 recomputeEntropy();
-            }
-        }
-
-        public void updateZeroWeights(int index) {
-            for (int pattern = 0; pattern < patternCount; pattern++) {
-                if (frequencies[pattern] == 0) {
-                    doBan(index, pattern);
-                }
             }
         }
     }

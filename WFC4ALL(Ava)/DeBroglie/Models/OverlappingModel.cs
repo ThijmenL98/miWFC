@@ -308,7 +308,6 @@ namespace WFC4All.DeBroglie.Models {
                     for (int y = 0; y < patternArray.Height; y++) {
                         for (int z = 0; z < patternArray.Depth; z++) {
                             if (patternArray.values[x, y, z] == tile) {
-                                Trace.WriteLine("Updating value");
                                 frequencies[p] = value;
                             }
                         }

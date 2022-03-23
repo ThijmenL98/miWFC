@@ -1,5 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Avalonia.Interactivity;
+using DynamicData;
 using WFC4All.DeBroglie.Topo;
+using WFC4All.DeBroglie.Trackers;
 
 namespace WFC4All.DeBroglie.Wfc
 {
@@ -24,7 +29,7 @@ namespace WFC4All.DeBroglie.Wfc
 
         // List of locations that still need to be checked against for fulfilling the model's conditions
         private readonly Stack<IndexPatternItem> toPropagate;
-
+        
         /**
           * compatible[index, pattern, direction] contains the number of patterns present in the wave
           * that can be placed in the cell next to index in direction without being
@@ -135,6 +140,7 @@ namespace WFC4All.DeBroglie.Wfc
 
         private void propagateCore(int[] patterns, int i2, int d)
         {
+            
             // Hot loop
             foreach (int p in patterns)
             {
@@ -156,15 +162,18 @@ namespace WFC4All.DeBroglie.Wfc
             {
                 IndexPatternItem item = toPropagate.Pop();
                 topology.getCoord(item.Index, out int x, out int y, out int z);
+                
                 for (int d = 0; d < directionsCount; d++)
                 {
                     if (!topology.tryMove(x, y, z, (Direction)d, out int i2, out Direction id, out EdgeLabel el))
                     {
                         continue;
                     }
+                    
                     int[] patterns = propagatorArray[item.Pattern][(int)el];
                     propagateCore(patterns, i2, (int)id);
                 }
+
                 // It's important we fully process the item before returning
                 // so that we're in a consistent state for backtracking
                 if (propagator.Status == Resolution.CONTRADICTION)
@@ -173,6 +182,5 @@ namespace WFC4All.DeBroglie.Wfc
                 }
             }
         }
-
     }
 }

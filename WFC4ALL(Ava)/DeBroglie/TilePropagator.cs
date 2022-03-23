@@ -102,11 +102,14 @@ namespace WFC4All.DeBroglie
 
         }
 
+        private readonly TilePropagatorOptions tpo;
+
         public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options)
         {
             this.tileModel = tileModel;
             this.topology = topology;
-
+            this.tpo = options;
+            
             OverlappingModel overlapping = tileModel as OverlappingModel;
 
             tileModelMapping = tileModel.getTileModelMapping(topology);
@@ -132,7 +135,6 @@ namespace WFC4All.DeBroglie
                 clear: false);
 #pragma warning restore CS0618 // Type or member is obsolete
             wavePropagator.clear();
-
         }
 
         private void tileCoordToPatternCoord(int x, int y, int z, out int px, out int py, out int pz, out int offset)

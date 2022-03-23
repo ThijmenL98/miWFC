@@ -27,6 +27,10 @@ namespace WFC4ALL.ContentControls {
             }
         }
 
+        public double getTimelineWidth() {
+            return this.Find<Grid>("timeline").Bounds.Width;
+        }
+
         public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
             (double clickX, double clickY) = e.GetPosition(e.Source as Image);
