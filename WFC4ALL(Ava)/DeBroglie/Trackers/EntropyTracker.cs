@@ -61,10 +61,6 @@ namespace WFC4All.DeBroglie.Trackers {
             entropyValues = new EntropyValues[indices];
         }
 
-        public void updateFrequency(int pattern, double value) {
-            frequencies[pattern] = value;
-        }
-
         public void doBan(int index, int pattern) {
             entropyValues[index].decrement(frequencies[pattern], plogp[pattern]);
         }

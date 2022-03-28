@@ -1,13 +1,13 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 using WFC4ALL.ContentControls;
-using InputManager = WFC4All.InputManager;
+using WFC4ALL.Managers;
 
 namespace WFC4ALL.Views {
     public partial class MainWindow : Window {
-        private InputManager? inputManager;
+        private CentralManager? centralManager;
+        private bool triggered;
 
         public MainWindow() {
             InitializeComponent();
@@ -15,10 +15,10 @@ namespace WFC4ALL.Views {
             KeyDown += keyDownHandler;
         }
 
-        public void setInputManager(InputManager im) {
-            inputManager = im;
-            this.Find<InputControl>("inputControl").setInputManager(im);
-            this.Find<OutputControl>("outputControl").setInputManager(im);
+        public void setCentralManager(CentralManager cm) {
+            centralManager = cm;
+            this.Find<InputControl>("inputControl").setCentralManager(cm);
+            this.Find<OutputControl>("outputControl").setCentralManager(cm);
         }
 
         public InputControl getInputControl() {
@@ -34,7 +34,7 @@ namespace WFC4ALL.Views {
          */
 
         private void keyDownHandler(object? sender, KeyEventArgs e) {
-            if (inputManager == null) {
+            if (centralManager == null) {
                 return;
             }
 
@@ -43,15 +43,16 @@ namespace WFC4ALL.Views {
                 case Key.Left:
                 case Key.Delete:
                 case Key.Back:
-                    if (inputManager.popUpOpened()) {
-                        inputManager.hidePopUp();
+                    if (centralManager.getUIManager().popUpOpened()) {
+                        centralManager.getUIManager().hidePopUp();
                     } else {
-                        inputManager.revertStep();
+                        centralManager.getInputManager().revertStep();
                     }
+
                     e.Handled = true;
                     break;
                 case Key.Right:
-                    inputManager.advanceStep();
+                    centralManager.getInputManager().advanceStep();
                     e.Handled = true;
                     break;
                 case Key.PageDown:
@@ -62,60 +63,46 @@ namespace WFC4ALL.Views {
                     break;
                 case Key.Space:
                 case Key.P:
-                    inputManager.animate();
+                    centralManager.getInputManager().animate();
                     e.Handled = true;
                     break;
                 case Key.S:
                 case Key.M:
-                    inputManager.placeMarker();
+                    centralManager.getInputManager().placeMarker();
                     e.Handled = true;
                     break;
                 case Key.E:
-                    inputManager.export();
+                    centralManager.getInputManager().exportSolution();
                     e.Handled = true;
                     break;
                 case Key.L:
-                    inputManager.loadMarker();
+                    centralManager.getInputManager().loadMarker();
                     e.Handled = true;
                     break;
                 case Key.R:
-                    inputManager.restartSolution();
+                    centralManager.getInputManager().restartSolution();
                     e.Handled = true;
                     break;
                 case Key.Escape:
-                    if (inputManager.popUpOpened()) {
-                        inputManager.hidePopUp();
+                    if (centralManager.getUIManager().popUpOpened()) {
+                        centralManager.getUIManager().hidePopUp();
                     }
+
                     e.Handled = true;
                     break;
                 default:
                     base.OnKeyDown(e);
                     break;
             }
-
-            e.Handled = true;
         }
 
-        private bool triggered = false;
-
-        // private void NumericUpDown_OnValueChanged(object sender, NumericUpDownValueChangedEventArgs e) {
-        //     if (!IsActive) {
-        //         return;
-        //     }
-        //     NumericUpDown changedNUD = (sender as NumericUpDown)!;
-        //     int value = (int) changedNUD.Value;
-        //     int indexChanged = (changedNUD.DataContext as TileViewModel)!.PatternIndex;
-        //     inputManager?.changeWeight(indexChanged, value);
-        //
-        //     if (value == 0) {
-        //         changedNUD.Text = "~0";
-        //     }
-        // }
+        // ReSharper disable twice UnusedParameter.Local
         private void WindowBase_OnActivated(object? sender, EventArgs e) {
             if (triggered) {
                 return;
             }
-            inputManager?.restartSolution(true);
+
+            centralManager?.getInputManager().restartSolution(true);
             triggered = true;
         }
     }

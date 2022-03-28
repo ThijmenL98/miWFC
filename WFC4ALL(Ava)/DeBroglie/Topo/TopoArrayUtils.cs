@@ -91,7 +91,7 @@ namespace WFC4All.DeBroglie.Topo
 
         public delegate bool TileRotate<T>(T tile, out T result);
 
-        public static ITopoArray<Tile> rotate(ITopoArray<Tile> original, Rotation rotation, TileRotation tileRotation = null)
+        public static ITopoArray<Tile> rotate(ITopoArray<Tile> original, Rotation rotation, TileRotation? tileRotation = null)
         {
             GridTopology gridTopology = original.Topology.asGridTopology();
             DirectionSetType type = gridTopology.Directions.Type;
@@ -109,7 +109,7 @@ namespace WFC4All.DeBroglie.Topo
             throw new Exception($"Unknown directions type {type}");
         }
 
-        public static ITopoArray<T> rotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T> tileRotate = null)
+        public static ITopoArray<T> rotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T>? tileRotate = null)
         {
             GridTopology topology = original.Topology.asGridTopology();
             DirectionSetType type = topology.Directions.Type;
@@ -129,7 +129,7 @@ namespace WFC4All.DeBroglie.Topo
         }
 
 
-        public static ITopoArray<Tile> squareRotate(ITopoArray<Tile> original, Rotation rotation, TileRotation tileRotation = null)
+        public static ITopoArray<Tile> squareRotate(ITopoArray<Tile> original, Rotation rotation, TileRotation? tileRotation = null)
         {
             bool tileRotate(Tile tile, out Tile result)
             {
@@ -138,7 +138,7 @@ namespace WFC4All.DeBroglie.Topo
             return squareRotate(original, rotation, tileRotation == null ? null : tileRotate);
         }
 
-        public static ITopoArray<T> squareRotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T> tileRotate = null)
+        public static ITopoArray<T> squareRotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T>? tileRotate = null)
         {
             if (rotation.IsIdentity) {
                 return original;
@@ -152,7 +152,8 @@ namespace WFC4All.DeBroglie.Topo
             return rotateInner(original, mapCoord, tileRotate);
         }
 
-        public static ITopoArray<Tile> hexRotate(ITopoArray<Tile> original, Rotation rotation, TileRotation tileRotation = null)
+        public static ITopoArray<Tile> hexRotate(ITopoArray<Tile> original, Rotation rotation, object tileRotation1,
+            TileRotation? tileRotation = null)
         {
             bool tileRotate(Tile tile, out Tile result)
             {
@@ -161,7 +162,7 @@ namespace WFC4All.DeBroglie.Topo
             return hexRotate(original, rotation, tileRotation == null ? null : tileRotate);
         }
 
-        public static ITopoArray<T> hexRotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T> tileRotate = null)
+        public static ITopoArray<T> hexRotate<T>(ITopoArray<T> original, Rotation rotation, TileRotate<T>? tileRotate = null)
         {
             if (rotation.IsIdentity) {
                 return original;
@@ -180,7 +181,7 @@ namespace WFC4All.DeBroglie.Topo
         }
 
 
-        private static ITopoArray<T> rotateInner<T>(ITopoArray<T> original, Func<int, int, ValueTuple<int, int>> mapCoord, TileRotate<T> tileRotate = null)
+        private static ITopoArray<T> rotateInner<T>(ITopoArray<T> original, Func<int, int, ValueTuple<int, int>> mapCoord, TileRotate<T>? tileRotate = null)
         {
             GridTopology originalTopology = original.Topology.asGridTopology();
 

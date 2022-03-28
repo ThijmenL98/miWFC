@@ -82,7 +82,7 @@ namespace WFC4All.DeBroglie.Rot
             switch (treatment)
             {
                 case TileRotationTreatment.MISSING:
-                    result = default(Tile);
+                    result = default;
                     return false;
                 case TileRotationTreatment.UNCHANGED:
                     result = tile;

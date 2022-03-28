@@ -12,7 +12,7 @@ namespace WFC4All.DeBroglie.Models
     {
         public static IEnumerable<ITopoArray<Tile>> getRotatedSamples(
             ITopoArray<Tile> sample,
-            TileRotation tileRotation = null)
+            TileRotation? tileRotation = null)
         {
             tileRotation = tileRotation ?? new TileRotation();
 
@@ -86,7 +86,7 @@ namespace WFC4All.DeBroglie.Models
                         int index = sample.Topology.getIndex(sx, sy, sz);
                         if (!sample.Topology.containsIndex(index))
                         {
-                            pattern = default(PatternArray);
+                            pattern = default;
                             return false;
                         }
                         values[tx, ty, tz] = sample.get(sx, sy, sz);

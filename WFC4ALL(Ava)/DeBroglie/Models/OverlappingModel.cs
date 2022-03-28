@@ -51,7 +51,7 @@ namespace WFC4All.DeBroglie.Models {
             propagator = new List<HashSet<int>[]>();
         }
 
-        public Tuple<List<PatternArray>,List<double>> addSample(ITopoArray<Tile> sample, TileRotation tileRotation = null) {
+        public Tuple<List<PatternArray>,List<double>> addSample(ITopoArray<Tile> sample, TileRotation? tileRotation = null) {
             if (sample.Topology.Depth == 1) {
                 nz = 1;
             }

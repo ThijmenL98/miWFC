@@ -27,7 +27,7 @@ namespace WFC4All.DeBroglie.Topo
         /// <summary>
         /// Constructs a 2d topology.
         /// </summary>
-        public GridTopology(DirectionSet directions, int width, int height, bool periodicX, bool periodicY, bool[] mask = null)
+        public GridTopology(DirectionSet directions, int width, int height, bool periodicX, bool periodicY, bool[]? mask = null)
             : this(directions, width, height, 1, periodicX, periodicY, false, mask)
         {
         }
@@ -35,7 +35,7 @@ namespace WFC4All.DeBroglie.Topo
         /// <summary>
         /// Constructs a topology.
         /// </summary>
-        public GridTopology(DirectionSet directions, int width, int height, int depth, bool periodicX, bool periodicY, bool periodicZ, bool[] mask = null)
+        public GridTopology(DirectionSet directions, int width, int height, int depth, bool periodicX, bool periodicY, bool periodicZ, bool[]? mask = null)
         {
             Directions = directions;
             Width = width;

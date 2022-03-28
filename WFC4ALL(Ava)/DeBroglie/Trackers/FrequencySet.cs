@@ -16,7 +16,7 @@ namespace WFC4All.DeBroglie.Trackers
             public List<double> plogp;
         }
 
-        public FrequencySet(double[] weights, int[] priorities = null)
+        public FrequencySet(double[] weights, int[]? priorities = null)
         {
             if(priorities == null)
             {
@@ -56,10 +56,6 @@ namespace WFC4All.DeBroglie.Trackers
             Groups = groupsByPriority.OrderByDescending(x => x.Key).Select(x => x.Value).ToArray();
             Dictionary<int, int> priorityToPriorityIndex = Groups.Select((g, i) => new { g, i }).ToDictionary(t => t.g.priority, t => t.i);
             priorityIndices = priorities.Select(p => priorityToPriorityIndex[p]).ToArray();
-        }
-
-        public void updateFrequency(int pattern, double value) {
-            frequencies[pattern] = value;
         }
 
         private double toPLogP(double frequency)

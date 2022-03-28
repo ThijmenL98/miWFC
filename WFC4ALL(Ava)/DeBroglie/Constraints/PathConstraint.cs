@@ -39,7 +39,7 @@ namespace WFC4All.DeBroglie.Constraints
         /// </summary>
         public ISet<Tile> EndPointTiles { get; set; }
 
-        public PathConstraint(ISet<Tile> tiles, Point[] endPoints = null)
+        public PathConstraint(ISet<Tile> tiles, Point[]? endPoints = null)
         {
             Tiles = tiles;
             EndPoints = endPoints;

@@ -3,11 +3,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using InputManager = WFC4All.InputManager;
+using WFC4ALL.Managers;
 
 namespace WFC4ALL.ContentControls {
     public partial class OutputControl : UserControl {
-        private InputManager? inputManager;
+        private CentralManager? centralManager;
 
         public OutputControl() {
             InitializeComponent();
@@ -17,13 +17,13 @@ namespace WFC4ALL.ContentControls {
             AvaloniaXamlLoader.Load(this);
         }
 
-        public void setInputManager(InputManager im) {
-            inputManager = im;
+        public void setCentralManager(CentralManager cm) {
+            centralManager = cm;
         }
 
         public void speedSliderChanged(object? _, AvaloniaPropertyChangedEventArgs e) {
             if (e.Property.ToString().Equals("Value") && e.NewValue != null) {
-                inputManager?.updateInstantCollapse((int) (double) e.NewValue);
+                centralManager?.getUIManager().updateInstantCollapse((int) (double) e.NewValue);
             }
         }
 
@@ -34,8 +34,8 @@ namespace WFC4ALL.ContentControls {
         public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
             (double clickX, double clickY) = e.GetPosition(e.Source as Image);
-            inputManager?.processClick((int) Math.Round(clickX), (int) Math.Round(clickY),
-                (int) Math.Round(imgHeight - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+            centralManager?.getInputManager().processClick((int) Math.Round(clickX), (int) Math.Round(clickY),
+                (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                 (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom));
         }
     }

@@ -63,7 +63,7 @@ namespace WFC4All.DeBroglie.Constraints
         /// For an explanation, see:
         /// https://www.boristhebrave.com/2018/04/28/random-paths-via-chiseling/
         /// </summary>
-        public static bool[] getArticulationPoints(SimpleGraph graph, bool[] walkable, bool[] relevant = null, bool[] component = null)
+        public static bool[] getArticulationPoints(SimpleGraph graph, bool[] walkable, bool[]? relevant = null, bool[]? component = null)
         {
             int indices = walkable.Length;
 

@@ -57,7 +57,7 @@ namespace WFC4All.DeBroglie
 
         private readonly ITopology topology;
 
-        private readonly TileModel tileModel;
+        private readonly TileModel? tileModel;
 
         private readonly TileModelMapping tileModelMapping;
 
@@ -70,8 +70,8 @@ namespace WFC4All.DeBroglie
         /// <param name="constraints">Extra constraints to control the generation process.</param>
         /// <param name="selectionHeuristic">Currently selected selection heuristic</param>
         /// <param name="patternHeuristic">Currently selected pattern heuristic</param>
-        public TilePropagator(TileModel tileModel, ITopology topology,
-            bool backtrack = false, ITileConstraint[] constraints = null)
+        public TilePropagator(TileModel? tileModel, ITopology topology,
+            bool backtrack = false, ITileConstraint[]? constraints = null)
             : this(tileModel, topology, new TilePropagatorOptions
             {
                 BackTrackDepth = backtrack ? -1 : 0,
@@ -90,7 +90,7 @@ namespace WFC4All.DeBroglie
         /// <param name="constraints">Extra constraints to control the generation process.</param>
         /// <param name="random">Source of randomness</param>
         [Obsolete("Use TilePropagatorOptions")]
-        public TilePropagator(TileModel tileModel, ITopology topology, bool backtrack,
+        public TilePropagator(TileModel? tileModel, ITopology topology, bool backtrack,
             ITileConstraint[] constraints, Random random)
             :this(tileModel, topology, new TilePropagatorOptions
             {
@@ -102,16 +102,11 @@ namespace WFC4All.DeBroglie
 
         }
 
-        private readonly TilePropagatorOptions tpo;
-
-        public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options)
+        public TilePropagator(TileModel? tileModel, ITopology topology, TilePropagatorOptions options)
         {
             this.tileModel = tileModel;
             this.topology = topology;
-            this.tpo = options;
             
-            OverlappingModel overlapping = tileModel as OverlappingModel;
-
             tileModelMapping = tileModel.getTileModelMapping(topology);
             ITopology patternTopology = tileModelMapping.PatternTopology;
             PatternModel patternModel = tileModelMapping.PatternModel;
@@ -120,7 +115,7 @@ namespace WFC4All.DeBroglie
                 (options.Constraints?.Select(x => new TileConstraintAdaptor(x, this)).ToArray() ?? Enumerable.Empty<IWaveConstraint>())
                 .ToArray();
 
-            FrequencySet[] waveFrequencySets = options.Weights == null ? null : getFrequencySets(options.Weights, tileModelMapping);
+            FrequencySet[] waveFrequencySets = (options.Weights == null! ? null : getFrequencySets(options.Weights, tileModelMapping))!;
 
 #pragma warning disable CS0618 // Type or member is obsolete
             wavePropagator = new WavePropagator(
@@ -131,7 +126,6 @@ namespace WFC4All.DeBroglie
                 options.BackTrackDepth, 
                 waveConstraints, 
                 options.RandomDouble ?? (options.Random == null ? null : options.Random.NextDouble),
-                waveFrequencySets,
                 clear: false);
 #pragma warning restore CS0618 // Type or member is obsolete
             wavePropagator.clear();
@@ -182,7 +176,7 @@ namespace WFC4All.DeBroglie
         /// <summary>
         /// The model to use when generating.
         /// </summary>
-        public TileModel TileModel => tileModel;
+        public TileModel? TileModel => tileModel;
 
         /// <summary>
         /// The overall resolution of the generated array.
@@ -280,8 +274,9 @@ namespace WFC4All.DeBroglie
         /// Then it propagates that information to other nearby tiles.
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
-        public Resolution select(int x, int y, int z, Tile tile)
-        {
+        public Resolution select(int x, int y, int z, Tile tile) {
+            // return wavePropagator.stepWith(topology.getIndex(x, y, z), (int) tile.Value);
+            
             tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
             ISet<int> patterns = tileModelMapping.getPatterns(tile, o);
             for (int p = 0; p < wavePropagator.PatternCount; p++)
@@ -289,7 +284,7 @@ namespace WFC4All.DeBroglie
                 if (patterns.Contains(p)) {
                     continue;
                 }
-
+            
                 Resolution status = wavePropagator.ban(px, py, pz, p);
                 if (status != Resolution.UNDECIDED) {
                     return status;
@@ -490,7 +485,7 @@ namespace WFC4All.DeBroglie
         /// using specific tiles for locations that have not been decided or are in contradiction.
         /// The arguments are not relevant if the <see cref="Status"/> is <see cref="Resolution.DECIDED"/>.
         /// </summary>
-        public ITopoArray<Tile> toArray(Tile undecided = default(Tile), Tile contradiction = default(Tile))
+        public ITopoArray<Tile> toArray(Tile undecided = default, Tile contradiction = default)
         {
             int width = topology.Width;
             int height = topology.Height;
@@ -527,13 +522,9 @@ namespace WFC4All.DeBroglie
         /// This is simply a convenience over 
         /// The arguments are not relevant if the <see cref="Status"/> is <see cref="Resolution.DECIDED"/>.
         /// </summary>
-        public ITopoArray<T> toValueArray<T>(T undecided = default(T), T contradiction = default(T))
+        public ITopoArray<T> toValueArray<T>(T? undecided = default, T? contradiction = default)
         {
             // TOODO: Just call ToArray() ?
-            int width = topology.Width;
-            int height = topology.Height;
-            int depth = topology.Depth;
-
             ITopoArray<int> patternArray = wavePropagator.toTopoArray();
 
             return TopoArray.createByIndex(index =>
@@ -542,21 +533,13 @@ namespace WFC4All.DeBroglie
 
                 tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
                 int pattern = patternArray.get(px, py, pz);
-                T value;
-                if (pattern == (int)Resolution.UNDECIDED)
-                {
-                    value = undecided;
-                }
-                else if (pattern == (int)Resolution.CONTRADICTION)
-                {
-                    value = contradiction;
-                }
-                else
-                {
-                    value = (T)tileModelMapping.PatternsToTilesByOffset[o][pattern].Value;
-                }
+                T? value = pattern switch {
+                    (int) Resolution.UNDECIDED => undecided,
+                    (int) Resolution.CONTRADICTION => contradiction,
+                    _ => (T) tileModelMapping.PatternsToTilesByOffset[o][pattern].Value
+                };
                 return value;
-            }, topology);
+            }, topology)!;
         }
 
         /// <summary>
@@ -589,6 +572,27 @@ namespace WFC4All.DeBroglie
                 }
                 return(ISet<Tile>)hs;
             }, topology);
+        }
+
+        public ITopoArray<IDictionary<Tile, double>> ToWeightedArraySets()
+        {
+            return TopoArray.createByIndex(getWeightedTiles, topology);
+        }
+
+        public IDictionary<Tile, double> getWeightedTiles(int index)
+        {
+            tileModelMapping.getTileCoordToPatternCoord(index, out var patternIndex, out var o);
+            var patterns = wavePropagator.getPossiblePatterns(patternIndex);
+            var result = new Dictionary<Tile, double>();
+            var patternToTiles = tileModelMapping.PatternsToTilesByOffset[o];
+            foreach (var pattern in patterns)
+            {
+                var f = tileModelMapping.PatternModel.Frequencies[pattern];
+                var tile = patternToTiles[pattern];
+                if (!result.ContainsKey(tile)) result[tile] = 0;
+                result[tile] += f;
+            }
+            return result;
         }
 
         /// <summary>

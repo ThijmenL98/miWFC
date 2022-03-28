@@ -3,8 +3,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
-using WFC4All;
+using WFC4ALL.Managers;
 using WFC4ALL.ContentControls;
+using WFC4ALL.Utils;
 
 // ReSharper disable UnusedMember.Global
 
@@ -20,10 +21,15 @@ namespace WFC4ALL.ViewModels {
         private Bitmap _inputImage, _outputImage;
         private ObservableCollection<TileViewModel> _tiles = new();
         private ObservableCollection<MarkerViewModel> _markers = new();
-        private double _timeStampOffset = 0d, _timelineWidth = 600d;
+        private ObservableCollection<GridlineViewModel> _gridLines = new();
+        private double _timeStampOffset, _timelineWidth = 600d;
 
-        private InputManager inputManager;
+        private CentralManager centralManager;
         private Tuple<string, string> lastOverlapSelection, lastSimpleSelection;
+
+        public CentralManager getCentralManager() {
+            return centralManager;
+        }
 
         public string ModelSelectionText {
             get => _modelSelectionText;
@@ -115,6 +121,11 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _markers, value);
         }
 
+        public ObservableCollection<GridlineViewModel> Gridlines {
+            get => _gridLines;
+            set => this.RaiseAndSetIfChanged(ref _gridLines, value);
+        }
+
         public MainWindowViewModel VM => this;
 
         public bool PopupVisible {
@@ -122,14 +133,14 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _popupVisible, value);
         }
 
-        public void setInputManager(InputManager im) {
+        public void setCentralManager(CentralManager cm) {
             lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
             lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
-            inputManager = im;
+            centralManager = cm;
         }
 
         public void OnModelClick() {
-            inputManager.setModelChanging(true);
+            centralManager.getWFCHandler().setModelChanging(true);
 #if DEBUG
             Trace.WriteLine("Model Clicked");
 #endif
@@ -139,25 +150,25 @@ namespace WFC4ALL.ViewModels {
 
             string lastCat = CategorySelection;
 
-            string[] catDataSource = InputManager.getCategories(changingToSmart ? "overlapping" : "simpletiled");
+            string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
 
             //if (tabSelection.SelectedIndex == 2) {
             string lastImg = InputImageSelection;
             int catIndex = changingToSmart
                 ? Array.IndexOf(catDataSource, lastOverlapSelection.Item1)
                 : Array.IndexOf(catDataSource, lastSimpleSelection.Item1);
-            inputManager.updateCategories(catDataSource, catIndex);
+            centralManager.getUIManager().updateCategories(catDataSource, catIndex);
 
-            string[] images = inputManager.getImages(
+            string[] images = Util.getModelImages(
                 changingToSmart ? "overlapping" : "simpletiled",
                 changingToSmart ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1);
 
             int index = changingToSmart
                 ? Array.IndexOf(images, lastOverlapSelection.Item2)
                 : Array.IndexOf(images, lastSimpleSelection.Item2);
-            inputManager.updateInputImages(images, index);
-            (int[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(images[index]);
-            inputManager.updatePatternSizes(patternSizeDataSource, i);
+            centralManager.getUIManager().updateInputImages(images, index);
+            (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[index]);
+            centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
 
             if (changingToSmart) {
                 lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
@@ -166,19 +177,19 @@ namespace WFC4ALL.ViewModels {
             }
             //}
 
-            inputManager.setModelChanging(false);
+            centralManager.getWFCHandler().setModelChanging(false);
 
-            inputManager.setInputChanged("Model change");
-            inputManager.getIC().inImgCBChangeHandler(null, null);
+            centralManager.getWFCHandler().setInputChanged("Model change");
+            centralManager.getMainWindow().getInputControl().inImgCBChangeHandler(null, null);
         }
 
         public void OnPaddingClick() {
 #if DEBUG
             Trace.WriteLine("Padding Clicked");
 #endif
-            inputManager.setInputChanged("Padding Button");
+            centralManager.getWFCHandler().setInputChanged("Padding Button");
             PaddingEnabled = !PaddingEnabled;
-            inputManager.restartSolution();
+            centralManager.getInputManager().restartSolution();
         }
 
         public void OnAnimate() {
@@ -186,63 +197,63 @@ namespace WFC4ALL.ViewModels {
             Trace.WriteLine("Animate Clicked");
 #endif
             IsPlaying = !IsPlaying;
-            inputManager.animate();
+            centralManager.getInputManager().animate();
         }
 
         public void OnRestart() {
 #if DEBUG
             Trace.WriteLine("Restart Clicked");
 #endif
-            inputManager.restartSolution();
+            centralManager.getInputManager().restartSolution();
         }
 
         public void OnRevert() {
 #if DEBUG
             Trace.WriteLine("Revert Clicked");
 #endif
-            inputManager.revertStep();
+            centralManager.getInputManager().revertStep();
         }
 
         public void OnAdvance() {
 #if DEBUG
             Trace.WriteLine("Advance Clicked");
 #endif
-            inputManager.advanceStep();
+            centralManager.getInputManager().advanceStep();
         }
 
         public void OnSave() {
 #if DEBUG
             Trace.WriteLine("Save Clicked");
 #endif
-            inputManager.placeMarker();
+            centralManager.getInputManager().placeMarker();
         }
 
         public void OnLoad() {
 #if DEBUG
             Trace.WriteLine("Load Clicked");
 #endif
-            inputManager.loadMarker();
+            centralManager.getInputManager().loadMarker();
         }
 
         public void OnExport() {
 #if DEBUG
             Trace.WriteLine("Export Clicked");
 #endif
-            inputManager.export();
+            centralManager.getInputManager().exportSolution();
         }
 
         public void OnInfoClick() {
 #if DEBUG
             Trace.WriteLine("Info Clicked");
 #endif
-            inputManager.showPopUp();
+            centralManager.getUIManager().showPopUp();
         }
 
         public void OnCloseClick() {
 #if DEBUG
             Trace.WriteLine("Close Clicked");
 #endif
-            inputManager.hidePopUp();
+            centralManager.getUIManager().hidePopUp();
         }
     }
 }

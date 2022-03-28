@@ -105,6 +105,6 @@ namespace WFC4All.DeBroglie.Topo
                 array[i] = f(i);
             }
             return create(array, topology);
-        }
+        }     
     }
 }

@@ -43,7 +43,7 @@ namespace WFC4All.DeBroglie.Topo
         /// d should be a Direction, cast to an integer.
         /// </summary>
         /// <param name="neighbours"></param>
-        public GraphTopology(NeighbourDetails[,] neighbours, bool[] mask = null)
+        public GraphTopology(NeighbourDetails[,] neighbours, bool[]? mask = null)
         {
             indexCount = neighbours.GetLength(0);
             directionsCount = neighbours.GetLength(1);

@@ -1,14 +1,14 @@
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using WFC4All;
+using WFC4ALL.Managers;
+using WFC4ALL.Utils;
 
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable UnusedParameter.Local
 
 namespace WFC4ALL.ContentControls {
     public partial class InputControl : UserControl {
-        private InputManager? inputManager;
+        private CentralManager? centralManager;
         private readonly ComboBox _categoryCB, _inputCB, _patternSizeCB;
 
         public InputControl() {
@@ -19,8 +19,8 @@ namespace WFC4ALL.ContentControls {
             _patternSizeCB = this.Find<ComboBox>("patternSizeCB");
         }
 
-        public void setInputManager(InputManager im) {
-            inputManager = im;
+        public void setCentralManager(CentralManager cm) {
+            centralManager = cm;
             inImgCBChangeHandler(null, null);
         }
 
@@ -33,7 +33,7 @@ namespace WFC4ALL.ContentControls {
          */
 
         private void catCBChangeHandler(object _, SelectionChangedEventArgs e) {
-            if (inputManager == null || inputManager.isChangingModels()) {
+            if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
                 return;
             }
             
@@ -41,7 +41,7 @@ namespace WFC4ALL.ContentControls {
 
             this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures");
             string[] inputImageDataSource
-                = inputManager.getImages(
+                = Util.getModelImages(
                     ((string) this.Find<Button>("modeToggle").Content).Contains("Tile") ? "overlapping" : "simpletiled",
                     newValue);
             setInputImages(inputImageDataSource);
@@ -49,33 +49,36 @@ namespace WFC4ALL.ContentControls {
         }
 
         public void inImgCBChangeHandler(object? _, SelectionChangedEventArgs? e) {
-            if (inputManager == null || inputManager.isChangingModels()) {
+            if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
                 return;
             }
-            inputManager.setImageChanging(true);
+            centralManager.getWFCHandler().setImageChanging(true);
             
             string newValue = getInputImage();
-            inputManager.updateInputImage(newValue);
+            centralManager.getUIManager().updateInputImage(newValue);
 
-            inputManager.setInputChanged("Image CB");
+            centralManager.getWFCHandler().setInputChanged("Image CB");
 
             if (((string) this.Find<Button>("modeToggle").Content).Contains("Tile")) {
-                (int[] patternSizeDataSource, int i) = inputManager.getImagePatternDimensions(newValue);
+                (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(newValue);
                 setPatternSizes(patternSizeDataSource, i);
             }
 
             //updateInputPadding();
-            inputManager.setImageChanging(false);
-            inputManager.restartSolution();
+            centralManager.getWFCHandler().setImageChanging(false);
+            centralManager.getInputManager().restartSolution();
             if (e != null) {
                 e.Handled = true;
             }
         }
 
         private void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {
-            inputManager?.setInputChanged("Pattern Size CB");
+            if (centralManager == null) {
+                return;
+            }
+            centralManager.getWFCHandler().setInputChanged("Pattern Size CB");
             e.Handled = true;
-            inputManager?.restartSolution();
+            centralManager.getInputManager().restartSolution();
         }
 
         /*
@@ -120,6 +123,14 @@ namespace WFC4ALL.ContentControls {
 
         public int getPatternSize() {
             return (int) (_patternSizeCB.SelectedItem ?? 3);
+        }
+
+        public double getInputImageHeight() {
+            return this.Find<Image>("inputImage").Bounds.Height;
+        }
+        
+        public double getInputImageWidth() {
+            return this.Find<Image>("inputImage").Bounds.Width;
         }
     }
 }

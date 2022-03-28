@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
 using WFC4All.DeBroglie.Wfc;
 
+#pragma warning disable CS8618
 namespace WFC4All.DeBroglie.Models
 {
-
-
     /// <summary>
     /// AdjacentModel constrains which tiles can be placed adjacent to which other ones. 
     /// It does so by maintaining for each tile, a list of tiles that can be placed next to it in each direction. 
@@ -112,8 +110,7 @@ namespace WFC4All.DeBroglie.Models
                 frequencies[pattern] += incrementalFrequency;
             }
         }
-
-
+        
         /// <summary>
         /// Sets the frequency of a given tile.
         /// </summary>
@@ -138,7 +135,7 @@ namespace WFC4All.DeBroglie.Models
         /// Declares that the tiles in dest can be placed adjacent to the tiles in src, in the direction specified.
         /// Then it adds similar declarations for other rotations and reflections, as specified by rotations.
         /// </summary>
-        public void addAdjacency(IList<Tile> src, IList<Tile> dest, Direction dir, TileRotation tileRotation = null)
+        public void addAdjacency(IList<Tile> src, IList<Tile> dest, Direction dir, TileRotation? tileRotation = null)
         {
             requireDirections();
             int d = (int)dir;
@@ -152,7 +149,7 @@ namespace WFC4All.DeBroglie.Models
         /// Declares that the tiles in dest can be placed adjacent to the tiles in src, in the direction specified by (x, y, z).
         /// Then it adds similar declarations for other rotations and reflections, as specified by rotations.
         /// </summary>
-        public void addAdjacency(IList<Tile> src, IList<Tile> dest, int x, int y, int z, TileRotation tileRotation = null)
+        public void addAdjacency(IList<Tile> src, IList<Tile> dest, int x, int y, int z, TileRotation? tileRotation = null)
         {
             requireDirections();
 
@@ -231,7 +228,7 @@ namespace WFC4All.DeBroglie.Models
             return propagator[srcPattern][(int)d].Contains(destPattern);
         }
 
-        public void addSample(ITopoArray<Tile> sample, TileRotation tileRotation = null) {
+        public void addSample(ITopoArray<Tile> sample, TileRotation? tileRotation = null) {
             foreach (ITopoArray<Tile> s in OverlappingAnalysis.getRotatedSamples(sample, tileRotation))
             {
                 addSample(s);
@@ -288,7 +285,7 @@ namespace WFC4All.DeBroglie.Models
 
             if(frequencies.Sum() == 0.0)
             {
-                throw new Exception("No tiles have assigned frequences.");
+                throw new Exception("No tiles have assigned frequencies.");
             }
 
             PatternModel patternModel = new() {
@@ -321,8 +318,7 @@ namespace WFC4All.DeBroglie.Models
         {
             int directionCount = directions.Count;
 
-            int pattern;
-            if (!tilesToPatterns.TryGetValue(tile, out pattern))
+            if (!tilesToPatterns.TryGetValue(tile, out int pattern))
             {
                 pattern = tilesToPatterns[tile] = tilesToPatterns.Count;
                 frequencies.Add(0);
@@ -335,6 +331,7 @@ namespace WFC4All.DeBroglie.Models
             return pattern;
         }
 
+        // ReSharper disable once ClassNeverInstantiated.Global
         public class Adjacency
         {
             public Tile[] Src { get; set; }
@@ -343,3 +340,4 @@ namespace WFC4All.DeBroglie.Models
         }
     }
 }
+#pragma warning restore CS8618

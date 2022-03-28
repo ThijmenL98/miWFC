@@ -1,8 +1,6 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.ReactiveUI;
 using System;
-using System.Diagnostics;
+using Avalonia;
+using Avalonia.ReactiveUI;
 
 namespace WFC4ALL
 {

@@ -25,7 +25,7 @@
             }
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             if (obj is RotatedTile other)
             {
                 return Rotation.Equals(other.Rotation) && Tile == other.Tile;

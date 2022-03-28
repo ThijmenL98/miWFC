@@ -50,7 +50,7 @@ namespace WFC4All.DeBroglie.Rot
                 a.ReflectX ^ b.ReflectX);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Rotation other)
             {

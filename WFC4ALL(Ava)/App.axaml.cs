@@ -2,20 +2,18 @@ using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using WFC4All;
+using WFC4ALL.Managers;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 
 namespace WFC4ALL
 {
-    public partial class App : Application
+    public class App : Application
     {
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
-            
-        
-            var myWriter = new ConsoleTraceListener();
+            ConsoleTraceListener myWriter = new();
             Trace.Listeners.Add(myWriter);
         }
 
@@ -29,9 +27,11 @@ namespace WFC4ALL
                     DataContext = mWVM,
                 };
                 desktop.MainWindow = mW;
-                InputManager inputManager = new(mWVM, mW);
-                mW.setInputManager(inputManager);
-                mWVM.setInputManager(inputManager);
+
+                CentralManager cm = new(mWVM, mW);
+                
+                mW.setCentralManager(cm);
+                mWVM.setCentralManager(cm);
             }
 
             base.OnFrameworkInitializationCompleted();

@@ -2,8 +2,10 @@
     x:Class="WFC4ALL.ContentControls.InputControl"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-	
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:model="clr-namespace:WFC4ALL.ContentControls"
+    xmlns:converters="clr-namespace:WFC4ALL.Converters">
+
 	<Grid Background="#999" Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto">
 		<Grid 
 			Background="#D9D0FE" 
@@ -36,9 +38,28 @@
                 SelectionChanged="inImgCBChangeHandler" x:Name="inputCB"/>
 		</Grid>
 		
-		<Image Grid.Column="0" Grid.Row="1" Height="300" Margin="10"
+		<Image Grid.Column="0" Grid.Row="1"  Margin="10"
             RenderOptions.BitmapInterpolationMode="Default"
             Source="{Binding InputImage}" Width="300" x:Name="inputImage"/>
+		<ItemsControl Grid.Column="0" Grid.Row="1" Items="{Binding Gridlines}" Margin="10"
+		              ClipToBounds="False">
+			<ItemsControl.ItemsPanel>
+				<ItemsPanelTemplate>
+					<Canvas />
+				</ItemsPanelTemplate>
+			</ItemsControl.ItemsPanel>
+			<ItemsControl.ItemTemplate>
+				<DataTemplate DataType="{x:Type model:GridlineViewModel}">
+					<Line
+						Stroke="#999999"
+						StrokeThickness=".5"
+						UseLayoutRounding="True"
+						StartPoint="{Binding Converter={x:Static converters:AppConverters.GridlineToStartPoint}}"
+						EndPoint="{Binding Converter={x:Static converters:AppConverters.GridlineToEndPoint}}">
+					</Line>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
 		
 		<Grid Background="#D9F0AE" ColumnDefinitions="*,*,Auto"
             Grid.Row="2" Margin="4" RowDefinitions="Auto">
@@ -81,8 +102,8 @@
 					</Style>
 				</Button.Styles>
 				<Panel>
-					<Image IsVisible="{Binding PaddingEnabled}" Source="/Assets/borderPaddingDisabled.png"/>
-					<Image IsVisible="{Binding !PaddingEnabled}" Source="/Assets/borderPaddingEnabled.png"/>
+					<Image IsVisible="{Binding !PaddingEnabled}" Source="/Assets/borderPaddingDisabled.png"/>
+					<Image IsVisible="{Binding PaddingEnabled}" Source="/Assets/borderPaddingEnabled.png"/>
 				</Panel>
 				<ToolTip.Tip>
 					<StackPanel>
@@ -91,8 +112,7 @@
 				</ToolTip.Tip>
 			</Button>
 		</Grid>
-		<Image Grid.Row="3" Height="250" Margin="10"
-            Source="/Assets/icon.png" Width="250"/>
+		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300"/>
 		<Grid Background="#09F0AE" ColumnDefinitions="Auto, Auto"
             Grid.Row="4" Margin="4" RowDefinitions="Auto">
 			<Button Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"

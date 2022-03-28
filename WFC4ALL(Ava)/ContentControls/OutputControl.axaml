@@ -32,8 +32,8 @@
             <TextBlock Grid.Column="0" VerticalAlignment="Center">
                 Output Image Size, Width:
             </TextBlock>
-            <NumericUpDown Grid.Column="1" MaxHeight="10" MinWidth="65"
-                           Value="{Binding ImageOutWidth}" x:Name="outputWidthNUD" />
+            <NumericUpDown Grid.Column="1" MaxHeight="10" MinWidth="65" Value="{Binding ImageOutWidth}"
+                           x:Name="outputWidthNUD" />
             <TextBlock Grid.Column="2">
                 Height:
             </TextBlock>

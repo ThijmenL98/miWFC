@@ -48,7 +48,7 @@ namespace WFC4All.DeBroglie.Constraints
         /// </summary>
         public TileRotation TileRotation { get; set; }
 
-        public EdgedPathConstraint(IDictionary<Tile, ISet<Direction>> exits, Point[] endPoints = null, TileRotation tileRotation = null)
+        public EdgedPathConstraint(IDictionary<Tile, ISet<Direction>> exits, Point[]? endPoints = null, TileRotation? tileRotation = null)
         {
             Exits = exits;
             EndPoints = endPoints;

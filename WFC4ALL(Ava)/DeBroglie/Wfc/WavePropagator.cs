@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using WFC4All.DeBroglie.Models;
 using WFC4All.DeBroglie.Topo;
 using WFC4All.DeBroglie.Trackers;
 
@@ -33,7 +31,6 @@ namespace WFC4All.DeBroglie.Wfc {
         private readonly int backtrackDepth;
         private readonly IWaveConstraint[] constraints;
         private readonly Func<double> randomDouble;
-        private readonly FrequencySet[] frequencySets;
 
         // We evaluate constraints at the last possible minute, instead of eagerly like the model,
         // As they can potentially be expensive.
@@ -43,7 +40,6 @@ namespace WFC4All.DeBroglie.Wfc {
         private Resolution status;
 
         private readonly ITopology topology;
-        private int directionsCount;
 
         private List<ITracker> trackers;
 
@@ -51,19 +47,20 @@ namespace WFC4All.DeBroglie.Wfc {
 
         private readonly int outWidth, outHeight;
 
+#pragma warning disable CS8618
         public WavePropagator(
+#pragma warning restore CS8618
             PatternModel model,
             ITopology topology,
             int outputWidth,
             int outputHeight,
             int backtrackDepth = 0,
-            IWaveConstraint[] constraints = null,
+            IWaveConstraint[]? constraints = null,
             Func<double>? randomDouble = null,
-            FrequencySet[] frequencySets = null,
             bool clear = true) {
-
             patternCount = model.PatternCount;
             frequencies = model.Frequencies;
+            // Console.WriteLine(string.Join(", ", frequencies));
 
             outWidth = outputWidth;
             outHeight = outputHeight;
@@ -71,14 +68,12 @@ namespace WFC4All.DeBroglie.Wfc {
             indexCount = topology.IndexCount;
             backtrack = backtrackDepth != 0;
             this.backtrackDepth = backtrackDepth;
-            this.constraints = constraints ?? new IWaveConstraint[0];
+            this.constraints = constraints ?? Array.Empty<IWaveConstraint>();
             this.topology = topology;
             this.randomDouble = randomDouble ?? new Random(1).NextDouble;
-            this.frequencySets = frequencySets;
-            directionsCount = topology.DirectionsCount;
-            
+
             patternModelConstraint = new PatternModelConstraint(this, model);
-            
+
             if (clear) {
                 this.clear();
             }
@@ -235,12 +230,12 @@ namespace WFC4All.DeBroglie.Wfc {
 
             status = Resolution.UNDECIDED;
             trackers = new List<ITracker>();
-            
+
             EntropyTracker entropyTracker = new(wave, frequencies, topology.Mask, outWidth, outHeight);
             entropyTracker.reset();
             addTracker(entropyTracker);
             pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble);
-            
+
             patternModelConstraint.clear();
 
             if (status == Resolution.CONTRADICTION) {
@@ -304,10 +299,10 @@ namespace WFC4All.DeBroglie.Wfc {
                     droppedBacktrackItemsCount = newDroppedCount;
                 }
             }
-            
+
             // Pick a tile and Select a pattern from it.
             observe(out index, out int pattern);
-
+            
             // Record what was selected for backtracking purposes
             if (index != -1 && backtrack) {
                 prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
@@ -323,13 +318,13 @@ namespace WFC4All.DeBroglie.Wfc {
             if (status == Resolution.UNDECIDED) {
                 stepConstraints();
             }
-
+            
             // Are all things are fully chosen?
             if (index == -1 && status == Resolution.UNDECIDED) {
                 status = Resolution.DECIDED;
                 return status;
             }
-            
+
             if (backtrack && status == Resolution.CONTRADICTION) {
                 // After back tracking, it's no logner the case things are fully chosen
                 index = 0;
@@ -357,7 +352,6 @@ namespace WFC4All.DeBroglie.Wfc {
 
                     if (status == Resolution.CONTRADICTION) {
                         // If still in contradiction, repeat backtracking
-
                         continue;
                     }
 
@@ -559,6 +553,21 @@ namespace WFC4All.DeBroglie.Wfc {
 
                 return (ISet<int>) hs;
             }, topology);
+        }
+
+        public void updateWeight(int indexChanged, double value) {
+            frequencies[indexChanged] = value;
+        }
+
+        public IEnumerable<int> getPossiblePatterns(int index)
+        {
+            for (var pattern = 0; pattern < patternCount; pattern++)
+            {
+                if (wave.get(index, pattern))
+                {
+                    yield return pattern;
+                }
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ namespace WFC4All.DeBroglie
             return Equals(Value, other.Value);
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             if (obj is Tile other)
             {
                 return Equals(Value, other.Value);
