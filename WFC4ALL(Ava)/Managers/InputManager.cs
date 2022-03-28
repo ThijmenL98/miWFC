@@ -295,10 +295,15 @@ namespace WFC4ALL.Managers {
             const int tileIdx = 0;
             (System.Drawing.Bitmap result2, bool showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
 
+            Tuple<int, int> key = new(a, b);
+            if (overwriteColorCache.ContainsKey(key)) {
+                return;
+            }
+
             if (showPixel) {
                 if (parentCM.getWFCHandler().isOverlappingModel()) {
                     Color c = (Color) parentCM.getWFCHandler().getTiles().get(tileIdx).Value;
-                    overwriteColorCache.Add(new Tuple<int, int>(a, b), c);
+                    overwriteColorCache.Add(key, c);
                 } else {
                     Tuple<Color[], Tile> c = parentCM.getWFCHandler().getTileCache()[tileIdx];
                 }
