@@ -3,9 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using WFC4ALL.ContentControls;
 using WFC4All.DeBroglie;
 using WFC4All.DeBroglie.Models;
@@ -22,15 +28,15 @@ public class WFCHandler {
 
     private readonly MainWindowViewModel mainWindowVM;
     private readonly MainWindow mainWindow;
-    
+
     private double amountCollapsed;
-    private Bitmap latestOutput;
+    private WriteableBitmap latestOutput;
 
     private bool _isChangingModels, _isChangingImages;
     private bool inputHasChanged;
 
-    private int currentStep;
-    private Bitmap? currentBitmap;
+    private int currentStep, timeStamp;
+    private WriteableBitmap? currentBitmap;
 
     private static HashSet<Color>? currentColors;
 
@@ -57,8 +63,9 @@ public class WFCHandler {
         _isChangingModels = false;
         _isChangingImages = false;
         inputHasChanged = true;
-        latestOutput = new Bitmap(1, 1);
+        latestOutput = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Rgba8888, AlphaFormat.Premul);
         currentStep = 0;
+        timeStamp = 0;
         currentBitmap = null;
         currentColors = new HashSet<Color>();
         tileSize = 0;
@@ -107,9 +114,9 @@ public class WFCHandler {
      * Direct WFC Manipulation
      */
 
-    public (Bitmap, bool) initAndRunWfcDB(bool reset, int steps, bool force = false) {
+    public (WriteableBitmap, bool) initAndRunWfcDB(bool reset, int steps, bool force = false) {
         if (isChangingModels() || !mainWindow.IsActive && !force) {
-            return (new Bitmap(1, 1), true);
+            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Rgba8888, AlphaFormat.Premul), true);
         }
 
         Stopwatch sw = new();
@@ -144,9 +151,8 @@ public class WFCHandler {
                 List<TileViewModel> toAdd = new();
 
                 if (isOverlappingModel()) {
-                    ITopoArray<Color> dbSample
-                        = TopoArray.create(imageToColourArray(currentBitmap, out currentColors),
-                            inputPaddingEnabled);
+                    (Color[][] colorArray, currentColors) = imageToColourArray(currentBitmap);
+                    ITopoArray<Color> dbSample = TopoArray.create(colorArray, inputPaddingEnabled);
                     tiles = dbSample.toTiles();
                     dbModel = new OverlappingModel(mainWindow.getInputControl().getPatternSize());
                     bool hasRotations = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
@@ -174,7 +180,10 @@ public class WFCHandler {
                     tileSymmetries = new Dictionary<int, int[]>();
 
                     foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
-                        Bitmap bitmap = new($"samples/{inputImage}/{xTile.Attribute("name")?.Value}.png");
+                        MemoryStream ms = new(File.ReadAllBytes(
+                            $"samples{Path.DirectorySeparatorChar}{inputImage}{Path.DirectorySeparatorChar}{xTile.Attribute("name")?.Value}.png"));
+                        WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
+
                         int cardinality = char.Parse(xTile.Attribute("symmetry")?.Value ?? "X") switch {
                             'L' => 4,
                             'T' => 4,
@@ -186,7 +195,7 @@ public class WFCHandler {
 
                         // Trace.WriteLine(xTile.Attribute("name")?.Value + " " + tileCache.Count + "(" + cardinality + ")");
 
-                        Color[] cur = imTile((x, y) => bitmap.GetPixel(x, y), tileSize);
+                        Color[] cur = extractColours(writeableBitmap);
                         int val = tileCache.Count;
                         Tile curTile = new(val);
                         tileCache.Add(val, new Tuple<Color[], Tile>(cur, curTile));
@@ -205,8 +214,7 @@ public class WFCHandler {
                         tileSymmetries.Add(val, symmetries.ToArray());
 
                         double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0");
-                        toAdd.Add(new TileViewModel(parentCM.getInputManager().ConvertToAvaloniaBitmap(bitmap),
-                            tileWeight, val));
+                        toAdd.Add(new TileViewModel(writeableBitmap, tileWeight, val));
                     }
 
                     int[][] values = new int[50][];
@@ -296,7 +304,7 @@ public class WFCHandler {
         return (latestOutput, decided);
     }
 
-    private (Bitmap, bool) runWfcDB(int steps) {
+    private (WriteableBitmap, bool) runWfcDB(int steps) {
         Stopwatch sw = new();
         sw.Restart();
         Resolution dbStatus = Resolution.UNDECIDED;
@@ -305,7 +313,8 @@ public class WFCHandler {
         } else {
             for (int i = 0; i < steps; i++) {
                 dbStatus = dbPropagator.step();
-                setCurrentStep(currentStep + 1);
+                currentStep++;
+                timeStamp++;
             }
         }
 
@@ -316,59 +325,18 @@ public class WFCHandler {
 #endif
         sw.Restart();
 
-        Bitmap outputBitmap;
-        int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
-        int collapsedTiles = 0;
-
-        if (isOverlappingModel()) {
-            outputBitmap = new Bitmap(outputWidth, outputHeight);
-            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
-            for (int y = 0; y < outputHeight; y++) {
-                for (int x = 0; x < outputWidth; x++) {
-                    Color cur = dbOutput.get(x, y);
-                    Color toSet = currentColors!.Contains(cur) ? cur : Color.Silver;
-                    outputBitmap.SetPixel(x, y, toSet);
-                    if (!toSet.Equals(Color.Silver)) {
-                        collapsedTiles++;
-                    }
-                }
-            }
-        } else {
-            outputBitmap = new Bitmap(outputWidth * tileSize, outputHeight * tileSize);
-            ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
-            for (int y = 0; y < outputHeight; y++) {
-                for (int x = 0; x < outputWidth; x++) {
-                    int value = dbOutput.get(x, y);
-                    bool isCollapsed = value >= 0;
-                    Color[] outputPattern = isCollapsed
-                        ? tileCache.ElementAt(value).Value.Item1
-                        : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
-                    for (int yy = 0; yy < tileSize; yy++) {
-                        for (int xx = 0; xx < tileSize; xx++) {
-                            Color cur = outputPattern[yy * tileSize + xx];
-                            outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy,
-                                cur);
-                        }
-                    }
-
-                    if (isCollapsed) {
-                        collapsedTiles++;
-                    }
-                }
-            }
-        }
-
-        amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+        WriteableBitmap outputBitmap = getLatestOutputBM();
         parentCM.getUIManager().updateTimeStampPosition(amountCollapsed);
-
         return (outputBitmap, dbStatus == Resolution.DECIDED);
     }
 
-    public Bitmap stepBackWfc(int steps) {
+    public WriteableBitmap stepBackWfc(int steps) {
         Stopwatch sw = new();
         sw.Restart();
         for (int i = 0; i < steps; i++) {
             dbPropagator.doBacktrack();
+            timeStamp--;
+            currentStep--;
         }
 
 #if (DEBUG)
@@ -378,54 +346,12 @@ public class WFCHandler {
 #endif
         sw.Restart();
 
-        Bitmap outputBitmap;
-        int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
-        int collapsedTiles = 0;
-
-        if (isOverlappingModel()) {
-            outputBitmap = new Bitmap(outputWidth, outputHeight);
-            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
-            for (int y = 0; y < outputHeight; y++) {
-                for (int x = 0; x < outputWidth; x++) {
-                    Color cur = dbOutput.get(x, y);
-                    Color toSet = currentColors!.Contains(cur) ? cur : Color.Silver;
-                    outputBitmap.SetPixel(x, y, toSet);
-                    if (!toSet.Equals(Color.Silver)) {
-                        collapsedTiles++;
-                    }
-                }
-            }
-        } else {
-            outputBitmap = new Bitmap(outputWidth * tileSize, outputHeight * tileSize);
-            ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
-            for (int y = 0; y < outputHeight; y++) {
-                for (int x = 0; x < outputWidth; x++) {
-                    int value = dbOutput.get(x, y);
-                    bool isCollapsed = value >= 0;
-                    Color[] outputPattern = isCollapsed
-                        ? tileCache.ElementAt(value).Value.Item1
-                        : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
-                    for (int yy = 0; yy < tileSize; yy++) {
-                        for (int xx = 0; xx < tileSize; xx++) {
-                            Color cur = outputPattern[yy * tileSize + xx];
-                            outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy, cur);
-                        }
-                    }
-
-                    if (isCollapsed) {
-                        collapsedTiles++;
-                    }
-                }
-            }
-        }
-
-        amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+        WriteableBitmap outputBitmap = getLatestOutputBM();
         parentCM.getUIManager().updateTimeStampPosition(amountCollapsed);
-
         return outputBitmap;
     }
 
-    public (Bitmap, bool) setTile(int a, int b, int toSet) {
+    public (WriteableBitmap, bool) setTile(int a, int b, int toSet) {
         Tile t = isOverlappingModel() ? tiles.get(toSet) : tileCache[toSet].Item2;
         Resolution status = dbPropagator.select(a, b, 0, t);
 
@@ -451,44 +377,114 @@ public class WFCHandler {
             count++;
         }
 
-        Bitmap outputBitmap;
-        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+        return (getLatestOutputBM(), showPixel);
+    }
 
-        if (isOverlappingModel()) {
-            outputBitmap = new Bitmap(outputWidth, outputHeight);
-            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
-            for (int y = 0; y < outputHeight; y++) {
-                for (int x = 0; x < outputWidth; x++) {
-                    Color cur = dbOutput.get(x, y);
-                    outputBitmap.SetPixel(x, y, currentColors!.Contains(cur) ? cur : Color.Silver);
-                }
-            }
-        } else {
-            outputBitmap = new Bitmap(outputWidth * tileSize, outputHeight * tileSize);
-            ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
-            for (int y = 0; y < outputHeight; y++) {
-                for (int x = 0; x < outputWidth; x++) {
-                    int value = dbOutput.get(x, y);
-                    Color[] outputPattern = value >= 0
-                        ? tileCache.ElementAt(value).Value.Item1
-                        : Enumerable.Repeat(Color.Silver, tileSize * tileSize).ToArray();
+    private Dictionary<Tuple<int, int>, Color> getOverlapDict() {
+        Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache
+            = parentCM.getInputManager().getOverwriteColorCache();
+        Dictionary<Tuple<int, int>, Color> returnCache = new();
 
-                    for (int yy = 0; yy < tileSize; yy++) {
-                        for (int xx = 0; xx < tileSize; xx++) {
-                            Color cur = outputPattern[yy * tileSize + xx];
-                            outputBitmap.SetPixel(x * tileSize + xx, y * tileSize + yy,
-                                cur);
-                        }
-                    }
-                }
+        foreach ((Tuple<int, int> key, (Color c, int item2)) in new Dictionary<Tuple<int, int>, Tuple<Color, int>>(
+                     overwriteColorCache)) {
+            if (parentCM.getWFCHandler().getCurrentTimeStamp() >= item2) {
+                returnCache.Add(key, c);
             }
         }
 
-        return (outputBitmap, showPixel);
+        return returnCache;
+    }
+
+    public WriteableBitmap getLatestOutputBM() {
+        WriteableBitmap outputBitmap;
+        if (isOverlappingModel()) {
+            generateOverlappingBitmap(out outputBitmap);
+        } else {
+            generateAdjacentBitmap(out outputBitmap);
+        }
+
+        return outputBitmap;
+    }
+
+    private void generateOverlappingBitmap(out WriteableBitmap outputBitmap) {
+        int collapsedTiles = 0;
+        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+        outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(96, 96),
+            PixelFormat.Rgba8888, AlphaFormat.Premul);
+        ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
+
+        Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
+        foreach (Tuple<int, int> key in overwriteColorCache.Keys) {
+            Trace.WriteLine($@"Key <{key.Item1},{key.Item2}>");
+        }
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, outputHeight, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < outputWidth; x++) {
+                    Color c = dbOutput.get(x, (int) y);
+                    Tuple<int, int> overlapKey = new(x, (int) y);
+                    Color toSet = overwriteColorCache.ContainsKey(overlapKey) ? overwriteColorCache[overlapKey] :
+                        currentColors!.Contains(c) ? c : Colors.Transparent;
+                    dest[x] = (uint) ((c.A << 24) + (c.B << 16) + (c.G << 8) + c.R);
+
+                    if (!toSet.Equals(Colors.Transparent)) {
+                        Interlocked.Increment(ref collapsedTiles);
+                    }
+                }
+            });
+        }
+
+        Trace.WriteLine(collapsedTiles);
+        amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+    }
+
+    private void generateAdjacentBitmap(out WriteableBitmap outputBitmap) {
+        int collapsedTiles = 0;
+        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+        outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
+            new Vector(96, 96),
+            PixelFormat.Rgba8888, AlphaFormat.Premul);
+        ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, outputHeight * tileSize, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < outputWidth * tileSize; x++) {
+                    int value = dbOutput.get((int) Math.Floor((double) x / tileSize),
+                        (int) Math.Floor((double) y / tileSize));
+                    bool isCollapsed = value >= 0;
+                    Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
+                    
+                    Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Colors.Transparent;
+                    dest[x] = (uint) ((c.A << 24) + (c.B << 16) + (c.G << 8) + c.R);
+
+                    if (isCollapsed && y % tileSize == 0 && x % tileSize == 0) {
+                        Interlocked.Increment(ref collapsedTiles);
+                    }
+                }
+            });
+        }
+
+        amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
     }
 
     public int getCurrentStep() {
         return currentStep;
+    }
+
+    public int getCurrentTimeStamp() {
+        return timeStamp;
     }
 
     public void setCurrentStep(int newCurStep) {
@@ -521,7 +517,7 @@ public class WFCHandler {
         return dbPropagator.Status == Resolution.DECIDED;
     }
 
-    public Bitmap getLatestOutput() {
+    public WriteableBitmap getLatestOutput() {
         return latestOutput;
     }
 

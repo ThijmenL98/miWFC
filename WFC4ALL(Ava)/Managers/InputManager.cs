@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Platform;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using WFC4ALL.ContentControls;
 using WFC4All.DeBroglie;
@@ -14,8 +13,6 @@ using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
-using Image = System.Drawing.Image;
-using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 #pragma warning disable CS8618
 #pragma warning disable CS8625
@@ -30,15 +27,15 @@ namespace WFC4ALL.Managers {
 
         private DispatcherTimer timer = new();
 
-        private CentralManager parentCM;
+        private readonly CentralManager parentCM;
 
-        private Dictionary<Tuple<int, int>, Color> overwriteColorCache;
+        private Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache;
 
         public InputManager(CentralManager parent) {
             parentCM = parent;
             mainWindowVM = parentCM.getMainWindowVM();
             mainWindow = parentCM.getMainWindow();
-            overwriteColorCache = new Dictionary<Tuple<int, int>, Color>();
+            overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
 
             noResultFoundBM = new Bitmap("Assets/NoResultFound.png");
             savePoints = new Stack<int>();
@@ -65,7 +62,9 @@ namespace WFC4ALL.Managers {
                 return;
             }
 
-            overwriteColorCache = new Dictionary<Tuple<int, int>, Color>();
+            mainWindowVM.Markers = new ObservableCollection<MarkerViewModel>();
+
+            overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
 
             if (!getModelImages(parentCM.getWFCHandler().isOverlappingModel() ? "overlapping" : "simpletiled",
                         mainWindow.getInputControl().getCategory())
@@ -75,10 +74,8 @@ namespace WFC4ALL.Managers {
 
             try {
                 int stepAmount = mainWindowVM.StepAmount;
-                (System.Drawing.Bitmap result2, bool _) = parentCM.getWFCHandler()
-                    .initAndRunWfcDB(true, stepAmount == 100 ? -1 : stepAmount, force);
-                Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(result2);
-                mainWindowVM.OutputImage = avaloniaBitmap;
+                mainWindowVM.OutputImage = parentCM.getWFCHandler()
+                    .initAndRunWfcDB(true, stepAmount == 100 ? -1 : stepAmount, force).Item1;
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -89,14 +86,13 @@ namespace WFC4ALL.Managers {
 
         public void advanceStep() {
             try {
-                (System.Drawing.Bitmap result2, bool finished)
+                (WriteableBitmap result2, bool finished)
                     = parentCM.getWFCHandler().initAndRunWfcDB(false, mainWindowVM.StepAmount);
                 if (finished) {
                     return;
                 }
 
-                Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(result2);
-                mainWindowVM.OutputImage = avaloniaBitmap;
+                mainWindowVM.OutputImage = result2;
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -107,8 +103,7 @@ namespace WFC4ALL.Managers {
 
         public void revertStep() {
             try {
-                System.Drawing.Bitmap result2 = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
-                Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(result2);
+                Bitmap avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
                 mainWindowVM.OutputImage = avaloniaBitmap;
 
                 int curStep = parentCM.getWFCHandler().getCurrentStep();
@@ -130,7 +125,7 @@ namespace WFC4ALL.Managers {
         }
 
         public void resetOverwriteCache() {
-            overwriteColorCache = new Dictionary<Tuple<int, int>, Color>();
+            overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
         }
 
         public void placeMarker() {
@@ -151,6 +146,8 @@ namespace WFC4ALL.Managers {
                         savePoints.Push(curStep);
                     }
 
+                    Trace.WriteLine(@$"Placed a marker at {curStep}");
+
                     return;
                 }
             }
@@ -170,12 +167,12 @@ namespace WFC4ALL.Managers {
                 prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
             }
 
+            Trace.WriteLine(
+                @$"Reverting to marker at {prevTimePoint} - Cur: {parentCM.getWFCHandler().getCurrentStep()}");
             int stepsToRevert = parentCM.getWFCHandler().getCurrentStep() - prevTimePoint;
             parentCM.getWFCHandler().setCurrentStep(prevTimePoint);
             try {
-                System.Drawing.Bitmap result2 = parentCM.getWFCHandler().stepBackWfc(stepsToRevert);
-                Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(result2);
-                mainWindowVM.OutputImage = avaloniaBitmap;
+                mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc(stepsToRevert);
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -198,7 +195,7 @@ namespace WFC4ALL.Managers {
 
             string? settingsFileName = await sfd.ShowAsync(new Window());
             if (settingsFileName != null) {
-                parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName, ImageFormat.Jpeg);
+                parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName);
             }
         }
 
@@ -230,10 +227,9 @@ namespace WFC4ALL.Managers {
                     timer.Stop();
                     timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                     try {
-                        (System.Drawing.Bitmap result2, bool finished) = parentCM.getWFCHandler()
+                        (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
                             .initAndRunWfcDB(false, mainWindowVM.StepAmount);
-                        Bitmap avaloniaBitmap = ConvertToAvaloniaBitmap(result2);
-                        mainWindowVM.OutputImage = avaloniaBitmap;
+                        mainWindowVM.OutputImage = result2;
                         if (finished) {
                             mainWindowVM.IsPlaying = false;
                             return;
@@ -250,40 +246,6 @@ namespace WFC4ALL.Managers {
             }
         }
 
-        public Bitmap ConvertToAvaloniaBitmap(Image? bitmap) {
-            if (bitmap == null) {
-                return new Bitmap("");
-            }
-
-            System.Drawing.Bitmap bitmapTmp = new(bitmap);
-
-            foreach (KeyValuePair<Tuple<int, int>, Color> kvp in overwriteColorCache) {
-                bitmapTmp.SetPixel(kvp.Key.Item1, kvp.Key.Item2, kvp.Value);
-            }
-
-            BitmapData? bitmapData = bitmapTmp.LockBits(new Rectangle(0, 0, bitmapTmp.Width, bitmapTmp.Height),
-                ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
-            Bitmap bitmap1 = new(
-                Avalonia.Platform.PixelFormat.Bgra8888, AlphaFormat.Premul,
-                bitmapData.Scan0,
-                new PixelSize(bitmapData.Width, bitmapData.Height),
-                new Vector(96, 96),
-                bitmapData.Stride);
-            bitmapTmp.UnlockBits(bitmapData);
-            bitmapTmp.Dispose();
-
-            return bitmap1;
-        }
-
-        /*
-         * Getters
-         */
-
-
-        /*
-         * Setters
-         */
-
         public void processClick(int clickX, int clickY, int imgWidth, int imgHeight) {
             int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
                 b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
@@ -293,7 +255,7 @@ namespace WFC4ALL.Managers {
             //TODO CF2
 
             const int tileIdx = 0;
-            (System.Drawing.Bitmap result2, bool showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
+            (WriteableBitmap r2, bool showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
 
             Tuple<int, int> key = new(a, b);
             if (overwriteColorCache.ContainsKey(key)) {
@@ -303,14 +265,19 @@ namespace WFC4ALL.Managers {
             if (showPixel) {
                 if (parentCM.getWFCHandler().isOverlappingModel()) {
                     Color c = (Color) parentCM.getWFCHandler().getTiles().get(tileIdx).Value;
-                    overwriteColorCache.Add(key, c);
+                    overwriteColorCache.Add(key,
+                        new Tuple<Color, int>(c, parentCM.getWFCHandler().getCurrentTimeStamp()));
                 } else {
                     Tuple<Color[], Tile> c = parentCM.getWFCHandler().getTileCache()[tileIdx];
                 }
             }
 
-            mainWindowVM.OutputImage = ConvertToAvaloniaBitmap(result2);
+            mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
             parentCM.getWFCHandler().setCurrentStep(parentCM.getWFCHandler().getCurrentStep() + 1);
+        }
+
+        public Dictionary<Tuple<int, int>, Tuple<Color, int>> getOverwriteColorCache() {
+            return overwriteColorCache;
         }
     }
 }

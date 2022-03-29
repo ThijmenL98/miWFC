@@ -4,11 +4,11 @@ using ReactiveUI;
 namespace WFC4ALL.ContentControls {
     public class TileViewModel : ReactiveObject {
 
-        private readonly Bitmap _patternImage = null!;
+        private readonly WriteableBitmap _patternImage = null!;
         private int _patternWeight;
         private readonly int _patternIndex;
 
-        public Bitmap PatternImage {
+        public WriteableBitmap PatternImage {
             get => _patternImage;
             private init => this.RaiseAndSetIfChanged(ref _patternImage, value);
         }
@@ -23,7 +23,7 @@ namespace WFC4ALL.ContentControls {
             private init => this.RaiseAndSetIfChanged(ref _patternIndex, value);
         }
 
-        public TileViewModel(Bitmap image, double weight, int index) {
+        public TileViewModel(WriteableBitmap image, double weight, int index) {
             PatternImage = image;
             PatternWeight = (int) weight;
             PatternIndex = index;

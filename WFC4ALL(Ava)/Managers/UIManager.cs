@@ -1,13 +1,20 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using WFC4ALL.ContentControls;
 using WFC4All.DeBroglie.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
+using Bitmap = Avalonia.Media.Imaging.Bitmap;
+using Size = Avalonia.Size;
 
-namespace WFC4ALL.Managers; 
+namespace WFC4ALL.Managers;
 
 public class UIManager {
     private readonly CentralManager parentCM;
@@ -18,17 +25,17 @@ public class UIManager {
     private HashSet<ImageR> curBitmaps = new();
     private Dictionary<int, List<Bitmap>> similarityMap = new();
     private int patternCount;
-    
+
     public UIManager(CentralManager parent) {
         parentCM = parent;
         mainWindowVM = parent.getMainWindowVM();
         mainWindow = parent.getMainWindow();
     }
-    
+
     /*
      * UI Elements Content Updating
      */
-    
+
     public void updateCategories(string[]? values, int idx = 0) {
         mainWindow.getInputControl().setCategories(values, idx);
     }
@@ -44,7 +51,7 @@ public class UIManager {
     public void updateInputImage(string newImage) {
         // ReSharper disable once InconsistentNaming
         string URI = $"samples/{newImage}.png";
-        mainWindowVM.InputImage = new Avalonia.Media.Imaging.Bitmap(URI);
+        mainWindowVM.InputImage = new Bitmap(URI);
     }
 
     public void updateInstantCollapse(int newValue) {
@@ -57,7 +64,7 @@ public class UIManager {
         double tWidth = mainWindow.getOutputControl().getTimelineWidth();
         mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
-    
+
     /*
      * UI Window Manipulation
      */
@@ -73,7 +80,7 @@ public class UIManager {
     public bool popUpOpened() {
         return mainWindowVM.PopupVisible;
     }
-    
+
     public void resetPatterns() {
         similarityMap = new Dictionary<int, List<Bitmap>>();
         curBitmaps = new HashSet<ImageR>();
@@ -82,24 +89,35 @@ public class UIManager {
 
     public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries) {
         int n = colors.Height;
-        Bitmap pattern = new(n, n);
+        WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
+            PixelFormat.Rgba8888, AlphaFormat.Premul);
 
-        Dictionary<Point, Color> data = new();
+        ConcurrentDictionary<Point, Color> data = new();
 
-        for (int x = 0; x < n; x++) {
-            for (int y = 0; y < n; y++) {
-                Color tileColor = (Color) colors.getTileAt(x, y).Value;
-                pattern.SetPixel(x, y, tileColor);
-                data[new Point(x, y)] = tileColor;
-            }
+        using ILockedFramebuffer? frameBuffer = pattern.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, n, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < n; x++) {
+                    Color c = (Color) colors.getTileAt(x, (int) y).Value;
+                    dest[x] = (uint) ((c.A << 24) + (c.B << 16) + (c.G << 8) + c.R);
+                    data[new Point(x, (int) y)] = c;
+                }
+            });
         }
 
-        ImageR cur = new(pattern.Size, data);
+        ImageR cur = new(pattern.Size, data.ToDictionary(kvp => kvp.Key,
+            kvp => kvp.Value,
+            data.Comparer));
 
         foreach ((ImageR reference, int i) in curBitmaps.Select((reference, i) => (reference, i))) {
             if (transforms.Select(transform => cur.Data.All(x =>
                     x.Value == reference.Data[
-                        transform.Invoke(cur.Size.Width - 1, cur.Size.Height - 1, x.Key.X, x.Key.Y)]))
+                        transform.Invoke((int) cur.Size.Width - 1, (int) cur.Size.Height - 1, (int) x.Key.X, (int) x.Key.Y)]))
                 .Any(match => match)) {
                 similarityMap[i].Add(pattern);
                 List<int> symmetries = tileSymmetries!.ContainsKey(i) ? tileSymmetries[i].ToList() : new List<int>();
@@ -111,15 +129,13 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-
-        Avalonia.Media.Imaging.Bitmap avaloniaBitmap = parentCM.getInputManager().ConvertToAvaloniaBitmap(pattern);
-        TileViewModel tvm = new(avaloniaBitmap, weight, patternCount);
+        TileViewModel tvm = new(pattern, weight, patternCount);
 
         patternCount++;
 
         return tvm;
     }
-    
+
     /*
      * Helper functions
      */

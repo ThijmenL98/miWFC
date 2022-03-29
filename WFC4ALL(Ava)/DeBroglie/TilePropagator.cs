@@ -115,7 +115,7 @@ namespace WFC4All.DeBroglie
                 (options.Constraints?.Select(x => new TileConstraintAdaptor(x, this)).ToArray() ?? Enumerable.Empty<IWaveConstraint>())
                 .ToArray();
 
-            FrequencySet[] waveFrequencySets = (options.Weights == null! ? null : getFrequencySets(options.Weights, tileModelMapping))!;
+            //FrequencySet[] waveFrequencySets = (options.Weights == null! ? null : getFrequencySets(options.Weights, tileModelMapping))!;
 
 #pragma warning disable CS0618 // Type or member is obsolete
             wavePropagator = new WavePropagator(
@@ -125,7 +125,8 @@ namespace WFC4All.DeBroglie
                 topology.Height, 
                 options.BackTrackDepth, 
                 waveConstraints, 
-                options.RandomDouble ?? (options.Random == null ? null : options.Random.NextDouble),
+                options.RandomDouble,
+                // options.RandomDouble ?? (options.Random == null ? null : options.Random.NextDouble),
                 clear: false);
 #pragma warning restore CS0618 // Type or member is obsolete
             wavePropagator.clear();
