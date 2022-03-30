@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -116,7 +117,8 @@ public class WFCHandler {
 
     public (WriteableBitmap, bool) initAndRunWfcDB(bool reset, int steps, bool force = false) {
         if (isChangingModels() || !mainWindow.IsActive && !force) {
-            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul), true);
+            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+                true);
         }
 
         Stopwatch sw = new();
@@ -172,7 +174,7 @@ public class WFCHandler {
                     }
                 } else {
                     dbModel = new AdjacentModel();
-                    xRoot = XDocument.Load($"samples/{inputImage}/data.xml").Root ?? new XElement("");
+                    xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ?? new XElement("");
 
                     tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16");
 
@@ -181,7 +183,7 @@ public class WFCHandler {
 
                     foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
                         MemoryStream ms = new(File.ReadAllBytes(
-                            $"samples{Path.DirectorySeparatorChar}{inputImage}{Path.DirectorySeparatorChar}{xTile.Attribute("name")?.Value}.png"));
+                            $"{AppContext.BaseDirectory}/samples/{inputImage}/{xTile.Attribute("name")?.Value}.png"));
                         WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
 
                         int cardinality = char.Parse(xTile.Attribute("symmetry")?.Value ?? "X") switch {
@@ -410,7 +412,8 @@ public class WFCHandler {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(96, 96),
-            PixelFormat.Bgra8888, AlphaFormat.Premul);
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Premul);
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
 
         Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
@@ -449,7 +452,8 @@ public class WFCHandler {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
             new Vector(96, 96),
-            PixelFormat.Bgra8888, AlphaFormat.Premul);
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Premul);
         ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
@@ -465,7 +469,7 @@ public class WFCHandler {
                         (int) Math.Floor((double) y / tileSize));
                     bool isCollapsed = value >= 0;
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
-                    
+
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Colors.Transparent;
                     dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
 

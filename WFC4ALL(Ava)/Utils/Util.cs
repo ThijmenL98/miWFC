@@ -12,7 +12,7 @@ using Avalonia.Platform;
 namespace WFC4ALL.Utils;
 
 public static class Util {
-    private static readonly XDocument xDoc = XDocument.Load("./Assets/samples.xml");
+    private static readonly XDocument xDoc = XDocument.Load(AppContext.BaseDirectory + "/Assets/samples.xml");
 
     /*
      * Pattern Adaptation Simple
@@ -42,7 +42,7 @@ public static class Util {
      */
 
     public static WriteableBitmap getImageFromURI(string name) {
-        MemoryStream ms = new(File.ReadAllBytes($"samples{Path.DirectorySeparatorChar}{name}.png"));
+        MemoryStream ms = new(File.ReadAllBytes($"{AppContext.BaseDirectory}/samples/{name}.png"));
         WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
         return writeableBitmap;
     }

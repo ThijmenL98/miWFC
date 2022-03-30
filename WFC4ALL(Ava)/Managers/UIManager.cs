@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
@@ -50,7 +51,7 @@ public class UIManager {
 
     public void updateInputImage(string newImage) {
         // ReSharper disable once InconsistentNaming
-        string URI = $"samples/{newImage}.png";
+        string URI = $"{AppContext.BaseDirectory}/samples/{newImage}.png";
         mainWindowVM.InputImage = new Bitmap(URI);
     }
 
@@ -90,7 +91,8 @@ public class UIManager {
     public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries) {
         int n = colors.Height;
         WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
-            PixelFormat.Bgra8888, AlphaFormat.Premul);
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Premul);
 
         ConcurrentDictionary<Point, Color> data = new();
 
@@ -117,7 +119,8 @@ public class UIManager {
         foreach ((ImageR reference, int i) in curBitmaps.Select((reference, i) => (reference, i))) {
             if (transforms.Select(transform => cur.Data.All(x =>
                     x.Value == reference.Data[
-                        transform.Invoke((int) cur.Size.Width - 1, (int) cur.Size.Height - 1, (int) x.Key.X, (int) x.Key.Y)]))
+                        transform.Invoke((int) cur.Size.Width - 1, (int) cur.Size.Height - 1, (int) x.Key.X,
+                            (int) x.Key.Y)]))
                 .Any(match => match)) {
                 similarityMap[i].Add(pattern);
                 List<int> symmetries = tileSymmetries!.ContainsKey(i) ? tileSymmetries[i].ToList() : new List<int>();

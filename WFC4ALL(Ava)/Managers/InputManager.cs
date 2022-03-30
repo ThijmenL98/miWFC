@@ -12,7 +12,6 @@ using WFC4All.DeBroglie;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
-using Bitmap = Avalonia.Media.Imaging.Bitmap;
 
 #pragma warning disable CS8618
 #pragma warning disable CS8625
@@ -37,7 +36,7 @@ namespace WFC4ALL.Managers {
             mainWindow = parentCM.getMainWindow();
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
 
-            noResultFoundBM = new Bitmap("Assets/NoResultFound.png");
+            noResultFoundBM = new Bitmap(AppContext.BaseDirectory + "/Assets/NoResultFound.png");
             savePoints = new Stack<int>();
             savePoints.Push(0);
 
@@ -255,7 +254,7 @@ namespace WFC4ALL.Managers {
             //TODO CF2
 
             const int tileIdx = 0;
-            (WriteableBitmap r2, bool showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
+            (WriteableBitmap _, bool showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
 
             Tuple<int, int> key = new(a, b);
             if (overwriteColorCache.ContainsKey(key)) {
