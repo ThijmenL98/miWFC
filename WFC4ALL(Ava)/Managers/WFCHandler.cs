@@ -63,7 +63,7 @@ public class WFCHandler {
         _isChangingModels = false;
         _isChangingImages = false;
         inputHasChanged = true;
-        latestOutput = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Rgba8888, AlphaFormat.Premul);
+        latestOutput = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
         currentStep = 0;
         timeStamp = 0;
         currentBitmap = null;
@@ -116,7 +116,7 @@ public class WFCHandler {
 
     public (WriteableBitmap, bool) initAndRunWfcDB(bool reset, int steps, bool force = false) {
         if (isChangingModels() || !mainWindow.IsActive && !force) {
-            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Rgba8888, AlphaFormat.Premul), true);
+            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul), true);
         }
 
         Stopwatch sw = new();
@@ -410,7 +410,7 @@ public class WFCHandler {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(96, 96),
-            PixelFormat.Rgba8888, AlphaFormat.Premul);
+            PixelFormat.Bgra8888, AlphaFormat.Premul);
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
 
         Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
@@ -431,7 +431,7 @@ public class WFCHandler {
                     Tuple<int, int> overlapKey = new(x, (int) y);
                     Color toSet = overwriteColorCache.ContainsKey(overlapKey) ? overwriteColorCache[overlapKey] :
                         currentColors!.Contains(c) ? c : Colors.Transparent;
-                    dest[x] = (uint) ((c.A << 24) + (c.B << 16) + (c.G << 8) + c.R);
+                    dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
 
                     if (!toSet.Equals(Colors.Transparent)) {
                         Interlocked.Increment(ref collapsedTiles);
@@ -449,7 +449,7 @@ public class WFCHandler {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
             new Vector(96, 96),
-            PixelFormat.Rgba8888, AlphaFormat.Premul);
+            PixelFormat.Bgra8888, AlphaFormat.Premul);
         ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
@@ -467,7 +467,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Colors.Transparent;
-                    dest[x] = (uint) ((c.A << 24) + (c.B << 16) + (c.G << 8) + c.R);
+                    dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
 
                     if (isCollapsed && y % tileSize == 0 && x % tileSize == 0) {
                         Interlocked.Increment(ref collapsedTiles);

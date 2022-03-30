@@ -90,7 +90,7 @@ public class UIManager {
     public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries) {
         int n = colors.Height;
         WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
-            PixelFormat.Rgba8888, AlphaFormat.Premul);
+            PixelFormat.Bgra8888, AlphaFormat.Premul);
 
         ConcurrentDictionary<Point, Color> data = new();
 
@@ -104,7 +104,7 @@ public class UIManager {
                 uint* dest = backBuffer + (int) y * stride / 4;
                 for (int x = 0; x < n; x++) {
                     Color c = (Color) colors.getTileAt(x, (int) y).Value;
-                    dest[x] = (uint) ((c.A << 24) + (c.B << 16) + (c.G << 8) + c.R);
+                    dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
                     data[new Point(x, (int) y)] = c;
                 }
             });

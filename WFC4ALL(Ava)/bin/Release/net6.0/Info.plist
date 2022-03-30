@@ -13,7 +13,7 @@
     <key>LSMinimumSystemVersion</key>
     <string>10.12</string>
     <key>CFBundleExecutable</key>
-    <string>WFC4All.Avalonia</string>
+    <string>WFC4All</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundlePackageType</key>
