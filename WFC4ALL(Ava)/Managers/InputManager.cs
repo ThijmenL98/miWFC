@@ -8,7 +8,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using WFC4ALL.ContentControls;
-using WFC4All.DeBroglie;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
@@ -30,11 +29,14 @@ namespace WFC4ALL.Managers {
 
         private Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache;
 
+        private Dictionary<int, Color> colourMapping;
+
         public InputManager(CentralManager parent) {
             parentCM = parent;
             mainWindowVM = parentCM.getMainWindowVM();
             mainWindow = parentCM.getMainWindow();
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
+            colourMapping = new Dictionary<int, Color>();
 
             noResultFoundBM = new Bitmap(AppContext.BaseDirectory + "/Assets/NoResultFound.png");
             savePoints = new Stack<int>();
@@ -64,6 +66,7 @@ namespace WFC4ALL.Managers {
             mainWindowVM.Markers = new ObservableCollection<MarkerViewModel>();
 
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
+            colourMapping = new Dictionary<int, Color>();
 
             if (!getModelImages(parentCM.getWFCHandler().isOverlappingModel() ? "overlapping" : "simpletiled",
                         mainWindow.getInputControl().getCategory())
@@ -74,7 +77,7 @@ namespace WFC4ALL.Managers {
             try {
                 int stepAmount = mainWindowVM.StepAmount;
                 mainWindowVM.OutputImage = parentCM.getWFCHandler()
-                    .initAndRunWfcDB(true, stepAmount == 100 ? -1 : stepAmount, force).Item1;
+                    .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force).Item1;
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -125,6 +128,7 @@ namespace WFC4ALL.Managers {
 
         public void resetOverwriteCache() {
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
+            colourMapping = new Dictionary<int, Color>();
         }
 
         public void placeMarker() {
@@ -144,9 +148,7 @@ namespace WFC4ALL.Managers {
                     if (!savePoints.Contains(curStep)) {
                         savePoints.Push(curStep);
                     }
-
-                    Trace.WriteLine(@$"Placed a marker at {curStep}");
-
+                    
                     return;
                 }
             }
@@ -156,9 +158,8 @@ namespace WFC4ALL.Managers {
             int prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
             if (parentCM.getWFCHandler().getCurrentStep() == prevTimePoint && savePoints.Count != 0) {
                 savePoints.Pop();
-                int toRemove = savePoints.Count;
                 foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
-                    if (marker.MarkerIndex.Equals(toRemove)) {
+                    if (marker.MarkerIndex.Equals(savePoints.Count)) {
                         mainWindowVM.Markers.Remove(marker);
                     }
                 }
@@ -166,12 +167,13 @@ namespace WFC4ALL.Managers {
                 prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
             }
 
-            Trace.WriteLine(
-                @$"Reverting to marker at {prevTimePoint} - Cur: {parentCM.getWFCHandler().getCurrentStep()}");
             int stepsToRevert = parentCM.getWFCHandler().getCurrentStep() - prevTimePoint;
             parentCM.getWFCHandler().setCurrentStep(prevTimePoint);
             try {
                 mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc(stepsToRevert);
+                if (stepsToRevert < 0) {
+                    loadMarker();
+                }
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -245,34 +247,55 @@ namespace WFC4ALL.Managers {
             }
         }
 
-        public void processClick(int clickX, int clickY, int imgWidth, int imgHeight) {
+        public bool processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx) {
             int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
                 b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+
 #if (DEBUG)
             Trace.WriteLine($@"(x:{clickX}, y:{clickY}) -> (a:{a}, b:{b})");
 #endif
-            //TODO CF2
-
-            const int tileIdx = 0;
-            (WriteableBitmap _, bool showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
 
             Tuple<int, int> key = new(a, b);
             if (overwriteColorCache.ContainsKey(key)) {
-                return;
+                return false;
+            }
+
+            WriteableBitmap bitmap;
+            bool showPixel;
+
+            if (parentCM.getWFCHandler().isOverlappingModel()) {
+                Color? c;
+
+                if (colourMapping.ContainsKey(tileIdx)) {
+                    c = colourMapping[tileIdx];
+                } else {
+                    c = parentCM.getWFCHandler().getPaintableTiles()
+                        .Where(tileViewModel => tileViewModel.PatternIndex.Equals(tileIdx)).ElementAtOrDefault(0)
+                        ?.PatternColour ?? null;
+
+                    if (c == null) {
+                        return false;
+                    }
+
+                    colourMapping[tileIdx] = (Color) c;
+                }
+
+                overwriteColorCache.Add(key,
+                    new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getCurrentTimeStamp()));
+                (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
+            } else {
+                // Tuple<Color[], Tile> cTup = parentCM.getWFCHandler().getTileCache()[tileIdx];
+                (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
             }
 
             if (showPixel) {
-                if (parentCM.getWFCHandler().isOverlappingModel()) {
-                    Color c = (Color) parentCM.getWFCHandler().getTiles().get(tileIdx).Value;
-                    overwriteColorCache.Add(key,
-                        new Tuple<Color, int>(c, parentCM.getWFCHandler().getCurrentTimeStamp()));
-                } else {
-                    Tuple<Color[], Tile> c = parentCM.getWFCHandler().getTileCache()[tileIdx];
-                }
+                mainWindowVM.OutputImage = bitmap;
+                parentCM.getWFCHandler().setCurrentStep(parentCM.getWFCHandler().getCurrentStep() + 1);
+            } else if (parentCM.getWFCHandler().isOverlappingModel()) {
+                overwriteColorCache.Remove(key);
             }
 
-            mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
-            parentCM.getWFCHandler().setCurrentStep(parentCM.getWFCHandler().getCurrentStep() + 1);
+            return showPixel;
         }
 
         public Dictionary<Tuple<int, int>, Tuple<Color, int>> getOverwriteColorCache() {

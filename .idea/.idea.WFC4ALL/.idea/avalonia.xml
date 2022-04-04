@@ -11,6 +11,7 @@
         <entry key="WFC4ALL(Ava)/Styles/TestStyle.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
         <entry key="WFC4ALL(Ava)/Styles/test.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
         <entry key="WFC4ALL(Ava)/Views/MainWindow.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/Views/PaintingWindow.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
       </map>
     </option>
   </component>

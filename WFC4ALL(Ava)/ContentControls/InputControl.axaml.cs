@@ -33,17 +33,16 @@ namespace WFC4ALL.ContentControls {
          */
 
         private void catCBChangeHandler(object _, SelectionChangedEventArgs e) {
+            bool isOverlapping = ((string) this.Find<Button>("modeToggle").Content).Contains("Tile");
+            string newValue = getCategory();
             if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
+                this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures") && isOverlapping;
                 return;
             }
-            
-            string newValue = getCategory();
 
-            this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures");
             string[] inputImageDataSource
-                = Util.getModelImages(
-                    ((string) this.Find<Button>("modeToggle").Content).Contains("Tile") ? "overlapping" : "simpletiled",
-                    newValue);
+                = Util.getModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
+            this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures") && isOverlapping;
             setInputImages(inputImageDataSource);
             e.Handled = true;
         }
@@ -52,8 +51,9 @@ namespace WFC4ALL.ContentControls {
             if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
                 return;
             }
+
             centralManager.getWFCHandler().setImageChanging(true);
-            
+
             string newValue = getInputImage();
             centralManager.getUIManager().updateInputImage(newValue);
 
@@ -76,6 +76,7 @@ namespace WFC4ALL.ContentControls {
             if (centralManager == null) {
                 return;
             }
+
             centralManager.getWFCHandler().setInputChanged("Pattern Size CB");
             e.Handled = true;
             centralManager.getInputManager().restartSolution();
@@ -128,7 +129,7 @@ namespace WFC4ALL.ContentControls {
         public double getInputImageHeight() {
             return this.Find<Image>("inputImage").Bounds.Height;
         }
-        
+
         public double getInputImageWidth() {
             return this.Find<Image>("inputImage").Bounds.Width;
         }

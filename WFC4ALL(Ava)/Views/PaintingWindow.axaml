@@ -1,0 +1,225 @@
+﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Window.Resources>
+        <!-- Hover resources -->
+        <Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
+        <Image Source="/Assets/PencilHover.png" x:Key="hoverPencilKey" x:Name="hoverPencil" />
+        <Image Source="/Assets/EraseHover.png" x:Key="hoverEraseKey" x:Name="hoverErase" />
+        <Image Source="/Assets/PaintKeepHover.png" x:Key="hoverPaintKeepKey" x:Name="hoverPaintKeep" />
+        <Image Source="/Assets/PaintEraseHover.png" x:Key="hoverPaintEraseKey" x:Name="hoverPaintErase" />
+        <!-- Click resources -->
+        <Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
+        <Image Source="/Assets/PencilHover.png" x:Key="clickPencilKey" x:Name="clickPencil" />
+        <Image Source="/Assets/EraseHover.png" x:Key="clickEraseKey" x:Name="clickErase" />
+        <Image Source="/Assets/PaintKeepHover.png" x:Key="clickPaintKeepKey" x:Name="clickPaintKeep" />
+        <Image Source="/Assets/PaintEraseHover.png" x:Key="clickPaintEraseKey" x:Name="clickPaintErase" />
+    </Window.Resources>
+
+    <Window.Styles>
+        <StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+
+        <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+    </Window.Styles>
+
+    <Window.Background>
+        <ImageBrush Source="/Assets/backgroundImage2.png" Stretch="Fill" />
+    </Window.Background>
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid>
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+            <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+                <Grid ColumnDefinitions="Auto, Auto, Auto" ShowGridLines="True">
+
+                    <Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="*, *, *, *" Margin="10" VerticalAlignment="Top">
+                        <Button Background="Transparent" Grid.Row="0"
+                                Command="{Binding OnPencilModeClick}" Grid.Column="0"
+                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                IsEnabled="{Binding InstantCollapse}">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource hoverPencilKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource clickPencilKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </Button.Styles>
+                            <Panel>
+                                <Image IsVisible="{Binding !PencilModeEnabled}" Source="/Assets/Pencil.png" />
+                                <Image IsVisible="{Binding PencilModeEnabled}" Source="/Assets/PencilSelected.png" />
+                            </Panel>
+                            <!-- <ToolTip.Tip> -->
+                            <!--     <StackPanel> -->
+                            <!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
+                            <!--         <TextBlock>Shortcut(s): Space bar &amp; and 'P' Key</TextBlock> -->
+                            <!--     </StackPanel> -->
+                            <!-- </ToolTip.Tip> -->
+                        </Button>
+                        
+                        <Button Background="Transparent" Grid.Row="0"
+                                Command="{Binding OnEraseModeClick}" Grid.Column="1"
+                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                IsEnabled="{Binding InstantCollapse}">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource hoverEraseKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource clickEraseKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </Button.Styles>
+                            <Panel>
+                                <Image IsVisible="{Binding !EraseModeEnabled}" Source="/Assets/Erase.png" />
+                                <Image IsVisible="{Binding EraseModeEnabled}" Source="/Assets/EraseSelected.png" />
+                            </Panel>
+                            <!-- <ToolTip.Tip> -->
+                            <!--     <StackPanel> -->
+                            <!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
+                            <!--         <TextBlock>Shortcut(s): Space bar &amp; and 'P' Key</TextBlock> -->
+                            <!--     </StackPanel> -->
+                            <!-- </ToolTip.Tip> -->
+                        </Button>
+                        
+                        <Button Background="Transparent" Grid.Row="1"
+                                Command="{Binding OnPaintKeepModeClick}" Grid.Column="0"
+                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                IsEnabled="{Binding InstantCollapse}">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource hoverPaintKeepKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource clickPaintKeepKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </Button.Styles>
+                            <Panel>
+                                <Image IsVisible="{Binding !PaintKeepModeEnabled}" Source="/Assets/PaintKeep.png" />
+                                <Image IsVisible="{Binding PaintKeepModeEnabled}" Source="/Assets/PaintKeepSelected.png" />
+                            </Panel>
+                            <!-- <ToolTip.Tip> -->
+                            <!--     <StackPanel> -->
+                            <!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
+                            <!--         <TextBlock>Shortcut(s): Space bar &amp; and 'P' Key</TextBlock> -->
+                            <!--     </StackPanel> -->
+                            <!-- </ToolTip.Tip> -->
+                        </Button>
+                        
+                        <Button Background="Transparent" Grid.Row="1"
+                                Command="{Binding OnPaintEraseModeClick}" Grid.Column="1"
+                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                IsEnabled="{Binding InstantCollapse}">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource hoverPaintEraseKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource clickPaintEraseKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </Button.Styles>
+                            <Panel>
+                                <Image IsVisible="{Binding !PaintEraseModeEnabled}" Source="/Assets/PaintErase.png" />
+                                <Image IsVisible="{Binding PaintEraseModeEnabled}" Source="/Assets/PaintEraseSelected.png" />
+                            </Panel>
+                            <!-- <ToolTip.Tip> -->
+                            <!--     <StackPanel> -->
+                            <!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
+                            <!--         <TextBlock>Shortcut(s): Space bar &amp; and 'P' Key</TextBlock> -->
+                            <!--     </StackPanel> -->
+                            <!-- </ToolTip.Tip> -->
+                        </Button>
+                        
+                        <ComboBox Grid.Column="0" Grid.Row="2" SelectedIndex="0" Items="{Binding PaintTiles}"
+                                  x:Name="tilePaintSelectCB" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="56" Padding="1" Background="#55000000" CornerRadius="9" Margin="0, 5, 0, 5">
+                                        <Border Padding="-3" CornerRadius="5" ClipToBounds="True" Margin="3"
+                                                Background="#552FACED">
+                                            <Image Width="50" Height="50" Margin="3"
+                                                   Source="{Binding PatternImage}"
+                                                   RenderOptions.BitmapInterpolationMode="Default">
+                                                <Image.Styles>
+                                                    <Style Selector="Image">
+                                                        <Setter Property="RenderTransform">
+                                                            <Setter.Value>
+                                                                <TransformGroup>
+                                                                    <RotateTransform Angle="{Binding PatternRotation}" />
+                                                                    <ScaleTransform ScaleX="{Binding PatternFlipping}" />
+                                                                </TransformGroup>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </Image.Styles>
+                                            </Image>
+                                        </Border>
+                                    </Border>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </Grid>
+
+                    <Grid Grid.Column="1" RowDefinitions="*" HorizontalAlignment="Center">
+                        <Grid ColumnDefinitions="*" VerticalAlignment="Center">
+                            <Border Margin="10" Background="#11000000" CornerRadius="10">
+                                <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+                                       x:Name="outputImage" Source="{Binding OutputImage}"
+                                       PointerPressed="OutputImageOnPointerPressed" />
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Column="2">
+                        <Button Background="Transparent"
+                                Command="{Binding OnCustomizeWindowSwitch}"
+                                CommandParameter="M" VerticalAlignment="Top"
+                                HorizontalAlignment="Right" Margin="4" MaxWidth="75">
+                            <Button.Styles>
+                                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="Button:pressed /template/ ContentPresenter">
+                                    <Setter Property="Content" Value="{DynamicResource clickBackKey}" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                            </Button.Styles>
+                            <Panel>
+                                <Image Source="/Assets/Back.png" />
+                            </Panel>
+                            <ToolTip.Tip>
+                                <StackPanel>
+                                    <TextBlock>Start/Stop generation animation</TextBlock>
+                                    <TextBlock>Shortcut(s): Space bar &amp; and 'P' Key</TextBlock>
+                                </StackPanel>
+                            </ToolTip.Tip>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
+        <Border BorderBrush="Black" BorderThickness="2" />
+    </Grid>
+</Window>

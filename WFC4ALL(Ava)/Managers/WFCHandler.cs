@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -13,11 +12,11 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using WFC4ALL.ContentControls;
 using WFC4All.DeBroglie;
 using WFC4All.DeBroglie.Models;
 using WFC4All.DeBroglie.Rot;
 using WFC4All.DeBroglie.Topo;
+using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
@@ -49,6 +48,8 @@ public class WFCHandler {
 
     private Dictionary<int, int[]> tileSymmetries;
     private XElement xRoot;
+    
+    private List<TileViewModel> toAddPaint;
 
 #pragma warning disable CS8618
     public WFCHandler(CentralManager parent) {
@@ -70,6 +71,7 @@ public class WFCHandler {
         currentBitmap = null;
         currentColors = new HashSet<Color>();
         tileSize = 0;
+        toAddPaint = new List<TileViewModel>();
         tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
         tileSymmetries = new Dictionary<int, int[]>();
 
@@ -146,7 +148,10 @@ public class WFCHandler {
             if (hasInputCHanged()) {
                 // form.displayLoading(true);
                 currentBitmap = getImageFromURI(mainWindow.getInputControl().getInputImage());
-                mainWindowVM.Tiles.Clear();
+                mainWindowVM.PatternTiles.Clear();
+                mainWindowVM.PaintTiles.Clear();
+                toAddPaint = new List<TileViewModel>();
+
                 parentCM.getInputManager().resetOverwriteCache();
                 parentCM.getUIManager().resetPatterns();
 
@@ -157,9 +162,9 @@ public class WFCHandler {
                     ITopoArray<Color> dbSample = TopoArray.create(colorArray, inputPaddingEnabled);
                     tiles = dbSample.toTiles();
                     dbModel = new OverlappingModel(mainWindow.getInputControl().getPatternSize());
-                    bool hasRotations = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
+                    bool hasRotations = (mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
                                         || category.Equals("Knots") || category.Equals("Knots") ||
-                                        inputImage.Equals("Mazelike");
+                                        inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
                     (List<PatternArray>? patternList, List<double>? patternWeights)
                         = ((OverlappingModel) dbModel).addSample(tiles,
@@ -172,9 +177,26 @@ public class WFCHandler {
                             toAdd.Add(nextTVM);
                         }
                     }
+                    
+                    foreach ((Tile t, int index) in tiles.toArray2d().Cast<Tile>().Distinct().Select((tile, idx) => (tile, idx))) {
+                        Color c = (Color) t.Value;
+                        
+                        WriteableBitmap pattern = new(new PixelSize(1, 1), new Vector(96, 96),
+                            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+                            AlphaFormat.Premul);
+
+                        using ILockedFramebuffer? frameBuffer = pattern.Lock();
+
+                        unsafe {
+                            ((uint*) frameBuffer.Address.ToPointer())[0] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                        }
+                        
+                        toAddPaint.Add(new TileViewModel(pattern, index, c));
+                    }
                 } else {
                     dbModel = new AdjacentModel();
-                    xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ?? new XElement("");
+                    xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
+                            new XElement("");
 
                     tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16");
 
@@ -194,9 +216,7 @@ public class WFCHandler {
                             'F' => 8,
                             _ => 1
                         };
-
-                        // Trace.WriteLine(xTile.Attribute("name")?.Value + " " + tileCache.Count + "(" + cardinality + ")");
-
+                        
                         Color[] cur = extractColours(writeableBitmap);
                         int val = tileCache.Count;
                         Tile curTile = new(val);
@@ -209,6 +229,18 @@ public class WFCHandler {
                             Color[] curCard = t <= 3
                                 ? rotate(tileCache[val + t - 1].Item1.ToArray(), tileSize)
                                 : reflect(tileCache[val + t - 4].Item1.ToArray(), tileSize);
+
+                            int rotation, shouldFlip = 1;
+                            if (t <= 3) {
+                                rotation = -90 * t;
+                            } else {
+                                rotation = -90 * (t-4);
+                                shouldFlip = -1;
+                                if (t == 4) {
+                                    shouldFlip = 1;
+                                }
+                            }
+                            toAddPaint.Add(new TileViewModel(writeableBitmap, tileCache.Count - 1, rotation, shouldFlip));
                             tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
                             symmetries.Add(myIdx);
                         }
@@ -216,7 +248,10 @@ public class WFCHandler {
                         tileSymmetries.Add(val, symmetries.ToArray());
 
                         double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0");
-                        toAdd.Add(new TileViewModel(writeableBitmap, tileWeight, val));
+                        TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, cardinality > 4);
+                        
+                        toAdd.Add(tvm);
+                        toAddPaint.Add(tvm);
                     }
 
                     int[][] values = new int[50][];
@@ -241,7 +276,8 @@ public class WFCHandler {
                     }
                 }
 
-                mainWindowVM.Tiles = new ObservableCollection<TileViewModel>(toAdd);
+                mainWindowVM.PatternTiles = new ObservableCollection<TileViewModel>(toAdd);
+                parentCM.getPaintingWindow().setPaintingPatterns(toAddPaint.ToArray());
 #if (DEBUG)
                 if (sw.ElapsedMilliseconds >= 10) {
                     Trace.Write(@$"Init took {sw.ElapsedMilliseconds}ms. - ");
@@ -328,7 +364,6 @@ public class WFCHandler {
         sw.Restart();
 
         WriteableBitmap outputBitmap = getLatestOutputBM();
-        parentCM.getUIManager().updateTimeStampPosition(amountCollapsed);
         return (outputBitmap, dbStatus == Resolution.DECIDED);
     }
 
@@ -349,34 +384,30 @@ public class WFCHandler {
         sw.Restart();
 
         WriteableBitmap outputBitmap = getLatestOutputBM();
-        parentCM.getUIManager().updateTimeStampPosition(amountCollapsed);
         return outputBitmap;
     }
 
     public (WriteableBitmap, bool) setTile(int a, int b, int toSet) {
-        Tile t = isOverlappingModel() ? tiles.get(toSet) : tileCache[toSet].Item2;
-        Resolution status = dbPropagator.select(a, b, 0, t);
+        Resolution status;
+        if (isOverlappingModel()) {
+            Color c = toAddPaint[toSet].PatternColour;
+            IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
+                .Where(tile => ((Color) tile.Value).Equals(c));
+            status = dbPropagator.select(a, b, 0, tilesToSelect);
+        } else {
+            status = dbPropagator.select(a, b, 0, tileCache[toSet].Item2);
+        }
 
-        bool showPixel = true;
-        int count = 0;
+        bool showPixel = status != Resolution.CONTRADICTION;
 
-        while (status == Resolution.CONTRADICTION) {
-            foreach (int symmetryIndex in getSymmetries(toSet)) {
-                Trace.WriteLine("CONT");
+        currentStep++;
+        timeStamp++;
+
+        if (!showPixel) {
+            dbPropagator.doBacktrack();
+            if (!isOverlappingModel()) {
                 dbPropagator.doBacktrack();
-                status = dbPropagator.select(a, b, 0,
-                    isOverlappingModel() ? tiles.get(symmetryIndex) : tileCache[symmetryIndex].Item2);
-                if (status != Resolution.CONTRADICTION) {
-                    break;
-                }
             }
-
-            if (count == 100) {
-                showPixel = false;
-                break;
-            }
-
-            count++;
         }
 
         return (getLatestOutputBM(), showPixel);
@@ -399,16 +430,19 @@ public class WFCHandler {
 
     public WriteableBitmap getLatestOutputBM() {
         WriteableBitmap outputBitmap;
+        bool grid = !parentCM.getMainWindow().IsVisible;
         if (isOverlappingModel()) {
-            generateOverlappingBitmap(out outputBitmap);
+            generateOverlappingBitmap(out outputBitmap, grid);
         } else {
-            generateAdjacentBitmap(out outputBitmap);
+            generateAdjacentBitmap(out outputBitmap, grid);
         }
+
+        parentCM.getUIManager().updateTimeStampPosition(amountCollapsed);
 
         return outputBitmap;
     }
 
-    private void generateOverlappingBitmap(out WriteableBitmap outputBitmap) {
+    private void generateOverlappingBitmap(out WriteableBitmap outputBitmap, bool grid) {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(96, 96),
@@ -417,9 +451,6 @@ public class WFCHandler {
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
 
         Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
-        foreach (Tuple<int, int> key in overwriteColorCache.Keys) {
-            Trace.WriteLine($@"Key <{key.Item1},{key.Item2}>");
-        }
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
 
@@ -433,21 +464,23 @@ public class WFCHandler {
                     Color c = dbOutput.get(x, (int) y);
                     Tuple<int, int> overlapKey = new(x, (int) y);
                     Color toSet = overwriteColorCache.ContainsKey(overlapKey) ? overwriteColorCache[overlapKey] :
-                        currentColors!.Contains(c) ? c : Colors.Transparent;
-                    dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                        currentColors!.Contains(c) ? c :
+                        grid ? ((x + y) % 2 == 0) ? Color.Parse("#11000000") :
+                        Color.Parse("#00000000") :
+                        Color.Parse("#00000000");
+                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
-                    if (!toSet.Equals(Colors.Transparent)) {
+                    if (!toSet.Equals(Color.Parse("#00000000"))) {
                         Interlocked.Increment(ref collapsedTiles);
                     }
                 }
             });
         }
 
-        Trace.WriteLine(collapsedTiles);
         amountCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
     }
 
-    private void generateAdjacentBitmap(out WriteableBitmap outputBitmap) {
+    private void generateAdjacentBitmap(out WriteableBitmap outputBitmap, bool grid) {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
@@ -469,8 +502,10 @@ public class WFCHandler {
                         (int) Math.Floor((double) y / tileSize));
                     bool isCollapsed = value >= 0;
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
-
-                    Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Colors.Transparent;
+                    Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
+                        ? (((int) Math.Floor((double) x / tileSize)+
+                            (int) Math.Floor((double) y / tileSize)) % 2 == 0) ? Color.Parse("#11000000") : Color.Parse("#00000000")
+                        : Color.Parse("#00000000"));
                     dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
 
                     if (isCollapsed && y % tileSize == 0 && x % tileSize == 0) {
@@ -499,20 +534,6 @@ public class WFCHandler {
      * WFC Helper Functions
      */
 
-    private IEnumerable<int> getSymmetries(int value) {
-        List<int> valueSymmetries = new();
-        foreach ((int key, int[] v) in tileSymmetries) {
-            if (value.Equals(key) || ((IList) v).Contains(value)) {
-                valueSymmetries.Add(key);
-                valueSymmetries.AddRange(v);
-            }
-
-            valueSymmetries.Remove(value);
-        }
-
-        return valueSymmetries.ToArray();
-    }
-
     public bool isOverlappingModel() {
         return mainWindowVM.ModelSelectionText.Contains("Tile");
     }
@@ -529,11 +550,7 @@ public class WFCHandler {
         return amountCollapsed;
     }
 
-    public ITopoArray<Tile> getTiles() {
-        return tiles;
-    }
-
-    public Dictionary<int, Tuple<Color[], Tile>> getTileCache() {
-        return tileCache;
+    public IEnumerable<TileViewModel> getPaintableTiles() {
+        return toAddPaint;
     }
 }

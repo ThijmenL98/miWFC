@@ -2,13 +2,10 @@
     x:Class="WFC4ALL.ContentControls.InputControl"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:model="clr-namespace:WFC4ALL.ContentControls"
-    xmlns:converters="clr-namespace:WFC4ALL.Converters">
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-	<Grid Background="#999" Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto">
+	<Grid Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto">
 		<Grid 
-			Background="#D9D0FE" 
 			ColumnDefinitions="Auto, Auto"
             Grid.Row="0" Margin="4" RowDefinitions="Auto,Auto">
 			<Grid.Styles>
@@ -38,31 +35,14 @@
                 SelectionChanged="inImgCBChangeHandler" x:Name="inputCB"/>
 		</Grid>
 		
-		<Image Grid.Column="0" Grid.Row="1"  Margin="10"
+		<Border Grid.Column="0" Grid.Row="1"  Margin="10" Background="#22000000" CornerRadius="10" >
+		<Image Margin="10"
             RenderOptions.BitmapInterpolationMode="Default"
             Source="{Binding InputImage}" Width="300" x:Name="inputImage"/>
-		<ItemsControl Grid.Column="0" Grid.Row="1" Items="{Binding Gridlines}" Margin="10"
-		              ClipToBounds="False">
-			<ItemsControl.ItemsPanel>
-				<ItemsPanelTemplate>
-					<Canvas />
-				</ItemsPanelTemplate>
-			</ItemsControl.ItemsPanel>
-			<ItemsControl.ItemTemplate>
-				<DataTemplate DataType="{x:Type model:GridlineViewModel}">
-					<Line
-						Stroke="#999999"
-						StrokeThickness=".5"
-						UseLayoutRounding="True"
-						StartPoint="{Binding Converter={x:Static converters:AppConverters.GridlineToStartPoint}}"
-						EndPoint="{Binding Converter={x:Static converters:AppConverters.GridlineToEndPoint}}">
-					</Line>
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
+		</Border>
 		
-		<Grid Background="#D9F0AE" ColumnDefinitions="*,*,Auto"
-            Grid.Row="2" Margin="4" RowDefinitions="Auto">
+		<Grid ColumnDefinitions="*,*,Auto"
+		      Grid.Row="2" Margin="4" RowDefinitions="Auto">
 			<Grid.Styles>
 				<Style Selector="TextBlock">
 					<Setter Property="Margin" Value="4"/>
@@ -81,42 +61,28 @@
 					<Setter Property="MinHeight" Value="70"/>
 				</Style>
 			</Grid.Styles>
-			<StackPanel Background="#A9F0AE" Grid.Column="0">
+			<StackPanel Grid.Column="0">
 				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center">
 					Pattern Size
 				</TextBlock>
 				<ComboBox HorizontalAlignment="Center" SelectedIndex="0"
                     SelectionChanged="pattSizeCBChangeHandler" SelectedItem="{Binding PatternSize}"
-                    VerticalAlignment="Center" Width="120" x:Name="patternSizeCB"/>
+                    VerticalAlignment="Center" Width="85" x:Name="patternSizeCB"/>
 			</StackPanel>
 			<Button Command="{Binding OnModelClick}"
                 Content="{Binding ModelSelectionText}" Grid.Column="1"
                 Grid.Row="0" HorizontalContentAlignment="Center"
                 MaxWidth="100" VerticalContentAlignment="Center" x:Name="modeToggle"/>
-			<Button Background="Transparent"
-                Command="{Binding OnPaddingClick}" Grid.Column="2"
-                Grid.Row="0" Margin="-5, 0, -5, 0" MaxHeight="80" x:Name="borderPaddingToggle">
-				<Button.Styles>
-					<Style Selector="Button:pointerover /template/ ContentPresenter">
-						<Setter Property="Background" Value="Transparent"/>
-					</Style>
-				</Button.Styles>
-				<Panel>
-					<Image IsVisible="{Binding !PaddingEnabled}" Source="/Assets/borderPaddingDisabled.png"/>
-					<Image IsVisible="{Binding PaddingEnabled}" Source="/Assets/borderPaddingEnabled.png"/>
-				</Panel>
-				<ToolTip.Tip>
-					<StackPanel>
-						<TextBlock>Toggle boundary padding</TextBlock>
-					</StackPanel>
-				</ToolTip.Tip>
+			<Button Content="{Binding SeamlessText}" HorizontalContentAlignment="Center"
+                Command="{Binding OnPaddingClick}" Grid.Column="2" MaxWidth="135" VerticalContentAlignment="Center"
+                Grid.Row="0" x:Name="borderPaddingToggle">
 			</Button>
 		</Grid>
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300"/>
-		<Grid Background="#09F0AE" ColumnDefinitions="Auto, Auto"
+		<Grid ColumnDefinitions="Auto, Auto"
             Grid.Row="4" Margin="4" RowDefinitions="Auto">
 			<Button Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
-                Margin="0, 15, -15, 0" MaxHeight="60">
+                Margin="-10" MaxHeight="80">
 				<Button.Styles>
 					<Style Selector="Button:pointerover /template/ ContentPresenter">
 						<Setter Property="Content" Value="{DynamicResource hoverInfoKey}"/>
@@ -131,7 +97,6 @@
 					<Image Source="/Assets/Info.png"/>
 				</Panel>
 			</Button>
-			<Image Grid.Column="1" Source="/Assets/TryMe.png" VerticalAlignment="Top"/>
 		</Grid>
 	</Grid>
 </UserControl>

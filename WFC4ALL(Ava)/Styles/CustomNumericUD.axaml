@@ -23,7 +23,7 @@
 							<StackPanel
                                 IsVisible="{TemplateBinding ShowButtonSpinner}"
                                 Name="PART_SpinnerPanel"
-                                Orientation="Vertical" Width="22">
+                                Orientation="Vertical" Width="25">
 								<RepeatButton
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -36,7 +36,7 @@
                                     Height="4"
                                     HorizontalAlignment="Center"
                                     Stretch="Uniform"
-                                    VerticalAlignment="Center" Width="20"/>
+                                    VerticalAlignment="Center" Width="17"/>
 								</RepeatButton>
 								<RepeatButton
                                     Background="{TemplateBinding Background}"
@@ -50,7 +50,7 @@
                                     Height="4"
                                     HorizontalAlignment="Center"
                                     Stretch="Uniform"
-                                    VerticalAlignment="Center" Width="20"/>
+                                    VerticalAlignment="Center" Width="17"/>
 								</RepeatButton>
 							</StackPanel>
 						</Grid>

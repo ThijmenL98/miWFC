@@ -9,10 +9,12 @@ public class CentralManager {
     private readonly WFCHandler wfcHandler;
 
     private readonly MainWindow mainWindow;
+    private readonly PaintingWindow paintingWindow;
     private readonly MainWindowViewModel mainWindowViewModel;
 
-    public CentralManager(MainWindowViewModel mWVM, MainWindow mW) {
+    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW) {
         mainWindow = mW;
+        paintingWindow = pW;
         mainWindowViewModel = mWVM;
         
         wfcHandler = new WFCHandler(this);
@@ -34,6 +36,10 @@ public class CentralManager {
 
     public MainWindow getMainWindow() {
         return mainWindow;
+    }
+
+    public PaintingWindow getPaintingWindow() {
+        return paintingWindow;
     }
 
     public MainWindowViewModel getMainWindowVM() {

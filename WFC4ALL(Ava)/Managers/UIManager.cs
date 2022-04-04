@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using WFC4ALL.ContentControls;
 using WFC4All.DeBroglie.Models;
+using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using Bitmap = Avalonia.Media.Imaging.Bitmap;
@@ -26,6 +30,8 @@ public class UIManager {
     private HashSet<ImageR> curBitmaps = new();
     private Dictionary<int, List<Bitmap>> similarityMap = new();
     private int patternCount;
+
+    private DispatcherTimer dt = new();
 
     public UIManager(CentralManager parent) {
         parentCM = parent;
@@ -139,6 +145,36 @@ public class UIManager {
         return tvm;
     }
 
+    public void dispatchError(Window window) {
+        dt.Stop();
+        dt = new DispatcherTimer();
+        int counter = 0;
+        int shake = 0;
+        PixelPoint origPos = window.Position;
+
+        dt.Tick += delegate {
+            PixelPoint curPos = window.Position;
+            counter++;
+            switch (shake) {
+                case 0:
+                    window.Position = curPos.WithX(curPos.X + 5);
+                    shake = 1;
+                    break;
+                case 1:
+                    window.Position = curPos.WithX(curPos.X - 5);
+                    shake = 0;
+                    break;
+            }
+
+            if (counter == 10) {
+                dt.Stop();
+                window.Position = origPos;
+            }
+        };
+        dt.Interval = TimeSpan.FromMilliseconds(30); 
+        dt.Start();
+    }
+
     /*
      * Helper functions
      */
@@ -158,4 +194,30 @@ public class UIManager {
         (w, h, x, y) => new Point(w - (w - x), h - y), // rotated 180 and mirrored
         (w, h, x, y) => new Point(w - y, h - x), // rotated 270 and mirrored
     };
+
+    public void switchWindow(Windows window) {
+#if DEBUG
+        
+#endif
+        Trace.WriteLine("Switching to window: " + window);
+        switch (window) {
+            case Windows.MAIN:
+                parentCM.getPaintingWindow().Hide();
+                parentCM.getMainWindow().Show();
+                parentCM.getMainWindowVM().OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+                break;
+            case Windows.PAINTING:
+                parentCM.getMainWindow().Hide();
+                parentCM.getPaintingWindow().Show();
+                parentCM.getMainWindowVM().OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+    }
+}
+
+public enum Windows {
+    MAIN,
+    PAINTING
 }

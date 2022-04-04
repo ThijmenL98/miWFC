@@ -269,6 +269,12 @@ namespace WFC4All.DeBroglie.Wfc {
             patternModelConstraint.propagate();
             return status;
         }
+        
+        public void PushSelection(int px, int py, int pz, int pattern) {
+            int index = topology.getIndex(px, py, pz);
+            backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
+            prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
+        }
 
         /**
          * Make some progress in the WaveFunctionCollapseAlgorithm

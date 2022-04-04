@@ -26,11 +26,15 @@ namespace WFC4ALL
                 {
                     DataContext = mWVM,
                 };
+                PaintingWindow pW = new() {
+                    DataContext = mWVM,
+                };
                 desktop.MainWindow = mW;
 
-                CentralManager cm = new(mWVM, mW);
+                CentralManager cm = new(mWVM, mW, pW);
                 
                 mW.setCentralManager(cm);
+                pW.setCentralManager(cm);
                 mWVM.setCentralManager(cm);
             }
 

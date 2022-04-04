@@ -111,12 +111,12 @@ public static class Util {
                 for (int x = 0; x < width; x++) {
                     Color c = Color.FromUInt32(bytes[x]);
                     result[y][x] = c;
-                    currentColors[y] = c;
+                    currentColors[y * height + x] = c;
                 }
             });
         }
 
-        return (result, new HashSet<Color>(currentColors.Values));
+        return (result, new HashSet<Color>(currentColors.Values.Distinct()));
     }
 
     public static string[] getCategories(string modelType) {

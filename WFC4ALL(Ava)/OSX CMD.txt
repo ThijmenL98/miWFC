@@ -1,0 +1,3 @@
+dotnet publish -r osx-x64 -c Release -p:UseAppHost=true
+
+dotnet publish -r osx-x64 -c Release /p:PublishSingleFile=true -p:UseAppHost=true

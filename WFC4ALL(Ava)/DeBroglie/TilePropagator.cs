@@ -285,7 +285,8 @@ namespace WFC4All.DeBroglie
                 if (patterns.Contains(p)) {
                     continue;
                 }
-            
+
+                wavePropagator.PushSelection(px, py, pz, p);
                 Resolution status = wavePropagator.ban(px, py, pz, p);
                 if (status != Resolution.UNDECIDED) {
                     return status;
@@ -321,6 +322,7 @@ namespace WFC4All.DeBroglie
                     continue;
                 }
 
+                wavePropagator.PushSelection(px, py, pz, p);
                 Resolution status = wavePropagator.ban(px, py, pz, p);
                 if (status != Resolution.UNDECIDED) {
                     return status;

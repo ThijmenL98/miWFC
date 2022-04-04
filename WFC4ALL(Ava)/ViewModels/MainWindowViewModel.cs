@@ -1,10 +1,13 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Avalonia;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ReactiveUI;
-using WFC4ALL.Managers;
 using WFC4ALL.ContentControls;
+using WFC4ALL.Managers;
+using WFC4ALL.Models;
 using WFC4ALL.Utils;
 
 // ReSharper disable UnusedMember.Global
@@ -12,37 +15,51 @@ using WFC4ALL.Utils;
 namespace WFC4ALL.ViewModels {
     public class MainWindowViewModel : ViewModelBase {
         private string _modelSelectionText = "Switch to\nTile Mode",
-            _selectedCategory,
-            _selectedInputImage,
-            _stepAmountString = "Steps to take: 1";
+            _selectedCategory = "",
+            _selectedInputImage = "",
+            _stepAmountString = "Steps to take: 1",
+            _seamlessText = "Toggle seamless\noutput (Disabled)";
 
         private bool _isPlaying, _paddingEnabled, _instantCollapse, _popupVisible;
-        private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth = 24, _imgOutHeight = 24, _patternSize = 3;
-        private Bitmap _inputImage, _outputImage;
-        private ObservableCollection<TileViewModel> _tiles = new();
+        private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3;
+
+        private Bitmap _inputImage
+                = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            _outputImage
+                = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
+
+        private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new();
         private ObservableCollection<MarkerViewModel> _markers = new();
-        private ObservableCollection<GridlineViewModel> _gridLines = new();
         private double _timeStampOffset, _timelineWidth = 600d;
 
-        private CentralManager centralManager;
-        private Tuple<string, string> lastOverlapSelection, lastSimpleSelection;
+        private CentralManager? centralManager;
+        private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
+
+        private bool _pencilModeEnabled, _eraseModeEnabled,_paintKeepModeEnabled, _paintEraseModeEnabled;
 
         public CentralManager getCentralManager() {
-            return centralManager;
+            return centralManager!;
         }
 
         public string ModelSelectionText {
             get => _modelSelectionText;
-            set => this.RaiseAndSetIfChanged(ref _modelSelectionText, value);
+            private set => this.RaiseAndSetIfChanged(ref _modelSelectionText, value);
         }
 
-        public string CategorySelection {
+        public string SeamlessText {
+            get => _seamlessText;
+            private set => this.RaiseAndSetIfChanged(ref _seamlessText, value);
+        }
+
+        private string CategorySelection {
             get => _selectedCategory;
+            // ReSharper disable once UnusedMember.Local
             set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
         }
 
-        public string InputImageSelection {
+        private string InputImageSelection {
             get => _selectedInputImage;
+            // ReSharper disable once UnusedMember.Local
             set => this.RaiseAndSetIfChanged(ref _selectedInputImage, value);
         }
 
@@ -58,7 +75,7 @@ namespace WFC4ALL.ViewModels {
 
         public bool PaddingEnabled {
             get => _paddingEnabled;
-            set => this.RaiseAndSetIfChanged(ref _paddingEnabled, value);
+            private set => this.RaiseAndSetIfChanged(ref _paddingEnabled, value);
         }
 
         public bool InstantCollapse {
@@ -78,12 +95,12 @@ namespace WFC4ALL.ViewModels {
 
         public int ImageOutWidth {
             get => _imgOutWidth;
-            set => this.RaiseAndSetIfChanged(ref _imgOutWidth, value);
+            private set => this.RaiseAndSetIfChanged(ref _imgOutWidth, value);
         }
 
         public int ImageOutHeight {
             get => _imgOutHeight;
-            set => this.RaiseAndSetIfChanged(ref _imgOutHeight, value);
+            private set => this.RaiseAndSetIfChanged(ref _imgOutHeight, value);
         }
 
         public int PatternSize {
@@ -111,19 +128,19 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _outputImage, value);
         }
 
-        public ObservableCollection<TileViewModel> Tiles {
-            get => _tiles;
-            set => this.RaiseAndSetIfChanged(ref _tiles, value);
+        public ObservableCollection<TileViewModel> PatternTiles {
+            get => _patternTiles;
+            set => this.RaiseAndSetIfChanged(ref _patternTiles, value);
+        }
+
+        public ObservableCollection<TileViewModel> PaintTiles {
+            get => _paintTiles;
+            set => this.RaiseAndSetIfChanged(ref _paintTiles, value);
         }
 
         public ObservableCollection<MarkerViewModel> Markers {
             get => _markers;
             set => this.RaiseAndSetIfChanged(ref _markers, value);
-        }
-
-        public ObservableCollection<GridlineViewModel> Gridlines {
-            get => _gridLines;
-            set => this.RaiseAndSetIfChanged(ref _gridLines, value);
         }
 
         public MainWindowViewModel VM => this;
@@ -133,16 +150,43 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _popupVisible, value);
         }
 
+        public bool PencilModeEnabled {
+            get => _pencilModeEnabled;
+            set => this.RaiseAndSetIfChanged(ref _pencilModeEnabled, value);
+        }
+
+        public bool EraseModeEnabled {
+            get => _eraseModeEnabled;
+            set => this.RaiseAndSetIfChanged(ref _eraseModeEnabled, value);
+        }
+
+        public bool PaintKeepModeEnabled {
+            get => _paintKeepModeEnabled;
+            set => this.RaiseAndSetIfChanged(ref _paintKeepModeEnabled, value);
+        }
+
+        public bool PaintEraseModeEnabled {
+            get => _paintEraseModeEnabled;
+            set => this.RaiseAndSetIfChanged(ref _paintEraseModeEnabled, value);
+        }
+
+        /*
+         * Logic
+         */
+
         public void setCentralManager(CentralManager cm) {
             lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
             lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
             centralManager = cm;
+
+            ImageOutWidth = 24;
+            ImageOutHeight = 24;
         }
 
         public void OnModelClick() {
-            centralManager.getWFCHandler().setModelChanging(true);
+            centralManager!.getWFCHandler().setModelChanging(true);
 #if DEBUG
-            Trace.WriteLine("Model Clicked");
+            Trace.WriteLine("\nModel Clicked");
 #endif
             ModelSelectionText
                 = ModelSelectionText.Contains("Smart") ? "Switch to\nTile Mode" : "Switch to\nSmart Mode";
@@ -152,20 +196,19 @@ namespace WFC4ALL.ViewModels {
 
             string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
 
-            //if (tabSelection.SelectedIndex == 2) {
             string lastImg = InputImageSelection;
             int catIndex = changingToSmart
-                ? Array.IndexOf(catDataSource, lastOverlapSelection.Item1)
-                : Array.IndexOf(catDataSource, lastSimpleSelection.Item1);
+                ? Array.IndexOf(catDataSource, lastOverlapSelection!.Item1)
+                : Array.IndexOf(catDataSource, lastSimpleSelection!.Item1);
             centralManager.getUIManager().updateCategories(catDataSource, catIndex);
 
             string[] images = Util.getModelImages(
                 changingToSmart ? "overlapping" : "simpletiled",
-                changingToSmart ? lastOverlapSelection.Item1 : lastSimpleSelection.Item1);
+                changingToSmart ? lastOverlapSelection!.Item1 : lastSimpleSelection!.Item1);
 
             int index = changingToSmart
-                ? Array.IndexOf(images, lastOverlapSelection.Item2)
-                : Array.IndexOf(images, lastSimpleSelection.Item2);
+                ? Array.IndexOf(images, lastOverlapSelection!.Item2)
+                : Array.IndexOf(images, lastSimpleSelection!.Item2);
             centralManager.getUIManager().updateInputImages(images, index);
             (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[index]);
             centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
@@ -175,7 +218,6 @@ namespace WFC4ALL.ViewModels {
             } else {
                 lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
             }
-            //}
 
             centralManager.getWFCHandler().setModelChanging(false);
 
@@ -185,75 +227,135 @@ namespace WFC4ALL.ViewModels {
 
         public void OnPaddingClick() {
 #if DEBUG
-            Trace.WriteLine("Padding Clicked");
+            Trace.WriteLine("\nPadding Clicked");
 #endif
-            centralManager.getWFCHandler().setInputChanged("Padding Button");
+            centralManager!.getWFCHandler().setInputChanged("Padding Button");
+            SeamlessText
+                = SeamlessText.Contains("Disabled") ? "Toggle seamless\noutput (Enabled)" : "Toggle seamless\noutput (Disabled)";
             PaddingEnabled = !PaddingEnabled;
             centralManager.getInputManager().restartSolution();
         }
 
         public void OnAnimate() {
 #if DEBUG
-            Trace.WriteLine("Animate Clicked");
+            Trace.WriteLine("\nAnimate Clicked");
 #endif
             IsPlaying = !IsPlaying;
-            centralManager.getInputManager().animate();
+            centralManager!.getInputManager().animate();
         }
 
         public void OnRestart() {
 #if DEBUG
-            Trace.WriteLine("Restart Clicked");
+            Trace.WriteLine("\nRestart Clicked");
 #endif
-            centralManager.getInputManager().restartSolution();
+            centralManager!.getInputManager().restartSolution();
         }
 
         public void OnRevert() {
 #if DEBUG
-            Trace.WriteLine("Revert Clicked");
+            Trace.WriteLine("\nRevert Clicked");
 #endif
-            centralManager.getInputManager().revertStep();
+            centralManager!.getInputManager().revertStep();
         }
 
         public void OnAdvance() {
 #if DEBUG
-            Trace.WriteLine("Advance Clicked");
+            Trace.WriteLine("\nAdvance Clicked");
 #endif
-            centralManager.getInputManager().advanceStep();
+            centralManager!.getInputManager().advanceStep();
         }
 
         public void OnSave() {
 #if DEBUG
-            Trace.WriteLine("Save Clicked");
+            Trace.WriteLine("\nSave Clicked");
 #endif
-            centralManager.getInputManager().placeMarker();
+            centralManager!.getInputManager().placeMarker();
         }
 
         public void OnLoad() {
 #if DEBUG
-            Trace.WriteLine("Load Clicked");
+            Trace.WriteLine("\nLoad Clicked");
 #endif
-            centralManager.getInputManager().loadMarker();
+            centralManager!.getInputManager().loadMarker();
         }
 
         public void OnExport() {
 #if DEBUG
-            Trace.WriteLine("Export Clicked");
+            Trace.WriteLine("\nExport Clicked");
 #endif
-            centralManager.getInputManager().exportSolution();
+            centralManager!.getInputManager().exportSolution();
         }
 
         public void OnInfoClick() {
 #if DEBUG
-            Trace.WriteLine("Info Clicked");
+            Trace.WriteLine("\nInfo Clicked");
 #endif
-            centralManager.getUIManager().showPopUp();
+            centralManager!.getUIManager().showPopUp();
         }
 
         public void OnCloseClick() {
 #if DEBUG
-            Trace.WriteLine("Close Clicked");
+            Trace.WriteLine("\nClose Clicked");
 #endif
-            centralManager.getUIManager().hidePopUp();
+            centralManager!.getUIManager().hidePopUp();
+        }
+
+        public void OnPencilModeClick() {
+#if DEBUG
+            Trace.WriteLine("\nPencil Mode Clicked");
+#endif
+            PencilModeEnabled = !PencilModeEnabled;
+            EraseModeEnabled = false;
+            PaintKeepModeEnabled = false;
+            PaintEraseModeEnabled = false;
+        }
+
+        public void OnEraseModeClick() {
+            
+#if DEBUG
+            Trace.WriteLine("\nErase Mode Clicked");
+#endif
+            EraseModeEnabled = !EraseModeEnabled;
+            PencilModeEnabled = false;
+            PaintKeepModeEnabled = false;
+            PaintEraseModeEnabled = false;
+        }
+
+        public void OnPaintKeepModeClick() {
+#if DEBUG
+            Trace.WriteLine("\nPaint Keep Mode Clicked");
+#endif
+            PaintKeepModeEnabled = !PaintKeepModeEnabled;
+            EraseModeEnabled = false;
+            PencilModeEnabled = false;
+            PaintEraseModeEnabled = false;
+        }
+
+        public void OnPaintEraseModeClick() {
+            
+#if DEBUG
+            Trace.WriteLine("\nPaint Erase Mode Clicked");
+#endif
+            PaintEraseModeEnabled = !PaintEraseModeEnabled;
+            EraseModeEnabled = false;
+            PencilModeEnabled = false;
+            PaintKeepModeEnabled = false;
+        }
+
+        public void OnCustomizeWindowSwitch(string param) {
+#if DEBUG
+            Trace.WriteLine("\nCustomize Clicked " + param);
+#endif
+            switch (param) {
+                case "P":
+                    centralManager!.getUIManager().switchWindow(Windows.PAINTING);
+                    break;
+                case "M":
+                    centralManager!.getUIManager().switchWindow(Windows.MAIN);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

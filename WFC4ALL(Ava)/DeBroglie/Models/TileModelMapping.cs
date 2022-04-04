@@ -87,7 +87,7 @@ namespace WFC4All.DeBroglie.Models
         /// <summary>
         /// Gets the patterns associated with a set of tiles at a given offset.
         /// </summary>
-        public ISet<int> getPatterns(Tile tile, int offset)
+        public readonly ISet<int> getPatterns(Tile tile, int offset)
         {
             return getPatterns(TilesToPatternsByOffset[offset], tile);
         }
