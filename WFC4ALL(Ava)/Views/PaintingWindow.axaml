@@ -1,6 +1,8 @@
 ﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
-        xmlns="https://github.com/avaloniaui"
+        xmlns="https://github.com/avaloniaui" Closing="Window_OnClosing"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        d:DesignHeight="800" d:DesignWidth="1400"
+        MinWidth="1400" MinHeight="800"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -38,9 +40,10 @@
     <Grid>
         <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
             <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
-                <Grid ColumnDefinitions="Auto, Auto, Auto" ShowGridLines="True">
+                <Grid ColumnDefinitions="Auto, Auto, Auto">
 
-                    <Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="*, *, *, *" Margin="10" VerticalAlignment="Top">
+                    <Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="*, *, *, *" Margin="10"
+                          VerticalAlignment="Top">
                         <Button Background="Transparent" Grid.Row="0"
                                 Command="{Binding OnPencilModeClick}" Grid.Column="0"
                                 HorizontalAlignment="Center" Margin="4" MaxWidth="120"
@@ -66,7 +69,7 @@
                             <!--     </StackPanel> -->
                             <!-- </ToolTip.Tip> -->
                         </Button>
-                        
+
                         <Button Background="Transparent" Grid.Row="0"
                                 Command="{Binding OnEraseModeClick}" Grid.Column="1"
                                 HorizontalAlignment="Center" Margin="4" MaxWidth="120"
@@ -92,7 +95,7 @@
                             <!--     </StackPanel> -->
                             <!-- </ToolTip.Tip> -->
                         </Button>
-                        
+
                         <Button Background="Transparent" Grid.Row="1"
                                 Command="{Binding OnPaintKeepModeClick}" Grid.Column="0"
                                 HorizontalAlignment="Center" Margin="4" MaxWidth="120"
@@ -109,7 +112,8 @@
                             </Button.Styles>
                             <Panel>
                                 <Image IsVisible="{Binding !PaintKeepModeEnabled}" Source="/Assets/PaintKeep.png" />
-                                <Image IsVisible="{Binding PaintKeepModeEnabled}" Source="/Assets/PaintKeepSelected.png" />
+                                <Image IsVisible="{Binding PaintKeepModeEnabled}"
+                                       Source="/Assets/PaintKeepSelected.png" />
                             </Panel>
                             <!-- <ToolTip.Tip> -->
                             <!--     <StackPanel> -->
@@ -118,7 +122,7 @@
                             <!--     </StackPanel> -->
                             <!-- </ToolTip.Tip> -->
                         </Button>
-                        
+
                         <Button Background="Transparent" Grid.Row="1"
                                 Command="{Binding OnPaintEraseModeClick}" Grid.Column="1"
                                 HorizontalAlignment="Center" Margin="4" MaxWidth="120"
@@ -135,7 +139,8 @@
                             </Button.Styles>
                             <Panel>
                                 <Image IsVisible="{Binding !PaintEraseModeEnabled}" Source="/Assets/PaintErase.png" />
-                                <Image IsVisible="{Binding PaintEraseModeEnabled}" Source="/Assets/PaintEraseSelected.png" />
+                                <Image IsVisible="{Binding PaintEraseModeEnabled}"
+                                       Source="/Assets/PaintEraseSelected.png" />
                             </Panel>
                             <!-- <ToolTip.Tip> -->
                             <!--     <StackPanel> -->
@@ -144,15 +149,23 @@
                             <!--     </StackPanel> -->
                             <!-- </ToolTip.Tip> -->
                         </Button>
-                        
+
                         <ComboBox Grid.Column="0" Grid.Row="2" SelectedIndex="0" Items="{Binding PaintTiles}"
-                                  x:Name="tilePaintSelectCB" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15">
+                                  x:Name="tilePaintSelectCB" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Margin="15"
+                                  Padding="10,5,0,5">
+                            <ComboBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" MaxWidth="400" />
+                                </ItemsPanelTemplate>
+                            </ComboBox.ItemsPanel>
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Width="56" Padding="1" Background="#55000000" CornerRadius="9" Margin="0, 5, 0, 5">
-                                        <Border Padding="-3" CornerRadius="5" ClipToBounds="True" Margin="3"
+                                    <Border Width="58" Padding="1" Background="#55000000" CornerRadius="9"
+                                            Margin="0, 5, 0, 5">
+                                        <Border Padding="-4" CornerRadius="5" ClipToBounds="True" Margin="4"
                                                 Background="#552FACED">
-                                            <Image Width="50" Height="50" Margin="3"
+                                            <Image Width="50" Height="50" Margin="4"
                                                    Source="{Binding PatternImage}"
                                                    RenderOptions.BitmapInterpolationMode="Default">
                                                 <Image.Styles>
@@ -173,6 +186,22 @@
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
+
+                        <StackPanel Grid.Column="1" Grid.Row="2" Margin="15">
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15, 15, 15, 7">
+                                Brush Size
+                            </TextBlock>
+                            <ComboBox SelectedIndex="2" x:Name="BrushSizeCB" HorizontalAlignment="Center"
+                                      VerticalAlignment="Center" Margin="-10, 8, -10, 15" Padding="12,3,0,4">
+                                <ComboBoxItem>Tiny</ComboBoxItem>
+                                <ComboBoxItem>Very Small</ComboBoxItem>
+                                <ComboBoxItem>Small</ComboBoxItem>
+                                <ComboBoxItem>Medium</ComboBoxItem>
+                                <ComboBoxItem>Large</ComboBoxItem>
+                                <ComboBoxItem>Very Large</ComboBoxItem>
+                                <ComboBoxItem>Huge</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
                     </Grid>
 
                     <Grid Grid.Column="1" RowDefinitions="*" HorizontalAlignment="Center">
@@ -180,7 +209,19 @@
                             <Border Margin="10" Background="#11000000" CornerRadius="10">
                                 <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
                                        x:Name="outputImage" Source="{Binding OutputImage}"
-                                       PointerPressed="OutputImageOnPointerPressed" />
+                                       PointerPressed="OutputImageOnPointerPressed"
+                                       PointerMoved="OutputImageOnPointerMoved" />
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Column="1" RowDefinitions="*" HorizontalAlignment="Center">
+                        <Grid ColumnDefinitions="*" VerticalAlignment="Center">
+                            <Border Margin="10" CornerRadius="10">
+                                <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+                                       x:Name="outputImageMask" Source="{Binding OutputImageMask}" Opacity=".25"
+                                       IsHitTestVisible="False">
+                                </Image>
                             </Border>
                         </Grid>
                     </Grid>

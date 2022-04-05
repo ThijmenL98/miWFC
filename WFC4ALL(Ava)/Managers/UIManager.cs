@@ -144,13 +144,19 @@ public class UIManager {
 
         return tvm;
     }
+    
+    PixelPoint? origPos = null;
 
     public void dispatchError(Window window) {
         dt.Stop();
+        if (origPos != null) {
+            window.Position = (PixelPoint) origPos;
+        }
+
         dt = new DispatcherTimer();
         int counter = 0;
         int shake = 0;
-        PixelPoint origPos = window.Position;
+        origPos = window.Position;
 
         dt.Tick += delegate {
             PixelPoint curPos = window.Position;
@@ -168,9 +174,10 @@ public class UIManager {
 
             if (counter == 10) {
                 dt.Stop();
-                window.Position = origPos;
+                window.Position = (PixelPoint) origPos;
             }
         };
+
         dt.Interval = TimeSpan.FromMilliseconds(30); 
         dt.Start();
     }
@@ -204,16 +211,31 @@ public class UIManager {
             case Windows.MAIN:
                 parentCM.getPaintingWindow().Hide();
                 parentCM.getMainWindow().Show();
+                
+                parentCM.getMainWindow().WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                
                 parentCM.getMainWindowVM().OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+                handlePaintingClose();
                 break;
             case Windows.PAINTING:
+                parentCM.getPaintingWindow().Width = parentCM.getMainWindow().Width;
+                parentCM.getPaintingWindow().Height = parentCM.getMainWindow().Height;
+                
                 parentCM.getMainWindow().Hide();
                 parentCM.getPaintingWindow().Show();
+                parentCM.getPaintingWindow().WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                
                 parentCM.getMainWindowVM().OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
                 break;
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    public void handlePaintingClose() {
+        //TODO popup if not pressed check mark
+        
+        Trace.WriteLine("We do be closing mate");
     }
 }
 

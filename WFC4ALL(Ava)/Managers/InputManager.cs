@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.Threading;
 using WFC4ALL.ContentControls;
 using WFC4ALL.ViewModels;
@@ -31,12 +35,16 @@ namespace WFC4ALL.Managers {
 
         private Dictionary<int, Color> colourMapping;
 
+        private Color[,] maskColours;
+
         public InputManager(CentralManager parent) {
             parentCM = parent;
             mainWindowVM = parentCM.getMainWindowVM();
             mainWindow = parentCM.getMainWindow();
+
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
             colourMapping = new Dictionary<int, Color>();
+            maskColours = new Color[0, 0];
 
             noResultFoundBM = new Bitmap(AppContext.BaseDirectory + "/Assets/NoResultFound.png");
             savePoints = new Stack<int>();
@@ -67,6 +75,10 @@ namespace WFC4ALL.Managers {
 
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
             colourMapping = new Dictionary<int, Color>();
+
+            maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
+            mainWindowVM.OutputImageMask
+                = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
 
             if (!getModelImages(parentCM.getWFCHandler().isOverlappingModel() ? "overlapping" : "simpletiled",
                         mainWindow.getInputControl().getCategory())
@@ -129,6 +141,8 @@ namespace WFC4ALL.Managers {
         public void resetOverwriteCache() {
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
             colourMapping = new Dictionary<int, Color>();
+
+            maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         }
 
         public void placeMarker() {
@@ -148,7 +162,7 @@ namespace WFC4ALL.Managers {
                     if (!savePoints.Contains(curStep)) {
                         savePoints.Push(curStep);
                     }
-                    
+
                     return;
                 }
             }
@@ -251,16 +265,12 @@ namespace WFC4ALL.Managers {
             int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
                 b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
-#if (DEBUG)
-            Trace.WriteLine($@"(x:{clickX}, y:{clickY}) -> (a:{a}, b:{b})");
-#endif
-
             Tuple<int, int> key = new(a, b);
             if (overwriteColorCache.ContainsKey(key)) {
                 return false;
             }
 
-            WriteableBitmap bitmap;
+            WriteableBitmap? bitmap;
             bool showPixel;
 
             if (parentCM.getWFCHandler().isOverlappingModel()) {
@@ -289,13 +299,64 @@ namespace WFC4ALL.Managers {
             }
 
             if (showPixel) {
-                mainWindowVM.OutputImage = bitmap;
+                mainWindowVM.OutputImage = bitmap!;
                 parentCM.getWFCHandler().setCurrentStep(parentCM.getWFCHandler().getCurrentStep() + 1);
-            } else if (parentCM.getWFCHandler().isOverlappingModel()) {
-                overwriteColorCache.Remove(key);
+            } else {
+                if (parentCM.getWFCHandler().isOverlappingModel()) {
+                    overwriteColorCache.Remove(key);
+                }
+                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
             }
 
             return showPixel;
+        }
+
+        public void processClickMask(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
+            int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+                b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+
+            int rawBrushSize = parentCM.getPaintingWindow().getPaintBrushSize();
+            double brushSize = rawBrushSize switch {
+                1 => rawBrushSize,
+                2 => rawBrushSize * 2d,
+                _ => rawBrushSize * 3d
+            };
+
+            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+
+            for (int x = 0; x < outputWidth; x++) {
+                for (int y = 0; y < outputHeight; y++) {
+                    double dx = (double) x - a;
+                    double dy = (double) y - b;
+                    double distanceSquared = dx * dx + dy * dy;
+
+                    if (distanceSquared <= brushSize) {
+                        maskColours[x, y] = add ? Colors.Green : Colors.Red;
+                    }
+                }
+            }
+
+            WriteableBitmap bitmap = new(new PixelSize(outputWidth, outputHeight),
+                new Vector(96, 96),
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+                AlphaFormat.Premul);
+
+            using ILockedFramebuffer? frameBuffer = bitmap.Lock();
+
+            unsafe {
+                uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+                int stride = frameBuffer.RowBytes;
+
+                Parallel.For(0L, outputHeight, yy => {
+                    uint* dest = backBuffer + (int) yy * stride / 4;
+                    for (int xx = 0; xx < outputWidth; xx++) {
+                        Color c = maskColours[xx, (int) yy];
+                        dest[xx] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                    }
+                });
+            }
+
+            mainWindowVM.OutputImageMask = bitmap;
         }
 
         public Dictionary<Tuple<int, int>, Tuple<Color, int>> getOverwriteColorCache() {

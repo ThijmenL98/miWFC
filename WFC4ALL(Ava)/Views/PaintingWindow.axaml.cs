@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -10,7 +12,7 @@ namespace WFC4ALL.Views;
 
 public partial class PaintingWindow : Window {
     private CentralManager? centralManager;
-    private readonly ComboBox _paintingPatternsCB;
+    private readonly ComboBox _paintingPatternsCB, _paintingSizeCB;
 
     public PaintingWindow() {
         InitializeComponent();
@@ -22,6 +24,7 @@ public partial class PaintingWindow : Window {
         };
         
         _paintingPatternsCB = this.Find<ComboBox>("tilePaintSelectCB");
+        _paintingSizeCB = this.Find<ComboBox>("BrushSizeCB");
     }
 
     /*
@@ -67,8 +70,24 @@ public partial class PaintingWindow : Window {
             if (success != null && !(bool) success) {
                 centralManager?.getUIManager().dispatchError(this);
             }
-        } else {
-            centralManager?.getUIManager().dispatchError(this);
+        } else if (centralManager!.getMainWindowVM().PaintEraseModeEnabled || centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
+            OutputImageOnPointerMoved(sender, e);
+        }
+    }
+
+    private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
+        if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
+            && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
+            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+            (double clickX, double clickY) = e.GetPosition(e.Source as Image);
+
+            try {
+                centralManager?.getInputManager().processClickMask((int) Math.Round(clickX),
+                    (int) Math.Round(clickY),
+                    (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+                    (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
+                    centralManager!.getMainWindowVM().PaintKeepModeEnabled);
+            } catch (IndexOutOfRangeException) { }
         }
     }
 
@@ -78,5 +97,14 @@ public partial class PaintingWindow : Window {
         }
 
         _paintingPatternsCB.SelectedIndex = idx;
+    }
+
+    public int getPaintBrushSize() {
+        int[] sizes = {1, 2, 3, 6, 10, 15, 25};
+        return sizes[_paintingSizeCB.SelectedIndex];
+    }
+
+    private void Window_OnClosing(object? sender, CancelEventArgs e) {
+        centralManager?.getUIManager().handlePaintingClose();
     }
 }

@@ -4,7 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-	<Grid Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto">
+	<Grid Margin="10" RowDefinitions="Auto, Auto, Auto, *">
 		<Grid 
 			ColumnDefinitions="Auto, Auto"
             Grid.Row="0" Margin="4" RowDefinitions="Auto,Auto">
@@ -79,8 +79,8 @@
 			</Button>
 		</Grid>
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300"/>
-		<Grid ColumnDefinitions="Auto, Auto"
-            Grid.Row="4" Margin="4" RowDefinitions="Auto">
+		<Grid ColumnDefinitions="Auto, Auto" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+            Grid.Row="3" Margin="4" RowDefinitions="Auto">
 			<Button Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
                 Margin="-10" MaxHeight="80">
 				<Button.Styles>

@@ -26,6 +26,8 @@ namespace WFC4ALL.ViewModels {
         private Bitmap _inputImage
                 = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
             _outputImage
+                = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            _outputImageMask
                 = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
 
         private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new();
@@ -126,6 +128,11 @@ namespace WFC4ALL.ViewModels {
         public Bitmap OutputImage {
             get => _outputImage;
             set => this.RaiseAndSetIfChanged(ref _outputImage, value);
+        }
+
+        public Bitmap OutputImageMask {
+            get => _outputImageMask;
+            set => this.RaiseAndSetIfChanged(ref _outputImageMask, value);
         }
 
         public ObservableCollection<TileViewModel> PatternTiles {

@@ -5,6 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ucontrols="using:WFC4ALL.ContentControls"
+        d:DesignHeight="800" d:DesignWidth="1400"
+        MinWidth="1400" MinHeight="800"
+        WindowStartupLocation="CenterOwner"
         Activated="WindowBase_OnActivated"
         PointerPressed="InputElement_OnPointerPressed">
 
@@ -52,7 +55,7 @@
     <Grid>
         <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
             <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
-                <Grid ColumnDefinitions="63*, 37*">
+                <Grid ColumnDefinitions="*, Auto">
                     <Popup IsOpen="{Binding PopupVisible}" HorizontalAlignment="Center"
                            VerticalAlignment="Top" PlacementMode="Pointer" x:Name="infoPopup"
                            PlacementTarget="{Binding ElementName=patternGrid}">
@@ -98,7 +101,7 @@
                         <ucontrols:InputControl DataContext="{Binding VM}"
                                                 Grid.Row="0" x:Name="inputControl" />
 
-                        <Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid">
+                        <Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid" MinWidth="350">
                             <TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 10">Extracted patterns with the current settings</TextBlock>
 
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">

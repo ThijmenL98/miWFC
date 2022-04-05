@@ -53,7 +53,7 @@ namespace WFC4All.DeBroglie
     /// </summary>
     public class TilePropagator
     {
-        private readonly WavePropagator wavePropagator;
+        private WavePropagator wavePropagator;
 
         private readonly ITopology topology;
 
@@ -312,8 +312,7 @@ namespace WFC4All.DeBroglie
         /// Then it propagates that information to other nearby tiles.
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
-        public Resolution select(int x, int y, int z, TilePropagatorTileSet tiles)
-        {
+        public Resolution select(int x, int y, int z, TilePropagatorTileSet tiles) {
             tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
             ISet<int> patterns = tileModelMapping.getPatterns(tiles, o);
             for (int p = 0; p < wavePropagator.PatternCount; p++)
@@ -328,6 +327,7 @@ namespace WFC4All.DeBroglie
                     return status;
                 }
             }
+            
             return Resolution.UNDECIDED;
         }
 
