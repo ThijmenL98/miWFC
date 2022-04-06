@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WFC4All.DeBroglie.Rot;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Trackers;
+using WFC4ALL.DeBroglie.Rot;
+using WFC4ALL.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Trackers;
 
-namespace WFC4All.DeBroglie.Constraints
+namespace WFC4ALL.DeBroglie.Constraints
 {
     public class EdgedPathConstraint : ITileConstraint
     {

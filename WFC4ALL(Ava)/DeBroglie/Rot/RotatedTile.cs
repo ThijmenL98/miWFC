@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Rot
+﻿namespace WFC4ALL.DeBroglie.Rot
 {
     /// <summary>
     /// Represents a tile that has been rotated and reflected in some way.

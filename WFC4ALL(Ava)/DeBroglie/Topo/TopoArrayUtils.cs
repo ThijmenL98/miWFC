@@ -1,7 +1,7 @@
 ﻿using System;
-using WFC4All.DeBroglie.Rot;
+using WFC4ALL.DeBroglie.Rot;
 
-namespace WFC4All.DeBroglie.Topo {
+namespace WFC4ALL.DeBroglie.Topo {
     public static class TopoArrayUtils {
         public static ValueTuple<int, int> rotateVector(DirectionSetType type, int x, int y, Rotation rotation) {
             if (type == DirectionSetType.CARTESIAN2D ||

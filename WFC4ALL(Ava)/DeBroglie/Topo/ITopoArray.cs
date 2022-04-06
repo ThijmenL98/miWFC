@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Topo
+﻿namespace WFC4ALL.DeBroglie.Topo
 {
     /// <summary>
     /// A read-only array coupled with a specific <see cref="Topology"/>

@@ -92,7 +92,7 @@
 
         <GridSplitter Grid.Row="2" IsEnabled="False" Background="Transparent"/>
 
-        <Grid Grid.Row="3" RowDefinitions="*"  HorizontalAlignment="Center">
+        <Grid Grid.Row="3" RowDefinitions="*"  HorizontalAlignment="Center" MaxWidth="675">
             <Grid ColumnDefinitions="*" VerticalAlignment="Center" >
                 <Border Margin="10" Background="#22000000" CornerRadius="10" >
                     <Image RenderOptions.BitmapInterpolationMode="Default" Margin="10"

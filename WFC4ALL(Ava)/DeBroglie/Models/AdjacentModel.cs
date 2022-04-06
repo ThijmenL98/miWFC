@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WFC4All.DeBroglie.Rot;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Wfc;
+using WFC4ALL.DeBroglie.Rot;
+using WFC4ALL.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Wfc;
 
 #pragma warning disable CS8618
-namespace WFC4All.DeBroglie.Models
+namespace WFC4ALL.DeBroglie.Models
 {
     /// <summary>
     /// AdjacentModel constrains which tiles can be placed adjacent to which other ones. 

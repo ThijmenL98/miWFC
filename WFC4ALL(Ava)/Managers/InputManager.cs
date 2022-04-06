@@ -12,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using WFC4ALL.ContentControls;
+using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
@@ -66,7 +67,7 @@ namespace WFC4ALL.Managers {
          * Functionality
          */
 
-        public void restartSolution(bool force = false) {
+        public async void restartSolution(bool force = false) {
             if (parentCM.getWFCHandler().isChangingModels() || parentCM.getWFCHandler().isChangingImages()) {
                 return;
             }
@@ -87,21 +88,26 @@ namespace WFC4ALL.Managers {
             }
 
             try {
+                mainWindowVM.setLoading(true);
                 int stepAmount = mainWindowVM.StepAmount;
-                mainWindowVM.OutputImage = parentCM.getWFCHandler()
-                    .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force).Item1;
+                mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
+                    .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force)).Item1;
+            } catch (InvalidOperationException) {
+                // Error caused by multithreading which will be ignored
+                mainWindowVM.setLoading(false);
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
 #endif
                 mainWindowVM.OutputImage = noResultFoundBM;
+                mainWindowVM.setLoading(false);
             }
         }
 
-        public void advanceStep() {
+        public async void advanceStep() {
             try {
                 (WriteableBitmap result2, bool finished)
-                    = parentCM.getWFCHandler().initAndRunWfcDB(false, mainWindowVM.StepAmount);
+                    = await parentCM.getWFCHandler().initAndRunWfcDB(false, mainWindowVM.StepAmount);
                 if (finished) {
                     return;
                 }
@@ -243,7 +249,7 @@ namespace WFC4ALL.Managers {
                     timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                     try {
                         (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
-                            .initAndRunWfcDB(false, mainWindowVM.StepAmount);
+                            .initAndRunWfcDB(false, mainWindowVM.StepAmount).Result;
                         mainWindowVM.OutputImage = result2;
                         if (finished) {
                             mainWindowVM.IsPlaying = false;

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WFC4All.DeBroglie.Rot;
+using WFC4ALL.DeBroglie.Rot;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     /// <summary>
     /// Builds a GraphTopology that represents a mesh, i.e. a series of faces that connect to each other along their edges.

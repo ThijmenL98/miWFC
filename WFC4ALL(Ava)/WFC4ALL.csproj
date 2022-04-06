@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
+		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
 		<SatelliteResourceLanguages>none</SatelliteResourceLanguages>
 		<Nullable>enable</Nullable>
@@ -28,6 +28,7 @@
 	<ItemGroup>
 		<Folder Include="Assets\Cursors" />
 		<Folder Include="Models\" />
+		<EmbeddedResource Include="**\*.gif" />
 		<AvaloniaResource Include="Assets\**" />
 		<None Remove=".gitignore" />
 	</ItemGroup>

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using WFC4All.DeBroglie.Rot;
-using WFC4All.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Rot;
+using WFC4ALL.DeBroglie.Topo;
 
-namespace WFC4All.DeBroglie.Models
+namespace WFC4ALL.DeBroglie.Models
 {
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace WFC4All.DeBroglie.Models {
+namespace WFC4ALL.DeBroglie.Models {
     public struct PatternArray {
         public Tile[,,] values;
 

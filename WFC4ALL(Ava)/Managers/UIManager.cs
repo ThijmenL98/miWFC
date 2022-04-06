@@ -12,7 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using WFC4ALL.ContentControls;
-using WFC4All.DeBroglie.Models;
+using WFC4ALL.DeBroglie.Models;
 using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
@@ -204,9 +204,8 @@ public class UIManager {
 
     public void switchWindow(Windows window) {
 #if DEBUG
-        
-#endif
         Trace.WriteLine("Switching to window: " + window);
+#endif
         switch (window) {
             case Windows.MAIN:
                 parentCM.getPaintingWindow().Hide();
@@ -234,8 +233,6 @@ public class UIManager {
 
     public void handlePaintingClose() {
         //TODO popup if not pressed check mark
-        
-        Trace.WriteLine("We do be closing mate");
     }
 }
 

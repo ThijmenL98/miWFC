@@ -1,8 +1,7 @@
 ﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
         xmlns="https://github.com/avaloniaui" Closing="Window_OnClosing"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        d:DesignHeight="800" d:DesignWidth="1400"
-        MinWidth="1400" MinHeight="800"
+        d:DesignHeight="800" d:DesignWidth="1400" MinWidth="1400" MinHeight="800"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -168,18 +167,14 @@
                                             <Image Width="50" Height="50" Margin="4"
                                                    Source="{Binding PatternImage}"
                                                    RenderOptions.BitmapInterpolationMode="Default">
-                                                <Image.Styles>
-                                                    <Style Selector="Image">
-                                                        <Setter Property="RenderTransform">
-                                                            <Setter.Value>
-                                                                <TransformGroup>
-                                                                    <RotateTransform Angle="{Binding PatternRotation}" />
-                                                                    <ScaleTransform ScaleX="{Binding PatternFlipping}" />
-                                                                </TransformGroup>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </Image.Styles>
+                                                <Image.RenderTransform>
+                                                    <TransformGroup>
+                                                        <RotateTransform
+                                                            Angle="{Binding Path=PatternRotation, TargetNullValue=0, FallbackValue=0}" />
+                                                        <ScaleTransform
+                                                            ScaleX="{Binding Path=PatternFlipping, TargetNullValue=0, FallbackValue=0}" />
+                                                    </TransformGroup>
+                                                </Image.RenderTransform>
                                             </Image>
                                         </Border>
                                     </Border>
@@ -220,8 +215,7 @@
                             <Border Margin="10" CornerRadius="10">
                                 <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
                                        x:Name="outputImageMask" Source="{Binding OutputImageMask}" Opacity=".25"
-                                       IsHitTestVisible="False">
-                                </Image>
+                                       IsHitTestVisible="False" />
                             </Border>
                         </Grid>
                     </Grid>

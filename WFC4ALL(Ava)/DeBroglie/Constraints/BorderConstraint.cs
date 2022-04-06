@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WFC4All.DeBroglie.Constraints
+namespace WFC4ALL.DeBroglie.Constraints
 {
     /// <summary>
     /// Used by <see cref="BorderConstraint"/> to indicate what area affected.

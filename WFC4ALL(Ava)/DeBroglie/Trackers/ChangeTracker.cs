@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using WFC4All.DeBroglie.Models;
+using WFC4ALL.DeBroglie.Models;
 
-namespace WFC4All.DeBroglie.Trackers
+namespace WFC4ALL.DeBroglie.Trackers
 {
     internal class ChangeTracker : ITracker
     {

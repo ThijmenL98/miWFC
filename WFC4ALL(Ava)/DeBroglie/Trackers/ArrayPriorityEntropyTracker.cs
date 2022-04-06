@@ -1,7 +1,7 @@
 ﻿using System;
-using WFC4All.DeBroglie.Wfc;
+using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4All.DeBroglie.Trackers {
+namespace WFC4ALL.DeBroglie.Trackers {
     internal class ArrayPriorityEntropyTracker : ITracker {
         private readonly FrequencySet[] frequencySets;
 

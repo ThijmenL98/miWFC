@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 
-namespace WFC4ALL.ContentControls; 
+namespace WFC4ALL.Models; 
 
 public class MarkerViewModel : ReactiveObject {
     private int _index;

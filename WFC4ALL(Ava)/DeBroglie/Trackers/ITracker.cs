@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Trackers
+﻿namespace WFC4ALL.DeBroglie.Trackers
 {
     /// <summary>
     /// Trackers are objects that maintain state that is a summary of the current state of the propagator.

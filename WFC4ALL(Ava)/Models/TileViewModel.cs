@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System.Diagnostics;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
 
@@ -13,7 +14,8 @@ namespace WFC4ALL.Models {
             private init => this.RaiseAndSetIfChanged(ref _patternImage, value);
         }
 
-        private int PatternWeight {
+        public int PatternWeight {
+            get => _patternWeight;
             init => this.RaiseAndSetIfChanged(ref _patternWeight, value);
         }
 

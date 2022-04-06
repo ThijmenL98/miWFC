@@ -20,7 +20,7 @@ namespace WFC4ALL.ViewModels {
             _stepAmountString = "Steps to take: 1",
             _seamlessText = "Toggle seamless\noutput (Disabled)";
 
-        private bool _isPlaying, _paddingEnabled, _instantCollapse, _popupVisible;
+        private bool _isPlaying, _paddingEnabled, _instantCollapse, _popupVisible, _isLoading;
         private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3;
 
         private Bitmap _inputImage
@@ -177,6 +177,11 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _paintEraseModeEnabled, value);
         }
 
+        public bool IsLoading {
+            get => _isLoading;
+            set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        }
+
         /*
          * Logic
          */
@@ -192,9 +197,7 @@ namespace WFC4ALL.ViewModels {
 
         public void OnModelClick() {
             centralManager!.getWFCHandler().setModelChanging(true);
-#if DEBUG
-            Trace.WriteLine("\nModel Clicked");
-#endif
+
             ModelSelectionText
                 = ModelSelectionText.Contains("Smart") ? "Switch to\nTile Mode" : "Switch to\nSmart Mode";
             bool changingToSmart = ModelSelectionText.Contains("Tile");
@@ -233,9 +236,7 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnPaddingClick() {
-#if DEBUG
-            Trace.WriteLine("\nPadding Clicked");
-#endif
+
             centralManager!.getWFCHandler().setInputChanged("Padding Button");
             SeamlessText
                 = SeamlessText.Contains("Disabled") ? "Toggle seamless\noutput (Enabled)" : "Toggle seamless\noutput (Disabled)";
@@ -244,73 +245,44 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnAnimate() {
-#if DEBUG
-            Trace.WriteLine("\nAnimate Clicked");
-#endif
+
             IsPlaying = !IsPlaying;
             centralManager!.getInputManager().animate();
         }
 
         public void OnRestart() {
-#if DEBUG
-            Trace.WriteLine("\nRestart Clicked");
-#endif
             centralManager!.getInputManager().restartSolution();
         }
 
         public void OnRevert() {
-#if DEBUG
-            Trace.WriteLine("\nRevert Clicked");
-#endif
             centralManager!.getInputManager().revertStep();
         }
 
         public void OnAdvance() {
-#if DEBUG
-            Trace.WriteLine("\nAdvance Clicked");
-#endif
             centralManager!.getInputManager().advanceStep();
         }
 
         public void OnSave() {
-#if DEBUG
-            Trace.WriteLine("\nSave Clicked");
-#endif
             centralManager!.getInputManager().placeMarker();
         }
 
         public void OnLoad() {
-#if DEBUG
-            Trace.WriteLine("\nLoad Clicked");
-#endif
             centralManager!.getInputManager().loadMarker();
         }
 
         public void OnExport() {
-#if DEBUG
-            Trace.WriteLine("\nExport Clicked");
-#endif
             centralManager!.getInputManager().exportSolution();
         }
 
         public void OnInfoClick() {
-#if DEBUG
-            Trace.WriteLine("\nInfo Clicked");
-#endif
             centralManager!.getUIManager().showPopUp();
         }
 
         public void OnCloseClick() {
-#if DEBUG
-            Trace.WriteLine("\nClose Clicked");
-#endif
             centralManager!.getUIManager().hidePopUp();
         }
 
         public void OnPencilModeClick() {
-#if DEBUG
-            Trace.WriteLine("\nPencil Mode Clicked");
-#endif
             PencilModeEnabled = !PencilModeEnabled;
             EraseModeEnabled = false;
             PaintKeepModeEnabled = false;
@@ -318,10 +290,6 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnEraseModeClick() {
-            
-#if DEBUG
-            Trace.WriteLine("\nErase Mode Clicked");
-#endif
             EraseModeEnabled = !EraseModeEnabled;
             PencilModeEnabled = false;
             PaintKeepModeEnabled = false;
@@ -329,9 +297,6 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnPaintKeepModeClick() {
-#if DEBUG
-            Trace.WriteLine("\nPaint Keep Mode Clicked");
-#endif
             PaintKeepModeEnabled = !PaintKeepModeEnabled;
             EraseModeEnabled = false;
             PencilModeEnabled = false;
@@ -339,10 +304,6 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnPaintEraseModeClick() {
-            
-#if DEBUG
-            Trace.WriteLine("\nPaint Erase Mode Clicked");
-#endif
             PaintEraseModeEnabled = !PaintEraseModeEnabled;
             EraseModeEnabled = false;
             PencilModeEnabled = false;
@@ -350,9 +311,6 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnCustomizeWindowSwitch(string param) {
-#if DEBUG
-            Trace.WriteLine("\nCustomize Clicked " + param);
-#endif
             switch (param) {
                 case "P":
                     centralManager!.getUIManager().switchWindow(Windows.PAINTING);
@@ -363,6 +321,11 @@ namespace WFC4ALL.ViewModels {
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public void setLoading(bool value) {
+            IsLoading = value;
+            centralManager?.getMainWindow().InvalidateVisual();
         }
     }
 }

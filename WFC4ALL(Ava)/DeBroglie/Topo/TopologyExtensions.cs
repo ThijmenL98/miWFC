@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     public static class TopologyExtensions
     {

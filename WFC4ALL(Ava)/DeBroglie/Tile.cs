@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WFC4All.DeBroglie
+namespace WFC4ALL.DeBroglie
 {
     /// <summary>
     /// A wrapper around <see cref="object"/> to give some clarity to the code.

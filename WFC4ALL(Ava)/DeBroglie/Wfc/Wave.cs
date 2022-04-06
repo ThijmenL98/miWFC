@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace WFC4All.DeBroglie.Wfc
+namespace WFC4ALL.DeBroglie.Wfc
 {
 
     /**

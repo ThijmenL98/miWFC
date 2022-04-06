@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Wfc
+﻿namespace WFC4ALL.DeBroglie.Wfc
 {
     internal interface IPickHeuristic
     {

@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie
+﻿namespace WFC4ALL.DeBroglie
 {
     /// <summary>
     /// Represents a location in a topology.

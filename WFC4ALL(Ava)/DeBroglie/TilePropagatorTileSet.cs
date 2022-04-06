@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace WFC4All.DeBroglie
+namespace WFC4ALL.DeBroglie
 {
     /// <summary>
     /// A set of tiles, specific to a particular TilePropagator.

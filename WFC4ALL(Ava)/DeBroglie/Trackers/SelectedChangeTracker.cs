@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using WFC4All.DeBroglie.Models;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Wfc;
+using WFC4ALL.DeBroglie.Models;
+using WFC4ALL.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4All.DeBroglie.Trackers
+namespace WFC4ALL.DeBroglie.Trackers
 {
     internal interface ITristateChanged
     {

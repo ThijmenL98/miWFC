@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using WFC4All.DeBroglie.Rot;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Wfc;
+using WFC4ALL.DeBroglie.Rot;
+using WFC4ALL.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4All.DeBroglie.Models {
+namespace WFC4ALL.DeBroglie.Models {
     /// <summary>
     /// OverlappingModel constrains that every n by n rectangle in the output is a copy of a rectangle taken from the sample.
     /// </summary>

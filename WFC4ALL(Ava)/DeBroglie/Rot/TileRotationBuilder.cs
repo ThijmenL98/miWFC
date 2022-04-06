@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WFC4All.DeBroglie.Rot
+namespace WFC4ALL.DeBroglie.Rot
 {
     /// <summary>
     /// Builds a <see cref="TileRotation"/>.

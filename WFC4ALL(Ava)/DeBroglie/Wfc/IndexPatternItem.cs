@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WFC4All.DeBroglie.Wfc
+namespace WFC4ALL.DeBroglie.Wfc
 {
     internal struct IndexPatternItem : IEquatable<IndexPatternItem>
     {

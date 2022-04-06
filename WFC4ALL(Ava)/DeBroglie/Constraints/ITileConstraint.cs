@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Constraints
+﻿namespace WFC4ALL.DeBroglie.Constraints
 {
     /// <summary>
     /// Interface for specifying non-local constraints to be respected during generation.

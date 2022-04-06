@@ -1,7 +1,7 @@
 ﻿using System;
-using WFC4All.DeBroglie.Trackers;
+using WFC4ALL.DeBroglie.Trackers;
 
-namespace WFC4All.DeBroglie.Wfc
+namespace WFC4ALL.DeBroglie.Wfc
 {
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Rot
+﻿namespace WFC4ALL.DeBroglie.Rot
 {
     public enum TileRotationTreatment
     {

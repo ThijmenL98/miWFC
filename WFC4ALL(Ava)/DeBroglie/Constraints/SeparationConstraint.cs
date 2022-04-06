@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Trackers;
+using WFC4ALL.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Trackers;
 
-namespace WFC4All.DeBroglie.Constraints
+namespace WFC4ALL.DeBroglie.Constraints
 {
     /// <summary>
     /// This constriant forces particular tiles to not be placed near each other.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WFC4All.DeBroglie.Trackers
+namespace WFC4ALL.DeBroglie.Trackers
 {
     internal class FrequencySet
     {

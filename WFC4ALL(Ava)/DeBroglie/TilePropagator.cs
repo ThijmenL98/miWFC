@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using WFC4All.DeBroglie.Constraints;
-using WFC4All.DeBroglie.Models;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Trackers;
-using WFC4All.DeBroglie.Wfc;
+using WFC4ALL.DeBroglie.Constraints;
+using WFC4ALL.DeBroglie.Models;
+using WFC4ALL.DeBroglie.Topo;
+using WFC4ALL.DeBroglie.Trackers;
+using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4All.DeBroglie
+namespace WFC4ALL.DeBroglie
 {
     public class PriorityAndWeight
     {
@@ -305,6 +304,11 @@ namespace WFC4All.DeBroglie
         {
             return select(x, y, z, createTileSet(tiles));
         }
+        
+        public Resolution select(int x, int y, int z, IEnumerable<Tile> tiles, out int i)
+        {
+            return select(x, y, z, createTileSet(tiles), out i);
+        }
 
         /// <summary>
         /// Marks the given tiles as the only valid choice at a given location.
@@ -323,6 +327,27 @@ namespace WFC4All.DeBroglie
 
                 wavePropagator.PushSelection(px, py, pz, p);
                 Resolution status = wavePropagator.ban(px, py, pz, p);
+                if (status != Resolution.UNDECIDED) {
+                    return status;
+                }
+            }
+            
+            return Resolution.UNDECIDED;
+        }
+
+        public Resolution select(int x, int y, int z, TilePropagatorTileSet tiles, out int i) {
+            tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
+            ISet<int> patterns = tileModelMapping.getPatterns(tiles, o);
+            i = 0;
+            for (int p = 0; p < wavePropagator.PatternCount; p++)
+            {
+                if (patterns.Contains(p)) {
+                    continue;
+                }
+
+                wavePropagator.PushSelection(px, py, pz, p);
+                Resolution status = wavePropagator.ban(px, py, pz, p);
+                i++;
                 if (status != Resolution.UNDECIDED) {
                     return status;
                 }

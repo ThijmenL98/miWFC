@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie
+﻿namespace WFC4ALL.DeBroglie
 {
     internal enum Tristate
     {

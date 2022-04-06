@@ -1,12 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Avalonia.Interactivity;
-using DynamicData;
-using WFC4All.DeBroglie.Topo;
-using WFC4All.DeBroglie.Trackers;
+using WFC4ALL.DeBroglie.Topo;
 
-namespace WFC4All.DeBroglie.Wfc
+namespace WFC4ALL.DeBroglie.Wfc
 {
     /// <summary>
     /// This works similarly to IWaveConstraint, in that it listens to changes in the Wave, and  

@@ -78,7 +78,9 @@
                 Grid.Row="0" x:Name="borderPaddingToggle">
 			</Button>
 		</Grid>
+		
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300"/>
+		
 		<Grid ColumnDefinitions="Auto, Auto" VerticalAlignment="Bottom" HorizontalAlignment="Left"
             Grid.Row="3" Margin="4" RowDefinitions="Auto">
 			<Button Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"

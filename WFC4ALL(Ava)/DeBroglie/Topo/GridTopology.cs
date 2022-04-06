@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     /// <summary>
     /// A grid topology is a topology with a regular repeating pattern.

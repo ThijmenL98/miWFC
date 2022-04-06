@@ -1,6 +1,6 @@
-﻿using WFC4All.DeBroglie.Rot;
+﻿using WFC4ALL.DeBroglie.Rot;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     /// <summary>
     /// Summarises the type of graph 

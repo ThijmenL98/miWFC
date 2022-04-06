@@ -22,7 +22,7 @@ public partial class PaintingWindow : Window {
             centralManager?.getUIManager().switchWindow(Windows.MAIN);
             e.Cancel = true;
         };
-        
+
         _paintingPatternsCB = this.Find<ComboBox>("tilePaintSelectCB");
         _paintingSizeCB = this.Find<ComboBox>("BrushSizeCB");
     }
@@ -70,13 +70,15 @@ public partial class PaintingWindow : Window {
             if (success != null && !(bool) success) {
                 centralManager?.getUIManager().dispatchError(this);
             }
-        } else if (centralManager!.getMainWindowVM().PaintEraseModeEnabled || centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
+        } else if (centralManager!.getMainWindowVM().PaintEraseModeEnabled
+                   || centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
             OutputImageOnPointerMoved(sender, e);
         }
     }
 
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
-        if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
+        if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
+                || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
             && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
             (double clickX, double clickY) = e.GetPosition(e.Source as Image);
@@ -87,7 +89,11 @@ public partial class PaintingWindow : Window {
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
                     centralManager!.getMainWindowVM().PaintKeepModeEnabled);
-            } catch (IndexOutOfRangeException) { }
+            } catch (IndexOutOfRangeException err) {
+#if DEBUG
+                Trace.WriteLine(err);
+#endif
+            }
         }
     }
 

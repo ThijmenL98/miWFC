@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     public enum Axis
     {

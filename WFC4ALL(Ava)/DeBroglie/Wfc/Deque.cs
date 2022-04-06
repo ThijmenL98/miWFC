@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace WFC4All.DeBroglie.Wfc
+namespace WFC4ALL.DeBroglie.Wfc
 {
     internal class Deque<T>
     {

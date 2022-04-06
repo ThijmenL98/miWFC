@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     /// <summary>
     /// Utility class containing methods for construction <see cref="ITopoArray{T}"/> objects.

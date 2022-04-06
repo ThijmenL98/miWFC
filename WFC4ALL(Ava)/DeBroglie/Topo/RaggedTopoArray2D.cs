@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace WFC4All.DeBroglie.Topo
+namespace WFC4ALL.DeBroglie.Topo
 {
     internal class RaggedTopoArray2D<T> : ITopoArray<T>
     {

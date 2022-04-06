@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Topo
+﻿namespace WFC4ALL.DeBroglie.Topo
 {
     /// <summary>
     /// A <see cref="ITopology"/> specifies a discrete area, volume or graph, and provides generic navigation methods.

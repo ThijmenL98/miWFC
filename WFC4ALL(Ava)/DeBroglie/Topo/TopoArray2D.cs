@@ -1,4 +1,4 @@
-﻿namespace WFC4All.DeBroglie.Topo
+﻿namespace WFC4ALL.DeBroglie.Topo
 {
 
     internal class TopoArray2D<T> : ITopoArray<T>

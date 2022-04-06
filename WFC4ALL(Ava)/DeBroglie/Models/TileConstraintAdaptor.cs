@@ -1,7 +1,7 @@
-﻿using WFC4All.DeBroglie.Constraints;
-using WFC4All.DeBroglie.Wfc;
+﻿using WFC4ALL.DeBroglie.Constraints;
+using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4All.DeBroglie.Models
+namespace WFC4ALL.DeBroglie.Models
 {
     internal class TileConstraintAdaptor : IWaveConstraint
     {
