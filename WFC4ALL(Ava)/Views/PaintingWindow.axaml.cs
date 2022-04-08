@@ -19,7 +19,7 @@ public partial class PaintingWindow : Window {
 
         KeyDown += keyDownHandler;
         Closing += (_, e) => {
-            centralManager?.getUIManager().switchWindow(Windows.MAIN);
+            centralManager?.getUIManager().switchWindow(Windows.MAIN, false);
             e.Cancel = true;
         };
 
@@ -111,6 +111,6 @@ public partial class PaintingWindow : Window {
     }
 
     private void Window_OnClosing(object? sender, CancelEventArgs e) {
-        centralManager?.getUIManager().handlePaintingClose();
+        centralManager?.getUIManager().handlePaintingClose(false);
     }
 }

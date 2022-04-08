@@ -12,7 +12,7 @@
             </Style>
         </Grid.Styles>
 
-        <GridSplitter Grid.Row="0" IsEnabled="False" Background="Transparent"/>
+        <GridSplitter Grid.Row="0" IsEnabled="False" Background="Transparent" />
 
         <Grid ColumnDefinitions="Auto, Auto, * Auto, Auto" VerticalAlignment="Center"
               Grid.Row="1" Margin="25,0,25,0">
@@ -30,23 +30,29 @@
             <TextBlock Grid.Column="0" VerticalAlignment="Center">
                 Output Image Size
             </TextBlock>
-            
+
             <Grid Grid.Column="1" RowDefinitions="*, *" ColumnDefinitions="Auto, *">
                 <TextBlock Grid.Column="0" Grid.Row="0">
                     Width:
                 </TextBlock>
-                <NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10"  Value="{Binding ImageOutWidth}"
+                <NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutWidth}"
                                x:Name="outputWidthNUD" />
                 <TextBlock Grid.Column="0" Grid.Row="1">
                     Height:
                 </TextBlock>
-                <NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" 
+                <NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10"
                                Value="{Binding ImageOutHeight}" x:Name="outputHeightNUD" />
             </Grid>
-            
-            <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent"/>
-            
-            <Button Grid.Column="3" Width="90" Margin="-5" Command="{Binding OnRestart}">
+
+            <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
+
+            <Grid Grid.Column="2" ColumnDefinitions="Auto, Auto" VerticalAlignment="Center" Margin="15" IsVisible="{Binding OverlappingAdvancedEnabled}">
+                <TextBlock Grid.Column="0" TextWrapping="Wrap" Text="Seamless Output" TextAlignment="Center" MaxWidth="100"/>
+                <ToggleSwitch Grid.Column="1" Command="{Binding OnPaddingToggle}" x:Name="borderPaddingToggle"
+                              OffContent="" OnContent=""/>
+            </Grid>
+
+            <Button Padding="0" Grid.Column="3" Width="80" Margin="0" Command="{Binding OnRestart}">
                 <Button.Styles>
                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                         <Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -67,7 +73,7 @@
                     </StackPanel>
                 </ToolTip.Tip>
             </Button>
-            <Button Grid.Column="4" Width="90" Margin="-5" Command="{Binding OnExport}">
+            <Button Padding="0" Grid.Column="4" Width="80" Margin="0" Command="{Binding OnExport}">
                 <Button.Styles>
                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                         <Setter Property="Content" Value="{DynamicResource hoverExportKey}" />
@@ -90,18 +96,18 @@
             </Button>
         </Grid>
 
-        <GridSplitter Grid.Row="2" IsEnabled="False" Background="Transparent"/>
+        <GridSplitter Grid.Row="2" IsEnabled="False" Background="Transparent" />
 
-        <Grid Grid.Row="3" RowDefinitions="*"  HorizontalAlignment="Center" MaxWidth="675">
-            <Grid ColumnDefinitions="*" VerticalAlignment="Center" >
-                <Border Margin="10" Background="#22000000" CornerRadius="10" >
-                    <Image RenderOptions.BitmapInterpolationMode="Default" Margin="10"
+        <Grid Grid.Row="3" RowDefinitions="*" HorizontalAlignment="Center">
+            <Grid ColumnDefinitions="*" VerticalAlignment="Center">
+                <Border Background="#22000000" BoxShadow="0 0 15 0.25 Black" MaxWidth="675" Margin="10">
+                    <Image RenderOptions.BitmapInterpolationMode="Default"
                            x:Name="outputImage" Source="{Binding OutputImage}" />
                 </Border>
             </Grid>
         </Grid>
 
-        <GridSplitter Grid.Row="4" IsEnabled="False" Background="Transparent"/>
+        <GridSplitter Grid.Row="4" IsEnabled="False" Background="Transparent" />
 
         <Grid Grid.Row="5" ColumnDefinitions="*, 50*, *">
             <GridSplitter IsEnabled="False" Grid.Column="0" Background="Transparent" />
@@ -133,24 +139,24 @@
             <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
         </Grid>
 
-        <GridSplitter Grid.Row="6" IsEnabled="False" Background="Transparent"/>
+        <GridSplitter Grid.Row="6" IsEnabled="False" Background="Transparent" />
 
         <Grid ColumnDefinitions="*, Auto, *, Auto, *, Auto, *"
-              Grid.Row="7"  VerticalAlignment="Center">
-            <GridSplitter Grid.Column="0" IsEnabled="False" Background="Transparent"/>
-            
+              Grid.Row="7" VerticalAlignment="Center">
+            <GridSplitter Grid.Column="0" IsEnabled="False" Background="Transparent" />
+
             <Grid ColumnDefinitions="*, Auto, *, *"
                   Grid.Column="1" RowDefinitions="Auto, Auto">
-                <Button Background="Transparent"
+                <Button Padding="0" Background="Transparent"
                         Command="{Binding OnAnimate}" Grid.Column="0"
                         Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
                         HorizontalAlignment="Center"
-                        IsVisible="{Binding !IsPlaying}" Margin="4" MaxWidth="120"
+                        IsVisible="{Binding !IsPlaying}" Margin="10" MaxWidth="110"
                         IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
                         <Style Selector="Button:disabled /template/ ContentPresenter">
                             <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Opacity" Value="160"/>
+                            <Setter Property="Opacity" Value="160" />
                         </Style>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
                             <Setter Property="Content" Value="{DynamicResource hoverAnimateKey}" />
@@ -171,11 +177,11 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
-                <Button Background="Transparent"
+                <Button Padding="0" Background="Transparent"
                         Command="{Binding OnAnimate}" Grid.Column="0"
                         Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
                         HorizontalAlignment="Center"
-                        IsVisible="{Binding IsPlaying}" Margin="4" MaxWidth="120">
+                        IsVisible="{Binding IsPlaying}" Margin="10" MaxWidth="110">
                     <Button.Styles>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
                             <Setter Property="Content" Value="{DynamicResource hoverPauseKey}" />
@@ -196,19 +202,19 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
-                <Button Background="Transparent" Grid.Column="2" Command="{Binding OnRevert}"
-                        Grid.Row="0" HorizontalAlignment="Center" MaxWidth="90" IsEnabled="{Binding InstantCollapse}">
+                <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnRevert}" Margin="5"
+                        Grid.Row="0" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
                         <Style Selector="Button:disabled /template/ ContentPresenter">
                             <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Opacity" Value="160"/>
+                            <Setter Property="Opacity" Value="160" />
                         </Style>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
                             <Setter Property="Content" Value="{DynamicResource hoverAdvanceKey}" />
                             <Setter Property="Background" Value="Transparent" />
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
-                                    <RotateTransform Angle="180"></RotateTransform>
+                                    <RotateTransform Angle="180" />
                                 </Setter.Value>
                             </Setter>
                         </Style>
@@ -217,7 +223,7 @@
                             <Setter Property="Background" Value="Transparent" />
                             <Setter Property="RenderTransform">
                                 <Setter.Value>
-                                    <RotateTransform Angle="180"></RotateTransform>
+                                    <RotateTransform Angle="180" />
                                 </Setter.Value>
                             </Setter>
                         </Style>
@@ -231,17 +237,17 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Advance a specified number of steps</TextBlock>
-                            <TextBlock>Shortcut(s): Right Arrow Key</TextBlock>
+                            <TextBlock>Take a specified number of steps back</TextBlock>
+                            <TextBlock>Shortcut(s): Left Arrow Key, Backspace &amp; Delete</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
-                <Button Background="Transparent" Grid.Column="2" Command="{Binding OnSave}"
-                        Grid.Row="1" HorizontalAlignment="Center" MaxWidth="90" IsEnabled="{Binding InstantCollapse}">
+                <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnSave}" Margin="5"
+                        Grid.Row="1" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
                         <Style Selector="Button:disabled /template/ ContentPresenter">
                             <Setter Property="Background" Value="Transparent" />
-                            <Setter Property="Opacity" Value="160"/>
+                            <Setter Property="Opacity" Value="160" />
                         </Style>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
                             <Setter Property="Content" Value="{DynamicResource hoverSaveKey}" />
@@ -262,11 +268,11 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
-                <Button Background="Transparent" Grid.Column="3" Command="{Binding OnAdvance}"
-                        Grid.Row="0" HorizontalAlignment="Center" MaxWidth="90" IsEnabled="{Binding InstantCollapse}">
+                <Button Padding="0" Background="Transparent" Grid.Column="3" Command="{Binding OnAdvance}" Margin="5"
+                        Grid.Row="0" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
                         <Style Selector="Button:disabled /template/ ContentPresenter">
-                            <Setter Property="Opacity" Value="160"/>
+                            <Setter Property="Opacity" Value="160" />
                             <Setter Property="Background" Value="Transparent" />
                         </Style>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -283,16 +289,16 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Revert back to last marker (if available)</TextBlock>
-                            <TextBlock>Shortcut(s): 'L' Key</TextBlock>
+                            <TextBlock>Advance a specified number of steps</TextBlock>
+                            <TextBlock>Shortcut(s): Right Arrow Key</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
-                <Button Background="Transparent" Grid.Column="3" Command="{Binding OnLoad}"
-                        Grid.Row="1" HorizontalAlignment="Center" MaxWidth="90" IsEnabled="{Binding InstantCollapse}">
+                <Button Padding="0" Background="Transparent" Grid.Column="3" Command="{Binding OnLoad}" Margin="5"
+                        Grid.Row="1" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
                         <Style Selector="Button:disabled /template/ ContentPresenter">
-                            <Setter Property="Opacity" Value="160"/>
+                            <Setter Property="Opacity" Value="160" />
                             <Setter Property="Background" Value="Transparent" />
                         </Style>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -309,15 +315,15 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Take a specified number of steps back</TextBlock>
-                            <TextBlock>Shortcut(s): Left Arrow Key, Backspace &amp; Delete</TextBlock>
+                            <TextBlock>Revert back to last marker (if available)</TextBlock>
+                            <TextBlock>Shortcut(s): 'L' Key</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
             </Grid>
-            
-            <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent"/>
-            
+
+            <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
+
             <Grid Grid.Column="3" RowDefinitions="Auto, Auto, Auto">
                 <TextBlock Grid.Row="0" Text="{Binding StepAmountString}"
                            HorizontalAlignment="Center" Margin="4" VerticalAlignment="Center" />
@@ -339,15 +345,15 @@
                            Source="/Assets/fastSpeed.png" Width="35" />
                 </Grid>
             </Grid>
-            
-            <GridSplitter Grid.Column="4" IsEnabled="False" Background="Transparent"/>
-            
-            <Grid Grid.Column="5" RowDefinitions="*, Auto, *, Auto, *">
-                <GridSplitter Grid.Row="0" Background="Transparent" IsEnabled="False"/>
 
-                <Button Background="Transparent" Command="{Binding OnCustomizeWindowSwitch}"
+            <GridSplitter Grid.Column="4" IsEnabled="False" Background="Transparent" />
+
+            <Grid Grid.Column="5" RowDefinitions="*, Auto, *, Auto, *">
+                <GridSplitter Grid.Row="0" Background="Transparent" IsEnabled="False" />
+
+                <Button Padding="0" Background="Transparent" Command="{Binding OnCustomizeWindowSwitch}"
                         CommandParameter="P" Grid.Row="1"
-                        HorizontalAlignment="Center" Margin="4" MaxWidth="90">
+                        HorizontalAlignment="Center" Margin="10" MaxWidth="80">
                     <Button.Styles>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
                             <Setter Property="Content" Value="{DynamicResource hoverCustomizeKey}" />
@@ -369,40 +375,14 @@
                     </ToolTip.Tip>
                 </Button>
 
-                <GridSplitter Grid.Row="2"  Background="Transparent" IsEnabled="False"/>
-
-                <!-- <Button Background="Transparent" -->
-                <!--         Command="{Binding OnAnimate}" -->
-                <!--         Grid.Row="3" -->
-                <!--         HorizontalAlignment="Center" -->
-                <!--         IsVisible="{Binding IsPlaying}" Margin="4" MaxWidth="75"> -->
-                <!--     <Button.Styles> -->
-                <!--         <Style Selector="Button:pointerover /template/ ContentPresenter"> -->
-                <!--             <Setter Property="Content" Value="{DynamicResource hoverPauseKey}" /> -->
-                <!--             <Setter Property="Background" Value="Transparent" /> -->
-                <!--         </Style> -->
-                <!--         <Style Selector="Button:pressed /template/ ContentPresenter"> -->
-                <!--             <Setter Property="Content" Value="{DynamicResource clickPauseKey}" /> -->
-                <!--             <Setter Property="Background" Value="Transparent" /> -->
-                <!--         </Style> -->
-                <!--     </Button.Styles> -->
-                <!--     <Panel> -->
-                <!--         <Image Source="/Assets/Pause.png" /> -->
-                <!--     </Panel> -->
-                <!--     <ToolTip.Tip> -->
-                <!--         <StackPanel> -->
-                <!--             <TextBlock>Start/Stop generation animation</TextBlock> -->
-                <!--             <TextBlock>Shortcut(s): Space bar &amp; and 'P' Key</TextBlock> -->
-                <!--         </StackPanel> -->
-                <!--     </ToolTip.Tip> -->
-                <!-- </Button> -->
+                <GridSplitter Grid.Row="2" Background="Transparent" IsEnabled="False" />
 
                 <GridSplitter Grid.Row="4" IsEnabled="False" Background="Transparent" />
             </Grid>
-            
-            <GridSplitter Grid.Column="6" IsEnabled="False" Background="Transparent"/>
+
+            <GridSplitter Grid.Column="6" IsEnabled="False" Background="Transparent" />
         </Grid>
 
-        <GridSplitter Grid.Row="8" IsEnabled="False" Background="Transparent"/>
+        <GridSplitter Grid.Row="8" IsEnabled="False" Background="Transparent" />
     </Grid>
 </UserControl>

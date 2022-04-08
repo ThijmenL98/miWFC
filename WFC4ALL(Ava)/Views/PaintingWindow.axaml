@@ -43,9 +43,9 @@
 
                     <Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="*, *, *, *" Margin="10"
                           VerticalAlignment="Top">
-                        <Button Background="Transparent" Grid.Row="0"
+                        <Button Padding="0" Background="Transparent" Grid.Row="0"
                                 Command="{Binding OnPencilModeClick}" Grid.Column="0"
-                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                HorizontalAlignment="Center" Margin="10" MaxWidth="110"
                                 IsEnabled="{Binding InstantCollapse}">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -69,9 +69,9 @@
                             <!-- </ToolTip.Tip> -->
                         </Button>
 
-                        <Button Background="Transparent" Grid.Row="0"
+                        <Button Padding="0" Background="Transparent" Grid.Row="0"
                                 Command="{Binding OnEraseModeClick}" Grid.Column="1"
-                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                HorizontalAlignment="Center" Margin="10" MaxWidth="110"
                                 IsEnabled="{Binding InstantCollapse}">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -95,9 +95,9 @@
                             <!-- </ToolTip.Tip> -->
                         </Button>
 
-                        <Button Background="Transparent" Grid.Row="1"
+                        <Button Padding="0" Background="Transparent" Grid.Row="1"
                                 Command="{Binding OnPaintKeepModeClick}" Grid.Column="0"
-                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                HorizontalAlignment="Center" Margin="10" MaxWidth="110"
                                 IsEnabled="{Binding InstantCollapse}">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -122,9 +122,9 @@
                             <!-- </ToolTip.Tip> -->
                         </Button>
 
-                        <Button Background="Transparent" Grid.Row="1"
+                        <Button Padding="0" Background="Transparent" Grid.Row="1"
                                 Command="{Binding OnPaintEraseModeClick}" Grid.Column="1"
-                                HorizontalAlignment="Center" Margin="4" MaxWidth="120"
+                                HorizontalAlignment="Center" Margin="10" MaxWidth="110"
                                 IsEnabled="{Binding InstantCollapse}">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -221,10 +221,10 @@
                     </Grid>
 
                     <Grid Grid.Column="2">
-                        <Button Background="Transparent"
+                        <Button Padding="0" Background="Transparent"
                                 Command="{Binding OnCustomizeWindowSwitch}"
                                 CommandParameter="M" VerticalAlignment="Top"
-                                HorizontalAlignment="Right" Margin="4" MaxWidth="75">
+                                HorizontalAlignment="Right" Margin="10" MaxWidth="65">
                             <Button.Styles>
                                 <Style Selector="Button:pointerover /template/ ContentPresenter">
                                     <Setter Property="Content" Value="{DynamicResource hoverBackKey}" />

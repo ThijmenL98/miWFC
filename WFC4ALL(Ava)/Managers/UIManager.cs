@@ -11,7 +11,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using WFC4ALL.ContentControls;
 using WFC4ALL.DeBroglie.Models;
 using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
@@ -32,6 +31,7 @@ public class UIManager {
     private int patternCount;
 
     private DispatcherTimer dt = new();
+    private PixelPoint? origPos;
 
     public UIManager(CentralManager parent) {
         parentCM = parent;
@@ -138,14 +138,12 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount);
+        TileViewModel tvm = new(pattern, weight, patternCount, parentCM);
 
         patternCount++;
 
         return tvm;
     }
-    
-    PixelPoint? origPos = null;
 
     public void dispatchError(Window window) {
         dt.Stop();
@@ -202,37 +200,45 @@ public class UIManager {
         (w, h, x, y) => new Point(w - y, h - x), // rotated 270 and mirrored
     };
 
-    public void switchWindow(Windows window) {
-#if DEBUG
-        Trace.WriteLine("Switching to window: " + window);
-#endif
+    public void switchWindow(Windows window, bool checkClicked) {
+        Window target, source;
+
         switch (window) {
             case Windows.MAIN:
-                parentCM.getPaintingWindow().Hide();
-                parentCM.getMainWindow().Show();
-                
-                parentCM.getMainWindow().WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                
-                parentCM.getMainWindowVM().OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
-                handlePaintingClose();
+                target = mainWindow;
+                source = parentCM.getPaintingWindow();
+                handlePaintingClose(checkClicked);
                 break;
             case Windows.PAINTING:
-                parentCM.getPaintingWindow().Width = parentCM.getMainWindow().Width;
-                parentCM.getPaintingWindow().Height = parentCM.getMainWindow().Height;
-                
-                parentCM.getMainWindow().Hide();
-                parentCM.getPaintingWindow().Show();
-                parentCM.getPaintingWindow().WindowStartupLocation = WindowStartupLocation.CenterOwner;
-                
-                parentCM.getMainWindowVM().OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+                source = mainWindow;
+                target = parentCM.getPaintingWindow();
                 break;
             default:
                 throw new NotImplementedException();
         }
+
+        target.Width = source.Width;
+        target.Height = source.Height;
+                
+        source.Hide();
+        target.Show();
+
+        target.Position = source.Position;
+        
+        mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
     }
 
-    public void handlePaintingClose() {
-        //TODO popup if not pressed check mark
+    public void handlePaintingClose(bool checkClicked) {
+        mainWindowVM.PaintEraseModeEnabled = false;
+        mainWindowVM.EraseModeEnabled = false;
+        mainWindowVM.PencilModeEnabled = false;
+        mainWindowVM.PaintKeepModeEnabled = false;
+        
+        mainWindowVM.OutputImageMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
+
+        if (!checkClicked) {
+            //TODO popup if not pressed check mark
+        }
     }
 }
 

@@ -88,19 +88,16 @@ namespace WFC4ALL.Managers {
             }
 
             try {
-                mainWindowVM.setLoading(true);
                 int stepAmount = mainWindowVM.StepAmount;
                 mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
                     .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force)).Item1;
             } catch (InvalidOperationException) {
                 // Error caused by multithreading which will be ignored
-                mainWindowVM.setLoading(false);
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
 #endif
                 mainWindowVM.OutputImage = noResultFoundBM;
-                mainWindowVM.setLoading(false);
             }
         }
 
@@ -111,7 +108,7 @@ namespace WFC4ALL.Managers {
                 if (finished) {
                     return;
                 }
-
+                
                 mainWindowVM.OutputImage = result2;
             } catch (Exception exception) {
 #if (DEBUG)
@@ -126,7 +123,8 @@ namespace WFC4ALL.Managers {
                 Bitmap avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
                 mainWindowVM.OutputImage = avaloniaBitmap;
 
-                int curStep = parentCM.getWFCHandler().getCurrentStep();
+                int curStep = parentCM.getWFCHandler().getAmountCollapsed();
+
                 if (curStep < savePoints.Peek()) {
                     savePoints.Pop();
                     int toRemove = savePoints.Count;
@@ -136,6 +134,8 @@ namespace WFC4ALL.Managers {
                         }
                     }
                 }
+
+                updateOverlappingCache(curStep);
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -152,9 +152,10 @@ namespace WFC4ALL.Managers {
         }
 
         public void placeMarker() {
-            int curStep = parentCM.getWFCHandler().getCurrentStep();
+            int curStep = parentCM.getWFCHandler().getAmountCollapsed();
             mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
-                mainWindow.getOutputControl().getTimelineWidth() * parentCM.getWFCHandler().getAmountCollapsed() + 1));
+                mainWindow.getOutputControl().getTimelineWidth() * parentCM.getWFCHandler().getPercentageCollapsed() +
+                1));
             while (true) {
                 if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                     savePoints.Pop();
@@ -168,37 +169,46 @@ namespace WFC4ALL.Managers {
                     if (!savePoints.Contains(curStep)) {
                         savePoints.Push(curStep);
                     }
-
                     return;
                 }
             }
         }
 
         public void loadMarker() {
-            int prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
-            if (parentCM.getWFCHandler().getCurrentStep() == prevTimePoint && savePoints.Count != 0) {
+            int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
+
+            if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed && savePoints.Count != 0) {
                 savePoints.Pop();
+                
                 foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
                     if (marker.MarkerIndex.Equals(savePoints.Count)) {
                         mainWindowVM.Markers.Remove(marker);
                     }
                 }
 
-                prevTimePoint = savePoints.Count == 0 ? 0 : savePoints.Peek();
+                prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
             }
 
-            int stepsToRevert = parentCM.getWFCHandler().getCurrentStep() - prevTimePoint;
-            parentCM.getWFCHandler().setCurrentStep(prevTimePoint);
             try {
-                mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc(stepsToRevert);
-                if (stepsToRevert < 0) {
-                    loadMarker();
+                while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
+                    mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc();
                 }
+
+                updateOverlappingCache(prevAmountCollapsed);
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
 #endif
                 mainWindowVM.OutputImage = noResultFoundBM;
+            }
+        }
+
+        private void updateOverlappingCache(int prevAmountCollapsed) {
+            foreach ((Tuple<int, int> key, (Color _, int timeStamp)) in
+                     new Dictionary<Tuple<int, int>, Tuple<Color, int>>(overwriteColorCache)) {
+                if (prevAmountCollapsed < timeStamp) {
+                    overwriteColorCache.Remove(key);
+                }
             }
         }
 
@@ -297,7 +307,7 @@ namespace WFC4ALL.Managers {
                 }
 
                 overwriteColorCache.Add(key,
-                    new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getCurrentTimeStamp()));
+                    new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getAmountCollapsed()));
                 (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
             } else {
                 // Tuple<Color[], Tile> cTup = parentCM.getWFCHandler().getTileCache()[tileIdx];
@@ -306,11 +316,11 @@ namespace WFC4ALL.Managers {
 
             if (showPixel) {
                 mainWindowVM.OutputImage = bitmap!;
-                parentCM.getWFCHandler().setCurrentStep(parentCM.getWFCHandler().getCurrentStep() + 1);
             } else {
                 if (parentCM.getWFCHandler().isOverlappingModel()) {
                     overwriteColorCache.Remove(key);
                 }
+
                 mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
             }
 

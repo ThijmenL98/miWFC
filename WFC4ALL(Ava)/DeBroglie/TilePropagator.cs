@@ -18,12 +18,6 @@ namespace WFC4ALL.DeBroglie
     public class TilePropagatorOptions
     {
         /// <summary>
-        /// Maximum number of steps to backtrack.
-        /// Set to 0 to disable backtracking, and -1 for indefinite amounts of backtracking.
-        /// </summary>
-        public int BackTrackDepth { get; set; }
-
-        /// <summary>
         /// Extra constraints to control the generation process.
         /// </summary>
         public ITileConstraint[] Constraints { get; set; }
@@ -52,61 +46,20 @@ namespace WFC4ALL.DeBroglie
     /// </summary>
     public class TilePropagator
     {
-        private WavePropagator wavePropagator;
+        private readonly WavePropagator wavePropagator;
 
         private readonly ITopology topology;
 
         private readonly TileModel? tileModel;
 
-        private readonly TileModelMapping tileModelMapping;
-
-        /// <summary>
-        /// Constructs a TilePropagator.
-        /// </summary>
-        /// <param name="tileModel">The model to guide the generation.</param>
-        /// <param name="topology">The dimensions of the output to generate</param>
-        /// <param name="backtrack">If true, store additional information to allow rolling back choices that lead to a contradiction.</param>
-        /// <param name="constraints">Extra constraints to control the generation process.</param>
-        /// <param name="selectionHeuristic">Currently selected selection heuristic</param>
-        /// <param name="patternHeuristic">Currently selected pattern heuristic</param>
-        public TilePropagator(TileModel? tileModel, ITopology topology,
-            bool backtrack = false, ITileConstraint[]? constraints = null)
-            : this(tileModel, topology, new TilePropagatorOptions
-            {
-                BackTrackDepth = backtrack ? -1 : 0,
-                Constraints = constraints,
-            })
-        {
-
-        }
-
-        /// <summary>
-        /// Constructs a TilePropagator.
-        /// </summary>
-        /// <param name="tileModel">The model to guide the generation.</param>
-        /// <param name="topology">The dimensions of the output to generate</param>
-        /// <param name="backtrack">If true, store additional information to allow rolling back choices that lead to a contradiction.</param>
-        /// <param name="constraints">Extra constraints to control the generation process.</param>
-        /// <param name="random">Source of randomness</param>
-        [Obsolete("Use TilePropagatorOptions")]
-        public TilePropagator(TileModel? tileModel, ITopology topology, bool backtrack,
-            ITileConstraint[] constraints, Random random)
-            :this(tileModel, topology, new TilePropagatorOptions
-            {
-                BackTrackDepth = backtrack ? -1 : 0,
-                Constraints = constraints,
-                Random = random,
-            })
-        {
-
-        }
+        private TileModelMapping tileModelMapping;
 
         public TilePropagator(TileModel? tileModel, ITopology topology, TilePropagatorOptions options)
         {
             this.tileModel = tileModel;
             this.topology = topology;
             
-            tileModelMapping = tileModel.getTileModelMapping(topology);
+            tileModelMapping = tileModel!.getTileModelMapping(topology);
             ITopology patternTopology = tileModelMapping.PatternTopology;
             PatternModel patternModel = tileModelMapping.PatternModel;
 
@@ -122,7 +75,6 @@ namespace WFC4ALL.DeBroglie
                 patternTopology,
                 topology.Width,
                 topology.Height, 
-                options.BackTrackDepth, 
                 waveConstraints, 
                 options.RandomDouble,
                 // options.RandomDouble ?? (options.Random == null ? null : options.Random.NextDouble),
@@ -261,6 +213,7 @@ namespace WFC4ALL.DeBroglie
             foreach (int p in patterns)
             {
                 Resolution status = wavePropagator.ban(px, py, pz, p);
+                
                 if (status != Resolution.UNDECIDED) {
                     return status;
                 }
@@ -275,18 +228,17 @@ namespace WFC4ALL.DeBroglie
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
         public Resolution select(int x, int y, int z, Tile tile) {
-            // return wavePropagator.stepWith(topology.getIndex(x, y, z), (int) tile.Value);
-            
             tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
             ISet<int> patterns = tileModelMapping.getPatterns(tile, o);
             for (int p = 0; p < wavePropagator.PatternCount; p++)
             {
                 if (patterns.Contains(p)) {
                     continue;
-                }
+                }     
 
                 wavePropagator.PushSelection(px, py, pz, p);
-                Resolution status = wavePropagator.ban(px, py, pz, p);
+                Resolution status = wavePropagator.ban(px, py, pz, p);    
+                
                 if (status != Resolution.UNDECIDED) {
                     return status;
                 }
@@ -300,9 +252,9 @@ namespace WFC4ALL.DeBroglie
         /// Then it propagates that information to other nearby tiles.
         /// </summary>
         /// <returns>The current <see cref="Status"/></returns>
-        public Resolution select(int x, int y, int z, IEnumerable<Tile> tiles)
+        public void select(int x, int y, int z, IEnumerable<Tile> tiles)
         {
-            return select(x, y, z, createTileSet(tiles));
+            select(x, y, z, createTileSet(tiles));
         }
         
         public Resolution select(int x, int y, int z, IEnumerable<Tile> tiles, out int i)
@@ -326,16 +278,17 @@ namespace WFC4ALL.DeBroglie
                 }
 
                 wavePropagator.PushSelection(px, py, pz, p);
-                Resolution status = wavePropagator.ban(px, py, pz, p);
+                Resolution status = wavePropagator.ban(px, py, pz, p);      
+                
                 if (status != Resolution.UNDECIDED) {
                     return status;
                 }
             }
-            
+
             return Resolution.UNDECIDED;
         }
 
-        public Resolution select(int x, int y, int z, TilePropagatorTileSet tiles, out int i) {
+        private Resolution select(int x, int y, int z, TilePropagatorTileSet tiles, out int i) {
             tileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
             ISet<int> patterns = tileModelMapping.getPatterns(tiles, o);
             i = 0;
@@ -344,9 +297,11 @@ namespace WFC4ALL.DeBroglie
                 if (patterns.Contains(p)) {
                     continue;
                 }
+                
 
                 wavePropagator.PushSelection(px, py, pz, p);
-                Resolution status = wavePropagator.ban(px, py, pz, p);
+                Resolution status = wavePropagator.ban(px, py, pz, p); 
+                
                 i++;
                 if (status != Resolution.UNDECIDED) {
                     return status;
@@ -374,14 +329,6 @@ namespace WFC4ALL.DeBroglie
         public Resolution run()
         {
             return wavePropagator.run();
-        }
-
-        public Resolution observe(int index, int pattern) {
-            return wavePropagator.stepWith(index, pattern);
-        }
-
-        public Resolution singleProp() {
-            return wavePropagator.propagateSingle();
         }
 
         // public Resolution ban(int x, int y, int pattern) {

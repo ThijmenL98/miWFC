@@ -17,7 +17,6 @@
     <overlapping category="Shapes" name="Disk" patternSize="4" periodic="True"/>
 
     <overlapping category="Textures" name="3Bricks" patternSize="3" periodic="True"/>
-    <overlapping category="Textures" name="Cat" patternSize="3" periodic="True"/>
     <overlapping category="Textures" name="Cats" patternSize="3" periodic="True"/>
     <overlapping category="Textures" name="Mazelike" patternSize="3" periodic="True"/>
     <overlapping category="Textures" name="Mountains" patternSize="3" periodic="True"/>
@@ -29,13 +28,11 @@
     <overlapping category="Textures" name="Wall" patternSize="2"/>
     <overlapping category="Textures" name="Wall" patternSize="3"/>
     <overlapping category="Textures" name="Water" patternSize="3" periodic="True"/>
-    <overlapping category="Textures" name="Wrinkles" patternSize="3" periodic="True"/>
 
     <overlapping category="Worlds Side-View" name="Flowers" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Side-View" name="Skyline" patternSize="3" periodic="True"/>
 
     <overlapping category="Worlds Top-Down" name="Angular" patternSize="3" periodic="True"/>
-    <overlapping category="Worlds Top-Down" name="City" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="ColoredCity" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Dungeon" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Hogs" patternSize="2" periodic="True"/>

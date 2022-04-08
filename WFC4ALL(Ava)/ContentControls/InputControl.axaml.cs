@@ -33,16 +33,16 @@ namespace WFC4ALL.ContentControls {
          */
 
         private void catCBChangeHandler(object _, SelectionChangedEventArgs e) {
-            bool isOverlapping = ((string) this.Find<Button>("modeToggle").Content).Contains("Tile");
-            string newValue = getCategory();
             if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
-                this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures") && isOverlapping;
                 return;
             }
+            
+            string newValue = getCategory();
+            bool isOverlapping = !centralManager!.getMainWindowVM().SimpleModelSelected;
 
             string[] inputImageDataSource
                 = Util.getModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
-            this.Find<Button>("borderPaddingToggle").IsVisible = newValue.Equals("Textures") && isOverlapping;
+            // centralManager.getMainWindow().getOutputControl().setBorderPaddingVisible(newValue.Equals("Textures") && isOverlapping);
             setInputImages(inputImageDataSource);
             e.Handled = true;
         }
@@ -59,7 +59,7 @@ namespace WFC4ALL.ContentControls {
 
             centralManager.getWFCHandler().setInputChanged("Image CB");
 
-            if (((string) this.Find<Button>("modeToggle").Content).Contains("Tile")) {
+            if (!centralManager.getMainWindowVM().SimpleModelSelected) {
                 (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(newValue);
                 setPatternSizes(patternSizeDataSource, i);
             }

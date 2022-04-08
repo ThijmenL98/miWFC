@@ -1,26 +1,29 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
-using WFC4ALL.ContentControls;
 using WFC4ALL.Managers;
 using WFC4ALL.Models;
 using WFC4ALL.Utils;
 
-// ReSharper disable UnusedMember.Global
-
 namespace WFC4ALL.ViewModels {
     public class MainWindowViewModel : ViewModelBase {
-        private string _modelSelectionText = "Switch to\nTile Mode",
-            _selectedCategory = "",
+        private string _selectedCategory = "",
             _selectedInputImage = "",
-            _stepAmountString = "Steps to take: 1",
-            _seamlessText = "Toggle seamless\noutput (Disabled)";
+            _stepAmountString = "Steps to take: 1";
 
-        private bool _isPlaying, _paddingEnabled, _instantCollapse, _popupVisible, _isLoading;
+        private bool _isPlaying,
+            _seamlessOutput,
+            _inputWrapping,
+            _instantCollapse,
+            _popupVisible,
+            _isLoading,
+            _advancedEnabled,
+            _simpleModel,
+            _advancedOverlapping;
+
         private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3;
 
         private Bitmap _inputImage
@@ -37,20 +40,14 @@ namespace WFC4ALL.ViewModels {
         private CentralManager? centralManager;
         private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
 
-        private bool _pencilModeEnabled, _eraseModeEnabled,_paintKeepModeEnabled, _paintEraseModeEnabled;
+        private bool _pencilModeEnabled, _eraseModeEnabled, _paintKeepModeEnabled, _paintEraseModeEnabled, _isRunning;
 
-        public CentralManager getCentralManager() {
-            return centralManager!;
-        }
-
-        public string ModelSelectionText {
-            get => _modelSelectionText;
-            private set => this.RaiseAndSetIfChanged(ref _modelSelectionText, value);
-        }
-
-        public string SeamlessText {
-            get => _seamlessText;
-            private set => this.RaiseAndSetIfChanged(ref _seamlessText, value);
+        public bool SimpleModelSelected {
+            get => _simpleModel;
+            private set {
+                this.RaiseAndSetIfChanged(ref _simpleModel, value);
+                OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
+            }
         }
 
         private string CategorySelection {
@@ -75,9 +72,14 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _isPlaying, value);
         }
 
-        public bool PaddingEnabled {
-            get => _paddingEnabled;
-            private set => this.RaiseAndSetIfChanged(ref _paddingEnabled, value);
+        public bool SeamlessOutput {
+            get => _seamlessOutput;
+            private set => this.RaiseAndSetIfChanged(ref _seamlessOutput, value);
+        }
+
+        public bool InputWrapping {
+            get => _inputWrapping;
+            private set => this.RaiseAndSetIfChanged(ref _inputWrapping, value);
         }
 
         public bool InstantCollapse {
@@ -182,6 +184,24 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _isLoading, value);
         }
 
+        private bool AdvancedEnabled {
+            get => _advancedEnabled;
+            set {
+                this.RaiseAndSetIfChanged(ref _advancedEnabled, value);
+                OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
+            }
+        }
+
+        private bool OverlappingAdvancedEnabled {
+            get => _advancedOverlapping;
+            set => this.RaiseAndSetIfChanged(ref _advancedOverlapping, value);
+        }
+
+        private bool IsRunning {
+            get => _isRunning;
+            set => this.RaiseAndSetIfChanged(ref _isRunning, value);
+        }
+
         /*
          * Logic
          */
@@ -197,10 +217,9 @@ namespace WFC4ALL.ViewModels {
 
         public void OnModelClick() {
             centralManager!.getWFCHandler().setModelChanging(true);
+            SimpleModelSelected = !SimpleModelSelected;
 
-            ModelSelectionText
-                = ModelSelectionText.Contains("Smart") ? "Switch to\nTile Mode" : "Switch to\nSmart Mode";
-            bool changingToSmart = ModelSelectionText.Contains("Tile");
+            bool changingToSmart = !SimpleModelSelected;
 
             string lastCat = CategorySelection;
 
@@ -235,17 +254,17 @@ namespace WFC4ALL.ViewModels {
             centralManager.getMainWindow().getInputControl().inImgCBChangeHandler(null, null);
         }
 
-        public void OnPaddingClick() {
+        public void OnPaddingToggle() {
+            SeamlessOutput = !SeamlessOutput;
+            centralManager!.getInputManager().restartSolution();
+        }
 
-            centralManager!.getWFCHandler().setInputChanged("Padding Button");
-            SeamlessText
-                = SeamlessText.Contains("Disabled") ? "Toggle seamless\noutput (Enabled)" : "Toggle seamless\noutput (Disabled)";
-            PaddingEnabled = !PaddingEnabled;
-            centralManager.getInputManager().restartSolution();
+        public void OnInputWrappingChanged() {
+            InputWrapping = !InputWrapping;
+            centralManager!.getInputManager().restartSolution();
         }
 
         public void OnAnimate() {
-
             IsPlaying = !IsPlaying;
             centralManager!.getInputManager().animate();
         }
@@ -313,10 +332,10 @@ namespace WFC4ALL.ViewModels {
         public void OnCustomizeWindowSwitch(string param) {
             switch (param) {
                 case "P":
-                    centralManager!.getUIManager().switchWindow(Windows.PAINTING);
+                    centralManager!.getUIManager().switchWindow(Windows.PAINTING, false);
                     break;
                 case "M":
-                    centralManager!.getUIManager().switchWindow(Windows.MAIN);
+                    centralManager!.getUIManager().switchWindow(Windows.MAIN, false);
                     break;
                 default:
                     throw new NotImplementedException();

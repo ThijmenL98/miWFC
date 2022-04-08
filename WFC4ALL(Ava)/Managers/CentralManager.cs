@@ -20,6 +20,7 @@ public class CentralManager {
         wfcHandler = new WFCHandler(this);
         uiManager = new UIManager(this);
         inputManager = new InputManager( this);
+        
     }
 
     public InputManager getInputManager() {

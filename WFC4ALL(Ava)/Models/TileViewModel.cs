@@ -2,19 +2,24 @@
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
+using WFC4ALL.Managers;
 
 namespace WFC4ALL.Models {
     public class TileViewModel : ReactiveObject {
         private readonly WriteableBitmap _patternImage = null!;
         private readonly Color _patternColour;
-        private readonly int _patternWeight, _patternIndex, _patternRotation, _patternFlipping;
+        private readonly int _patternIndex, _patternRotation, _patternFlipping;
+        private readonly double _patternWeight;
+        private bool _flipDisabled, _rotateDisabled;
+
+        private readonly CentralManager? parentCM = null;
 
         public WriteableBitmap PatternImage {
             get => _patternImage;
             private init => this.RaiseAndSetIfChanged(ref _patternImage, value);
         }
 
-        public int PatternWeight {
+        public double PatternWeight {
             get => _patternWeight;
             init => this.RaiseAndSetIfChanged(ref _patternWeight, value);
         }
@@ -39,23 +44,51 @@ namespace WFC4ALL.Models {
             private init => this.RaiseAndSetIfChanged(ref _patternFlipping, value);
         }
 
+        public bool RotateDisabled {
+            get => _rotateDisabled;
+            set => this.RaiseAndSetIfChanged(ref _rotateDisabled, value);
+        }
+
+        public bool FlipDisabled {
+            get => _flipDisabled;
+            set => this.RaiseAndSetIfChanged(ref _flipDisabled, value);
+        }
+        
+        /*
+         * Button callbacks
+         */
+
+        public void OnRotateClick() {
+            RotateDisabled = !RotateDisabled;
+        }
+
+        public void OnFlipClick() {
+            FlipDisabled = !FlipDisabled;
+        }
+
         /*
          * Used for input patterns
          */
-        public TileViewModel(WriteableBitmap image, double weight, int index, bool isF = false) {
+        public TileViewModel(WriteableBitmap image, double weight, int index, CentralManager cm, bool isF = false) {
             PatternImage = image;
-            PatternWeight = (int) weight;
+            PatternWeight = weight;
             PatternIndex = index;
             PatternRotation = 0;
             PatternFlipping = isF ? -1 : 1;
+
+            parentCM = cm;
+
+            FlipDisabled = false;
+            RotateDisabled = false;
         }
 
         /*
          * Used for Adjacent Tiles
          */
-        public TileViewModel(WriteableBitmap image, int index, int patternRotation, int patternFlipping) {
+        public TileViewModel(WriteableBitmap image, double weight, int index, int patternRotation, int patternFlipping) {
             PatternImage = image;
             PatternIndex = index;
+            PatternWeight = weight;
             PatternRotation = patternRotation;
             PatternFlipping = patternFlipping;
         }

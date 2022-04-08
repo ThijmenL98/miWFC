@@ -28,5 +28,9 @@ namespace WFC4ALL.ContentControls {
         public double getTimelineWidth() {
             return this.Find<Grid>("timeline").Bounds.Width;
         }
+
+        public void setBorderPaddingVisible(bool visible) {
+            this.Find<Button>("borderPaddingToggle").IsVisible = visible;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Trackers;
 
@@ -12,7 +13,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
         // Main data tracking what we've decided so far
         private Wave wave;
 
-        private readonly PatternModelConstraint patternModelConstraint;
+        public readonly PatternModelConstraint patternModelConstraint;
 
         // From model
         private readonly int patternCount;
@@ -27,8 +28,6 @@ namespace WFC4ALL.DeBroglie.Wfc {
 
         // Basic parameters
         private readonly int indexCount;
-        private readonly bool backtrack;
-        private readonly int backtrackDepth;
         private readonly IWaveConstraint[] constraints;
         private readonly Func<double> randomDouble;
 
@@ -54,7 +53,6 @@ namespace WFC4ALL.DeBroglie.Wfc {
             ITopology topology,
             int outputWidth,
             int outputHeight,
-            int backtrackDepth = 0,
             IWaveConstraint[]? constraints = null,
             Func<double>? randomDouble = null,
             bool clear = true) {
@@ -66,8 +64,6 @@ namespace WFC4ALL.DeBroglie.Wfc {
             outHeight = outputHeight;
 
             indexCount = topology.IndexCount;
-            backtrack = backtrackDepth != 0;
-            this.backtrackDepth = backtrackDepth;
             this.constraints = constraints ?? Array.Empty<IWaveConstraint>();
             this.topology = topology;
             this.randomDouble = randomDouble ?? new Random(1).NextDouble;
@@ -98,12 +94,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
          */
         public bool internalBan(int index, int pattern) {
             // Record information for backtracking
-            if (backtrack) {
-                backtrackItems.push(new IndexPatternItem {
-                    Index = index,
-                    Pattern = pattern,
-                });
-            }
+            backtrackItems.push(new IndexPatternItem {Index = index, Pattern = pattern,});
 
             patternModelConstraint.doBan(index, pattern);
 
@@ -118,7 +109,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
             return isContradiction;
         }
 
-        public bool internalSelect(int index, int chosenPattern) {
+        private bool internalSelect(int index, int chosenPattern) {
             for (int pattern = 0; pattern < patternCount; pattern++) {
                 if (pattern == chosenPattern) {
                     continue;
@@ -139,17 +130,6 @@ namespace WFC4ALL.DeBroglie.Wfc {
 
         private void observe(out int index, out int pattern) {
             pickHeuristic.pickObservation(out index, out pattern);
-            if (index == -1) {
-                return;
-            }
-
-            // Decide on the given cell
-            if (internalSelect(index, pattern)) {
-                status = Resolution.CONTRADICTION;
-            }
-        }
-
-        private void observeWith(int index, int pattern) {
             if (index == -1) {
                 return;
             }
@@ -191,7 +171,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
             }
         }
 
-        private void stepConstraints() {
+        public void stepConstraints() {
             // TOODO: Do we need to worry about evaluating constraints multiple times?
             foreach (IWaveConstraint constraint in constraints) {
                 constraint.check(this);
@@ -221,12 +201,10 @@ namespace WFC4ALL.DeBroglie.Wfc {
         public Resolution clear() {
             wave = new Wave(frequencies.Length, indexCount);
 
-            if (backtrack) {
-                backtrackItems = new Deque<IndexPatternItem>();
-                backtrackItemsLengths = new Deque<int>();
-                backtrackItemsLengths.push(0);
-                prevChoices = new Deque<IndexPatternItem>();
-            }
+            backtrackItems = new Deque<IndexPatternItem>();
+            backtrackItemsLengths = new Deque<int>();
+            backtrackItemsLengths.push(0);
+            prevChoices = new Deque<IndexPatternItem>();
 
             status = Resolution.UNDECIDED;
             trackers = new List<ITracker>();
@@ -295,22 +273,13 @@ namespace WFC4ALL.DeBroglie.Wfc {
             }
 
             // Record state before making a choice
-            if (backtrack) {
-                backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-                // Clean up backtracks if they are too long
-                while (backtrackDepth != -1 && backtrackItemsLengths.Count > backtrackDepth) {
-                    int newDroppedCount = backtrackItemsLengths.unshift();
-                    prevChoices.unshift();
-                    backtrackItems.dropFirst(newDroppedCount - droppedBacktrackItemsCount);
-                    droppedBacktrackItemsCount = newDroppedCount;
-                }
-            }
+            backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
 
             // Pick a tile and Select a pattern from it.
             observe(out index, out int pattern);
             
             // Record what was selected for backtracking purposes
-            if (index != -1 && backtrack) {
+            if (index != -1) {
                 prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
             }
 
@@ -331,8 +300,8 @@ namespace WFC4ALL.DeBroglie.Wfc {
                 return status;
             }
 
-            if (backtrack && status == Resolution.CONTRADICTION) {
-                // After back tracking, it's no logner the case things are fully chosen
+            if (status == Resolution.CONTRADICTION) {
+                // After back tracking, it's no longer the case things are fully chosen
                 index = 0;
 
                 // Actually backtrack
@@ -371,98 +340,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
 
             return status;
         }
-
-        public Resolution stepWith(int index, int pattern) {
-            // This will true if the user has called Ban, etc, since the last step.
-            if (deferredConstraintsStep) {
-                stepConstraints();
-            }
-
-            // If we're already in a final state. skip making an observiation, 
-            // and jump to backtrack handling / return.
-            if (status != Resolution.UNDECIDED) {
-                goto restart;
-            }
-
-            // Record state before making a choice
-            if (backtrack) {
-                backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-                // Clean up backtracks if they are too long
-                while (backtrackDepth != -1 && backtrackItemsLengths.Count > backtrackDepth) {
-                    int newDroppedCount = backtrackItemsLengths.unshift();
-                    prevChoices.unshift();
-                    backtrackItems.dropFirst(newDroppedCount - droppedBacktrackItemsCount);
-                    droppedBacktrackItemsCount = newDroppedCount;
-                }
-            }
-
-            // Pick a tile and Select a pattern from it.
-            observeWith(index, pattern);
-
-            // Record what was selected for backtracking purposes
-            if (index != -1 && backtrack) {
-                prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
-            }
-
-            // After a backtrack we resume here
-            restart:
-
-            if (status == Resolution.UNDECIDED) {
-                patternModelConstraint.propagate();
-            }
-
-            if (status == Resolution.UNDECIDED) {
-                stepConstraints();
-            }
-
-            // Are all things are fully chosen?
-            if (index == -1 && status == Resolution.UNDECIDED) {
-                status = Resolution.DECIDED;
-                return status;
-            }
-
-            if (backtrack && status == Resolution.CONTRADICTION) {
-                // After back tracking, it's no logner the case things are fully chosen
-                index = 0;
-
-                // Actually backtrack
-                while (true) {
-                    if (backtrackItemsLengths.Count == 1) {
-                        // We've backtracked as much as we can, but 
-                        // it's still not possible. That means it is imposible
-                        return Resolution.CONTRADICTION;
-                    }
-
-                    doBacktrack();
-                    IndexPatternItem item = prevChoices.pop();
-                    backtrackCount++;
-                    status = Resolution.UNDECIDED;
-                    // Mark the given choice as impossible
-                    if (internalBan(item.Index, item.Pattern)) {
-                        status = Resolution.CONTRADICTION;
-                    }
-
-                    if (status == Resolution.UNDECIDED) {
-                        patternModelConstraint.propagate();
-                    }
-
-                    if (status == Resolution.CONTRADICTION) {
-                        // If still in contradiction, repeat backtracking
-
-                        continue;
-                    }
-
-                    // Include the last ban as part of the previous backtrack
-                    backtrackItemsLengths.pop();
-                    backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-
-                    goto restart;
-                }
-            }
-
-            return status;
-        }
-
+        
         public Resolution stepBack() {
             if (backtrackItemsLengths.Count == 1) {
                 return Resolution.CONTRADICTION;
@@ -475,24 +353,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
 
             backtrackCount++;
             status = Resolution.UNDECIDED;
-            return status;
-        }
-
-        public Resolution propagateSingle() {
-            if (status == Resolution.UNDECIDED) {
-                patternModelConstraint.propagate();
-            }
-
-            if (status == Resolution.UNDECIDED) {
-                stepConstraints();
-            }
-
-            // Are all things are fully chosen?
-            if (status == Resolution.UNDECIDED) {
-                status = Resolution.DECIDED;
-                return status;
-            }
-
+            
             return status;
         }
 

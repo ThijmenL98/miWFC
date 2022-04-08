@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -86,7 +85,7 @@ namespace WFC4ALL.Views {
                     e.Handled = true;
                     break;
                 case Key.C:
-                    centralManager.getUIManager().switchWindow(Windows.PAINTING);
+                    centralManager.getUIManager().switchWindow(Windows.PAINTING, false);
                     e.Handled = true;
                     break;
                 case Key.Escape:
@@ -95,6 +94,15 @@ namespace WFC4ALL.Views {
                     }
 
                     e.Handled = true;
+                    break;
+                case Key.Z:
+                    if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
+                        if (!centralManager.getUIManager().popUpOpened()) {
+                            centralManager.getInputManager().revertStep();
+                        }
+
+                        e.Handled = true;
+                    }
                     break;
                 default:
                     base.OnKeyDown(e);
@@ -113,7 +121,8 @@ namespace WFC4ALL.Views {
         }
 
         private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e) {
-            if (centralManager != null && !this.Find<Popup>("infoPopup").IsPointerOverPopup && centralManager.getUIManager().popUpOpened()) {
+            if (centralManager != null && !this.Find<Popup>("infoPopup").IsPointerOverPopup &&
+                centralManager.getUIManager().popUpOpened()) {
                 centralManager.getUIManager().hidePopUp();
             }
         }
