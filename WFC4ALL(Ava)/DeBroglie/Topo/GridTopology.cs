@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace WFC4ALL.DeBroglie.Topo
 {

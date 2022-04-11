@@ -298,7 +298,6 @@ namespace WFC4ALL.DeBroglie
                     continue;
                 }
                 
-
                 wavePropagator.PushSelection(px, py, pz, p);
                 Resolution status = wavePropagator.ban(px, py, pz, p); 
                 

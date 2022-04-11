@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using WFC4ALL.Managers;
@@ -22,7 +23,7 @@ public partial class PaintingWindow : Window {
             centralManager?.getUIManager().switchWindow(Windows.MAIN, false);
             e.Cancel = true;
         };
-
+        
         _paintingPatternsCB = this.Find<ComboBox>("tilePaintSelectCB");
         _paintingSizeCB = this.Find<ComboBox>("BrushSizeCB");
     }
@@ -89,9 +90,9 @@ public partial class PaintingWindow : Window {
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
                     centralManager!.getMainWindowVM().PaintKeepModeEnabled);
-            } catch (IndexOutOfRangeException err) {
+            } catch (IndexOutOfRangeException exception) {
 #if DEBUG
-                Trace.WriteLine(err);
+                Trace.WriteLine(exception);
 #endif
             }
         }

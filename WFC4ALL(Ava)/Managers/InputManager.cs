@@ -11,7 +11,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using WFC4ALL.ContentControls;
 using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
@@ -98,17 +97,23 @@ namespace WFC4ALL.Managers {
                 Trace.WriteLine(exception);
 #endif
                 mainWindowVM.OutputImage = noResultFoundBM;
+                Trace.WriteLine("HEre");
             }
         }
 
         public async void advanceStep() {
             try {
+                (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
+
                 (WriteableBitmap result2, bool finished)
-                    = await parentCM.getWFCHandler().initAndRunWfcDB(false, mainWindowVM.StepAmount);
+                    = await parentCM.getWFCHandler()
+                        .initAndRunWfcDB(
+                            mainWindowVM.ImageOutWidth != (int) currentWidth ||
+                            mainWindowVM.ImageOutHeight != (int) currentHeight, mainWindowVM.StepAmount);
                 if (finished) {
                     return;
                 }
-                
+
                 mainWindowVM.OutputImage = result2;
             } catch (Exception exception) {
 #if (DEBUG)
@@ -153,6 +158,10 @@ namespace WFC4ALL.Managers {
 
         public void placeMarker() {
             int curStep = parentCM.getWFCHandler().getAmountCollapsed();
+            if (curStep == 0) {
+                return;
+            }
+
             mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
                 mainWindow.getOutputControl().getTimelineWidth() * parentCM.getWFCHandler().getPercentageCollapsed() +
                 1));
@@ -169,6 +178,7 @@ namespace WFC4ALL.Managers {
                     if (!savePoints.Contains(curStep)) {
                         savePoints.Push(curStep);
                     }
+
                     return;
                 }
             }
@@ -179,7 +189,7 @@ namespace WFC4ALL.Managers {
 
             if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed && savePoints.Count != 0) {
                 savePoints.Pop();
-                
+
                 foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
                     if (marker.MarkerIndex.Equals(savePoints.Count)) {
                         mainWindowVM.Markers.Remove(marker);
@@ -232,6 +242,12 @@ namespace WFC4ALL.Managers {
 
         public void animate() {
             if (parentCM.getWFCHandler().isCollapsed()) {
+                restartSolution();
+            }
+
+            (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
+            if (mainWindowVM.ImageOutWidth != (int) currentWidth ||
+                mainWindowVM.ImageOutHeight != (int) currentHeight) {
                 restartSolution();
             }
 
@@ -307,7 +323,7 @@ namespace WFC4ALL.Managers {
                 }
 
                 overwriteColorCache.Add(key,
-                    new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getAmountCollapsed()));
+                    new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getActionsTaken()));
                 (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
             } else {
                 // Tuple<Color[], Tile> cTup = parentCM.getWFCHandler().getTileCache()[tileIdx];

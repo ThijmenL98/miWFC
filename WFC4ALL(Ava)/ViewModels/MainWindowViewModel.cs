@@ -22,7 +22,8 @@ namespace WFC4ALL.ViewModels {
             _isLoading,
             _advancedEnabled,
             _simpleModel,
-            _advancedOverlapping;
+            _advancedOverlapping,
+            _irreversiblePopupAccepted;
 
         private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3;
 
@@ -99,12 +100,12 @@ namespace WFC4ALL.ViewModels {
 
         public int ImageOutWidth {
             get => _imgOutWidth;
-            private set => this.RaiseAndSetIfChanged(ref _imgOutWidth, value);
+            private set => this.RaiseAndSetIfChanged(ref _imgOutWidth, Math.Min(Math.Max(10, value), 128));
         }
 
         public int ImageOutHeight {
             get => _imgOutHeight;
-            private set => this.RaiseAndSetIfChanged(ref _imgOutHeight, value);
+            private set => this.RaiseAndSetIfChanged(ref _imgOutHeight, Math.Min(Math.Max(10, value), 128));
         }
 
         public int PatternSize {
@@ -197,9 +198,14 @@ namespace WFC4ALL.ViewModels {
             set => this.RaiseAndSetIfChanged(ref _advancedOverlapping, value);
         }
 
-        private bool IsRunning {
+        public bool IsRunning {
             get => _isRunning;
             set => this.RaiseAndSetIfChanged(ref _isRunning, value);
+        }
+
+        public bool IrreversiblePopupAccepted {
+            get => _irreversiblePopupAccepted;
+            set => this.RaiseAndSetIfChanged(ref _irreversiblePopupAccepted, value);
         }
 
         /*
@@ -340,6 +346,10 @@ namespace WFC4ALL.ViewModels {
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public void OnPopupAcceptClick() {
+            IrreversiblePopupAccepted = true;
         }
 
         public void setLoading(bool value) {

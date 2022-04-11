@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using WFC4ALL.DeBroglie;
@@ -21,6 +22,7 @@ using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
 using Color = Avalonia.Media.Color;
+using Size = Avalonia.Size;
 
 namespace WFC4ALL.Managers;
 
@@ -31,7 +33,7 @@ public class WFCHandler {
     private readonly MainWindow mainWindow;
 
     private double percentageCollapsed;
-    private int amountCollapsed;
+    private int amountCollapsed, actionsTaken;
 
     private WriteableBitmap latestOutput;
 
@@ -77,6 +79,7 @@ public class WFCHandler {
 
         percentageCollapsed = 0d;
         amountCollapsed = 0;
+        actionsTaken = 0;
     }
 
     /*
@@ -144,7 +147,7 @@ public class WFCHandler {
             bool seamlessOutput = mainWindowVM.SeamlessOutput;
 
             await Task.Run(() => {
-                createPropagator(outputHeight, outputWidth, seamlessOutput);
+                createPropagator(outputWidth, outputHeight, seamlessOutput);
 
                 if (isOverlappingModel() && inputWrappingEnabled) {
                     handleSideViewInit(outputHeight, inputImage);
@@ -172,7 +175,7 @@ public class WFCHandler {
 
     private void createPropagator(int outputWidth, int outputHeight,
         bool seamlessOutput) {
-        bool outputPaddingEnabled= isOverlappingModel() && seamlessOutput;
+        bool outputPaddingEnabled = isOverlappingModel() && seamlessOutput;
 
         GridTopology dbTopology = new(outputWidth, outputHeight, outputPaddingEnabled);
         int curSeed = Environment.TickCount;
@@ -346,19 +349,16 @@ public class WFCHandler {
     }
 
     private (WriteableBitmap, bool) runWfcDB(int steps) {
-        Stopwatch sw = new();
-        sw.Restart();
         Resolution dbStatus = Resolution.UNDECIDED;
         if (steps == -1) {
             dbStatus = dbPropagator.run();
         } else {
             for (int i = 0; i < steps; i++) {
                 dbStatus = dbPropagator.step();
+                actionsTaken++;
             }
         }
-
-        sw.Restart();
-
+        
         WriteableBitmap outputBitmap = getLatestOutputBM();
         return (outputBitmap, dbStatus == Resolution.DECIDED);
     }
@@ -366,12 +366,13 @@ public class WFCHandler {
     public WriteableBitmap stepBackWfc(int steps = 1) {
         for (int i = 0; i < steps; i++) {
             dbPropagator.doBacktrack();
+            actionsTaken--;
         }
+
         return getLatestOutputBM();
     }
 
     public (WriteableBitmap?, bool) setTile(int a, int b, int toSet) {
-
         if (isOverlappingModel()) {
             if (dbPropagator.toValueArray<Color>().get(a, b).A.Equals(255)) {
                 return (null, false);
@@ -380,7 +381,7 @@ public class WFCHandler {
 
         Resolution status;
         int patternCount = 0;
-        
+
         if (isOverlappingModel()) {
             Color c = toAddPaint[toSet].PatternColour;
             IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
@@ -390,6 +391,8 @@ public class WFCHandler {
             status = dbPropagator.select(a, b, 0, tileCache[toSet].Item2);
         }
 
+        actionsTaken++;
+        
         bool showPixel = status != Resolution.CONTRADICTION;
 
         if (!showPixel) {
@@ -414,9 +417,11 @@ public class WFCHandler {
 
         foreach ((Tuple<int, int> key, (Color c, int item2)) in new Dictionary<Tuple<int, int>, Tuple<Color, int>>(
                      overwriteColorCache)) {
-            if (parentCM.getWFCHandler().getAmountCollapsed() >= item2) {
+            //if (getActionsTaken() > item2) {
                 returnCache.Add(key, c);
-            }
+            //} else {
+            //    overwriteColorCache.Remove(key);
+            //}
         }
 
         return returnCache;
@@ -446,13 +451,13 @@ public class WFCHandler {
             AlphaFormat.Premul);
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
 
-        Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
-
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+        Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
 
         unsafe {
             uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
             int stride = frameBuffer.RowBytes;
+
 
             Parallel.For(0L, outputHeight, y => {
                 uint* dest = backBuffer + (int) y * stride / 4;
@@ -475,6 +480,7 @@ public class WFCHandler {
 
         amountCollapsed = collapsedTiles;
         percentageCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+        mainWindowVM.IsRunning = amountCollapsed != 0 && (int) percentageCollapsed != 1;
     }
 
     private void generateAdjacentBitmap(out WriteableBitmap outputBitmap, bool grid) {
@@ -517,6 +523,7 @@ public class WFCHandler {
 
         amountCollapsed = collapsedTiles;
         percentageCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);
+        mainWindowVM.IsRunning = amountCollapsed != 0 && (int) percentageCollapsed != 1;
     }
 
     /*
@@ -544,7 +551,15 @@ public class WFCHandler {
         return amountCollapsed;
     }
 
+    public int getActionsTaken() {
+        return actionsTaken;
+    }
+    
     public IEnumerable<TileViewModel> getPaintableTiles() {
         return toAddPaint;
+    }
+
+    public Size getPropagatorSize() {
+        return new Size(dbPropagator.Topology.Width, dbPropagator.Topology.Height);
     }
 }

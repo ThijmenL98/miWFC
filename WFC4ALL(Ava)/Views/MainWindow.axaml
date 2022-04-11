@@ -59,7 +59,7 @@
 		<vm:MainWindowViewModel />
 	</Design.DataContext>
 
-	<Grid>
+	<Grid IsHitTestVisible="{Binding !PopupVisible}">
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
 			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 				<Grid>
