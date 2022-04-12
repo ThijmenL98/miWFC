@@ -115,11 +115,23 @@
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate>
-							<Image Height="25" Source="/Assets/TimeStamp.png">
+							<Grid>
+							<Image Height="25" Source="/Assets/TimeStamp.png" IsVisible="{Binding ToolTipVisible}">
 								<Image.RenderTransform>
 									<TranslateTransform X="{Binding MarkerOffset}" />
 								</Image.RenderTransform>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock Text="{Binding ToolTipText}"/>
+									</StackPanel>
+								</ToolTip.Tip>
 							</Image>
+								<Image Height="25" Source="/Assets/TimeStampPaint.png" IsVisible="{Binding !ToolTipVisible}">
+									<Image.RenderTransform>
+										<TranslateTransform X="{Binding MarkerOffset}" />
+									</Image.RenderTransform>
+								</Image>
+							</Grid>
 						</DataTemplate>
 					</ItemsControl.ItemTemplate>
 				</ItemsControl>

@@ -37,6 +37,8 @@ namespace WFC4ALL.Managers {
 
         private Color[,] maskColours;
 
+        private int lastPaintedAmountCollapsed;
+
         public InputManager(CentralManager parent) {
             parentCM = parent;
             mainWindowVM = parentCM.getMainWindowVM();
@@ -60,6 +62,8 @@ namespace WFC4ALL.Managers {
 
             restartSolution();
             parentCM.getUIManager().updateInstantCollapse(1);
+
+            lastPaintedAmountCollapsed = 0;
         }
 
         /*
@@ -72,6 +76,12 @@ namespace WFC4ALL.Managers {
             }
 
             mainWindowVM.Markers = new ObservableCollection<MarkerViewModel>();
+            
+            while (savePoints.Count > 0) {
+                savePoints.Pop();
+            }
+
+            lastPaintedAmountCollapsed = 0;
 
             overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
             colourMapping = new Dictionary<int, Color>();
@@ -124,13 +134,18 @@ namespace WFC4ALL.Managers {
         }
 
         public void revertStep() {
+            if (lastPaintedAmountCollapsed != 0 && lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
+                parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+                return;
+            }
+            
             try {
                 Bitmap avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
                 mainWindowVM.OutputImage = avaloniaBitmap;
 
                 int curStep = parentCM.getWFCHandler().getAmountCollapsed();
 
-                if (curStep < savePoints.Peek()) {
+                if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                     savePoints.Pop();
                     int toRemove = savePoints.Count;
                     foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
@@ -156,7 +171,7 @@ namespace WFC4ALL.Managers {
             maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         }
 
-        public void placeMarker() {
+        public void placeMarker(bool paintingMarker) {
             int curStep = parentCM.getWFCHandler().getAmountCollapsed();
             if (curStep == 0) {
                 return;
@@ -164,7 +179,7 @@ namespace WFC4ALL.Managers {
 
             mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
                 mainWindow.getOutputControl().getTimelineWidth() * parentCM.getWFCHandler().getPercentageCollapsed() +
-                1));
+                1, paintingMarker));
             while (true) {
                 if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                     savePoints.Pop();
@@ -187,7 +202,7 @@ namespace WFC4ALL.Managers {
         public void loadMarker() {
             int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
 
-            if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed && savePoints.Count != 0) {
+            if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed && prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
                 savePoints.Pop();
 
                 foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
@@ -197,6 +212,11 @@ namespace WFC4ALL.Managers {
                 }
 
                 prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
+            }
+
+            if (lastPaintedAmountCollapsed != 0 && prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
+                parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+                return;
             }
 
             try {
@@ -332,6 +352,10 @@ namespace WFC4ALL.Managers {
 
             if (showPixel) {
                 mainWindowVM.OutputImage = bitmap!;
+
+                //TODO Possibly move to before return
+                resetMarkers();
+                setRevertingThreshold();
             } else {
                 if (parentCM.getWFCHandler().isOverlappingModel()) {
                     overwriteColorCache.Remove(key);
@@ -389,10 +413,28 @@ namespace WFC4ALL.Managers {
             }
 
             mainWindowVM.OutputImageMask = bitmap;
+            resetMarkers();
+            setRevertingThreshold();
         }
 
         public Dictionary<Tuple<int, int>, Tuple<Color, int>> getOverwriteColorCache() {
             return overwriteColorCache;
+        }
+
+        private void setRevertingThreshold() {
+            lastPaintedAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
+            
+            //throw new NotImplementedException();
+        }
+
+        private void resetMarkers() {
+            mainWindowVM.Markers.Clear();
+            
+            while (savePoints.Count > 0) {
+                savePoints.Pop();
+            }
+
+            placeMarker(true);
         }
     }
 }

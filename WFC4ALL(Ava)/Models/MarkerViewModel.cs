@@ -3,21 +3,33 @@
 namespace WFC4ALL.Models; 
 
 public class MarkerViewModel : ReactiveObject {
-    private int _index;
-    private double _widthOffset;
+    private readonly int _index;
+    private readonly double _widthOffset;
+    private readonly string _toolTipText = "";
 
+    // ReSharper disable trice UnusedMember.Local
     public int MarkerIndex {
         get => _index;
-        set => this.RaiseAndSetIfChanged(ref _index, value);
+        init => this.RaiseAndSetIfChanged(ref _index, value);
     }
 
-    public double MarkerOffset {
+    private double MarkerOffset {
         get => _widthOffset;
-        private init => this.RaiseAndSetIfChanged(ref _widthOffset, value);
+        init => this.RaiseAndSetIfChanged(ref _widthOffset, value);
     }
 
-    public MarkerViewModel(int index, double offset) {
+    private bool ToolTipVisible => !_toolTipText.Equals("");
+
+    private string ToolTipText {
+        get => _toolTipText;
+        init => this.RaiseAndSetIfChanged(ref _toolTipText, value);
+    }
+
+    public MarkerViewModel(int index, double offset, bool paintingMarker) {
         MarkerIndex = index;
         MarkerOffset = offset;
+        if (paintingMarker) {
+            ToolTipText = "Marker set by painting";
+        }
     }
 }

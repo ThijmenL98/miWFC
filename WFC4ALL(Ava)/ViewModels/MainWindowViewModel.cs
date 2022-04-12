@@ -288,7 +288,7 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnSave() {
-            centralManager!.getInputManager().placeMarker();
+            centralManager!.getInputManager().placeMarker(false);
         }
 
         public void OnLoad() {

@@ -69,7 +69,7 @@ namespace WFC4ALL.Views {
                     break;
                 case Key.S:
                 case Key.M:
-                    centralManager.getInputManager().placeMarker();
+                    centralManager.getInputManager().placeMarker(false);
                     e.Handled = true;
                     break;
                 case Key.E:
