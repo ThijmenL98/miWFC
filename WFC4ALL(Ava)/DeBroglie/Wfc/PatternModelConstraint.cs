@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.X11;
 using WFC4ALL.DeBroglie.Topo;
@@ -23,7 +24,7 @@ namespace WFC4ALL.DeBroglie.Wfc {
         private readonly int indexCount;
 
         // List of locations that still need to be checked against for fulfilling the model's conditions
-        private readonly Stack<IndexPatternItem> toPropagate;
+        public readonly Stack<IndexPatternItem> toPropagate;
 
         /**
           * compatible[index, pattern, direction] contains the number of patterns present in the wave

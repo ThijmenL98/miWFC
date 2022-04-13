@@ -83,89 +83,90 @@
 								<Image IsVisible="{Binding !PencilModeEnabled}" Source="/Assets/Pencil.png" />
 								<Image IsVisible="{Binding PencilModeEnabled}" Source="/Assets/PencilSelected.png" />
 							</Panel>
-							<!-- <ToolTip.Tip> -->
-							<!--     <StackPanel> -->
-							<!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
-							<!--     </StackPanel> -->
-							<!-- </ToolTip.Tip> -->
+							<ToolTip.Tip>
+							    <StackPanel>
+							        <TextBlock>Paint a single pixel using the</TextBlock>
+								    <TextBlock>value from the list below</TextBlock>
+							    </StackPanel>
+							</ToolTip.Tip>
 						</Button>
 
-						<Button Padding="0" Background="Transparent" Grid.Row="0"
-						        Command="{Binding OnEraseModeClick}" Grid.Column="1"
-						        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-						        IsEnabled="{Binding InstantCollapse}">
-							<Button.Styles>
-								<Style Selector="Button:pointerover /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource hoverEraseKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-								<Style Selector="Button:pressed /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource clickEraseKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-							</Button.Styles>
-							<Panel>
-								<Image IsVisible="{Binding !EraseModeEnabled}" Source="/Assets/Erase.png" />
-								<Image IsVisible="{Binding EraseModeEnabled}" Source="/Assets/EraseSelected.png" />
-							</Panel>
-							<!-- <ToolTip.Tip> -->
-							<!--     <StackPanel> -->
-							<!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
-							<!--     </StackPanel> -->
-							<!-- </ToolTip.Tip> -->
-						</Button>
-
-						<Button Padding="0" Background="Transparent" Grid.Row="1"
-						        Command="{Binding OnPaintKeepModeClick}" Grid.Column="0"
-						        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-						        IsEnabled="{Binding InstantCollapse}">
-							<Button.Styles>
-								<Style Selector="Button:pointerover /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource hoverPaintKeepKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-								<Style Selector="Button:pressed /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource clickPaintKeepKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-							</Button.Styles>
-							<Panel>
-								<Image IsVisible="{Binding !PaintKeepModeEnabled}" Source="/Assets/PaintKeep.png" />
-								<Image IsVisible="{Binding PaintKeepModeEnabled}"
-								       Source="/Assets/PaintKeepSelected.png" />
-							</Panel>
-							<!-- <ToolTip.Tip> -->
-							<!--     <StackPanel> -->
-							<!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
-							<!--     </StackPanel> -->
-							<!-- </ToolTip.Tip> -->
-						</Button>
-
-						<Button Padding="0" Background="Transparent" Grid.Row="1"
-						        Command="{Binding OnPaintEraseModeClick}" Grid.Column="1"
-						        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-						        IsEnabled="{Binding InstantCollapse}">
-							<Button.Styles>
-								<Style Selector="Button:pointerover /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource hoverPaintEraseKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-								<Style Selector="Button:pressed /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource clickPaintEraseKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-							</Button.Styles>
-							<Panel>
-								<Image IsVisible="{Binding !PaintEraseModeEnabled}" Source="/Assets/PaintErase.png" />
-								<Image IsVisible="{Binding PaintEraseModeEnabled}"
-								       Source="/Assets/PaintEraseSelected.png" />
-							</Panel>
-							<!-- <ToolTip.Tip> -->
-							<!--     <StackPanel> -->
-							<!--         <TextBlock>Start/Stop generation animation</TextBlock> -->
-							<!--     </StackPanel> -->
-							<!-- </ToolTip.Tip> -->
-						</Button>
+						<!-- <Button Padding="0" Background="Transparent" Grid.Row="0" -->
+						<!--         Command="{Binding OnEraseModeClick}" Grid.Column="1" -->
+						<!--         HorizontalAlignment="Center" Margin="10" MaxWidth="110" -->
+						<!--         IsEnabled="{Binding InstantCollapse}"> -->
+						<!-- 	<Button.Styles> -->
+						<!-- 		<Style Selector="Button:pointerover /template/ ContentPresenter"> -->
+						<!-- 			<Setter Property="Content" Value="{DynamicResource hoverEraseKey}" /> -->
+						<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+						<!-- 		</Style> -->
+						<!-- 		<Style Selector="Button:pressed /template/ ContentPresenter"> -->
+						<!-- 			<Setter Property="Content" Value="{DynamicResource clickEraseKey}" /> -->
+						<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+						<!-- 		</Style> -->
+						<!-- 	</Button.Styles> -->
+						<!-- 	<Panel> -->
+						<!-- 		<Image IsVisible="{Binding !EraseModeEnabled}" Source="/Assets/Erase.png" /> -->
+						<!-- 		<Image IsVisible="{Binding EraseModeEnabled}" Source="/Assets/EraseSelected.png" /> -->
+						<!-- 	</Panel> -->
+						<!-- 	<ToolTip.Tip> -->
+						<!-- 	    <StackPanel> -->
+						<!-- 	        <TextBlock>Remove a single pixel from the solution</TextBlock> -->
+						<!-- 	    </StackPanel> -->
+						<!-- 	</ToolTip.Tip> -->
+						<!-- </Button> -->
+						<!-- -->
+						<!-- <Button Padding="0" Background="Transparent" Grid.Row="1" -->
+						<!--         Command="{Binding OnPaintKeepModeClick}" Grid.Column="0" -->
+						<!--         HorizontalAlignment="Center" Margin="10" MaxWidth="110" -->
+						<!--         IsEnabled="{Binding InstantCollapse}"> -->
+						<!-- 	<Button.Styles> -->
+						<!-- 		<Style Selector="Button:pointerover /template/ ContentPresenter"> -->
+						<!-- 			<Setter Property="Content" Value="{DynamicResource hoverPaintKeepKey}" /> -->
+						<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+						<!-- 		</Style> -->
+						<!-- 		<Style Selector="Button:pressed /template/ ContentPresenter"> -->
+						<!-- 			<Setter Property="Content" Value="{DynamicResource clickPaintKeepKey}" /> -->
+						<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+						<!-- 		</Style> -->
+						<!-- 	</Button.Styles> -->
+						<!-- 	<Panel> -->
+						<!-- 		<Image IsVisible="{Binding !PaintKeepModeEnabled}" Source="/Assets/PaintKeep.png" /> -->
+						<!-- 		<Image IsVisible="{Binding PaintKeepModeEnabled}" -->
+						<!-- 		       Source="/Assets/PaintKeepSelected.png" /> -->
+						<!-- 	</Panel> -->
+						<!-- 	<ToolTip.Tip> -->
+						<!-- 	    <StackPanel> -->
+						<!-- 	        <TextBlock>Paint over areas you would like to keep</TextBlock> -->
+						<!-- 	    </StackPanel> -->
+						<!-- 	</ToolTip.Tip> -->
+						<!-- </Button> -->
+						<!-- -->
+						<!-- <Button Padding="0" Background="Transparent" Grid.Row="1" -->
+						<!--         Command="{Binding OnPaintEraseModeClick}" Grid.Column="1" -->
+						<!--         HorizontalAlignment="Center" Margin="10" MaxWidth="110" -->
+						<!--         IsEnabled="{Binding InstantCollapse}"> -->
+						<!-- 	<Button.Styles> -->
+						<!-- 		<Style Selector="Button:pointerover /template/ ContentPresenter"> -->
+						<!-- 			<Setter Property="Content" Value="{DynamicResource hoverPaintEraseKey}" /> -->
+						<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+						<!-- 		</Style> -->
+						<!-- 		<Style Selector="Button:pressed /template/ ContentPresenter"> -->
+						<!-- 			<Setter Property="Content" Value="{DynamicResource clickPaintEraseKey}" /> -->
+						<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+						<!-- 		</Style> -->
+						<!-- 	</Button.Styles> -->
+						<!-- 	<Panel> -->
+						<!-- 		<Image IsVisible="{Binding !PaintEraseModeEnabled}" Source="/Assets/PaintErase.png" /> -->
+						<!-- 		<Image IsVisible="{Binding PaintEraseModeEnabled}" -->
+						<!-- 		       Source="/Assets/PaintEraseSelected.png" /> -->
+						<!-- 	</Panel> -->
+						<!-- 	<ToolTip.Tip> -->
+						<!-- 	    <StackPanel> -->
+						<!-- 	        <TextBlock>Paint over areas you would like to re-do</TextBlock> -->
+						<!-- 	    </StackPanel> -->
+						<!-- 	</ToolTip.Tip> -->
+						<!-- </Button> -->
 
 						<ComboBox Grid.Column="0" Grid.Row="2" SelectedIndex="0" Items="{Binding PaintTiles}"
 						          x:Name="tilePaintSelectCB" HorizontalAlignment="Center" VerticalAlignment="Center"

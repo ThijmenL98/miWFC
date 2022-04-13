@@ -250,7 +250,7 @@ namespace WFC4ALL.AvaloniaGif.Caching
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint Round32(uint input, uint value) => RotateLeft32_13(input + (value * PRIME32_2)) * PRIME32_1;
+        private static uint Round32(uint input, uint value) => RotateLeft32_13(input + value * PRIME32_2) * PRIME32_1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static uint RotateLeft32_1(uint value) => (value << 1) | (value >> 31); //_ACC32_1
@@ -522,7 +522,7 @@ namespace WFC4ALL.AvaloniaGif.Caching
         private static ulong MergeRound64(ulong input, ulong value) => (input ^ Round64(0, value)) * PRIME64_1 + PRIME64_4;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ulong Round64(ulong input, ulong value) => RotateLeft64_31(input + (value * PRIME64_2)) * PRIME64_1;
+        private static ulong Round64(ulong input, ulong value) => RotateLeft64_31(input + value * PRIME64_2) * PRIME64_1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong RotateLeft64_1(ulong value) => (value << 1) | (value >> 63); // _ACC64_1

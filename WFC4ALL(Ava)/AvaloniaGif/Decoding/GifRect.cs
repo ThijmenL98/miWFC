@@ -19,10 +19,10 @@ namespace WFC4ALL.AvaloniaGif.Decoding
 
         public static bool operator ==(GifRect a, GifRect b)
         {
-            return ((a.X == b.X) &&
-                    (a.Y == b.Y) &&
-                    (a.Width == b.Width) &&
-                    (a.Height == b.Height));
+            return a.X == b.X &&
+                   a.Y == b.Y &&
+                   a.Width == b.Width &&
+                   a.Height == b.Height;
         }
         public static bool operator !=(GifRect a, GifRect b)
         {

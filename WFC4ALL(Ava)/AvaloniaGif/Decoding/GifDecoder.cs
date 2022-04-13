@@ -98,7 +98,7 @@ namespace WFC4ALL.AvaloniaGif.Decoding
             _suffixBuf = new byte[MaxStackSize];
             _pixelStack = new byte[MaxStackSize + 1];
 
-            _backBufferBytes = (pixelCount * Marshal.SizeOf(typeof(GifColor)));
+            _backBufferBytes = pixelCount * Marshal.SizeOf(typeof(GifColor));
         }
 
         public void Dispose()
@@ -119,7 +119,7 @@ namespace WFC4ALL.AvaloniaGif.Decoding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int PixCoord(int x, int y) => x + (y * _gifDimensions.Width);
+        private int PixCoord(int x, int y) => x + y * _gifDimensions.Width;
 
         static readonly (int Start, int Step)[] Pass =
         {
@@ -360,7 +360,7 @@ namespace WFC4ALL.AvaloniaGif.Decoding
                             _suffixBuf[available] = (byte)first;
                             available++;
 
-                            if (((available & codeMask) == 0) && (available < MaxStackSize))
+                            if ((available & codeMask) == 0 && available < MaxStackSize)
                             {
                                 codeSize++;
                                 codeMask += available;

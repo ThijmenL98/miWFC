@@ -11,7 +11,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using WFC4ALL.Models;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
@@ -76,7 +75,7 @@ namespace WFC4ALL.Managers {
             }
 
             mainWindowVM.Markers = new ObservableCollection<MarkerViewModel>();
-            
+
             while (savePoints.Count > 0) {
                 savePoints.Pop();
             }
@@ -107,7 +106,6 @@ namespace WFC4ALL.Managers {
                 Trace.WriteLine(exception);
 #endif
                 mainWindowVM.OutputImage = noResultFoundBM;
-                Trace.WriteLine("HEre");
             }
         }
 
@@ -115,16 +113,32 @@ namespace WFC4ALL.Managers {
             try {
                 (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
 
-                (WriteableBitmap result2, bool finished)
-                    = await parentCM.getWFCHandler()
-                        .initAndRunWfcDB(
-                            mainWindowVM.ImageOutWidth != (int) currentWidth ||
-                            mainWindowVM.ImageOutHeight != (int) currentHeight, mainWindowVM.StepAmount);
+                //TODO
+                //int preCollapse = parentCM.getWFCHandler().getAmountCollapsed();
+
+                bool weightReset = false;
+                if (!mainWindowVM.IsRunning) {
+                    parentCM.getWFCHandler().updateWeights();
+                    restartSolution();
+                    weightReset = true;
+                }
+
+                (WriteableBitmap result2, bool finished) = await parentCM.getWFCHandler()
+                    .initAndRunWfcDB(
+                        mainWindowVM.ImageOutWidth != (int) currentWidth ||
+                        mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
+
+                //int postCollapse = parentCM.getWFCHandler().getAmountCollapsed();
+
+                //if (!finished && preCollapse == postCollapse) {
+                //    mainWindowVM.OutputImage = noResultFoundBM;
+                //} else {
                 if (finished) {
                     return;
                 }
 
                 mainWindowVM.OutputImage = result2;
+                //}
             } catch (Exception exception) {
 #if (DEBUG)
                 Trace.WriteLine(exception);
@@ -134,11 +148,12 @@ namespace WFC4ALL.Managers {
         }
 
         public void revertStep() {
-            if (lastPaintedAmountCollapsed != 0 && lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
+            if (lastPaintedAmountCollapsed != 0 &&
+                lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
                 parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
                 return;
             }
-            
+
             try {
                 Bitmap avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
                 mainWindowVM.OutputImage = avaloniaBitmap;
@@ -202,7 +217,8 @@ namespace WFC4ALL.Managers {
         public void loadMarker() {
             int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
 
-            if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed && prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
+            if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
+                prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
                 savePoints.Pop();
 
                 foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
@@ -214,7 +230,8 @@ namespace WFC4ALL.Managers {
                 prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
             }
 
-            if (lastPaintedAmountCollapsed != 0 && prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
+            if (lastPaintedAmountCollapsed != 0 &&
+                prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
                 parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
                 return;
             }
@@ -270,6 +287,11 @@ namespace WFC4ALL.Managers {
                 mainWindowVM.ImageOutHeight != (int) currentHeight) {
                 restartSolution();
             }
+            
+            if (!mainWindowVM.IsRunning && mainWindowVM.IsPlaying) {
+                parentCM.getWFCHandler().updateWeights();
+                restartSolution();
+            }
 
             bool startAnimation = mainWindowVM.IsPlaying;
 
@@ -294,9 +316,19 @@ namespace WFC4ALL.Managers {
                     timer.Stop();
                     timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                     try {
+                        //TODO
+                        // int preCollapse = parentCM.getWFCHandler().getAmountCollapsed();
                         (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
                             .initAndRunWfcDB(false, mainWindowVM.StepAmount).Result;
+                        // int postCollapse = parentCM.getWFCHandler().getAmountCollapsed();
+
+                        // if (!finished && preCollapse == postCollapse) {
+                        //     finished = true;
+                        //     mainWindowVM.OutputImage = noResultFoundBM;
+                        // } else {
                         mainWindowVM.OutputImage = result2;
+                        // }
+
                         if (finished) {
                             mainWindowVM.IsPlaying = false;
                             return;
@@ -353,7 +385,6 @@ namespace WFC4ALL.Managers {
             if (showPixel) {
                 mainWindowVM.OutputImage = bitmap!;
 
-                //TODO Possibly move to before return
                 resetMarkers();
                 setRevertingThreshold();
             } else {
@@ -423,13 +454,13 @@ namespace WFC4ALL.Managers {
 
         private void setRevertingThreshold() {
             lastPaintedAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
-            
+
             //throw new NotImplementedException();
         }
 
         private void resetMarkers() {
             mainWindowVM.Markers.Clear();
-            
+
             while (savePoints.Count > 0) {
                 savePoints.Pop();
             }

@@ -1,10 +1,9 @@
-﻿using System.Diagnostics;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
 using WFC4ALL.Managers;
 
-namespace WFC4ALL.Models {
+namespace WFC4ALL.ViewModels {
     public class TileViewModel : ReactiveObject {
         private readonly WriteableBitmap _patternImage = null!;
         private readonly Color _patternColour;
@@ -69,14 +68,16 @@ namespace WFC4ALL.Models {
         /*
          * Used for input patterns
          */
-        public TileViewModel(WriteableBitmap image, double weight, int index, CentralManager cm, bool isF = false) {
+        public TileViewModel(WriteableBitmap image, double weight, int index, bool isF = false, CentralManager? cm = null) {
             PatternImage = image;
             PatternWeight = weight;
             PatternIndex = index;
             PatternRotation = 0;
             PatternFlipping = isF ? -1 : 1;
 
-            parentCM = cm;
+            if (cm != null) {
+                parentCM = cm;
+            }
 
             FlipDisabled = false;
             RotateDisabled = false;

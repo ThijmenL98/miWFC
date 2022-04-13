@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4ALL.DeBroglie.Wfc;
 
@@ -298,7 +299,7 @@ namespace WFC4ALL.DeBroglie.Trackers {
 
         public int getWeightedPatternAt(int index, Func<double> randomDouble) {
             double s = 0.0;
-                        
+
             for (int pattern = 0; pattern < patternCount; pattern++) {
                 if (wave.get(index, pattern)) {
                     s += frequencies[pattern];

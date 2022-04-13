@@ -308,10 +308,13 @@ namespace WFC4ALL.DeBroglie.Models
             };
         }
 
-        public override void multiplyFrequency(Tile tile, double multiplier)
-        {
+        public override void multiplyFrequency(Tile tile, double multiplier) {
             int pattern = tilesToPatterns[tile];
             frequencies[pattern] *= multiplier;
+        }
+        
+        public double getFrequency(Tile tile) {
+            return frequencies[tilesToPatterns[tile]];
         }
 
         private int getPattern(Tile tile)

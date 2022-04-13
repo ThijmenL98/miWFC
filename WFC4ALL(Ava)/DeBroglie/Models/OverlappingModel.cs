@@ -314,5 +314,22 @@ namespace WFC4ALL.DeBroglie.Models {
                 }
             }
         }
+
+        public double getFrequency(Tile tile) {
+            for (int p = 0; p < patternArrays.Count; p++) {
+                PatternArray patternArray = patternArrays[p];
+                for (int x = 0; x < patternArray.Width; x++) {
+                    for (int y = 0; y < patternArray.Height; y++) {
+                        for (int z = 0; z < patternArray.Depth; z++) {
+                            if (patternArray.values[x, y, z] == tile) {
+                                return frequencies[p];
+                            }
+                        }
+                    }
+                }
+            }
+
+            return -1d;
+        }
     }
 }

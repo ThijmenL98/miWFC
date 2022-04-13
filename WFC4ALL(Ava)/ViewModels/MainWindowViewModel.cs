@@ -5,7 +5,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
 using WFC4ALL.Managers;
-using WFC4ALL.Models;
 using WFC4ALL.Utils;
 
 namespace WFC4ALL.ViewModels {
@@ -224,6 +223,10 @@ namespace WFC4ALL.ViewModels {
         public void OnModelClick() {
             centralManager!.getWFCHandler().setModelChanging(true);
             SimpleModelSelected = !SimpleModelSelected;
+            
+            if (IsPlaying) {
+                OnAnimate();
+            }
 
             bool changingToSmart = !SimpleModelSelected;
 
@@ -261,6 +264,9 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnPaddingToggle() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             SeamlessOutput = !SeamlessOutput;
             centralManager!.getInputManager().restartSolution();
         }
@@ -276,14 +282,23 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnRestart() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             centralManager!.getInputManager().restartSolution();
         }
 
         public void OnRevert() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             centralManager!.getInputManager().revertStep();
         }
 
         public void OnAdvance() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             centralManager!.getInputManager().advanceStep();
         }
 
@@ -292,14 +307,23 @@ namespace WFC4ALL.ViewModels {
         }
 
         public void OnLoad() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             centralManager!.getInputManager().loadMarker();
         }
 
         public void OnExport() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             centralManager!.getInputManager().exportSolution();
         }
 
         public void OnInfoClick() {
+            if (IsPlaying) {
+                OnAnimate();
+            }
             centralManager!.getUIManager().showPopUp();
         }
 
@@ -338,6 +362,9 @@ namespace WFC4ALL.ViewModels {
         public void OnCustomizeWindowSwitch(string param) {
             switch (param) {
                 case "P":
+                    if (IsPlaying) {
+                        OnAnimate();
+                    }
                     centralManager!.getUIManager().switchWindow(Windows.PAINTING, false);
                     break;
                 case "M":
