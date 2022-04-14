@@ -149,15 +149,21 @@ public class InputManager {
     }
 
     public void revertStep() {
-        if (lastPaintedAmountCollapsed != 0 &&
+        if (lastPaintedAmountCollapsed != 0 && parentCM.getWFCHandler().isOverlappingModel() &&
             lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
             parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
             return;
         }
 
         try {
-            Bitmap avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
-            mainWindowVM.OutputImage = avaloniaBitmap;
+            int prevAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
+
+            Bitmap? avaloniaBitmap = null;
+            while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed-mainWindowVM.StepAmount) {
+                avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
+            }
+
+            mainWindowVM.OutputImage = avaloniaBitmap!;
 
             int curStep = parentCM.getWFCHandler().getAmountCollapsed();
 
@@ -215,7 +221,7 @@ public class InputManager {
         }
     }
 
-    public void loadMarker() {
+    public void loadMarker(bool doBacktrack = true) {
         int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
 
         if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
@@ -238,11 +244,13 @@ public class InputManager {
         }
 
         try {
-            while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
-                mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc();
-            }
+            if (doBacktrack) {
+                while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
+                    mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc();
+                }
 
-            updateOverlappingCache(prevAmountCollapsed);
+                updateOverlappingCache(prevAmountCollapsed);
+            }
         } catch (Exception exception) {
 #if (DEBUG)
             Trace.WriteLine(exception);
@@ -358,6 +366,7 @@ public class InputManager {
         WriteableBitmap? bitmap;
         bool showPixel;
 
+        bool hadPainted = hasPainted;
         if (parentCM.getWFCHandler().isOverlappingModel()) {
             Color? c;
 
@@ -379,8 +388,15 @@ public class InputManager {
                 new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getActionsTaken()));
             (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
         } else {
-            // Tuple<Color[], Tile> cTup = parentCM.getWFCHandler().getTileCache()[tileIdx];
+            if (!hasPainted) { //TODO Remove
+                parentCM.getInputManager().placeMarker(true);
+            }
             (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
+        }
+
+        if (!parentCM.getWFCHandler().isOverlappingModel() && !hadPainted) { //TODO Remove
+            Trace.WriteLine("Removing again");
+            loadMarker(false);
         }
 
         if (showPixel) {
@@ -453,13 +469,25 @@ public class InputManager {
         return overwriteColorCache;
     }
 
-    private void setRevertingThreshold() {
-        lastPaintedAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
+    private bool hasPainted;
 
-        //throw new NotImplementedException();
+    public void resetHasPainted() {
+        hasPainted = false;
+    }
+
+    private void setRevertingThreshold() {
+        if (!parentCM.getWFCHandler().isOverlappingModel()) {
+            return;
+        }
+        lastPaintedAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
     }
 
     private void resetMarkers() {
+        if (!parentCM.getWFCHandler().isOverlappingModel()) {
+            hasPainted = true;
+            return;
+        }
+        hasPainted = true;
         mainWindowVM.Markers.Clear();
 
         while (savePoints.Count > 0) {

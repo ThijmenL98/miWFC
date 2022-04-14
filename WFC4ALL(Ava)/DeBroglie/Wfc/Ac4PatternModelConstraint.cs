@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4ALL.DeBroglie.Topo;
 
-namespace WFC4ALL.DeBroglie.Wfc; 
+namespace WFC4ALL.DeBroglie.Wfc;
 
 /// <summary>
 ///     Implements pattern adjacency propagation using the arc consistency 4 algorithm.

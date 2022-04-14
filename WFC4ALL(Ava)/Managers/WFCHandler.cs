@@ -233,6 +233,7 @@ public class WFCHandler {
                 = parentCM.getMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
             foreach (((int parent, int[] symmetries), int idx) in tileSymmetries.Select((pair, idx) => (pair, idx))) {
                 double weight = userWeights[idx];
+                weight = weight == 0 ? 0.00000000001d : weight;
                 ((AdjacentModel) dbModel).setFrequency(tileCache[parent].Item2, weight);
                 if (weight == 0) {
                     Trace.WriteLine("Zero weight found");
@@ -469,6 +470,24 @@ public class WFCHandler {
 
         return outputBitmap;
     }
+    
+    private Dictionary<Tuple<int, int>, Color> getOverlapDict() {
+        Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache
+            = parentCM.getInputManager().getOverwriteColorCache();
+        Dictionary<Tuple<int, int>, Color> returnCache = new();
+
+        foreach ((Tuple<int, int> key, (Color c, int item2)) in new Dictionary<Tuple<int, int>, Tuple<Color, int>>(
+                     overwriteColorCache)) {
+            //if (getActionsTaken() > item2) {
+            Trace.WriteLine($@"Global: {getActionsTaken()} - Item: {item2}");
+            returnCache.Add(key, c);
+            //} else {
+            //    overwriteColorCache.Remove(key);
+            //}
+        }
+
+        return returnCache;
+    }
 
     private void generateOverlappingBitmap(out WriteableBitmap outputBitmap, bool grid) {
         int collapsedTiles = 0;
@@ -481,8 +500,7 @@ public class WFCHandler {
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-        Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache
-            = parentCM.getInputManager().getOverwriteColorCache();
+        Dictionary<Tuple<int, int>, Color> overwriteColorCache = getOverlapDict();
 
         unsafe {
             uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
@@ -494,7 +512,7 @@ public class WFCHandler {
                     Color c = dbOutput.get(x, (int) y);
                     Tuple<int, int> overlapKey = new(x, (int) y);
                     Color toSet = overwriteColorCache.ContainsKey(overlapKey)
-                        ? overwriteColorCache[overlapKey].Item1
+                        ? overwriteColorCache[overlapKey]
                         : currentColors!.Contains(c)
                             ? c
                             : grid

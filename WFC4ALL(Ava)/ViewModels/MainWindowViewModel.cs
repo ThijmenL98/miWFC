@@ -289,6 +289,8 @@ public class MainWindowViewModel : ViewModelBase {
             OnAnimate();
         }
 
+        centralManager!.getWFCHandler().updateWeights();
+
         centralManager!.getInputManager().restartSolution();
     }
 

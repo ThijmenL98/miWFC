@@ -43,14 +43,14 @@ internal class Wave {
 
     // Returns true if there is a contradiction
     public bool RemovePossibility(int index, int pattern) {
-        Debug.Assert(possibilities[index * patternCount + pattern]);
+        //Debug.Assert(possibilities[index * patternCount + pattern]);
         possibilities[index * patternCount + pattern] = false;
         int c = --patternCounts[index];
         return c == 0;
     }
 
     public void AddPossibility(int index, int pattern) {
-        Debug.Assert(possibilities[index * patternCount + pattern] == false);
+        //Debug.Assert(possibilities[index * patternCount + pattern] == false);
         possibilities[index * patternCount + pattern] = true;
         patternCounts[index]++;
     }

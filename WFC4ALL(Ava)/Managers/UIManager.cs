@@ -195,9 +195,12 @@ public class UIManager {
                 target = mainWindow;
                 source = parentCM.getPaintingWindow();
                 handlePaintingClose(checkClicked);
+                
+                parentCM.getInputManager().resetHasPainted();
                 break;
             case Windows.PAINTING:
                 source = mainWindow;
+                mainWindowVM.PencilModeEnabled = true; // TODO Remove on adding new tools
                 target = parentCM.getPaintingWindow();
                 break;
             default:
@@ -218,7 +221,7 @@ public class UIManager {
     public void handlePaintingClose(bool checkClicked) {
         mainWindowVM.PaintEraseModeEnabled = false;
         mainWindowVM.EraseModeEnabled = false;
-        mainWindowVM.PencilModeEnabled = false;
+        mainWindowVM.PencilModeEnabled = true; // TODO Remove on adding new tools
         mainWindowVM.PaintKeepModeEnabled = false;
 
         mainWindowVM.OutputImageMask

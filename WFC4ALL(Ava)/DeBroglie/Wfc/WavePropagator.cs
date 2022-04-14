@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Trackers;
 
@@ -332,7 +333,7 @@ internal class WavePropagator {
 
     public void TryBacktrackUntilNoContradiction() {
         while (Status == Resolution.CONTRADICTION) {
-            int backjumpAmount = backtrackPolicy.GetBackjump();
+            int backjumpAmount = backtrackPolicy?.GetBackjump() ?? 1;
 
             for (int i = 0; i < backjumpAmount; i++) {
                 if (backtrackItemsLengths.Count == 1) {
@@ -343,10 +344,12 @@ internal class WavePropagator {
 
                 // Actually undo various bits of state
                 DoBacktrack();
+
                 IndexPatternItem item = prevChoices.Pop();
                 Status = Resolution.UNDECIDED;
                 _contradictionReason = null;
                 _contradictionSource = null;
+
                 foreach (IChoiceObserver co in choiceObservers) {
                     co.Backtrack();
                 }
@@ -376,8 +379,32 @@ internal class WavePropagator {
         }
     }
 
+    public void DoCustomBacktrack() {
+        if (backtrackItemsLengths.Count == 1) {
+            // We've backtracked as much as we can, but 
+            // it's still not possible. That means it is imposible
+            return;
+        }
+
+        // Actually undo various bits of state
+        DoBacktrack();
+
+        Status = Resolution.UNDECIDED;
+        _contradictionReason = null;
+        _contradictionSource = null;
+        
+        // Revalidate status.
+        if (Status == Resolution.UNDECIDED) {
+            patternModelConstraint.Propagate();
+        }
+
+        if (Status == Resolution.UNDECIDED) {
+            StepConstraints();
+        }
+    }
+
     // Actually does the work of undoing what was previously recorded
-    private void DoBacktrack() {
+    public void DoBacktrack() {
         int targetLength = backtrackItemsLengths.Pop() - droppedBacktrackItemsCount;
         // Undo each item
         while (backtrackItems.Count > targetLength) {
