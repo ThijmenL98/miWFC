@@ -2,65 +2,54 @@
 using System.Collections.Generic;
 using WFC4ALL.DeBroglie.Topo;
 
-namespace WFC4ALL.DeBroglie.Constraints
-{
-    public class FixedTileConstraint : ITileConstraint
-    {
-        public Tile[] Tiles { get; set; }
+namespace WFC4ALL.DeBroglie.Constraints; 
 
-        public Point? Point { get; set; }
+public class FixedTileConstraint : ITileConstraint {
+    public Tile[] Tiles { get; set; }
 
-        public void check(TilePropagator propagator)
-        {
-        }
+    public Point? Point { get; set; }
 
-        public void init(TilePropagator propagator)
-        {
-            TilePropagatorTileSet tileSet = propagator.createTileSet(Tiles);
+    public void Check(TilePropagator propagator) { }
 
-            Point point = Point ?? getRandomPoint(propagator, tileSet);
+    public void Init(TilePropagator propagator) {
+        TilePropagatorTileSet tileSet = propagator.CreateTileSet(Tiles);
 
-            propagator.select(point.x, point.y, point.z, tileSet);
-        }
+        Point point = Point ?? GetRandomPoint(propagator, tileSet);
 
-        public Point getRandomPoint(TilePropagator propagator, TilePropagatorTileSet tileSet)
-        {
-            ITopology topology = propagator.Topology;
+        propagator.@select(point.X, point.Y, point.Z, tileSet);
+    }
 
-            List<Point> points = new();
-            for (int z = 0; z < topology.Depth; z++)
-            {
-                for (int y = 0; y < topology.Height; y++)
-                {
-                    for (int x = 0; x < topology.Width; x++)
-                    {
-                        if (topology.Mask != null)
-                        {
-                            int index = topology.getIndex(x, y, z);
-                            if (!topology.Mask[index]) {
-                                continue;
-                            }
-                        }
+    public Point GetRandomPoint(TilePropagator propagator, TilePropagatorTileSet tileSet) {
+        ITopology topology = propagator.Topology;
 
-                        propagator.getBannedSelected(x, y, z, tileSet, out bool isBanned, out bool _);
-                        if (isBanned) {
+        List<Point> points = new();
+        for (int z = 0; z < topology.Depth; z++) {
+            for (int y = 0; y < topology.Height; y++) {
+                for (int x = 0; x < topology.Width; x++) {
+                    if (topology.Mask != null) {
+                        int index = topology.GetIndex(x, y, z);
+                        if (!topology.Mask[index]) {
                             continue;
                         }
-
-                        points.Add(new Point(x, y, z));
                     }
+
+                    propagator.GetBannedSelected(x, y, z, tileSet, out bool isBanned, out bool _);
+                    if (isBanned) {
+                        continue;
+                    }
+
+                    points.Add(new Point(x, y, z));
                 }
             }
-
-            // Choose a random point to select
-            if (points.Count == 0) {
-                throw new Exception($"No legal placement of {tileSet}");
-            }
-
-            int i = (int)(propagator.RandomDouble() * points.Count);
-
-            return points[i];
-
         }
+
+        // Choose a random point to select
+        if (points.Count == 0) {
+            throw new Exception($"No legal placement of {tileSet}");
+        }
+
+        int i = (int) (propagator.RandomDouble() * points.Count);
+
+        return points[i];
     }
 }

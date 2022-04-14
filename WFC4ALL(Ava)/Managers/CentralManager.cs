@@ -1,49 +1,48 @@
 ﻿using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 
-namespace WFC4ALL.Managers {
-    public class CentralManager {
-        private readonly InputManager inputManager;
-        private readonly UIManager uiManager;
-        private readonly WFCHandler wfcHandler;
+namespace WFC4ALL.Managers; 
 
-        private readonly MainWindow mainWindow;
-        private readonly PaintingWindow paintingWindow;
-        private readonly MainWindowViewModel mainWindowViewModel;
+public class CentralManager {
+    private readonly InputManager inputManager;
 
-        public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW) {
-            mainWindow = mW;
-            paintingWindow = pW;
-            mainWindowViewModel = mWVM;
-        
-            wfcHandler = new WFCHandler(this);
-            uiManager = new UIManager(this);
-            inputManager = new InputManager( this);
-        
-        }
+    private readonly MainWindow mainWindow;
+    private readonly MainWindowViewModel mainWindowViewModel;
+    private readonly PaintingWindow paintingWindow;
+    private readonly UIManager uiManager;
+    private readonly WFCHandler wfcHandler;
 
-        public InputManager getInputManager() {
-            return inputManager;
-        }
+    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW) {
+        mainWindow = mW;
+        paintingWindow = pW;
+        mainWindowViewModel = mWVM;
 
-        public UIManager getUIManager() {
-            return uiManager;
-        }
+        wfcHandler = new WFCHandler(this);
+        uiManager = new UIManager(this);
+        inputManager = new InputManager(this);
+    }
 
-        public WFCHandler getWFCHandler() {
-            return wfcHandler;
-        }
+    public InputManager getInputManager() {
+        return inputManager;
+    }
 
-        public MainWindow getMainWindow() {
-            return mainWindow;
-        }
+    public UIManager getUIManager() {
+        return uiManager;
+    }
 
-        public PaintingWindow getPaintingWindow() {
-            return paintingWindow;
-        }
+    public WFCHandler getWFCHandler() {
+        return wfcHandler;
+    }
 
-        public MainWindowViewModel getMainWindowVM() {
-            return mainWindowViewModel;
-        }
+    public MainWindow getMainWindow() {
+        return mainWindow;
+    }
+
+    public PaintingWindow getPaintingWindow() {
+        return paintingWindow;
+    }
+
+    public MainWindowViewModel getMainWindowVM() {
+        return mainWindowViewModel;
     }
 }

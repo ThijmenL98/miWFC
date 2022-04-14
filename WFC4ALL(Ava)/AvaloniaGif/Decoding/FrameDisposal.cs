@@ -1,10 +1,8 @@
-namespace WFC4ALL.AvaloniaGif.Decoding
-{
-    public enum FrameDisposal
-    {
-        Unknown = 0,
-        Leave = 1,
-        Background = 2,
-        Restore = 3
-    }
+namespace WFC4ALL.AvaloniaGif.Decoding; 
+
+public enum FrameDisposal {
+    UNKNOWN = 0,
+    LEAVE = 1,
+    BACKGROUND = 2,
+    RESTORE = 3
 }

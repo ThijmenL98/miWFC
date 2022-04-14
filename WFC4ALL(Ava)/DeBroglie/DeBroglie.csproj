@@ -12,13 +12,6 @@
     <Description>DeBroglie is a implements the algorithm with support for additional non-local constraints, and other useful features.</Description>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <AssemblyName>WFC4All.DeBroglie</AssemblyName>
-    <RootNamespace>WFC4All.DeBroglie</RootNamespace>
-    <LangVersion>9</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,12 +19,6 @@
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="WFC4All, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\bin\Debug\WFC4All.exe</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

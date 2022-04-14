@@ -12,188 +12,189 @@
         Activated="WindowBase_OnActivated"
         PointerPressed="InputElement_OnPointerPressed">
 
-	<Window.Resources>
-		<!-- Hover resources -->
-		<Image Source="/Assets/AnimateHover.png" x:Key="hoverAnimateKey" x:Name="hoverAnimate" />
-		<Image Source="/Assets/AdvanceHover.png" x:Key="hoverAdvanceKey" x:Name="hoverAdvance" />
-		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
-		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
-		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
-		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
-		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
-		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
-		<Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause" />
-		<Image Source="/Assets/CustomizeHover.png" x:Key="hoverCustomizeKey" x:Name="hoverCustomize" />
-		<Image Source="/Assets/ModeHover.png" x:Key="hoverModeKey" x:Name="hoverMode" />
-		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
-		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
-		<!-- Click resources -->
-		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
-		<Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance" />
-		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
-		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
-		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
-		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
-		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
-		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
-		<Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause" />
-		<Image Source="/Assets/CustomizeClick.png" x:Key="clickCustomizeKey" x:Name="clickCustomize" />
-		<Image Source="/Assets/ModeClick.png" x:Key="clickModeKey" x:Name="clickMode" />
-		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
-		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
-	</Window.Resources>
+    <Window.Resources>
+        <!-- Hover resources -->
+        <Image Source="/Assets/AnimateHover.png" x:Key="hoverAnimateKey" x:Name="hoverAnimate" />
+        <Image Source="/Assets/AdvanceHover.png" x:Key="hoverAdvanceKey" x:Name="hoverAdvance" />
+        <Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
+        <Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
+        <Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
+        <Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
+        <Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
+        <Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+        <Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause" />
+        <Image Source="/Assets/CustomizeHover.png" x:Key="hoverCustomizeKey" x:Name="hoverCustomize" />
+        <Image Source="/Assets/ModeHover.png" x:Key="hoverModeKey" x:Name="hoverMode" />
+        <Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
+        <Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
+        <!-- Click resources -->
+        <Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
+        <Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance" />
+        <Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
+        <Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
+        <Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
+        <Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
+        <Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
+        <Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+        <Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause" />
+        <Image Source="/Assets/CustomizeClick.png" x:Key="clickCustomizeKey" x:Name="clickCustomize" />
+        <Image Source="/Assets/ModeClick.png" x:Key="clickModeKey" x:Name="clickMode" />
+        <Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
+        <Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
+    </Window.Resources>
 
-	<Window.Styles>
-		<StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+    <Window.Styles>
+        <StyleInclude Source="/Styles/CustomNumericUD.axaml" />
 
-		<Style Selector="TextBlock">
-			<Setter Property="FontSize" Value="16" />
-		</Style>
-	</Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="FontSize" Value="16" />
+        </Style>
+    </Window.Styles>
 
-	<Window.Background>
-		<ImageBrush Source="/Assets/backgroundImage1.jpg" Stretch="Fill" />
-	</Window.Background>
+    <Window.Background>
+        <ImageBrush Source="/Assets/backgroundImage1.jpg" Stretch="Fill" />
+    </Window.Background>
 
-	<Design.DataContext>
-		<vm:MainWindowViewModel />
-	</Design.DataContext>
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
 
-	<Grid IsHitTestVisible="{Binding !PopupVisible}">
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
-			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
-				<Grid>
-					<Grid ColumnDefinitions="*, Auto">
-						<Popup IsOpen="{Binding PopupVisible}" HorizontalAlignment="Center"
-						       VerticalAlignment="Top" PlacementMode="Pointer" x:Name="infoPopup"
-						       PlacementTarget="{Binding ElementName=patternGrid}">
-							<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
-								<Border.Background>
-									<ImageBrush Source="/Assets/backgroundImage2.png" Stretch="Fill" />
-								</Border.Background>
-								<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
-									<Border Padding="1">
-										<Grid Margin="5">
-											<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphic.png"
-											       Stretch="None" />
-											<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
-											        VerticalAlignment="Top"
-											        x:Name="borderPaddingToggle" Background="Transparent"
-											        Command="{Binding OnCloseClick}">
-												<Button.Styles>
-													<Style Selector="Button:pointerover /template/ ContentPresenter">
-														<Setter Property="Content"
-														        Value="{DynamicResource hoverCloseKey}" />
-														<Setter Property="Background" Value="Transparent" />
-													</Style>
-													<Style Selector="Button:pressed /template/ ContentPresenter">
-														<Setter Property="Content"
-														        Value="{DynamicResource clickCloseKey}" />
-														<Setter Property="Background" Value="Transparent" />
-													</Style>
-												</Button.Styles>
-												<Panel>
-													<Image Source="/Assets/Close.png" />
-												</Panel>
-												<ToolTip.Tip>
-													<StackPanel>
-														<TextBlock>Close this popup</TextBlock>
-													</StackPanel>
-												</ToolTip.Tip>
-											</Button>
-										</Grid>
-									</Border>
-								</Border>
-							</Border>
-						</Popup>
+    <Grid IsHitTestVisible="{Binding !PopupVisible}">
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+            <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+                <Grid>
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Popup IsOpen="{Binding PopupVisible}" HorizontalAlignment="Center"
+                               VerticalAlignment="Top" PlacementMode="Pointer" x:Name="infoPopup"
+                               PlacementTarget="{Binding ElementName=patternGrid}">
+                            <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+                                <Border.Background>
+                                    <ImageBrush Source="/Assets/backgroundImage2.png" Stretch="Fill" />
+                                </Border.Background>
+                                <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+                                    <Border Padding="1">
+                                        <Grid Margin="5">
+                                            <Image HorizontalAlignment="Right" Source="../Assets/InfoGraphic.png"
+                                                   Stretch="None" />
+                                            <Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    x:Name="borderPaddingToggle" Background="Transparent"
+                                                    Command="{Binding OnCloseClick}">
+                                                <Button.Styles>
+                                                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                                        <Setter Property="Content"
+                                                                Value="{DynamicResource hoverCloseKey}" />
+                                                        <Setter Property="Background" Value="Transparent" />
+                                                    </Style>
+                                                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                                                        <Setter Property="Content"
+                                                                Value="{DynamicResource clickCloseKey}" />
+                                                        <Setter Property="Background" Value="Transparent" />
+                                                    </Style>
+                                                </Button.Styles>
+                                                <Panel>
+                                                    <Image Source="/Assets/Close.png" />
+                                                </Panel>
+                                                <ToolTip.Tip>
+                                                    <StackPanel>
+                                                        <TextBlock>Close this popup</TextBlock>
+                                                    </StackPanel>
+                                                </ToolTip.Tip>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </Border>
+                            </Border>
+                        </Popup>
 
-						<Grid ColumnDefinitions="Auto, *" Grid.Column="0">
-							<ucontrols:InputControl DataContext="{Binding VM}"
-							                        Grid.Row="0" x:Name="inputControl" />
+                        <Grid ColumnDefinitions="Auto, *" Grid.Column="0">
+                            <ucontrols:InputControl DataContext="{Binding VM}"
+                                                    Grid.Row="0" x:Name="inputControl" />
 
-							<Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid" MinWidth="350">
-								<TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 15"
-								           Text="Extracted patterns with the current settings" />
+                            <Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid" MinWidth="350">
+                                <TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 15"
+                                           Text="Extracted patterns with the current settings" />
 
-								<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
-								        CornerRadius="15">
-									<ScrollViewer VerticalScrollBarVisibility="Auto">
-										<ItemsControl Items="{Binding PatternTiles}" x:Name="patternItemsControl">
-											<ItemsControl.ItemsPanel>
-												<ItemsPanelTemplate>
-													<WrapPanel HorizontalAlignment="Center" Margin="3" />
-												</ItemsPanelTemplate>
-											</ItemsControl.ItemsPanel>
-											<ItemsControl.ItemTemplate>
-												<DataTemplate>
-													<Border Padding="1" Margin="7, 7, 7,7">
-														<Grid>
-															<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-															<Border Padding="5" Background="#22000000"
-															        CornerRadius="10"
-															        IsVisible="{ReflectionBinding #patternItemsControl.DataContext.AdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
-																<Grid RowDefinitions="*, *">
-																	<Border Width="50" Height="50" Grid.Row="0"
-																	        BoxShadow="0 0 15 0.25 Black"
-																	        Background="Gray" Margin="5, 5, 15, 5">
-																		<Image Width="50" Height="50"
-																		       Source="{Binding PatternImage}"
-																		       RenderOptions.BitmapInterpolationMode="Default" />
-																	</Border>
-																	<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-																	<Grid Grid.Row="1" RowDefinitions="*, *"
-																	      ColumnDefinitions="*, *"
-																	      IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning, TargetNullValue=False, FallbackValue=False}">
-																		<NumericUpDown Grid.Row="1" Grid.Column="0"
-																			Grid.ColumnSpan="2" MaxHeight="8" 
-																			Minimum="0" Width="75" FormatString="0.#;;~0"
-																			Margin="0" MaxWidth="64"
-																			Value="{Binding PatternWeight}" />
-																		<ToolTip.Tip>
-																			<StackPanel>
-																				<TextBlock>Set the weight of this pattern</TextBlock>
-																				<TextBlock>'~0' means it tries to be 0, but</TextBlock>
-																				<TextBlock>might be forced to place a tile</TextBlock>
-																			</StackPanel>
-																		</ToolTip.Tip>
-																	</Grid>
-																</Grid>
-															</Border>
+                                <Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
+                                        CornerRadius="15">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl Items="{Binding PatternTiles}" x:Name="patternItemsControl">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel HorizontalAlignment="Center" Margin="3" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Padding="1" Margin="7, 7, 7,7">
+                                                        <Grid>
+                                                            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                            <Border Padding="5" Background="#22000000"
+                                                                    CornerRadius="10"
+                                                                    IsVisible="{ReflectionBinding #patternItemsControl.DataContext.AdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
+                                                                <Grid RowDefinitions="*, *">
+                                                                    <Border Width="50" Height="50" Grid.Row="0"
+                                                                            BoxShadow="0 0 15 0.25 Black"
+                                                                            Background="Gray" Margin="5, 5, 15, 5">
+                                                                        <Image Width="50" Height="50"
+                                                                               Source="{Binding PatternImage}"
+                                                                               RenderOptions.BitmapInterpolationMode="Default" />
+                                                                    </Border>
+                                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                                    <Grid Grid.Row="1" RowDefinitions="*, *"
+                                                                          ColumnDefinitions="*, *"
+                                                                          IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning, TargetNullValue=False, FallbackValue=False}">
+                                                                        <NumericUpDown Grid.Row="1" Grid.Column="0"
+                                                                            Grid.ColumnSpan="2" MaxHeight="8"
+                                                                            Minimum="0" Width="75"
+                                                                            FormatString="0.#;;~0"
+                                                                            Margin="0" MaxWidth="64"
+                                                                            Value="{Binding PatternWeight}" />
+                                                                        <ToolTip.Tip>
+                                                                            <StackPanel>
+                                                                                <TextBlock>Set the weight of this pattern</TextBlock>
+                                                                                <TextBlock>'~0' means it tries to be 0, but</TextBlock>
+                                                                                <TextBlock>might be forced to place a tile</TextBlock>
+                                                                            </StackPanel>
+                                                                        </ToolTip.Tip>
+                                                                    </Grid>
+                                                                </Grid>
+                                                            </Border>
 
-															<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-															<Border Width="50" Height="50" Grid.Column="0"
-															        BoxShadow="0 0 15 0.25 Black"
-															        IsVisible="{ReflectionBinding !#patternItemsControl.DataContext.AdvancedEnabled, TargetNullValue=False, FallbackValue=False}"
-															        Background="Gray" Margin="5">
-																<Image Width="50" Height="50"
-																       Source="{Binding PatternImage}"
-																       RenderOptions.BitmapInterpolationMode="Default" />
-															</Border>
-														</Grid>
-													</Border>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
-									</ScrollViewer>
-								</Border>
-							</Grid>
-						</Grid>
-						<ucontrols:OutputControl DataContext="{Binding VM}"
-						                         Grid.Column="1" x:Name="outputControl" />
-					</Grid>
+                                                            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                            <Border Width="50" Height="50" Grid.Column="0"
+                                                                    BoxShadow="0 0 15 0.25 Black"
+                                                                    IsVisible="{ReflectionBinding !#patternItemsControl.DataContext.AdvancedEnabled, TargetNullValue=False, FallbackValue=False}"
+                                                                    Background="Gray" Margin="5">
+                                                                <Image Width="50" Height="50"
+                                                                       Source="{Binding PatternImage}"
+                                                                       RenderOptions.BitmapInterpolationMode="Default" />
+                                                            </Border>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                        <ucontrols:OutputControl DataContext="{Binding VM}"
+                                                 Grid.Column="1" x:Name="outputControl" />
+                    </Grid>
 
-					<avaloniaGif:GifImage SourceUriRaw="resm:WFC4ALL.Assets.LoadingAnim.gif"
-					                      Stretch="Uniform" MaxWidth="300" IsVisible="{Binding IsLoading}"
-					                      StretchDirection="Both" />
-				</Grid>
-			</Border>
-		</Border>
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
-		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
-		<Border BorderBrush="Black" BorderThickness="2" />
-	</Grid>
+                    <avaloniaGif:GifImage SourceUriRaw="resm:WFC4ALL.Assets.LoadingAnim.gif"
+                                          Stretch="Uniform" MaxWidth="300" IsVisible="{Binding IsLoading}"
+                                          StretchDirection="Both" />
+                </Grid>
+            </Border>
+        </Border>
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
+        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
+        <Border BorderBrush="Black" BorderThickness="2" />
+    </Grid>
 </Window>

@@ -1,27 +1,22 @@
 ﻿using WFC4ALL.DeBroglie.Constraints;
 using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4ALL.DeBroglie.Models
-{
-    internal class TileConstraintAdaptor : IWaveConstraint
-    {
-        private readonly ITileConstraint underlying;
-        private readonly TilePropagator propagator;
+namespace WFC4ALL.DeBroglie.Models; 
 
-        public TileConstraintAdaptor(ITileConstraint underlying, TilePropagator propagator)
-        {
-            this.underlying = underlying;
-            this.propagator = propagator;
-        }
+internal class TileConstraintAdaptor : IWaveConstraint {
+    private readonly TilePropagator propagator;
+    private readonly ITileConstraint underlying;
 
-        public void check(WavePropagator wavePropagator)
-        {
-            underlying.check(propagator);
-        }
+    public TileConstraintAdaptor(ITileConstraint underlying, TilePropagator propagator) {
+        this.underlying = underlying;
+        this.propagator = propagator;
+    }
 
-        public void init(WavePropagator wavePropagator)
-        {
-            underlying.init(propagator);
-        }
+    public void Check(WavePropagator wavePropagator) {
+        underlying.Check(propagator);
+    }
+
+    public void Init(WavePropagator wavePropagator) {
+        underlying.Init(propagator);
     }
 }

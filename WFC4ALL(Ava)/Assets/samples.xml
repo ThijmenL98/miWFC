@@ -61,7 +61,7 @@
     <simpletiled category="Textures" name="Circles"/>
     <simpletiled category="Textures" name="Circuit" periodic="True"/>
     <simpletiled category="Textures" name="Knots" periodic="True"/>
-    
+
     <simpletiled category="Worlds Top-Down" name="Castle"/>
     <simpletiled category="Worlds Top-Down" name="FloorPlan"/>
 </samples>

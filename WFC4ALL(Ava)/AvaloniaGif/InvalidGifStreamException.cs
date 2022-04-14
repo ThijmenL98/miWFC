@@ -1,25 +1,15 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace WFC4ALL.AvaloniaGif
-{
-    [Serializable]
-    internal class InvalidGifStreamException : Exception
-    {
-        public InvalidGifStreamException()
-        {
-        }
+namespace WFC4ALL.AvaloniaGif; 
 
-        public InvalidGifStreamException(string message) : base(message)
-        {
-        }
+[Serializable]
+internal class InvalidGifStreamException : Exception {
+    public InvalidGifStreamException() { }
 
-        public InvalidGifStreamException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public InvalidGifStreamException(string message) : base(message) { }
 
-        protected InvalidGifStreamException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-    }
+    public InvalidGifStreamException(string message, Exception innerException) : base(message, innerException) { }
+
+    protected InvalidGifStreamException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }

@@ -1,23 +1,22 @@
-﻿namespace WFC4ALL.DeBroglie.Topo
-{
+﻿namespace WFC4ALL.DeBroglie.Topo; 
+
+/// <summary>
+///     A read-only array coupled with a specific <see cref="Topology" />
+/// </summary>
+public interface ITopoArray<out T> {
     /// <summary>
-    /// A read-only array coupled with a specific <see cref="Topology"/>
+    ///     Gets the Topology associated with an array
     /// </summary>
-    public interface ITopoArray<out T> {
-        /// <summary>
-        /// Gets the Topology associated with an array
-        /// </summary>
-        ITopology Topology { get; }
+    ITopology Topology { get; }
 
-        /// <summary>
-        /// Gets the value at a particular location.
-        /// </summary>
-        T get(int x, int y, int z = 0);
+    /// <summary>
+    ///     Gets the value at a particular location.
+    /// </summary>
+    T get(int x, int y, int z = 0);
 
-        /// <summary>
-        /// Gets the value at a particular location.
-        /// See <see cref="Topology"/> to see how location indices work.
-        /// </summary>
-        T get(int index);
-    }
+    /// <summary>
+    ///     Gets the value at a particular location.
+    ///     See <see cref="Topology" /> to see how location indices work.
+    /// </summary>
+    T get(int index);
 }

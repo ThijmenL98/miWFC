@@ -1,122 +1,514 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Trackers;
 
-namespace WFC4ALL.DeBroglie.Wfc {
+namespace WFC4ALL.DeBroglie.Wfc; 
+
+internal class WavePropagatorOptions {
+    public IBacktrackPolicy BacktrackPolicy { get; set; }
+    public IWaveConstraint[] Constraints { get; set; }
+    public Func<double> RandomDouble { get; set; }
+    public IIndexPicker IndexPicker { get; set; }
+    public IPatternPicker PatternPicker { get; set; }
+    public bool Clear { get; set; } = true;
+    public ModelConstraintAlgorithm ModelConstraintAlgorithm { get; set; }
+}
+
+/// <summary>
+///     WavePropagator holds a wave, and supports updating it's possibilities
+///     according to the model constraints.
+/// </summary>
+internal class WavePropagator {
+    private readonly IWaveConstraint[] constraints;
+
+    private readonly IIndexPicker indexPicker;
+
+    private readonly int outWidth, outHeight;
+    private readonly IPatternPicker patternPicker;
+
+    // In
+
+    // Used for backtracking
+    private Deque<IndexPatternItem> backtrackItems;
+    private Deque<int> backtrackItemsLengths;
+    private readonly IBacktrackPolicy backtrackPolicy;
+    private List<IChoiceObserver> choiceObservers;
+
+    public string _contradictionReason;
+    public object _contradictionSource;
+
+    // We evaluate constraints at the last possible minute, instead of eagerly like the model,
+    // As they can potentially be expensive.
+    private bool deferredConstraintsStep;
+
+    // Used for MaxBacktrackDepth
+    private int droppedBacktrackItemsCount;
+
+    // Basic parameters
+
+    // From model
+
+    private readonly IPatternModelConstraint patternModelConstraint;
+
+    private Deque<IndexPatternItem> prevChoices;
+
+    // The overall status of the propagator, always kept up to date
+
+    private List<ITracker> trackers;
+
+    // Main data tracking what we've decided so far
+
+    public WavePropagator(
+        PatternModel model,
+        ITopology topology,
+        int outputWidth,
+        int outputHeight,
+        WavePropagatorOptions options) {
+        PatternCount = model.PatternCount;
+        Frequencies = model.Frequencies;
+
+        outWidth = outputWidth;
+        outHeight = outputHeight;
+
+        IndexCount = topology.IndexCount;
+        backtrackPolicy = options.BacktrackPolicy;
+        constraints = options.Constraints ?? new IWaveConstraint[0];
+        Topology = topology;
+        RandomDouble = options.RandomDouble ?? new Random().NextDouble;
+        indexPicker = options.IndexPicker ?? new EntropyTracker();
+        patternPicker = options.PatternPicker ?? new WeightedRandomPatternPicker();
+
+        switch (options.ModelConstraintAlgorithm) {
+            case ModelConstraintAlgorithm.ONE_STEP:
+                patternModelConstraint = new OneStepPatternModelConstraint(this, model);
+                break;
+            case ModelConstraintAlgorithm.DEFAULT:
+            case ModelConstraintAlgorithm.AC4:
+                patternModelConstraint = new Ac4PatternModelConstraint(this, model);
+                break;
+            case ModelConstraintAlgorithm.AC3:
+                patternModelConstraint = new Ac3PatternModelConstraint(this, model);
+                break;
+            default:
+                throw new Exception();
+        }
+
+        if (options.Clear) {
+            Clear();
+        }
+    }
+
+    public Resolution Status { get; private set; }
+
+    public string ContradictionReason => _contradictionReason;
+    public object ContradictionSource => _contradictionSource;
+    public int BacktrackCount { get; private set; }
+
+    public int BackjumpCount { get; private set; }
+
     /// <summary>
-    /// WavePropagator holds a wave, and supports updating it's possibilities 
-    /// according to the model constraints.
+    ///     Returns the only possible value of a cell if there is only one,
+    ///     otherwise returns -1 (multiple possible) or -2 (none possible)
     /// </summary>
-    internal class WavePropagator {
-        // Main data tracking what we've decided so far
-        private Wave wave;
-
-        public readonly PatternModelConstraint patternModelConstraint;
-
-        // From model
-        private readonly int patternCount;
-        private readonly double[] frequencies;
-
-        // Used for backtracking
-        private Deque<IndexPatternItem> backtrackItems;
-        private Deque<int> backtrackItemsLengths;
-        private Deque<IndexPatternItem> prevChoices;
-        private int droppedBacktrackItemsCount;
-        private int backtrackCount; // Purely informational
-
-        // Basic parameters
-        private readonly int indexCount;
-        private readonly IWaveConstraint[] constraints;
-        private readonly Func<double> randomDouble;
-
-        // We evaluate constraints at the last possible minute, instead of eagerly like the model,
-        // As they can potentially be expensive.
-        private bool deferredConstraintsStep;
-
-        // The overall status of the propagator, always kept up to date
-        private Resolution status;
-
-        private readonly ITopology topology;
-
-        private List<ITracker> trackers;
-
-        private EntropyHeuristic pickHeuristic;
-
-        private readonly int outWidth, outHeight;
-
-#pragma warning disable CS8618
-        public WavePropagator(
-#pragma warning restore CS8618
-            PatternModel model,
-            ITopology topology,
-            int outputWidth,
-            int outputHeight,
-            IWaveConstraint[]? constraints = null,
-            Func<double>? randomDouble = null,
-            bool clear = true) {
-            patternCount = model.PatternCount;
-            frequencies = model.Frequencies;
-            // Console.WriteLine(string.Join(", ", frequencies));
-
-            outWidth = outputWidth;
-            outHeight = outputHeight;
-
-            indexCount = topology.IndexCount;
-            this.constraints = constraints ?? Array.Empty<IWaveConstraint>();
-            this.topology = topology;
-            this.randomDouble = randomDouble ?? new Random(1).NextDouble;
-
-            patternModelConstraint = new PatternModelConstraint(this, model);
-
-            if (clear) {
-                this.clear();
+    public int GetDecidedPattern(int index) {
+        int decidedPattern = (int) Resolution.CONTRADICTION;
+        for (int pattern = 0; pattern < PatternCount; pattern++) {
+            if (Wave.Get(index, pattern)) {
+                if (decidedPattern == (int) Resolution.CONTRADICTION) {
+                    decidedPattern = pattern;
+                } else {
+                    return (int) Resolution.UNDECIDED;
+                }
             }
         }
 
-        // This is only exposed publically
-        // in case users write their own constraints, it's not 
-        // otherwise useful.
+        return decidedPattern;
+    }
 
-        #region Internal API
+    private void InitConstraints() {
+        foreach (IWaveConstraint constraint in constraints) {
+            constraint.Init(this);
+            if (Status != Resolution.UNDECIDED) {
+                return;
+            }
 
-        public Wave Wave => wave;
-        public int IndexCount => indexCount;
-        public ITopology Topology => topology;
-        public Func<double> RandomDouble => randomDouble;
+            patternModelConstraint.Propagate();
+            if (Status != Resolution.UNDECIDED) {
+                return;
+            }
+        }
+    }
 
-        public int PatternCount => patternCount;
-        public double[] Frequencies => frequencies;
+    public void StepConstraints() {
+        // TODO: Do we need to worry about evaluating constraints multiple times?
+        foreach (IWaveConstraint constraint in constraints) {
+            constraint.Check(this);
+            if (Status != Resolution.UNDECIDED) {
+                return;
+            }
 
-        /**
-         * Requires that index, pattern is possible
+            patternModelConstraint.Propagate();
+            if (Status != Resolution.UNDECIDED) {
+                return;
+            }
+        }
+
+        deferredConstraintsStep = false;
+    }
+
+    /**
+         * Resets the wave to it's original state
          */
-        public bool internalBan(int index, int pattern) {
-            // Record information for backtracking
-            backtrackItems.push(new IndexPatternItem {Index = index, Pattern = pattern,});
+    public Resolution Clear() {
+        Wave = new Wave(Frequencies.Length, IndexCount);
 
-            patternModelConstraint.doBan(index, pattern);
+        backtrackItems = new Deque<IndexPatternItem>();
+        backtrackItemsLengths = new Deque<int>();
+        backtrackItemsLengths.Push(0);
+        prevChoices = new Deque<IndexPatternItem>();
 
-            // Update the wave
-            bool isContradiction = wave.removePossibility(index, pattern);
+        Status = Resolution.UNDECIDED;
+        _contradictionReason = null;
+        _contradictionSource = null;
+        trackers = new List<ITracker>();
+        choiceObservers = new List<IChoiceObserver>();
+        indexPicker.Init(this);
+        patternPicker.Init(this);
+        backtrackPolicy?.Init(this);
 
+        patternModelConstraint.Clear();
+
+        if (Status == Resolution.CONTRADICTION) {
+            return Status;
+        }
+
+        InitConstraints();
+
+        return Status;
+    }
+
+    /**
+         * Indicates that the generation cannot proceed, forcing the algorithm to backtrack or exit.
+         */
+    public void SetContradiction() {
+        Status = Resolution.CONTRADICTION;
+    }
+
+    /**
+         * Indicates that the generation cannot proceed, forcing the algorithm to backtrack or exit.
+         */
+    public void SetContradiction(string reason, object source) {
+        Status = Resolution.CONTRADICTION;
+        _contradictionReason = reason;
+        _contradictionSource = source;
+    }
+
+    /**
+         * Removes pattern as a possibility from index
+         */
+    public Resolution ban(int x, int y, int z, int pattern) {
+        int index = Topology.GetIndex(x, y, z);
+        if (Wave.Get(index, pattern)) {
+            deferredConstraintsStep = true;
+            if (InternalBan(index, pattern)) {
+                return Status = Resolution.CONTRADICTION;
+            }
+        }
+
+        patternModelConstraint.Propagate();
+        return Status;
+    }
+
+    public void PushSelection(int px, int py, int pz, int pattern) {
+        int index = Topology.GetIndex(px, py, pz);
+        PushSelection(index, pattern);
+    }
+
+    public void PushSelection(int index, int pattern) {
+        backtrackItemsLengths.Push(droppedBacktrackItemsCount + backtrackItems.Count);
+        prevChoices.Push(new IndexPatternItem {Index = index, Pattern = pattern});
+        backtrackItems.Push(new IndexPatternItem {Index = index, Pattern = pattern});
+    }
+
+    /**
+         * Make some progress in the WaveFunctionCollapseAlgorithm
+         */
+    public Resolution Step() {
+        // This will be true if the user has called Ban, etc, since the last step.
+        if (deferredConstraintsStep) {
+            StepConstraints();
+        }
+
+        // If we're already in a final state. skip making an observiation.
+        if (Status == Resolution.UNDECIDED) {
+            // Pick a index to use
+            int index = indexPicker.GetRandomIndex(RandomDouble);
+
+            if (index != -1) {
+                // Pick a tile to select at that index
+                int pattern = patternPicker.GetRandomPossiblePatternAt(index, RandomDouble);
+
+                RecordBacktrack(index, pattern);
+
+                // Use the pick
+                if (InternalSelect(index, pattern)) {
+                    Status = Resolution.CONTRADICTION;
+                }
+            }
+
+            // Re-evaluate status
+            if (Status == Resolution.UNDECIDED) {
+                patternModelConstraint.Propagate();
+            }
+
+            if (Status == Resolution.UNDECIDED) {
+                StepConstraints();
+            }
+
+            // If we've made all possible choices, and found no contradictions,
+            // then we've succeeded.
+            if (index == -1 && Status == Resolution.UNDECIDED) {
+                Status = Resolution.DECIDED;
+                return Status;
+            }
+        }
+
+        TryBacktrackUntilNoContradiction();
+
+        return Status;
+    }
+
+    /**
+         * Make some progress in the WaveFunctionCollapseAlgorithm
+         */
+    public Resolution StepWith(int index, int pattern) {
+        // This will be true if the user has called Ban, etc, since the last step.
+        if (deferredConstraintsStep) {
+            StepConstraints();
+        }
+
+        // If we're already in a final state. skip making an observiation.
+        if (Status == Resolution.UNDECIDED) {
+            if (index != -1) {
+                RecordBacktrack(index, pattern);
+
+                // Use the pick
+                if (InternalSelect(index, pattern)) {
+                    Status = Resolution.CONTRADICTION;
+                }
+            }
+
+            // Re-evaluate status
+            if (Status == Resolution.UNDECIDED) {
+                patternModelConstraint.Propagate();
+            }
+
+            if (Status == Resolution.UNDECIDED) {
+                StepConstraints();
+            }
+
+            // If we've made all possible choices, and found no contradictions,
+            // then we've succeeded.
+            if (index == -1 && Status == Resolution.UNDECIDED) {
+                Status = Resolution.DECIDED;
+                return Status;
+            }
+        }
+
+        TryBacktrackUntilNoContradiction();
+
+        return Status;
+    }
+
+    private void RecordBacktrack(int index, int pattern) {
+        backtrackItemsLengths.Push(droppedBacktrackItemsCount + backtrackItems.Count);
+        prevChoices.Push(new IndexPatternItem {Index = index, Pattern = pattern});
+
+        foreach (IChoiceObserver co in choiceObservers) {
+            co.MakeChoice(index, pattern);
+        }
+    }
+
+    public void TryBacktrackUntilNoContradiction() {
+        while (Status == Resolution.CONTRADICTION) {
+            int backjumpAmount = backtrackPolicy.GetBackjump();
+
+            for (int i = 0; i < backjumpAmount; i++) {
+                if (backtrackItemsLengths.Count == 1) {
+                    // We've backtracked as much as we can, but 
+                    // it's still not possible. That means it is imposible
+                    return;
+                }
+
+                // Actually undo various bits of state
+                DoBacktrack();
+                IndexPatternItem item = prevChoices.Pop();
+                Status = Resolution.UNDECIDED;
+                _contradictionReason = null;
+                _contradictionSource = null;
+                foreach (IChoiceObserver co in choiceObservers) {
+                    co.Backtrack();
+                }
+
+                if (backjumpAmount == 1) {
+                    BacktrackCount++;
+
+                    // Mark the given choice as impossible
+                    if (InternalBan(item.Index, item.Pattern)) {
+                        Status = Resolution.CONTRADICTION;
+                    }
+                }
+            }
+
+            if (backjumpAmount > 1) {
+                BackjumpCount++;
+            }
+
+            // Revalidate status.
+            if (Status == Resolution.UNDECIDED) {
+                patternModelConstraint.Propagate();
+            }
+
+            if (Status == Resolution.UNDECIDED) {
+                StepConstraints();
+            }
+        }
+    }
+
+    // Actually does the work of undoing what was previously recorded
+    private void DoBacktrack() {
+        int targetLength = backtrackItemsLengths.Pop() - droppedBacktrackItemsCount;
+        // Undo each item
+        while (backtrackItems.Count > targetLength) {
+            IndexPatternItem item = backtrackItems.Pop();
+            int index = item.Index;
+            int pattern = item.Pattern;
+
+            // Also add the possibility back
+            // as it is removed in InternalBan
+            Wave.AddPossibility(index, pattern);
             // Update trackers
             foreach (ITracker tracker in trackers) {
-                tracker.doBan(index, pattern);
+                tracker.UndoBan(index, pattern);
             }
 
-            return isContradiction;
+            // Next, undo the decremenents done in Propagate
+            patternModelConstraint.UndoBan(index, pattern);
+        }
+    }
+
+    public void AddTracker(ITracker tracker) {
+        trackers.Add(tracker);
+    }
+
+    public void RemoveTracker(ITracker tracker) {
+        trackers.Remove(tracker);
+    }
+
+    public void AddChoiceObserver(IChoiceObserver co) {
+        choiceObservers.Add(co);
+    }
+
+    public void RemoveChoiceObserver(IChoiceObserver co) {
+        choiceObservers.Remove(co);
+    }
+
+    /**
+         * Rpeatedly step until the status is Decided or Contradiction
+         */
+    public Resolution Run() {
+        while (true) {
+            Step();
+            if (Status != Resolution.UNDECIDED) {
+                return Status;
+            }
+        }
+    }
+
+    /**
+     * Returns the array of decided patterns, writing
+     * -1 or -2 to indicate cells that are undecided or in contradiction.
+     */
+    public ITopoArray<int> ToTopoArray() {
+        return TopoArray.CreateByIndex(GetDecidedPattern, Topology);
+    }
+
+    /**
+         * Returns an array where each cell is a list of remaining possible patterns.
+         */
+    public ITopoArray<ISet<int>> ToTopoArraySets() {
+        return TopoArray.CreateByIndex(index => {
+            HashSet<int> hs = new();
+            for (int pattern = 0; pattern < PatternCount; pattern++) {
+                if (Wave.Get(index, pattern)) {
+                    hs.Add(pattern);
+                }
+            }
+
+            return (ISet<int>) hs;
+        }, Topology);
+    }
+
+    public IEnumerable<int> GetPossiblePatterns(int index) {
+        for (int pattern = 0; pattern < PatternCount; pattern++) {
+            if (Wave.Get(index, pattern)) {
+                yield return pattern;
+            }
+        }
+    }
+
+    // This is only exposed publically
+    // in case users write their own constraints, it's not 
+    // otherwise useful.
+
+    #region Internal API
+
+    public Wave Wave { get; private set; }
+
+    public int IndexCount { get; }
+
+    public ITopology Topology { get; }
+
+    public Func<double> RandomDouble { get; }
+
+    public int PatternCount { get; }
+
+    public double[] Frequencies { get; }
+
+    /**
+         * Requires that index, pattern is possible
+         */
+    public bool InternalBan(int index, int pattern) {
+        // Record information for backtracking
+        backtrackItems.Push(new IndexPatternItem {
+            Index = index,
+            Pattern = pattern
+        });
+
+        patternModelConstraint.DoBan(index, pattern);
+
+        // Update the wave
+        bool isContradiction = Wave.RemovePossibility(index, pattern);
+
+        // Update trackers
+        foreach (ITracker tracker in trackers) {
+            tracker.DoBan(index, pattern);
         }
 
-        private bool internalSelect(int index, int chosenPattern) {
-            for (int pattern = 0; pattern < patternCount; pattern++) {
+        return isContradiction;
+    }
+
+    public bool InternalSelect(int index, int chosenPattern) {
+        // Simple, inefficient way
+        if (!Optimizations.QuickSelect) {
+            for (int pattern = 0; pattern < PatternCount; pattern++) {
                 if (pattern == chosenPattern) {
                     continue;
                 }
 
-                if (wave.get(index, pattern)) {
-                    if (internalBan(index, pattern)) {
+                if (Wave.Get(index, pattern)) {
+                    if (InternalBan(index, pattern)) {
                         return true;
                     }
                 }
@@ -125,415 +517,40 @@ namespace WFC4ALL.DeBroglie.Wfc {
             return false;
         }
 
-        #endregion
+        bool isContradiction = false;
 
+        patternModelConstraint.DoSelect(index, chosenPattern);
 
-        private void observe(out int index, out int pattern) {
-            pickHeuristic.pickObservation(out index, out pattern);
-            if (index == -1) {
-                return;
+        for (int pattern = 0; pattern < PatternCount; pattern++) {
+            if (pattern == chosenPattern) {
+                continue;
             }
 
-            // Decide on the given cell
-            if (internalSelect(index, pattern)) {
-                status = Resolution.CONTRADICTION;
-            }
-        }
-        
-        public Resolution observeWith(int index, int pattern) {
-            if (index == -1) {
-                return Resolution.CONTRADICTION;
-            }
-
-            // Decide on the given cell
-            if (internalSelect(index, pattern)) {
-                status = Resolution.CONTRADICTION;
-            }
-
-            return status;
-        }
+            if (Wave.Get(index, pattern)) {
+                // This is mostly a repeat of InternalBan, as except for patternModelConstraint,
+                // Selects are just seen as a set of bans
 
 
-        // Returns the only possible value of a cell if there is only one,
-        // otherwise returns -1 (multiple possible) or -2 (none possible)
-        private int getDecidedCell(int index) {
-            int decidedPattern = (int) Resolution.CONTRADICTION;
-            for (int pattern = 0; pattern < patternCount; pattern++) {
-                if (wave.get(index, pattern)) {
-                    if (decidedPattern == (int) Resolution.CONTRADICTION) {
-                        decidedPattern = pattern;
-                    } else {
-                        return (int) Resolution.UNDECIDED;
-                    }
-                }
-            }
+                // Record information for backtracking
+                backtrackItems.Push(new IndexPatternItem {
+                    Index = index,
+                    Pattern = pattern
+                });
 
-            return decidedPattern;
-        }
+                // Don't update patternModelConstraint here, it's been done above in DoSelect
 
-        private void initConstraints() {
-            foreach (IWaveConstraint constraint in constraints) {
-                constraint.init(this);
-                if (status != Resolution.UNDECIDED) {
-                    return;
-                }
+                // Update the wave
+                isContradiction = isContradiction || Wave.RemovePossibility(index, pattern);
 
-                patternModelConstraint.propagate();
-                if (status != Resolution.UNDECIDED) {
-                    return;
-                }
-            }
-        }
-
-        public void stepConstraints() {
-            // TOODO: Do we need to worry about evaluating constraints multiple times?
-            foreach (IWaveConstraint constraint in constraints) {
-                constraint.check(this);
-                if (status != Resolution.UNDECIDED) {
-                    return;
-                }
-
-                patternModelConstraint.propagate();
-                if (status != Resolution.UNDECIDED) {
-                    return;
-                }
-            }
-
-            deferredConstraintsStep = false;
-        }
-
-        public Resolution Status {
-            get => status;
-            set => status = value;
-        }
-
-        public int BacktrackCount => backtrackCount;
-
-        /**
-         * Resets the wave to it's original state
-         */
-        public Resolution clear() {
-            wave = new Wave(frequencies.Length, indexCount);
-
-            backtrackItems = new Deque<IndexPatternItem>();
-            backtrackItemsLengths = new Deque<int>();
-            backtrackItemsLengths.push(0);
-            prevChoices = new Deque<IndexPatternItem>();
-
-            status = Resolution.UNDECIDED;
-            trackers = new List<ITracker>();
-
-            EntropyTracker entropyTracker = new(wave, frequencies, topology.Mask, outWidth, outHeight);
-            entropyTracker.reset();
-            addTracker(entropyTracker);
-            pickHeuristic = new EntropyHeuristic(entropyTracker, randomDouble);
-
-            patternModelConstraint.clear();
-
-            if (status == Resolution.CONTRADICTION) {
-                return status;
-            }
-
-            initConstraints();
-
-            return status;
-        }
-
-        /**
-         * Indicates that the generation cannot proceed, forcing the algorithm to backtrack or exit.
-         */
-        public void setContradiction() {
-            status = Resolution.CONTRADICTION;
-        }
-
-        /**
-         * Removes pattern as a possibility from index
-         */
-        public Resolution ban(int x, int y, int z, int pattern) {
-            int index = topology.getIndex(x, y, z);
-            if (wave.get(index, pattern)) {
-                deferredConstraintsStep = true;
-                if (internalBan(index, pattern)) {
-                    return status = Resolution.CONTRADICTION;
-                }
-            }
-
-            patternModelConstraint.propagate();
-
-            return status;
-        }
-        
-        public void PushSelection(int px, int py, int pz, int pattern) {
-            int index = topology.getIndex(px, py, pz);
-            PushSelection(index, pattern);
-        }
-        
-        public void PushSelection(int index, int pattern) {
-            backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-            prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
-            backtrackItems.push(new IndexPatternItem {Index = index, Pattern = pattern,});
-        }
-
-        /**
-         * Make some progress in the WaveFunctionCollapseAlgorithm
-         */
-        public Resolution step() {
-            int index;
-
-            // This will true if the user has called Ban, etc, since the last step.
-            if (deferredConstraintsStep) {
-                stepConstraints();
-            }
-
-            // If we're already in a final state. skip making an observiation, 
-            // and jump to backtrack handling / return.
-            if (status != Resolution.UNDECIDED) {
-                index = 0;
-                goto restart;
-            }
-
-            // Record state before making a choice
-            backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-
-            // Pick a tile and Select a pattern from it.
-            observe(out index, out int pattern);
-            
-            // Record what was selected for backtracking purposes
-            if (index != -1) {
-                prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
-            }
-
-            // After a backtrack we resume here
-            restart:
-
-            if (status == Resolution.UNDECIDED) {
-                patternModelConstraint.propagate();
-            }
-
-            if (status == Resolution.UNDECIDED) {
-                stepConstraints();
-            }
-            
-            // Are all things are fully chosen?
-            if (index == -1 && status == Resolution.UNDECIDED) {
-                status = Resolution.DECIDED;
-                return status;
-            }
-
-            if (status == Resolution.CONTRADICTION) {
-                // After back tracking, it's no longer the case things are fully chosen
-                index = 0;
-
-                // Actually backtrack
-                while (true) {
-                    if (backtrackItemsLengths.Count == 1) {
-                        // We've backtracked as much as we can, but 
-                        // it's still not possible. That means it is imposible
-                        return Resolution.CONTRADICTION;
-                    }
-
-                    doBacktrack();
-                    IndexPatternItem item = prevChoices.pop();
-                    backtrackCount++;
-                    status = Resolution.UNDECIDED;
-                    // Mark the given choice as impossible
-                    if (internalBan(item.Index, item.Pattern)) {
-                        status = Resolution.CONTRADICTION;
-                    }
-
-                    if (status == Resolution.UNDECIDED) {
-                        patternModelConstraint.propagate();
-                    }
-
-                    if (status == Resolution.CONTRADICTION) {
-                        // If still in contradiction, repeat backtracking
-                        continue;
-                    }
-
-                    // Include the last ban as part of the previous backtrack
-                    backtrackItemsLengths.pop();
-                    backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-
-                    goto restart;
-                }
-            }
-
-            return status;
-        }
-
-        public Resolution stepWith(int index, int pattern) {
-            // This will true if the user has called Ban, etc, since the last step.
-            if (deferredConstraintsStep) {
-                stepConstraints();
-            }
-
-            // If we're already in a final state. skip making an observiation, 
-            // and jump to backtrack handling / return.
-            if (status != Resolution.UNDECIDED) {
-                index = 0;
-                goto restart;
-            }
-
-            // Record state before making a choice
-            backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-
-            observeWith(index, pattern);
-            
-            // Record what was selected for backtracking purposes
-            if (index != -1) {
-                prevChoices.push(new IndexPatternItem {Index = index, Pattern = pattern});
-            }
-
-            // After a backtrack we resume here
-            restart:
-            
-            if (status == Resolution.UNDECIDED) {
-                patternModelConstraint.propagate();
-            } else {
-                return status;
-            }
-
-            if (status == Resolution.UNDECIDED) {
-                stepConstraints();
-            }
-            
-            // Are all things are fully chosen?
-            if (index == -1 && status == Resolution.UNDECIDED) {
-                status = Resolution.DECIDED;
-                return status;
-            }
-
-            if (status == Resolution.CONTRADICTION) {
-                // After back tracking, it's no longer the case things are fully chosen
-                index = 0;
-
-                // Actually backtrack
-                while (true) {
-                    if (backtrackItemsLengths.Count == 1) {
-                        // We've backtracked as much as we can, but 
-                        // it's still not possible. That means it is imposible
-                        return Resolution.CONTRADICTION;
-                    }
-
-                    doBacktrack();
-                    IndexPatternItem item = prevChoices.pop();
-                    backtrackCount++;
-                    status = Resolution.UNDECIDED;
-                    // Mark the given choice as impossible
-                    if (internalBan(item.Index, item.Pattern)) {
-                        status = Resolution.CONTRADICTION;
-                    }
-
-                    if (status == Resolution.UNDECIDED) {
-                        patternModelConstraint.propagate();
-                    }
-
-                    if (status == Resolution.CONTRADICTION) {
-                        // If still in contradiction, repeat backtracking
-                        continue;
-                    }
-
-                    // Include the last ban as part of the previous backtrack
-                    backtrackItemsLengths.pop();
-                    backtrackItemsLengths.push(droppedBacktrackItemsCount + backtrackItems.Count);
-
-                    goto restart;
-                }
-            }
-
-            return status;
-        }
-        
-        public Resolution stepBack() {
-            if (backtrackItemsLengths.Count == 1) {
-                return Resolution.CONTRADICTION;
-            }
-
-            doBacktrack();
-            if (prevChoices.Count > 0) {
-                prevChoices.pop();
-            }
-
-            backtrackCount++;
-            status = Resolution.UNDECIDED;
-            
-            return status;
-        }
-
-        private void doBacktrack() {
-            int targetLength = backtrackItemsLengths.pop() - droppedBacktrackItemsCount;
-            // Undo each item
-            while (backtrackItems.Count > targetLength) {
-                IndexPatternItem item = backtrackItems.pop();
-                int index = item.Index;
-                int pattern = item.Pattern;
-
-                // Also add the possibility back
-                // as it is removed in InternalBan
-                wave.addPossibility(index, pattern);
                 // Update trackers
                 foreach (ITracker tracker in trackers) {
-                    tracker.undoBan(index, pattern);
-                }
-
-                // Next, undo the decremenents done in Propagate
-                patternModelConstraint.undoBan(item);
-            }
-        }
-
-        public void addTracker(ITracker tracker) {
-            trackers.Add(tracker);
-        }
-
-        public void removeTracker(ITracker tracker) {
-            trackers.Remove(tracker);
-        }
-
-        /**
-         * Rpeatedly step until the status is Decided or Contradiction
-         */
-        public Resolution run() {
-            while (true) {
-                step();
-                if (status != Resolution.UNDECIDED) {
-                    return status;
+                    tracker.DoBan(index, pattern);
                 }
             }
         }
 
-        /**
-         * Returns the array of decided patterns, writing
-         * -1 or -2 to indicate cells that are undecided or in contradiction.
-         */
-        public ITopoArray<int> toTopoArray() {
-            return TopoArray.createByIndex(getDecidedCell, topology);
-        }
-
-        /**
-         * Returns an array where each cell is a list of remaining possible patterns.
-         */
-        public ITopoArray<ISet<int>> toTopoArraySets() {
-            return TopoArray.createByIndex(index => {
-                HashSet<int> hs = new();
-                for (int pattern = 0; pattern < patternCount; pattern++) {
-                    if (wave.get(index, pattern)) {
-                        hs.Add(pattern);
-                    }
-                }
-
-                return (ISet<int>) hs;
-            }, topology);
-        }
-
-        public IEnumerable<int> getPossiblePatterns(int index)
-        {
-            for (var pattern = 0; pattern < patternCount; pattern++)
-            {
-                if (wave.get(index, pattern))
-                {
-                    yield return pattern;
-                }
-            }
-        }
+        return false;
     }
+
+    #endregion
 }

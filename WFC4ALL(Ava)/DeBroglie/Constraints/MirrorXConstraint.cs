@@ -1,35 +1,35 @@
-﻿using WFC4ALL.DeBroglie.Rot;
+﻿using System;
+using WFC4ALL.DeBroglie.Rot;
 using WFC4ALL.DeBroglie.Topo;
 
-namespace WFC4ALL.DeBroglie.Constraints
-{
-    /// <summary>
-    /// Maintain
-    /// </summary>
-    public class MirrorXConstraint : SymmetryConstraint
-    {
-        private readonly static Rotation reflectX = new(0, true);
+namespace WFC4ALL.DeBroglie.Constraints; 
 
-        public TileRotation TileRotation { get; set; }
+/// <summary>
+///     Maintain
+/// </summary>
+public class MirrorXConstraint : SymmetryConstraint {
+    private static readonly Rotation reflectX = new(0, true);
 
-        public override void init(TilePropagator propagator)
-        {
-            propagator.Topology.asGridTopology();
-            base.init(propagator);
+    public TileRotation TileRotation { get; set; }
+
+    public override void Init(TilePropagator propagator) {
+        if (TileRotation == null) {
+            throw new ArgumentNullException(nameof(TileRotation));
         }
 
-        protected override bool tryMapIndex(TilePropagator propagator, int i, out int i2)
-        {
-            ITopology topology = propagator.Topology;
-            topology.getCoord(i, out int x, out int y, out int z);
-            int x2 = topology.Width - 1 - x;
-            i2 = topology.getIndex(x2, y, z);
-            return topology.containsIndex(i2);
-        }
+        propagator.Topology.AsGridTopology();
+        base.Init(propagator);
+    }
 
-        protected override bool tryMapTile(Tile tile, out Tile tile2)
-        {
-            return TileRotation.rotate(tile, reflectX, out tile2);
-        }
+    protected override bool TryMapIndex(TilePropagator propagator, int i, out int i2) {
+        ITopology topology = propagator.Topology;
+        topology.GetCoord(i, out int x, out int y, out int z);
+        int x2 = topology.Width - 1 - x;
+        i2 = topology.GetIndex(x2, y, z);
+        return topology.ContainsIndex(i2);
+    }
+
+    protected override bool TryMapTile(Tile tile, out Tile tile2) {
+        return TileRotation.Rotate(tile, reflectX, out tile2);
     }
 }

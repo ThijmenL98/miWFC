@@ -1,31 +1,31 @@
 ﻿using System.Linq;
 
-namespace WFC4ALL.DeBroglie.Models {
-    public struct PatternArray {
-        public Tile[,,] values;
+namespace WFC4ALL.DeBroglie.Models; 
 
-        public int Width => values.GetLength(0);
+public struct PatternArray {
+    public Tile[,,] Values;
 
-        public int Height => values.GetLength(1);
+    public int Width => Values.GetLength(0);
 
-        public int Depth => values.GetLength(2);
+    public int Height => Values.GetLength(1);
 
-        public override string ToString() {
-            int i = 0;
-            Tile[,,] values1 = values;
-            string s = values1.Cast<Tile>().Aggregate("{",
-                (current, item) => current + ((i++ > 0 ? i % values1.GetLength(1) == 1 ? "}\n {" : "," : "") + item));
-            s += '}';
+    public int Depth => Values.GetLength(2);
 
-            return s;
-        }
+    public override string ToString() {
+        int i = 0;
+        Tile[,,] values1 = Values;
+        string s = values1.Cast<Tile>().Aggregate("{",
+            (current, item) => current + ((i++ > 0 ? i % values1.GetLength(1) == 1 ? "}\n {" : "," : "") + item));
+        s += '}';
 
-        private Tile getTileAt(int x, int y, int z) {
-            return values[x, y, z];
-        }
+        return s;
+    }
 
-        public Tile getTileAt(int x, int y) {
-            return getTileAt(x, y, 0);
-        }
+    private Tile getTileAt(int x, int y, int z) {
+        return Values[x, y, z];
+    }
+
+    public Tile getTileAt(int x, int y) {
+        return getTileAt(x, y, 0);
     }
 }

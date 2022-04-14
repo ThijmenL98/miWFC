@@ -1,22 +1,19 @@
 /// This source file is derived from https://github.com/launchdarkly/dotnet-cache/
 /// Under the terms of Apache 2.0 License.
 
-namespace WFC4ALL.AvaloniaGif.Caching
-{
+namespace WFC4ALL.AvaloniaGif.Caching; 
+
+/// <summary>
+///     Methods for building caches.
+/// </summary>
+internal abstract class Caches {
     /// <summary>
-    /// Methods for building caches.
+    ///     Starts constructing a key-value cache.
     /// </summary>
-    internal abstract class Caches
-    {
-        /// <summary>
-        /// Starts constructing a key-value cache.
-        /// </summary>
-        /// <typeparam name="K">the key type</typeparam>
-        /// <typeparam name="V">the value type</typeparam>
-        /// <returns>a builder</returns>
-        public static CacheBuilder<K, V> KeyValue<K, V>()
-        {
-            return new CacheBuilder<K, V>();
-        }
+    /// <typeparam name="K">the key type</typeparam>
+    /// <typeparam name="V">the value type</typeparam>
+    /// <returns>a builder</returns>
+    public static CacheBuilder<TK, TV> KeyValue<TK, TV>() {
+        return new CacheBuilder<TK, TV>();
     }
 }

@@ -4,25 +4,15 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace WFC4ALL.AvaloniaGif.Decoding
-{
-    [Serializable]
-    public class LzwDecompressionException : Exception
-    {
-        public LzwDecompressionException()
-        {
-        }
+namespace WFC4ALL.AvaloniaGif.Decoding; 
 
-        public LzwDecompressionException(string message) : base(message)
-        {
-        }
+[Serializable]
+public class LzwDecompressionException : Exception {
+    public LzwDecompressionException() { }
 
-        public LzwDecompressionException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public LzwDecompressionException(string message) : base(message) { }
 
-        protected LzwDecompressionException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-    }
+    public LzwDecompressionException(string message, Exception innerException) : base(message, innerException) { }
+
+    protected LzwDecompressionException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }

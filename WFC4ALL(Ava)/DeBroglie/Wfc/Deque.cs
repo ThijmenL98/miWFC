@@ -1,304 +1,304 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace WFC4ALL.DeBroglie.Wfc
-{
-    internal class Deque<T>
-    {
-        private T[] data;
-        private int dataLength;
+namespace WFC4ALL.DeBroglie.Wfc; 
 
-        // Data is in range lo to hi, exclusive of hi
-        // hi == lo if the Deque is empty
-        // You may have hi < lo if we've wrapped the end of data
-        private int lo;
-        private int hi;
+internal class Deque<T> : IEnumerable<T> {
+    private T[] _data;
+    private int _dataLength;
+    private int _hi;
 
-        public Deque(int capacity = 4)
-        {
-            data = new T[capacity];
-            dataLength = capacity;
+    // Data is in range lo to hi, exclusive of hi
+    // hi == lo if the Deque is empty
+    // You may have hi < lo if we've wrapped the end of data
+    private int _lo;
+
+    public Deque(int capacity = 4) {
+        _data = new T[capacity];
+        _dataLength = capacity;
+    }
+
+    public int Count {
+        get {
+            int c = _hi - _lo;
+            if (c < 0) {
+                c += _dataLength;
+            }
+
+            return c;
         }
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void push(T t)
-        {
-            int hi = this.hi;
-            int lo = this.lo;
-            data[hi] = t;
-            hi++;
-            if (hi == dataLength) {
-                hi = 0;
+    public IEnumerator<T> GetEnumerator() {
+        int lo = _lo;
+        int hi = _hi;
+        T[] data = _data;
+        int dataLength = _dataLength;
+        int i = lo;
+        int e = hi;
+
+        if (hi >= lo) {
+            if (e > hi) {
+                throw new Exception();
             }
-
-            this.hi = hi;
-            if (hi == lo)
-            {
-                resizeFromFull();
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T pop()
-        {
-            int lo = this.lo;
-            int hi = this.hi;
-            if (lo == hi) {
-                throw new Exception("Deque is empty");
-            }
-
-            if (hi == 0) {
-                hi = dataLength;
-            }
-
-            hi--;
-            this.hi = hi;
-            return data[hi];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void shift(T t)
-        {
-            int lo = this.lo;
-            int hi = this.hi;
-            if (lo == 0) {
-                lo = dataLength;
-            }
-
-            lo--;
-            data[lo] = t;
-            this.lo = lo;
-            if (hi == lo)
-            {
-                resizeFromFull();
+        } else {
+            if (e > hi + dataLength) {
+                throw new Exception();
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T unshift()
-        {
-            int lo = this.lo;
-            int hi = this.hi;
-            if (lo == hi) {
-                throw new Exception("Deque is empty");
-            }
-
-            int oldLo = lo;
-            lo++;
-            if (lo == dataLength) {
-                lo = 0;
-            }
-
-            this.lo = lo;
-            return data[oldLo];
+        if (lo == hi) {
+            yield break;
         }
 
-        public void dropFirst(int n)
-        {
-            int hi = this.hi;
-            int lo = this.lo;
-            if (lo <= hi)
-            {
-                lo += n;
-                if(lo >= hi)
-                {
-                    // Empty
-                    this.lo = this.hi = 0;
-                }
-                else
-                {
-                    this.lo = lo;
-                }
-            }
-            else
-            {
-                lo += n;
-                if(lo >= dataLength)
-                {
-                    lo -= dataLength;
-                    if(lo >= hi)
-                    {
-                        // Empty
-                        this.lo = this.hi = 0;
-                    }
-                    else
-                    {
-                        this.lo = lo;
-                    }
-                }
-            }
+        if (i >= dataLength) {
+            i -= dataLength;
         }
 
-        public void dropLast(int n)
-        {
-            int hi = this.hi;
-            int lo = this.lo;
-            if (lo <= hi)
-            {
-                hi -= n;
-                if(lo >= hi)
-                {
-                    // Empty
-                    this.lo = this.hi = 0;
-                }
-                else
-                {
-                    this.hi = hi;
-                }
-            }
-            else
-            {
-                hi -= n;
-                if(hi < 0)
-                {
-                    hi += dataLength;
-                    if(lo >= hi)
-                    {
-                        // Empty
-                        this.lo = this.hi = 0;
-                    }
-                    else
-                    {
-                        this.hi = hi;
-                    }
-                }
-            }
+        if (e >= dataLength) {
+            e -= dataLength;
         }
 
-        public int Count
-        {
-            get
-            {
-                int c = hi - lo;
-                if (c < 0) {
-                    c += dataLength;
-                }
-
-                return c;
+        do {
+            yield return data[i];
+            i++;
+            if (i == dataLength) {
+                i = 0;
             }
+        } while (i != e);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Push(T t) {
+        int hi = _hi;
+        int lo = _lo;
+        _data[hi] = t;
+        hi++;
+        if (hi == _dataLength) {
+            hi = 0;
         }
 
-        private void resizeFromFull()
-        {
-            int dataLength = this.dataLength;
-            int newLength = dataLength * 2;
-            T[] newData = new T[newLength];
+        _hi = hi;
+        if (hi == lo) {
+            ResizeFromFull();
+        }
+    }
 
-            int i = lo;
-            int j = 0;
-            int hi = this.hi;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T Pop() {
+        int lo = _lo;
+        int hi = _hi;
+        if (lo == hi) {
+            throw new Exception("Deque is empty");
+        }
 
-            do
-            {
-                newData[j] = data[i];
+        if (hi == 0) {
+            hi = _dataLength;
+        }
 
-                j++;
-                i++;
-                if (i == dataLength) {
-                    i = 0;
-                }
-            } while (i != hi);
-            data = newData;
-            this.dataLength = newLength;
+        hi--;
+        _hi = hi;
+        return _data[hi];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Shift(T t) {
+        int lo = _lo;
+        int hi = _hi;
+        if (lo == 0) {
+            lo = _dataLength;
+        }
+
+        lo--;
+        _data[lo] = t;
+        _lo = lo;
+        if (hi == lo) {
+            ResizeFromFull();
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T Unshift() {
+        int lo = _lo;
+        int hi = _hi;
+        if (lo == hi) {
+            throw new Exception("Deque is empty");
+        }
+
+        int oldLo = lo;
+        lo++;
+        if (lo == _dataLength) {
             lo = 0;
-            this.hi = j;
         }
 
-        public IEnumerable<T> slice(int start, int end)
-        {
-            int lo = this.lo;
-            int hi = this.hi;
-            T[] data = this.data;
-            int dataLength = this.dataLength;
-            int i = lo + start;
-            int e = lo + end;
+        _lo = lo;
+        return _data[oldLo];
+    }
 
-            if (start < 0) {
+    public void DropFirst(int n) {
+        int hi = _hi;
+        int lo = _lo;
+        if (lo <= hi) {
+            lo += n;
+            if (lo >= hi) {
+                // Empty
+                _lo = _hi = 0;
+            } else {
+                _lo = lo;
+            }
+        } else {
+            lo += n;
+            if (lo >= _dataLength) {
+                lo -= _dataLength;
+                if (lo >= hi) {
+                    // Empty
+                    _lo = _hi = 0;
+                } else {
+                    _lo = lo;
+                }
+            }
+        }
+    }
+
+    public void DropLast(int n) {
+        int hi = _hi;
+        int lo = _lo;
+        if (lo <= hi) {
+            hi -= n;
+            if (lo >= hi) {
+                // Empty
+                _lo = _hi = 0;
+            } else {
+                _hi = hi;
+            }
+        } else {
+            hi -= n;
+            if (hi < 0) {
+                hi += _dataLength;
+                if (lo >= hi) {
+                    // Empty
+                    _lo = _hi = 0;
+                } else {
+                    _hi = hi;
+                }
+            }
+        }
+    }
+
+    private void ResizeFromFull() {
+        int dataLength = _dataLength;
+        int newLength = dataLength * 2;
+        T[] newData = new T[newLength];
+
+        int i = _lo;
+        int j = 0;
+        int hi = _hi;
+
+        do {
+            newData[j] = _data[i];
+
+            j++;
+            i++;
+            if (i == dataLength) {
+                i = 0;
+            }
+        } while (i != hi);
+
+        _data = newData;
+        _dataLength = newLength;
+        _lo = 0;
+        _hi = j;
+    }
+
+    public IEnumerable<T> Slice(int start, int end) {
+        int lo = _lo;
+        int hi = _hi;
+        T[] data = _data;
+        int dataLength = _dataLength;
+        int i = lo + start;
+        int e = lo + end;
+
+        if (start < 0) {
+            throw new Exception();
+        }
+
+        if (hi >= lo) {
+            if (e > hi) {
                 throw new Exception();
             }
-
-            if (hi >= lo)
-            {
-                if (e > hi) {
-                    throw new Exception();
-                }
-            }
-            else
-            {
-                if (e > hi + dataLength) {
-                    throw new Exception();
-                }
-            }
-
-            if (start >= end) {
-                yield break;
-            }
-
-            if (i >= dataLength) {
-                i -= dataLength;
-            }
-
-            if (e >= dataLength) {
-                e -= dataLength;
-            }
-
-            do
-            {
-                yield return data[i];
-                i++;
-                if (i == dataLength) {
-                    i = 0;
-                }
-            } while (i != e);
-        }
-
-        public IEnumerable<T> reverseSlice(int start, int end)
-        {
-            int lo = this.lo;
-            int hi = this.hi;
-            T[] data = this.data;
-            int dataLength = this.dataLength;
-            int i = lo + start;
-            int e = lo + end;
-
-            if (start < 0) {
+        } else {
+            if (e > hi + dataLength) {
                 throw new Exception();
             }
-
-            if (hi >= lo)
-            {
-                if (e > hi) {
-                    throw new Exception();
-                }
-            }
-            else
-            {
-                if (e > hi + dataLength) {
-                    throw new Exception();
-                }
-            }
-
-            if (start >= end) {
-                yield break;
-            }
-
-            if (i >= dataLength) {
-                i -= dataLength;
-            }
-
-            if (e >= dataLength) {
-                e -= dataLength;
-            }
-
-            do
-            {
-                e--;
-                yield return data[e];
-                if (e == 0) {
-                    e = dataLength - 1;
-                }
-            } while (i != e);
         }
+
+        if (start >= end) {
+            yield break;
+        }
+
+        if (i >= dataLength) {
+            i -= dataLength;
+        }
+
+        if (e >= dataLength) {
+            e -= dataLength;
+        }
+
+        do {
+            yield return data[i];
+            i++;
+            if (i == dataLength) {
+                i = 0;
+            }
+        } while (i != e);
+    }
+
+    public IEnumerable<T> ReverseSlice(int start, int end) {
+        int lo = _lo;
+        int hi = _hi;
+        T[] data = _data;
+        int dataLength = _dataLength;
+        int i = lo + start;
+        int e = lo + end;
+
+        if (start < 0) {
+            throw new Exception();
+        }
+
+        if (hi >= lo) {
+            if (e > hi) {
+                throw new Exception();
+            }
+        } else {
+            if (e > hi + dataLength) {
+                throw new Exception();
+            }
+        }
+
+        if (start >= end) {
+            yield break;
+        }
+
+        if (i >= dataLength) {
+            i -= dataLength;
+        }
+
+        if (e >= dataLength) {
+            e -= dataLength;
+        }
+
+        do {
+            e--;
+            yield return data[e];
+            if (e == 0) {
+                e = dataLength - 1;
+            }
+        } while (i != e);
     }
 }

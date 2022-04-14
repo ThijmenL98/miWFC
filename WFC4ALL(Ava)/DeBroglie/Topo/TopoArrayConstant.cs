@@ -1,27 +1,20 @@
-﻿namespace WFC4ALL.DeBroglie.Topo
-{
-    internal class TopoArrayConstant<T> : ITopoArray<T>
-    {
-        private readonly T value;
+﻿namespace WFC4ALL.DeBroglie.Topo; 
 
-        public TopoArrayConstant(T value, GridTopology topology)
-        {
-            Topology = topology;
-            this.value = value;
-        }
+internal class TopoArrayConstant<T> : ITopoArray<T> {
+    private readonly T value;
 
-        private GridTopology Topology { get; }
+    public TopoArrayConstant(T value, ITopology topology) {
+        Topology = topology;
+        this.value = value;
+    }
 
-        ITopology ITopoArray<T>.Topology => Topology;
+    public ITopology Topology { get; }
 
-        public T get(int x, int y, int z)
-        {
-            return value;
-        }
+    public T get(int x, int y, int z) {
+        return value;
+    }
 
-        public T get(int index)
-        {
-            return value;
-        }
+    public T get(int index) {
+        return value;
     }
 }

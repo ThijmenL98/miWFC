@@ -3,9 +3,9 @@
              xmlns:local="using:WFC4ALL"
              x:Class="WFC4ALL.App">
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <local:ViewLocator />
     </Application.DataTemplates>
-	<Application.Styles>
-		<FluentTheme Mode="Light"/>
-	</Application.Styles>
+    <Application.Styles>
+        <FluentTheme Mode="Light" />
+    </Application.Styles>
 </Application>

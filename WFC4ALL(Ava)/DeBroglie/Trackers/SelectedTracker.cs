@@ -4,119 +4,102 @@ using WFC4ALL.DeBroglie.Models;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4ALL.DeBroglie.Trackers
-{
-    internal class SelectedTracker : ITracker
-    {
-        private readonly TilePropagator tilePropagator;
+namespace WFC4ALL.DeBroglie.Trackers; 
 
-        private readonly WavePropagator wavePropagator;
+/// <summary>
+///     Tracks the banned/selected status of each tile with respect to a tileset.
+/// </summary>
+public class SelectedTracker : ITracker {
+    // Indexed by tile topology
+    private readonly int[] patternCounts;
 
-        private readonly TileModelMapping tileModelMapping;
+    private readonly TileModelMapping tileModelMapping;
+    private readonly TilePropagator tilePropagator;
 
-        // Indexed by tile topology
-        private readonly int[] patternCounts;
+    private readonly TilePropagatorTileSet tileSet;
 
-        private readonly TilePropagatorTileSet tileSet;
+    private readonly WavePropagator wavePropagator;
 
-        public SelectedTracker(TilePropagator tilePropagator, WavePropagator wavePropagator, TileModelMapping tileModelMapping, TilePropagatorTileSet tileSet)
-        {
-            this.tilePropagator = tilePropagator;
-            this.wavePropagator = wavePropagator;
-            this.tileModelMapping = tileModelMapping;
-            this.tileSet = tileSet;
-            patternCounts = new int[tilePropagator.Topology.IndexCount];
-        }
+    internal SelectedTracker(TilePropagator tilePropagator, WavePropagator wavePropagator,
+        TileModelMapping tileModelMapping, TilePropagatorTileSet tileSet) {
+        this.tilePropagator = tilePropagator;
+        this.wavePropagator = wavePropagator;
+        this.tileModelMapping = tileModelMapping;
+        this.tileSet = tileSet;
+        patternCounts = new int[tilePropagator.Topology.IndexCount];
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Tristate getTristate(int index)
-        {
-            int selectedPatternCount = patternCounts[index];
-            if (selectedPatternCount == 0) {
-                return Tristate.NO;
+    void ITracker.DoBan(int patternIndex, int pattern) {
+        if (tileModelMapping.PatternCoordToTileCoordIndexAndOffset == null) {
+            DoBan(patternIndex, pattern, patternIndex, 0);
+        } else {
+            foreach ((Point p, int index, int offset) in tileModelMapping.PatternCoordToTileCoordIndexAndOffset.get(
+                         patternIndex)) {
+                DoBan(patternIndex, pattern, index, offset);
             }
-
-            tileModelMapping.getTileCoordToPatternCoord(index, out int patternIndex, out int offset);
-
-            int totalPatternCount = wavePropagator.Wave.getPatternCount(patternIndex);
-            if (totalPatternCount == selectedPatternCount)
-            {
-                return Tristate.YES;
-            }
-            return Tristate.MAYBE;
         }
+    }
 
-        public bool isSelected(int index)
-        {
-            return getTristate(index).isYes();
-        }
-
-        public void doBan(int patternIndex, int pattern)
-        {
-            if(tileModelMapping.PatternCoordToTileCoordIndexAndOffset == null)
-            {
-                doBan(patternIndex, pattern, patternIndex, 0);
-            }
-            else
-            {
-                foreach ((Point p, int index, int offset) in tileModelMapping.PatternCoordToTileCoordIndexAndOffset.get(patternIndex))
-                {
-                    doBan(patternIndex, pattern, index, offset);
+    void ITracker.Reset() {
+        Wave wave = wavePropagator.Wave;
+        foreach (int index in tilePropagator.Topology.GetIndices()) {
+            tileModelMapping.GetTileCoordToPatternCoord(index, out int patternIndex, out int offset);
+            ISet<int> patterns = tileModelMapping.GetPatterns(tileSet, offset);
+            int count = 0;
+            foreach (int p in patterns) {
+                if (wave.Get(patternIndex, p)) {
+                    count++;
                 }
             }
-        }
 
-        private void doBan(int patternIndex, int pattern, int index, int offset)
-        {
-            ISet<int> patterns = tileModelMapping.getPatterns(tileSet, offset);
-            if (patterns.Contains(pattern))
-            {
-                patternCounts[index] -= 1;
-            }
+            patternCounts[index] = count;
         }
+    }
 
-        public void reset()
-        {
-            Wave wave = wavePropagator.Wave;
-            foreach(int index in tilePropagator.Topology.getIndices())
-            {
-                tileModelMapping.getTileCoordToPatternCoord(index, out int patternIndex, out int offset);
-                ISet<int> patterns = tileModelMapping.getPatterns(tileSet, offset);
-                int count = 0;
-                foreach (int p in patterns)
-                {
-                    if(patterns.Contains(p) && wave.get(patternIndex, p))
-                    {
-                        count++;
-                    }
-                }
-                patternCounts[index] = count;
+
+    void ITracker.UndoBan(int patternIndex, int pattern) {
+        if (tileModelMapping.PatternCoordToTileCoordIndexAndOffset == null) {
+            UndoBan(patternIndex, pattern, patternIndex, 0);
+        } else {
+            foreach ((Point p, int index, int offset) in tileModelMapping.PatternCoordToTileCoordIndexAndOffset.get(
+                         patternIndex)) {
+                UndoBan(patternIndex, pattern, index, offset);
             }
         }
+    }
 
-
-        public void undoBan(int patternIndex, int pattern)
-        {
-            if (tileModelMapping.PatternCoordToTileCoordIndexAndOffset == null)
-            {
-                undoBan(patternIndex, pattern, patternIndex, 0);
-            }
-            else
-            {
-                foreach ((Point p, int index, int offset) in tileModelMapping.PatternCoordToTileCoordIndexAndOffset.get(patternIndex))
-                {
-                    undoBan(patternIndex, pattern, index, offset);
-                }
-            }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Quadstate GetQuadstate(int index) {
+        int selectedPatternCount = patternCounts[index];
+        if (selectedPatternCount == 0) {
+            return Quadstate.NO;
         }
 
-        private void undoBan(int patternIndex, int pattern, int index, int offset)
-        {
-            ISet<int> patterns = tileModelMapping.getPatterns(tileSet, offset);
-            if (patterns.Contains(pattern))
-            {
-                patternCounts[index] += 1;
-            }
+        tileModelMapping.GetTileCoordToPatternCoord(index, out int patternIndex, out int offset);
+
+        int totalPatternCount = wavePropagator.Wave.GetPatternCount(patternIndex);
+        if (totalPatternCount == selectedPatternCount) {
+            return Quadstate.YES;
+        }
+
+        return Quadstate.MAYBE;
+    }
+
+    public bool IsSelected(int index) {
+        return GetQuadstate(index).IsYes();
+    }
+
+    private void DoBan(int patternIndex, int pattern, int index, int offset) {
+        ISet<int> patterns = tileModelMapping.GetPatterns(tileSet, offset);
+        if (patterns.Contains(pattern)) {
+            patternCounts[index] -= 1;
+        }
+    }
+
+    private void UndoBan(int patternIndex, int pattern, int index, int offset) {
+        ISet<int> patterns = tileModelMapping.GetPatterns(tileSet, offset);
+        if (patterns.Contains(pattern)) {
+            patternCounts[index] += 1;
         }
     }
 }
