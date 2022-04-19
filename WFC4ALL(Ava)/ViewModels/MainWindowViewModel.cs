@@ -6,6 +6,8 @@ using Avalonia.Platform;
 using ReactiveUI;
 using WFC4ALL.Managers;
 using WFC4ALL.Utils;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable UnusedMember.Global
 
 namespace WFC4ALL.ViewModels; 
 
@@ -26,7 +28,7 @@ public class MainWindowViewModel : ViewModelBase {
         _advancedEnabled,
         _simpleModel,
         _advancedOverlapping,
-        _irreversiblePopupAccepted;
+        _advancedOverlappingIW;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
@@ -49,13 +51,17 @@ public class MainWindowViewModel : ViewModelBase {
         private set {
             this.RaiseAndSetIfChanged(ref _simpleModel, value);
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
+            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
         }
     }
 
     private string CategorySelection {
         get => _selectedCategory;
         // ReSharper disable once UnusedMember.Local
-        set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
+        }
     }
 
     private string InputImageSelection {
@@ -191,6 +197,7 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _advancedEnabled, value);
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
+            OverlappingAdvancedEnabledIW = AdvancedEnabled && !SimpleModelSelected;
         }
     }
 
@@ -199,14 +206,14 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _advancedOverlapping, value);
     }
 
+    private bool OverlappingAdvancedEnabledIW {
+        get => _advancedOverlappingIW;
+        set => this.RaiseAndSetIfChanged(ref _advancedOverlappingIW, value);
+    }
+
     public bool IsRunning {
         get => _isRunning;
         set => this.RaiseAndSetIfChanged(ref _isRunning, value);
-    }
-
-    public bool IrreversiblePopupAccepted {
-        get => _irreversiblePopupAccepted;
-        set => this.RaiseAndSetIfChanged(ref _irreversiblePopupAccepted, value);
     }
 
     /*
@@ -225,6 +232,7 @@ public class MainWindowViewModel : ViewModelBase {
     public void OnModelClick() {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
+        OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -276,9 +284,11 @@ public class MainWindowViewModel : ViewModelBase {
 
     public void OnInputWrappingChanged() {
         InputWrapping = !InputWrapping;
+        centralManager!.getWFCHandler().setInputChanged("Input Wrapping Change");
         centralManager!.getInputManager().restartSolution();
     }
 
+    // ReSharper disable once MemberCanBePrivate.Global
     public void OnAnimate() {
         IsPlaying = !IsPlaying;
         centralManager!.getInputManager().animate();
@@ -292,6 +302,11 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().updateWeights();
 
         centralManager!.getInputManager().restartSolution();
+    }
+
+    public void OnWeightReset() {
+        //TODO
+        centralManager!.getWFCHandler().resetWeights();
     }
 
     public void OnRevert() {
@@ -385,10 +400,6 @@ public class MainWindowViewModel : ViewModelBase {
             default:
                 throw new NotImplementedException();
         }
-    }
-
-    public void OnPopupAcceptClick() {
-        IrreversiblePopupAccepted = true;
     }
 
     public void setLoading(bool value) {

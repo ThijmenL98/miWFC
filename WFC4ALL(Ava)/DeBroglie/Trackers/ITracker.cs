@@ -16,7 +16,7 @@ internal interface ITracker {
 /// <summary>
 ///     Callback for when choices/backtracks occur on WavePropagator
 /// </summary>
-// TODO: Move this class eleswhere?
+// TODO: Move this class elsewhere?
 internal interface IChoiceObserver {
     // Called before the wave propagator is updated for the choice
     void MakeChoice(int index, int pattern);

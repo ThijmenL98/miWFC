@@ -39,33 +39,7 @@
     <Grid>
         <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
             <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
-                <Grid ColumnDefinitions="Auto, Auto, Auto" x:Name="paintingMainGrid"
-                      IsHitTestVisible="{Binding IrreversiblePopupAccepted}">
-                    <Popup HorizontalAlignment="Center"
-                           PlacementTarget="{Binding ElementName=paintingMainGrid}"
-                           VerticalAlignment="Center" PlacementMode="AnchorAndGravity" x:Name="revertPopup"
-                           IsOpen="{Binding !IrreversiblePopupAccepted}">
-                        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
-                            <Border.Background>
-                                <ImageBrush Source="/Assets/backgroundImage2.png" Stretch="Fill" />
-                            </Border.Background>
-                            <StackPanel Margin="25">
-                                <TextBlock TextWrapping="WrapWithOverflow"
-                                           Text="  Actions taken in this window are irreversible!"
-                                           HorizontalAlignment="Center" MaxWidth="200" />
-                                <TextBlock Margin="5" />
-                                <TextBlock TextWrapping="WrapWithOverflow" Text="Use with caution!"
-                                           HorizontalAlignment="Center"
-                                           MaxWidth="200" />
-                                <TextBlock Margin="10" />
-                                <Button HorizontalAlignment="Center" Background="#4FFF" CornerRadius="10"
-                                        Command="{Binding OnPopupAcceptClick}">
-                                    <TextBlock Text=" Okay " Foreground="#A000" Margin="10" FontWeight="Bold" />
-                                </Button>
-                            </StackPanel>
-                        </Border>
-                    </Popup>
-
+                <Grid ColumnDefinitions="Auto, Auto, Auto" x:Name="paintingMainGrid">
                     <Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="*, *, *, *" Margin="10"
                           VerticalAlignment="Top">
                         <Button Padding="0" Background="Transparent" Grid.Row="0"

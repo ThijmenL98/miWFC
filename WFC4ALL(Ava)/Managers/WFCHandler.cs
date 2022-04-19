@@ -22,7 +22,7 @@ using static WFC4ALL.Utils.Util;
 using Color = Avalonia.Media.Color;
 using Size = Avalonia.Size;
 
-namespace WFC4ALL.Managers; 
+namespace WFC4ALL.Managers;
 
 public class WFCHandler {
     private static HashSet<Color>? currentColors;
@@ -51,6 +51,8 @@ public class WFCHandler {
 
     private List<TileViewModel> toAddPaint;
     private XElement xRoot;
+
+    private List<double> originalWeights;
 
 #pragma warning disable CS8618
     public WFCHandler(CentralManager parent) {
@@ -122,14 +124,14 @@ public class WFCHandler {
 
         if (reset) {
             string inputImage = mainWindow.getInputControl().getInputImage();
-            bool inputWrappingEnabled = mainWindowVM.InputWrapping;
+            string category = mainWindow.getInputControl().getCategory();
+            bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
             if (inputHasChanged) {
                 initializeLocalValues();
 
                 List<TileViewModel>? toAdd = null;
                 int overlappingDimension = mainWindow.getInputControl().getPatternSize();
-                string category = mainWindow.getInputControl().getCategory();
 
                 await Task.Run(() => {
                     toAdd = isOverlappingModel()
@@ -144,7 +146,7 @@ public class WFCHandler {
             }
 
             int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
-            bool seamlessOutput = mainWindowVM.SeamlessOutput;
+            bool seamlessOutput = mainWindowVM.SeamlessOutput|| category.Contains("Side");
 
             await Task.Run(() => {
                 createPropagator(outputWidth, outputHeight, seamlessOutput);
@@ -259,12 +261,14 @@ public class WFCHandler {
         tiles = dbSample.toTiles();
         dbModel = new OverlappingModel(patternSize);
         bool hasRotations = (category.Equals("Worlds Top-Down")
-            || category.Equals("Knots") || category.Equals("Knots") ||
-            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+                             || category.Equals("Knots") || category.Equals("Knots") ||
+                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles,
                 new TileRotation(hasRotations ? 4 : 1, false));
+
+        originalWeights = patternWeights;
 
         toAdd.AddRange(patternList.Select((t, i) => parentCM.getUIManager()
                 .addPattern(t, patternWeights[i], tileSymmetries))
@@ -298,7 +302,7 @@ public class WFCHandler {
         dbModel = new AdjacentModel();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-            new XElement("");
+                new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16");
 
@@ -385,12 +389,14 @@ public class WFCHandler {
             ((AdjacentModel) dbModel).setFrequency(refTile, weights[i]);
         }
 
+        originalWeights = weights;
+
         return toAdd;
     }
 
-    private (WriteableBitmap, bool) runWfcDB(int steps) {
+    private (WriteableBitmap, bool) runWfcDB(int steps = 1) {
         Resolution dbStatus = Resolution.UNDECIDED;
-
+        
         if (steps == -1) {
             dbStatus = dbPropagator.run();
         } else {
@@ -404,9 +410,22 @@ public class WFCHandler {
     }
 
     public WriteableBitmap stepBackWfc(int steps = 1) {
+        bool lastStepWasPaint = false;
+        foreach ((Tuple<int, int> key, (Color _, int timestamp)) in new Dictionary<Tuple<int, int>, Tuple<Color, int>>(
+                     parentCM.getInputManager().getOverwriteColorCache())) {
+            if (actionsTaken - 1 == timestamp) {
+                lastStepWasPaint = true;
+                parentCM.getInputManager().removeKeyFromOverlapDict(key);
+            }
+        }
+        
         for (int i = 0; i < steps; i++) {
             dbPropagator.doBacktrack();
             actionsTaken--;
+        }
+
+        if (lastStepWasPaint) {
+            runWfcDB();
         }
 
         return getLatestOutputBM();
@@ -451,6 +470,11 @@ public class WFCHandler {
 
         if (!isOverlappingModel()) {
             dbPropagator.select(a, b, 0, tileCache[toSet].Item2);
+            if (!dbPropagator.toValueArray(-1, -2).get(a, b).Equals(toSet)) {
+                dbPropagator.doBacktrack(); // One for the select
+                dbPropagator.doBacktrack(); // One for the selWith
+                return (null, false);
+            }
         }
 
         actionsTaken++;
@@ -470,16 +494,15 @@ public class WFCHandler {
 
         return outputBitmap;
     }
-    
+
     private Dictionary<Tuple<int, int>, Color> getOverlapDict() {
         Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache
             = parentCM.getInputManager().getOverwriteColorCache();
         Dictionary<Tuple<int, int>, Color> returnCache = new();
 
-        foreach ((Tuple<int, int> key, (Color c, int item2)) in new Dictionary<Tuple<int, int>, Tuple<Color, int>>(
+        foreach ((Tuple<int, int> key, (Color c, int _)) in new Dictionary<Tuple<int, int>, Tuple<Color, int>>(
                      overwriteColorCache)) {
             //if (getActionsTaken() > item2) {
-            Trace.WriteLine($@"Global: {getActionsTaken()} - Item: {item2}");
             returnCache.Add(key, c);
             //} else {
             //    overwriteColorCache.Remove(key);
@@ -559,7 +582,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                            (int) Math.Floor((double) y / tileSize)) % 2 == 0 ? Color.Parse("#11000000") :
+                           (int) Math.Floor((double) y / tileSize)) % 2 == 0 ? Color.Parse("#11000000") :
                         Color.Parse("#00000000")
                         : Color.Parse("#00000000"));
                     dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
@@ -605,11 +628,21 @@ public class WFCHandler {
         return actionsTaken;
     }
 
+    public void setActionsTaken(int newValue) {
+        actionsTaken = newValue;
+    }
+
     public IEnumerable<TileViewModel> getPaintableTiles() {
         return toAddPaint;
     }
 
     public Size getPropagatorSize() {
         return new Size(dbPropagator.Topology.Width, dbPropagator.Topology.Height);
+    }
+
+    public void resetWeights() {
+        foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
+            tileViewModel.PatternWeight = originalWeights[tileViewModel.PatternIndex];
+        }
     }
 }

@@ -149,14 +149,15 @@ public class InputManager {
     }
 
     public void revertStep() {
-        if (lastPaintedAmountCollapsed != 0 && parentCM.getWFCHandler().isOverlappingModel() &&
-            lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
-            parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
-            return;
-        }
+        // if (lastPaintedAmountCollapsed != 0 && parentCM.getWFCHandler().isOverlappingModel() &&
+        //     lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
+        //     parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+        //     return;
+        // }
 
         try {
             int prevAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
+            int loggedAT = parentCM.getWFCHandler().getActionsTaken();
 
             Bitmap? avaloniaBitmap = null;
             while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed-mainWindowVM.StepAmount) {
@@ -166,6 +167,7 @@ public class InputManager {
             mainWindowVM.OutputImage = avaloniaBitmap!;
 
             int curStep = parentCM.getWFCHandler().getAmountCollapsed();
+            parentCM.getWFCHandler().setActionsTaken(loggedAT-1);
 
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                 savePoints.Pop();
@@ -395,15 +397,14 @@ public class InputManager {
         }
 
         if (!parentCM.getWFCHandler().isOverlappingModel() && !hadPainted) { //TODO Remove
-            Trace.WriteLine("Removing again");
             loadMarker(false);
         }
 
         if (showPixel) {
             mainWindowVM.OutputImage = bitmap!;
 
-            resetMarkers();
-            setRevertingThreshold();
+            //resetMarkers();
+            //setRevertingThreshold();
         } else {
             if (parentCM.getWFCHandler().isOverlappingModel()) {
                 overwriteColorCache.Remove(key);
@@ -461,12 +462,16 @@ public class InputManager {
         }
 
         mainWindowVM.OutputImageMask = bitmap;
-        resetMarkers();
-        setRevertingThreshold();
+        //resetMarkers();
+        //setRevertingThreshold();
     }
 
     public Dictionary<Tuple<int, int>, Tuple<Color, int>> getOverwriteColorCache() {
         return overwriteColorCache;
+    }
+
+    public void removeKeyFromOverlapDict(Tuple<int, int> key) {
+        overwriteColorCache.Remove(key);
     }
 
     private bool hasPainted;

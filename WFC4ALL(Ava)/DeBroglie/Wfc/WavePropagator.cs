@@ -291,13 +291,11 @@ internal class WavePropagator {
 
         // If we're already in a final state. skip making an observiation.
         if (Status == Resolution.UNDECIDED) {
-            if (index != -1) {
-                RecordBacktrack(index, pattern);
+            RecordBacktrack(index, pattern);
 
-                // Use the pick
-                if (InternalSelect(index, pattern)) {
-                    Status = Resolution.CONTRADICTION;
-                }
+            // Use the pick
+            if (InternalSelect(index, pattern)) {
+                Status = Resolution.CONTRADICTION;
             }
 
             // Re-evaluate status

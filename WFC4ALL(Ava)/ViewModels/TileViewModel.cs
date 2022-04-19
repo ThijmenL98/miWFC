@@ -9,7 +9,7 @@ public class TileViewModel : ReactiveObject {
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping;
-    private readonly double _patternWeight;
+    private double _patternWeight;
 
     private readonly CentralManager? parentCM;
     private bool _flipDisabled, _rotateDisabled;
@@ -61,7 +61,7 @@ public class TileViewModel : ReactiveObject {
 
     public double PatternWeight {
         get => _patternWeight;
-        init => this.RaiseAndSetIfChanged(ref _patternWeight, value);
+        set => this.RaiseAndSetIfChanged(ref _patternWeight, value);
     }
 
     public int PatternIndex {

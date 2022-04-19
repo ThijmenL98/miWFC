@@ -75,15 +75,15 @@
                       VerticalAlignment="Center" IsVisible="{Binding OverlappingAdvancedEnabled}" />
 
             <TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Text="Input Wrapping" TextAlignment="Center"
-                       MaxWidth="80" IsVisible="{Binding OverlappingAdvancedEnabled}" />
+                       MaxWidth="80" IsVisible="{Binding OverlappingAdvancedEnabledIW}" />
 
             <ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent=""
-                          Command="{Binding OnInputWrappingChanged}" IsVisible="{Binding OverlappingAdvancedEnabled}" />
+                          Command="{Binding OnInputWrappingChanged}" IsVisible="{Binding OverlappingAdvancedEnabledIW}" />
 
             <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" IsEnabled="False" Background="Transparent" />
 
             <Button Background="Transparent" Command="{Binding OnModelClick}" Grid.Column="3" Grid.Row="0"
-                    MaxHeight="80" Grid.RowSpan="2" Padding="0" Margin="5">
+                    MaxHeight="80" Padding="0" Margin="5">
                 <Button.Styles>
                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                         <Setter Property="Content" Value="{DynamicResource hoverModeKey}" />
@@ -97,6 +97,41 @@
                 <Panel>
                     <Image Source="/Assets/Mode.png" />
                 </Panel>
+            </Button>
+            
+            <Button Padding="0"  Grid.Column="3" Grid.Row="1" Width="80" Margin="0" Command="{Binding OnWeightReset}"
+                    IsVisible="{Binding AdvancedEnabled}" Background="Transparent">
+                <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <RotateTransform Angle="-90"/>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
+                        <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="-90" />
+                                </Setter.Value>
+                            </Setter>
+                    </Style>
+                </Button.Styles>
+                <Panel>
+                    <Image Source="/Assets/Restart.png">
+                        <Image.RenderTransform>
+                            <RotateTransform Angle="-90" />
+                        </Image.RenderTransform></Image>
+                </Panel>
+                <ToolTip.Tip>
+                    <StackPanel>
+                        <TextBlock>Reset the weights to default</TextBlock>
+                    </StackPanel>
+                </ToolTip.Tip>
             </Button>
         </Grid>
 
