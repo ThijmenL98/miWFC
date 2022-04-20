@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -36,7 +37,9 @@ public class MainWindowViewModel : ViewModelBase {
 
     private bool _pencilModeEnabled, _eraseModeEnabled, _paintKeepModeEnabled, _paintEraseModeEnabled, _isRunning;
 
-    private string _selectedCategory = "",
+    private HoverableTextViewModel _selectedCategory;
+    
+    private string _categoryDescription = "",
         _selectedInputImage = "",
         _stepAmountString = "Steps to take: 1";
 
@@ -55,13 +58,19 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
-    private string CategorySelection {
+    private HoverableTextViewModel CategorySelection {
         get => _selectedCategory;
         // ReSharper disable once UnusedMember.Local
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
+            CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
+    }
+
+    private string CategoryDescription {
+        get => _categoryDescription;
+        set => this.RaiseAndSetIfChanged(ref _categoryDescription, value);
     }
 
     private string InputImageSelection {
@@ -233,14 +242,14 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
-
+        
         if (IsPlaying) {
             OnAnimate();
         }
 
         bool changingToSmart = !SimpleModelSelected;
 
-        string lastCat = CategorySelection;
+        string lastCat = CategorySelection.DisplayText;
 
         string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
 
@@ -268,7 +277,6 @@ public class MainWindowViewModel : ViewModelBase {
         }
 
         centralManager.getWFCHandler().setModelChanging(false);
-
         centralManager.getWFCHandler().setInputChanged("Model change");
         centralManager.getMainWindow().getInputControl().inImgCBChangeHandler(null, null);
     }

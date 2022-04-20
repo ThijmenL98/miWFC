@@ -52,7 +52,7 @@ public class InputManager {
         savePoints = new Stack<int>();
         savePoints.Push(0);
 
-        mainWindow.getInputControl().setCategories(getCategories("overlapping"));
+        mainWindow.getInputControl().setCategories(getCategories("overlapping").Select(cat => new HoverableTextViewModel(cat, getDescription(cat))).ToArray());
 
         string[] inputImageDataSource = getModelImages("overlapping", "Textures");
         mainWindow.getInputControl().setInputImages(inputImageDataSource);
@@ -94,8 +94,8 @@ public class InputManager {
                     mainWindow.getInputControl().getCategory())
                 .Contains(mainWindow.getInputControl().getInputImage())) {
             return;
-        }
-
+        }       
+        
         try {
             int stepAmount = mainWindowVM.StepAmount;
             mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
@@ -478,27 +478,5 @@ public class InputManager {
 
     public void resetHasPainted() {
         hasPainted = false;
-    }
-
-    private void setRevertingThreshold() {
-        if (!parentCM.getWFCHandler().isOverlappingModel()) {
-            return;
-        }
-        lastPaintedAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
-    }
-
-    private void resetMarkers() {
-        if (!parentCM.getWFCHandler().isOverlappingModel()) {
-            hasPainted = true;
-            return;
-        }
-        hasPainted = true;
-        mainWindowVM.Markers.Clear();
-
-        while (savePoints.Count > 0) {
-            savePoints.Pop();
-        }
-
-        placeMarker(true);
     }
 }

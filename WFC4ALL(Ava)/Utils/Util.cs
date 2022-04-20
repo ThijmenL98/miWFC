@@ -123,6 +123,18 @@ public static class Util {
             : new[] {"Worlds Top-Down", "Textures"};
     }
 
+    public static string getDescription(string category) {
+        return category switch {
+            "Textures" => "Surfaces of multi dimensional objects",
+            "Shapes" => "Basic shapes and patterns",
+            "Knots" => "Intertwined and/or tangled lines",
+            "Fonts" => "Printable or displayable text characters",
+            "Worlds Side-View" => "Worlds as seen from the side (Seamless Output and Input Wrapping have been pre-set due to the nature of these images)",
+            "Worlds Top-Down" => "(Game) Worlds as seen from above",
+            _ => "???"
+        };
+    }
+
     public static Color[] extractColours(WriteableBitmap writeableBitmap) {
         (Color[][] colourArray, HashSet<Color> _) = imageToColourArray(writeableBitmap);
         return convert2DArrayTo1D(colourArray);

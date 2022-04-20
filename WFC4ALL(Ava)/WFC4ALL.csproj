@@ -26,9 +26,9 @@
         <NSHighResolutionCapable>true</NSHighResolutionCapable>
     </PropertyGroup>
     <ItemGroup>
-        <Folder Include="Assets\Cursors" />
         <EmbeddedResource Include="**\*.gif" />
         <AvaloniaResource Include="Assets\**" />
+        <AvaloniaResource Include="samples\**" />
         <None Remove=".gitignore" />
     </ItemGroup>
     <ItemGroup>
@@ -67,5 +67,11 @@
         <AvaloniaXaml Update="Styles\CustomNumericUD.axaml">
             <SubType>Designer</SubType>
         </AvaloniaXaml>
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Update="Views\TestControl.axaml.cs">
+        <DependentUpon>TestControl.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 </Project>

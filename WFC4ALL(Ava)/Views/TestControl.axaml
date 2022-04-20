@@ -1,0 +1,60 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:wfc4All="clr-namespace:WFC4ALL"
+             mc:Ignorable="d"
+             x:Class="WFC4ALL.ContentControls.TestControl">
+	<UserControl.Styles>
+		<StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+
+		<Style Selector="TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+	</UserControl.Styles>
+	
+	<Border Padding="1" Margin="7, 7, 7,7" Background="#1000">
+		<Grid>
+			<!-- Replace IsVisible -->
+			<Border Padding="5" Background="#22000000"
+			        CornerRadius="10">
+				<Grid RowDefinitions="*, *" ColumnDefinitions="*, *">
+					<Border Width="50" Height="50" Grid.Row="0"
+					        BoxShadow="0 0 15 0.25 Black"
+					        Background="Gray" Margin="10, 5, 15, 5">
+						<!-- Replace Source -->
+						<Image Width="50" Height="50"
+						       Source="../samples/Castle/riverturn.png"
+						       RenderOptions.BitmapInterpolationMode="Default" />
+					</Border>
+					<!-- Replace IsEnabled -->
+					<Grid Grid.Column="0" Grid.Row="1" RowDefinitions="*, *, *" ColumnDefinitions="*, *" Margin="0">
+						<TextBlock Grid.Column="0" Grid.Row="2" Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
+						           Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#FAAF"/>
+						<TextBlock Grid.Column="0" Grid.Row="2" Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
+						           Margin="0, -25, 0, -5" FontSize="30" FontWeight="Bold" Foreground="#A000"/>
+						<ToolTip.Tip>
+							<StackPanel>
+								<TextBlock TextWrapping="Wrap">Set the weight of this pattern '~0' means it tries to be 0, but might be forced to place a tile</TextBlock>
+							</StackPanel>
+						</ToolTip.Tip>
+					</Grid>
+						
+					<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *" Margin="-10, 0, 0, 0">
+						<Button Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}" Background="Transparent"/>
+						<Button Grid.Row="1" Padding="4" VerticalAlignment="Bottom" Content="▼" Command="{Binding OnDecrement}" Background="Transparent" />
+					</Grid>
+				</Grid>
+			</Border>
+			
+			<Border Width="50" Height="50" Grid.Column="0"
+			        BoxShadow="0 0 15 0.25 Black"
+			        IsVisible="{ReflectionBinding !#patternItemsControl.DataContext.AdvancedEnabled, TargetNullValue=False, FallbackValue=False}"
+			        Background="Gray" Margin="5">
+				<Image Width="50" Height="50"
+				       Source="{Binding PatternImage}"
+				       RenderOptions.BitmapInterpolationMode="Default" />
+			</Border>
+		</Grid>
+	</Border>
+</UserControl>

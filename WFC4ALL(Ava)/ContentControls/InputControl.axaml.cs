@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using WFC4ALL.Managers;
 using WFC4ALL.Utils;
+using WFC4ALL.ViewModels;
 
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable UnusedParameter.Local
@@ -43,7 +45,6 @@ public partial class InputControl : UserControl {
 
         string[] inputImageDataSource
             = Util.getModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
-        // centralManager.getMainWindow().getOutputControl().setBorderPaddingVisible(newValue.Equals("Textures") && isOverlapping);
         setInputImages(inputImageDataSource);
         e.Handled = true;
     }
@@ -65,8 +66,8 @@ public partial class InputControl : UserControl {
             setPatternSizes(patternSizeDataSource, i);
         }
 
-        //updateInputPadding();
         centralManager.getWFCHandler().setImageChanging(false);
+
         centralManager.getInputManager().restartSolution();
         if (e != null) {
             e.Handled = true;
@@ -103,7 +104,7 @@ public partial class InputControl : UserControl {
         _patternSizeCB.SelectedIndex = idx;
     }
 
-    public void setCategories(string[]? values, int idx = 0) {
+    public void setCategories(HoverableTextViewModel[]? values, int idx = 0) {
         if (values != null) {
             _categoryCB.Items = values;
         }
@@ -120,7 +121,7 @@ public partial class InputControl : UserControl {
     }
 
     public string getCategory() {
-        return _categoryCB.SelectedItem as string ?? "Textures";
+        return (_categoryCB.SelectedItem as HoverableTextViewModel)?.DisplayText ?? "Textures";
     }
 
     public int getPatternSize() {

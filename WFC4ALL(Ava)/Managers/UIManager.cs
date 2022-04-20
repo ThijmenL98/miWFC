@@ -11,10 +11,11 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using WFC4ALL.DeBroglie.Models;
+using WFC4ALL.Utils;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 
-namespace WFC4ALL.Managers; 
+namespace WFC4ALL.Managers;
 
 public class UIManager {
     private readonly MainWindow mainWindow;
@@ -51,7 +52,11 @@ public class UIManager {
      */
 
     public void updateCategories(string[]? values, int idx = 0) {
-        mainWindow.getInputControl().setCategories(values, idx);
+        if (values != null) {
+            mainWindow.getInputControl()
+                .setCategories(
+                    values.Select(cat => new HoverableTextViewModel(cat, Util.getDescription(cat))).ToArray(), idx);
+        }
     }
 
     public void updateInputImages(string[]? values, int idx = 0) {
@@ -101,7 +106,7 @@ public class UIManager {
         patternCount = 0;
     }
 
-    public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries) {
+    public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries, int rawIndex) {
         int n = colors.Height;
         WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
@@ -145,7 +150,7 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount, cm: parentCM);
+        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: parentCM);
 
         patternCount++;
 
@@ -195,7 +200,7 @@ public class UIManager {
                 target = mainWindow;
                 source = parentCM.getPaintingWindow();
                 handlePaintingClose(checkClicked);
-                
+
                 parentCM.getInputManager().resetHasPainted();
                 break;
             case Windows.PAINTING:

@@ -271,7 +271,7 @@ public class WFCHandler {
         originalWeights = patternWeights;
 
         toAdd.AddRange(patternList.Select((t, i) => parentCM.getUIManager()
-                .addPattern(t, patternWeights[i], tileSymmetries))
+                .addPattern(t, patternWeights[i], tileSymmetries, i))
             .Where(nextTVM => nextTVM != null)!);
 
         foreach ((Tile t, int index) in tiles.toArray2d().Cast<Tile>().Distinct()
@@ -362,8 +362,7 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, cardinality > 4);
-
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, cardinality > 4);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
@@ -642,7 +641,7 @@ public class WFCHandler {
 
     public void resetWeights() {
         foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
-            tileViewModel.PatternWeight = originalWeights[tileViewModel.PatternIndex];
+            tileViewModel.PatternWeight = originalWeights[tileViewModel.RawPatternIndex];
         }
     }
 }
