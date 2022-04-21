@@ -448,12 +448,22 @@ public class WFCHandler {
             }
 
             if (!availableAtLoc.Contains(toSet) || availableAtLoc.Count == 1) {
+                Trace.WriteLine(!availableAtLoc.Contains(toSet)
+                    ? $@"False because illegal placement"
+                    : $@"False because already collapsed");
+                Trace.WriteLine($@"{string.Join(", ", availableAtLoc)} -> {toSet} {tileCache[toSet].Item2.Value}");
+                Trace.WriteLine($@"{dbPropagator.toValueArray(-1, -2).get(a, b)}");
                 return (null, false);
             }
             
+            Trace.WriteLine($@"{string.Join(", ", availableAtLoc)} -> {toSet}");
+            
             if (dbPropagator.toValueArray(-1, -2).get(a, b) > 0) {
+                Trace.WriteLine($@"False because already collapsed BACKUP");
                 return (null, false);
             }
+            
+            Trace.WriteLine($@"{dbPropagator.toValueArray(-1, -2).get(a, b)}");
         }
 
         Resolution status;
@@ -479,6 +489,7 @@ public class WFCHandler {
                 dbPropagator.doBacktrack();
             }
 
+            Trace.WriteLine("False because pre-selection went wrong");
             return (null, false);
         }
 
@@ -487,6 +498,7 @@ public class WFCHandler {
             if (!dbPropagator.toValueArray(-1, -2).get(a, b).Equals(toSet)) {
                 dbPropagator.doBacktrack(); // One for the select
                 dbPropagator.doBacktrack(); // One for the selWith
+                Trace.WriteLine("False because selection went wrong");
                 return (null, false);
             }
         }
@@ -555,7 +567,7 @@ public class WFCHandler {
                             : grid
                                 ? (x + y) % 2 == 0 ? Color.Parse("#11000000") :
                                 Color.Parse("#00000000")
-                                : c;
+                                : Color.Parse("#00000000");
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
                     if (toSet.A == 255) {
