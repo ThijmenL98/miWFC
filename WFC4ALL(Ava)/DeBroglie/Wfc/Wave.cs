@@ -9,7 +9,7 @@ namespace WFC4ALL.DeBroglie.Wfc;
  * into which cells.
  * It has no notion of cell adjacency, cells are just referred to by integer index.
  */
-internal class Wave {
+public class Wave {
     private readonly int patternCount;
 
     private readonly int[] patternCounts;
@@ -44,15 +44,21 @@ internal class Wave {
     // Returns true if there is a contradiction
     public bool RemovePossibility(int index, int pattern) {
         //Debug.Assert(possibilities[index * patternCount + pattern]);
-        possibilities[index * patternCount + pattern] = false;
-        int c = --patternCounts[index];
-        return c == 0;
+        // if (possibilities[index * patternCount + pattern]) {
+            possibilities[index * patternCount + pattern] = false;
+            int c = --patternCounts[index];
+            return c == 0;
+        // }
+        //
+        // return true;
     }
 
     public void AddPossibility(int index, int pattern) {
         //Debug.Assert(possibilities[index * patternCount + pattern] == false);
-        possibilities[index * patternCount + pattern] = true;
-        patternCounts[index]++;
+        // if (!possibilities[index * patternCount + pattern]) {
+            possibilities[index * patternCount + pattern] = true;
+            patternCounts[index]++;
+        // }
     }
 
     // TODO: This should respect mask. Maybe move out of Wave

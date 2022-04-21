@@ -30,9 +30,7 @@
 					<!-- Replace IsEnabled -->
 					<Grid Grid.Column="0" Grid.Row="1" RowDefinitions="*, *, *" ColumnDefinitions="*, *" Margin="0">
 						<TextBlock Grid.Column="0" Grid.Row="2" Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
-						           Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#FAAF"/>
-						<TextBlock Grid.Column="0" Grid.Row="2" Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
-						           Margin="0, -25, 0, -5" FontSize="30" FontWeight="Bold" Foreground="#A000"/>
+						           Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#F005"/>
 						<ToolTip.Tip>
 							<StackPanel>
 								<TextBlock TextWrapping="Wrap">Set the weight of this pattern '~0' means it tries to be 0, but might be forced to place a tile</TextBlock>

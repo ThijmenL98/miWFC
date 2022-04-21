@@ -4,9 +4,9 @@ using System.Diagnostics;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Trackers;
 
-namespace WFC4ALL.DeBroglie.Wfc; 
+namespace WFC4ALL.DeBroglie.Wfc;
 
-internal class WavePropagatorOptions {
+public class WavePropagatorOptions {
     public IBacktrackPolicy BacktrackPolicy { get; set; }
     public IWaveConstraint[] Constraints { get; set; }
     public Func<double> RandomDouble { get; set; }
@@ -20,7 +20,7 @@ internal class WavePropagatorOptions {
 ///     WavePropagator holds a wave, and supports updating it's possibilities
 ///     according to the model constraints.
 /// </summary>
-internal class WavePropagator {
+public class WavePropagator {
     private readonly IWaveConstraint[] constraints;
 
     private readonly IIndexPicker indexPicker;
@@ -388,8 +388,6 @@ internal class WavePropagator {
         DoBacktrack();
 
         Status = Resolution.UNDECIDED;
-        _contradictionReason = null;
-        _contradictionSource = null;
         
         // Revalidate status.
         if (Status == Resolution.UNDECIDED) {

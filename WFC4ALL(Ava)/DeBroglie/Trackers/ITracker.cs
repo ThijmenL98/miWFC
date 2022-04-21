@@ -5,7 +5,7 @@
 ///     By updating that state as the propagator changes, they can give a significant performance benefit
 ///     over calculating the value from scratch each time it is needed.
 /// </summary>
-internal interface ITracker {
+public interface ITracker {
     void Reset();
 
     void DoBan(int index, int pattern);
@@ -17,7 +17,7 @@ internal interface ITracker {
 ///     Callback for when choices/backtracks occur on WavePropagator
 /// </summary>
 // TODO: Move this class elsewhere?
-internal interface IChoiceObserver {
+public interface IChoiceObserver {
     // Called before the wave propagator is updated for the choice
     void MakeChoice(int index, int pattern);
 

@@ -182,7 +182,8 @@ public class WFCHandler {
         GridTopology dbTopology = new(outputWidth, outputHeight, outputPaddingEnabled);
         int curSeed = Environment.TickCount;
         dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
-            RandomDouble = new Random(curSeed).NextDouble
+            RandomDouble = new Random(curSeed).NextDouble,
+            IndexPickerType = IndexPickerType.MIN_ENTROPY
         });
     }
 
@@ -432,10 +433,24 @@ public class WFCHandler {
 
     public (WriteableBitmap?, bool) setTile(int a, int b, int toSet) {
         if (isOverlappingModel()) {
+
+
             if (dbPropagator.toValueArray<Color>().get(a, b).A.Equals(255)) {
                 return (null, false);
             }
         } else {
+            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int o);
+            List<int> availableAtLoc = new();
+            for (int pattern = 0; pattern < dbPropagator.getWP().PatternCount; pattern++) {
+                if (dbPropagator.getWP().Wave.Get(dbPropagator.Topology.GetIndex(px, py, pz), pattern)) {
+                    availableAtLoc.Add(pattern);
+                }
+            }
+
+            if (!availableAtLoc.Contains(toSet) || availableAtLoc.Count == 1) {
+                return (null, false);
+            }
+            
             if (dbPropagator.toValueArray(-1, -2).get(a, b) > 0) {
                 return (null, false);
             }
@@ -540,7 +555,7 @@ public class WFCHandler {
                             : grid
                                 ? (x + y) % 2 == 0 ? Color.Parse("#11000000") :
                                 Color.Parse("#00000000")
-                                : Color.Parse("#00000000");
+                                : c;
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
                     if (toSet.A == 255) {

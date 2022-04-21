@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using WFC4ALL.DeBroglie.Trackers;
 
-namespace WFC4ALL.DeBroglie.Wfc; 
+namespace WFC4ALL.DeBroglie.Wfc;
 
-internal interface IBacktrackPolicy {
+public interface IBacktrackPolicy {
     void Init(WavePropagator wavePropagator);
 
     /// <summary>

@@ -114,9 +114,6 @@ public class InputManager {
         try {
             (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
 
-            //TODO
-            //int preCollapse = parentCM.getWFCHandler().getAmountCollapsed();
-
             bool weightReset = false;
             if (!mainWindowVM.IsRunning) {
                 parentCM.getWFCHandler().updateWeights();
@@ -129,17 +126,11 @@ public class InputManager {
                     mainWindowVM.ImageOutWidth != (int) currentWidth ||
                     mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
 
-            //int postCollapse = parentCM.getWFCHandler().getAmountCollapsed();
-
-            //if (!finished && preCollapse == postCollapse) {
-            //    mainWindowVM.OutputImage = noResultFoundBM;
-            //} else {
             if (finished) {
                 return;
             }
 
             mainWindowVM.OutputImage = result2;
-            //}
         } catch (Exception exception) {
 #if (DEBUG)
             Trace.WriteLine(exception);
@@ -149,12 +140,6 @@ public class InputManager {
     }
 
     public void revertStep() {
-        // if (lastPaintedAmountCollapsed != 0 && parentCM.getWFCHandler().isOverlappingModel() &&
-        //     lastPaintedAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
-        //     parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
-        //     return;
-        // }
-
         try {
             int prevAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
             int loggedAT = parentCM.getWFCHandler().getActionsTaken();
@@ -405,6 +390,7 @@ public class InputManager {
 
             //resetMarkers();
             //setRevertingThreshold();
+            //Trace.WriteLine($@"Painted {key} -> {overwriteColorCache[key].ToString()}");
         } else {
             if (parentCM.getWFCHandler().isOverlappingModel()) {
                 overwriteColorCache.Remove(key);

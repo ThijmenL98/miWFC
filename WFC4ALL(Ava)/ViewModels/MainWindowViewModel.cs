@@ -29,6 +29,7 @@ public class MainWindowViewModel : ViewModelBase {
         _advancedEnabled,
         _simpleModel,
         _advancedOverlapping,
+        simpleAdvanced,
         _advancedOverlappingIW;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
@@ -54,6 +55,7 @@ public class MainWindowViewModel : ViewModelBase {
         private set {
             this.RaiseAndSetIfChanged(ref _simpleModel, value);
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
+            SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
         }
     }
@@ -206,13 +208,19 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _advancedEnabled, value);
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
-            OverlappingAdvancedEnabledIW = AdvancedEnabled && !SimpleModelSelected;
+            SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
+            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
         }
     }
 
     private bool OverlappingAdvancedEnabled {
         get => _advancedOverlapping;
         set => this.RaiseAndSetIfChanged(ref _advancedOverlapping, value);
+    }
+
+    private bool SimpleAdvancedEnabled {
+        get => simpleAdvanced;
+        set => this.RaiseAndSetIfChanged(ref simpleAdvanced, value);
     }
 
     private bool OverlappingAdvancedEnabledIW {

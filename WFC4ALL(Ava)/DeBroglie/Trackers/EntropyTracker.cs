@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using WFC4ALL.DeBroglie.Wfc;
 
 namespace WFC4ALL.DeBroglie.Trackers; 
@@ -73,12 +74,18 @@ internal class EntropyTracker : ITracker, IIndexPicker, IFilteredIndexPicker {
         int selectedIndex = -1;
         double minEntropy = double.PositiveInfinity;
         int countAtMinEntropy = 0;
+        //Trace.Write("[");
+        //for (int i = 0; i < indices; i++) {
+        //    Trace.Write($@"{i}({wave.GetPatternCount(i)}),");
+        //}
+        //Trace.Write("]");
         for (int i = 0; i < indices; i++) {
             if (mask != null && !mask[i]) {
                 continue;
             }
 
             int c = wave.GetPatternCount(i);
+            
             double e = entropyValues[i].Entropy;
             if (c <= 1) {
                 continue;

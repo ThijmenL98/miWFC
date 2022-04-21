@@ -7,7 +7,7 @@ namespace WFC4ALL.DeBroglie.Trackers;
 /// <summary>
 ///     Class implementing the heuristic choice of index
 /// </summary>
-internal interface IIndexPicker {
+public interface IIndexPicker {
     void Init(WavePropagator wavePropagator);
     int GetRandomIndex(Func<double> randomDouble);
 }

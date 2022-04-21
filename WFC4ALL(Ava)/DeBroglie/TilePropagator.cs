@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4ALL.DeBroglie.Constraints;
 using WFC4ALL.DeBroglie.Constraints.Path;
@@ -22,6 +23,10 @@ public class TilePropagator {
     private readonly TileModelMapping tileModelMapping;
 
     private readonly WavePropagator wavePropagator;
+
+    public WavePropagator getWP() {
+        return wavePropagator;
+    }
 
     public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options) {
         TileModel = tileModel;
@@ -149,7 +154,7 @@ public class TilePropagator {
         // so there's a few slower implementations for that
         IIndexPicker indexPicker = null;
         IPatternPicker patternPicker = null;
-
+        
         switch (options.IndexPickerType) {
             case IndexPickerType.ORDERED: {
                 if (options.IndexOrder != null) {
@@ -243,7 +248,7 @@ public class TilePropagator {
         return Tuple.Create(indexPicker, patternPicker);
     }
 
-    private void TileCoordToPatternCoord(int x, int y, int z, out int px, out int py, out int pz, out int offset) {
+    public void TileCoordToPatternCoord(int x, int y, int z, out int px, out int py, out int pz, out int offset) {
         tileModelMapping.GetTileCoordToPatternCoord(x, y, z, out px, out py, out pz, out offset);
     }
 
