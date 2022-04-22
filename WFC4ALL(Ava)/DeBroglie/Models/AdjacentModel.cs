@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using WFC4ALL.DeBroglie.Rot;
 using WFC4ALL.DeBroglie.Topo;
@@ -17,7 +16,6 @@ namespace WFC4ALL.DeBroglie.Models;
 public class AdjacentModel : TileModel {
     private DirectionSet directions;
     private readonly List<double> frequencies;
-    private readonly Dictionary<int, double> rawFrequencies;
     private readonly List<HashSet<int>[]> propagator;
     private readonly Dictionary<Tile, int> tilesToPatterns;
 
@@ -29,7 +27,6 @@ public class AdjacentModel : TileModel {
         // Tiles map 1:1 with patterns
         tilesToPatterns = new Dictionary<Tile, int>();
         frequencies = new List<double>();
-        rawFrequencies = new Dictionary<int, double>();
         propagator = new List<HashSet<int>[]>();
     }
 
@@ -108,20 +105,9 @@ public class AdjacentModel : TileModel {
     /// <summary>
     ///     Sets the frequency of a given tile.
     /// </summary>
-    public void setFrequency(Tile tile, double frequency, bool customCall = false) {
+    public void setFrequency(Tile tile, double frequency) {
         int pattern = GetPattern(tile);
         frequencies[pattern] = frequency;
-        if (!rawFrequencies.ContainsKey(pattern) && customCall) {
-            rawFrequencies[pattern] = frequency;
-        }
-    }
-    
-    public double getFrequency(Tile tile) {
-        return frequencies[GetPattern(tile)];
-    }
-
-    public double getRawFrequency(Tile tile) {
-        return rawFrequencies[GetPattern(tile)];
     }
 
     /// <summary>

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -34,7 +33,7 @@ public class MainWindowViewModel : ViewModelBase {
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
-    private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new();
+    private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new(), _helperTiles = new();
 
     private bool _pencilModeEnabled, _eraseModeEnabled, _paintKeepModeEnabled, _paintEraseModeEnabled, _isRunning;
 
@@ -159,6 +158,11 @@ public class MainWindowViewModel : ViewModelBase {
     public ObservableCollection<TileViewModel> PatternTiles {
         get => _patternTiles;
         set => this.RaiseAndSetIfChanged(ref _patternTiles, value);
+    }
+
+    public ObservableCollection<TileViewModel> HelperTiles {
+        get => _helperTiles;
+        set => this.RaiseAndSetIfChanged(ref _helperTiles, value);
     }
 
     public ObservableCollection<TileViewModel> PaintTiles {
@@ -321,7 +325,6 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnWeightReset() {
-        //TODO
         centralManager!.getWFCHandler().resetWeights();
     }
 
@@ -342,7 +345,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnSave() {
-        centralManager!.getInputManager().placeMarker(false);
+        centralManager!.getInputManager().placeMarker();
     }
 
     public void OnLoad() {

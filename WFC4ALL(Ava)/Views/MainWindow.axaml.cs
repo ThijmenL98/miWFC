@@ -70,7 +70,7 @@ public partial class MainWindow : Window {
                 break;
             case Key.S:
             case Key.M:
-                centralManager.getInputManager().placeMarker(false);
+                centralManager.getInputManager().placeMarker();
                 e.Handled = true;
                 break;
             case Key.E:

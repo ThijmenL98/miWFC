@@ -13,7 +13,7 @@ public class TileViewModel : ReactiveObject {
     private double _patternWeight;
 
     private readonly CentralManager? parentCM;
-    private bool _flipDisabled, _rotateDisabled;
+    private bool _flipDisabled, _rotateDisabled, _highlighted;
 
     /*
      * Used for input patterns
@@ -99,6 +99,11 @@ public class TileViewModel : ReactiveObject {
     public bool FlipDisabled {
         get => _flipDisabled;
         set => this.RaiseAndSetIfChanged(ref _flipDisabled, value);
+    }
+
+    public bool Highlighted {
+        get => _highlighted;
+        set => this.RaiseAndSetIfChanged(ref _highlighted, value);
     }
 
     /*

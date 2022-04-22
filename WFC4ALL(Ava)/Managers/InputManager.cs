@@ -18,7 +18,7 @@ using static WFC4ALL.Utils.Util;
 #pragma warning disable CS8618
 #pragma warning disable CS8625
 
-namespace WFC4ALL.Managers; 
+namespace WFC4ALL.Managers;
 
 public class InputManager {
     private readonly MainWindow mainWindow;
@@ -28,15 +28,11 @@ public class InputManager {
 
     private readonly CentralManager parentCM;
     private readonly Stack<int> savePoints;
-
-    private Dictionary<int, Color> colourMapping;
-
+    
     private int lastPaintedAmountCollapsed;
 
     private Color[,] maskColours;
-
-    private Dictionary<Tuple<int, int>, Tuple<Color, int>> overwriteColorCache;
-
+    
     private DispatcherTimer timer = new();
 
     public InputManager(CentralManager parent) {
@@ -44,15 +40,14 @@ public class InputManager {
         mainWindowVM = parentCM.getMainWindowVM();
         mainWindow = parentCM.getMainWindow();
 
-        overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
-        colourMapping = new Dictionary<int, Color>();
         maskColours = new Color[0, 0];
 
         noResultFoundBM = new Bitmap(AppContext.BaseDirectory + "/Assets/NoResultFound.png");
         savePoints = new Stack<int>();
         savePoints.Push(0);
 
-        mainWindow.getInputControl().setCategories(getCategories("overlapping").Select(cat => new HoverableTextViewModel(cat, getDescription(cat))).ToArray());
+        mainWindow.getInputControl().setCategories(getCategories("overlapping")
+            .Select(cat => new HoverableTextViewModel(cat, getDescription(cat))).ToArray());
 
         string[] inputImageDataSource = getModelImages("overlapping", "Textures");
         mainWindow.getInputControl().setInputImages(inputImageDataSource);
@@ -82,10 +77,7 @@ public class InputManager {
         }
 
         lastPaintedAmountCollapsed = 0;
-
-        overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
-        colourMapping = new Dictionary<int, Color>();
-
+        
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
@@ -94,8 +86,8 @@ public class InputManager {
                     mainWindow.getInputControl().getCategory())
                 .Contains(mainWindow.getInputControl().getInputImage())) {
             return;
-        }       
-        
+        }
+
         try {
             int stepAmount = mainWindowVM.StepAmount;
             mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
@@ -145,17 +137,18 @@ public class InputManager {
             if (prevAmountCollapsed == 0) {
                 return;
             }
+
             int loggedAT = parentCM.getWFCHandler().getActionsTaken();
 
             Bitmap? avaloniaBitmap = null;
-            while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed-mainWindowVM.StepAmount) {
+            while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed - mainWindowVM.StepAmount) {
                 avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
             }
 
             mainWindowVM.OutputImage = avaloniaBitmap!;
 
             int curStep = parentCM.getWFCHandler().getAmountCollapsed();
-            parentCM.getWFCHandler().setActionsTaken(loggedAT-1);
+            parentCM.getWFCHandler().setActionsTaken(loggedAT - 1);
 
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                 savePoints.Pop();
@@ -167,7 +160,6 @@ public class InputManager {
                 }
             }
 
-            updateOverlappingCache(curStep);
         } catch (Exception exception) {
 #if (DEBUG)
             Trace.WriteLine(exception);
@@ -177,13 +169,10 @@ public class InputManager {
     }
 
     public void resetOverwriteCache() {
-        overwriteColorCache = new Dictionary<Tuple<int, int>, Tuple<Color, int>>();
-        colourMapping = new Dictionary<int, Color>();
-
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
     }
 
-    public void placeMarker(bool paintingMarker) {
+    public void placeMarker() {
         int curStep = parentCM.getWFCHandler().getAmountCollapsed();
         if (curStep == 0) {
             return;
@@ -191,7 +180,7 @@ public class InputManager {
 
         mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
             mainWindow.getOutputControl().getTimelineWidth() * parentCM.getWFCHandler().getPercentageCollapsed() +
-            1, paintingMarker));
+            1));
         while (true) {
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                 savePoints.Pop();
@@ -238,23 +227,12 @@ public class InputManager {
                 while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
                     mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc();
                 }
-
-                updateOverlappingCache(prevAmountCollapsed);
             }
         } catch (Exception exception) {
 #if (DEBUG)
             Trace.WriteLine(exception);
 #endif
             mainWindowVM.OutputImage = noResultFoundBM;
-        }
-    }
-
-    private void updateOverlappingCache(int prevAmountCollapsed) {
-        foreach ((Tuple<int, int> key, (Color _, int timeStamp)) in
-                 new Dictionary<Tuple<int, int>, Tuple<Color, int>>(overwriteColorCache)) {
-            if (prevAmountCollapsed < timeStamp) {
-                overwriteColorCache.Remove(key);
-            }
         }
     }
 
@@ -315,18 +293,9 @@ public class InputManager {
                 timer.Stop();
                 timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                 try {
-                    //TODO
-                    // int preCollapse = parentCM.getWFCHandler().getAmountCollapsed();
                     (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
                         .initAndRunWfcDB(false, mainWindowVM.StepAmount).Result;
-                    // int postCollapse = parentCM.getWFCHandler().getAmountCollapsed();
-
-                    // if (!finished && preCollapse == postCollapse) {
-                    //     finished = true;
-                    //     mainWindowVM.OutputImage = noResultFoundBM;
-                    // } else {
                     mainWindowVM.OutputImage = result2;
-                    // }
 
                     if (finished) {
                         mainWindowVM.IsPlaying = false;
@@ -347,62 +316,72 @@ public class InputManager {
     public bool processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
-
-        Tuple<int, int> key = new(a, b);
-        if (overwriteColorCache.ContainsKey(key)) {
-            return false;
-        }
-
+        
         WriteableBitmap? bitmap;
         bool showPixel;
 
-        bool hadPainted = hasPainted;
         if (parentCM.getWFCHandler().isOverlappingModel()) {
-            Color? c;
+            int seamlessOffset = (mainWindowVM.SeamlessOutput ||
+                                  mainWindow.getInputControl().getCategory().Contains("Side")) ? 0 : 2;
+            int adaptedA = a - seamlessOffset;
+            int adaptedB = b - seamlessOffset;
 
-            if (colourMapping.ContainsKey(tileIdx)) {
-                c = colourMapping[tileIdx];
-            } else {
-                c = parentCM.getWFCHandler().getPaintableTiles()
-                    .Where(tileViewModel => tileViewModel.PatternIndex.Equals(tileIdx)).ElementAtOrDefault(0)
-                    ?.PatternColour ?? null;
-
-                if (c == null) {
-                    return false;
-                }
-
-                colourMapping[tileIdx] = (Color) c;
+            if (adaptedA < 0 || adaptedB < 0 || adaptedA >= mainWindowVM.ImageOutWidth - 4 ||
+                adaptedB >= mainWindowVM.ImageOutHeight - 4) {
+                Trace.WriteLine("Clicked on edge");
+                //TODO proper actual (literal) edge cases
+                return false;
             }
 
-            overwriteColorCache.Add(key,
-                new Tuple<Color, int>((Color) c, parentCM.getWFCHandler().getActionsTaken()));
-            (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
+            (bitmap, showPixel) = parentCM.getWFCHandler().setTile(adaptedA, adaptedB, tileIdx);
         } else {
-            if (!hasPainted) { //TODO Remove
-                parentCM.getInputManager().placeMarker(true);
-            }
             (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
-        }
-
-        if (!parentCM.getWFCHandler().isOverlappingModel() && !hadPainted) { //TODO Remove
-            loadMarker(false);
         }
 
         if (showPixel) {
             mainWindowVM.OutputImage = bitmap!;
-
-            //resetMarkers();
-            //setRevertingThreshold();
-            //Trace.WriteLine($@"Painted {key} -> {overwriteColorCache[key].ToString()}");
+            processHoverAvailability(clickX, clickY, imgWidth, imgHeight, true);
         } else {
-            if (parentCM.getWFCHandler().isOverlappingModel()) {
-                overwriteColorCache.Remove(key);
-            }
-
             mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
         }
 
         return showPixel;
+    }
+
+    private int lastProcessedX = -1, lastProcessedY = -1;
+    
+    public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, bool force = false) {
+        if (parentCM.getWFCHandler().isOverlappingModel()) {
+            // TODO fix for overlapping model?
+            return; 
+        } else {
+            int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+                b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+
+            if (lastProcessedX == a && lastProcessedY == b && !force) {
+                return;
+            }
+
+            lastProcessedX = a;
+            lastProcessedY = b;
+
+            List<int> availableAtLoc;
+            try {
+                availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation(a, b);
+            } catch (Exception) {
+                return;
+            }
+
+            mainWindowVM.HelperTiles.Clear();
+            int selectedIndex = parentCM.getPaintingWindow().getSelectedPaintIndex();
+
+            foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
+                if (availableAtLoc.Contains(parentCM.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))) {
+                    tvm.Highlighted = tvm.PatternIndex == selectedIndex;
+                    mainWindowVM.HelperTiles.Add(tvm);
+                }
+            }
+        }
     }
 
     public void processClickMask(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
@@ -451,21 +430,5 @@ public class InputManager {
         }
 
         mainWindowVM.OutputImageMask = bitmap;
-        //resetMarkers();
-        //setRevertingThreshold();
-    }
-
-    public Dictionary<Tuple<int, int>, Tuple<Color, int>> getOverwriteColorCache() {
-        return overwriteColorCache;
-    }
-
-    public void removeKeyFromOverlapDict(Tuple<int, int> key) {
-        overwriteColorCache.Remove(key);
-    }
-
-    private bool hasPainted;
-
-    public void resetHasPainted() {
-        hasPainted = false;
     }
 }

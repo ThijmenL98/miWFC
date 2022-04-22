@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using WFC4ALL.DeBroglie.Rot;
 using WFC4ALL.DeBroglie.Topo;
@@ -88,7 +89,6 @@ public class OverlappingModel : TileModel {
         if (propagator != null) {
             return;
         }
-
 
         // Update the model based on the collected data
         DirectionSet directions = sampleTopologyDirections;

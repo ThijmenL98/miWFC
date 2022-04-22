@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using WFC4ALL.DeBroglie.Wfc;
 
 namespace WFC4ALL.DeBroglie.Trackers; 

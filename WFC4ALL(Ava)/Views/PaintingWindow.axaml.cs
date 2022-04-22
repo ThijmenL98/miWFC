@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia;
@@ -76,6 +77,10 @@ public partial class PaintingWindow : Window {
         }
     }
 
+    public int getSelectedPaintIndex() {
+        return _paintingPatternsCB.SelectedIndex;
+    }
+
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
                 || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
@@ -94,12 +99,21 @@ public partial class PaintingWindow : Window {
                 Trace.WriteLine(exception);
 #endif
             }
+        } else if (centralManager!.getMainWindowVM().PencilModeEnabled) {
+            (double clickX2, double clickY2) = e.GetPosition(e.Source as Image);
+            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+
+            centralManager?.getInputManager().processHoverAvailability((int) Math.Round(clickX2),
+                (int) Math.Round(clickY2),
+                (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+                (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom));
         }
     }
 
     public void setPaintingPatterns(TileViewModel[]? values, int idx = 0) {
         if (values != null) {
             _paintingPatternsCB.Items = values;
+            centralManager!.getMainWindowVM().PaintTiles = new ObservableCollection<TileViewModel>(values);
         }
 
         _paintingPatternsCB.SelectedIndex = idx;

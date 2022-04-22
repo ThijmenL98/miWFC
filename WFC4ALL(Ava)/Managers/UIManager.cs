@@ -201,7 +201,6 @@ public class UIManager {
                 source = parentCM.getPaintingWindow();
                 handlePaintingClose(checkClicked);
 
-                parentCM.getInputManager().resetHasPainted();
                 break;
             case Windows.PAINTING:
                 source = mainWindow;
