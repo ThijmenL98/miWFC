@@ -142,6 +142,9 @@ public class InputManager {
     public void revertStep() {
         try {
             int prevAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
+            if (prevAmountCollapsed == 0) {
+                return;
+            }
             int loggedAT = parentCM.getWFCHandler().getActionsTaken();
 
             Bitmap? avaloniaBitmap = null;

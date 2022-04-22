@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.X11;
 using WFC4ALL.DeBroglie;
 using WFC4ALL.DeBroglie.Models;
 using WFC4ALL.DeBroglie.Rot;
@@ -386,7 +387,7 @@ public class WFCHandler {
 
         for (int i = 0; i < tileCache.Count; i++) {
             Tile refTile = tileCache.ElementAt(i).Value.Item2;
-            ((AdjacentModel) dbModel).setFrequency(refTile, weights[i]);
+            ((AdjacentModel) dbModel).setFrequency(refTile, i, true);
         }
 
         originalWeights = weights;
@@ -432,6 +433,54 @@ public class WFCHandler {
     }
 
     public (WriteableBitmap?, bool) setTile(int a, int b, int toSet) {
+        Resolution status;
+        Trace.WriteLine("");
+        
+        if (isOverlappingModel()) {
+            Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) with Tile {toSet}");
+        } else {
+            int descrambledIndex = dbPropagator.getTMM().GetPatterns(tileCache[toSet].Item2, 0).First();
+            Trace.WriteLine($@"Adjacent: We want to paint at ({a}, {b}) with Tile {toSet} D:{descrambledIndex}");
+            
+            List<int> availableAtLoc = new();
+            for (int pattern = 0; pattern < dbPropagator.getWP().PatternCount; pattern++) {
+                if (dbPropagator.getWP().Wave.Get(dbPropagator.Topology.GetIndex(a, b, 0), pattern)) {
+                    availableAtLoc.Add(pattern);
+                }
+            }
+            
+            Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
+
+            if (availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex)) {
+                Trace.WriteLine(availableAtLoc.Count == 1
+                    ? "Returning because already collapsed"
+                    : "Returning because not allowed");
+                return (null, false);
+            }
+            
+            Trace.WriteLine("Painting is allowed, continuing");
+            
+            status = dbPropagator.selWith(a, b, descrambledIndex);
+            
+            Trace.WriteLine($@"Proceeded with status: {status}");
+            if (status.Equals(Resolution.CONTRADICTION)) {
+                Trace.WriteLine("");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("");
+                throw new ArgumentNullException();
+                return (null, false);
+            } 
+            
+            return (getLatestOutputBM(), true);
+        }
+        
+        return (null, false);
+    }
+
+    public (WriteableBitmap?, bool) setTileTwo(int a, int b, int toSet) {
         if (isOverlappingModel()) {
 
 

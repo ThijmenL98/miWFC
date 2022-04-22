@@ -20,7 +20,11 @@ namespace WFC4ALL.DeBroglie;
 ///     an output array using those parameters.
 /// </summary>
 public class TilePropagator {
-    private readonly TileModelMapping tileModelMapping;
+    public readonly TileModelMapping tileModelMapping;
+
+    public TileModelMapping getTMM() {
+        return tileModelMapping;
+    }
 
     private readonly WavePropagator wavePropagator;
 
@@ -429,6 +433,10 @@ public class TilePropagator {
         TileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
         return wavePropagator.StepWith(Topology.GetIndex(px, py, pz),
             tileModelMapping.GetPatterns(tile, o).First());
+    }
+
+    public Resolution selWith(int x, int y, int pattern) {
+        return wavePropagator.StepWith(Topology.GetIndex(x, y, 0), pattern);
     }
 
     /// <summary>

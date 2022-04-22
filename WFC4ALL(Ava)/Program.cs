@@ -1,5 +1,6 @@
 using System;
 using Avalonia;
+using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 
 namespace WFC4ALL; 
@@ -19,7 +20,7 @@ internal static class Program {
     private static AppBuilder BuildAvaloniaApp() {
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
-            .LogToTrace()
+            .LogToTrace(LogEventLevel.Error)
             .UseReactiveUI();
     }
 }

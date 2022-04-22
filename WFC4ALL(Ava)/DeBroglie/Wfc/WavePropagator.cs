@@ -296,6 +296,7 @@ public class WavePropagator {
             // Use the pick
             if (InternalSelect(index, pattern)) {
                 Status = Resolution.CONTRADICTION;
+                return Status;
             }
 
             // Re-evaluate status

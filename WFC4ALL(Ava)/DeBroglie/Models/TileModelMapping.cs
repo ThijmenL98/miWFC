@@ -4,9 +4,9 @@ using System.Runtime.CompilerServices;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Wfc;
 
-namespace WFC4ALL.DeBroglie.Models; 
+namespace WFC4ALL.DeBroglie.Models;
 
-internal struct TileModelMapping {
+public struct TileModelMapping {
     private static readonly ISet<int> emptyPatternSet = new HashSet<int>();
 
     public ITopology PatternTopology { get; set; }
