@@ -335,6 +335,10 @@ public class TilePropagator {
         return Resolution.UNDECIDED;
     }
 
+    public void AddBackTrackPoint() {
+        wavePropagator.AddBacktrackPoint();
+    }
+
     /// <summary>
     ///     Marks the given tile as the only valid choice at a given location.
     ///     This is equivalent to banning all other tiles.
@@ -349,7 +353,6 @@ public class TilePropagator {
                 continue;
             }
 
-            wavePropagator.PushSelection(px, py, pz, p);
             Resolution status = wavePropagator.ban(px, py, pz, p);
             if (status != Resolution.UNDECIDED) {
                 return status;
@@ -392,7 +395,6 @@ public class TilePropagator {
                 continue;
             }
 
-            wavePropagator.PushSelection(px, py, pz, p);
             Resolution status = wavePropagator.ban(px, py, pz, p);
             if (status != Resolution.UNDECIDED) {
                 return status;
@@ -417,7 +419,6 @@ public class TilePropagator {
                 continue;
             }
 
-            wavePropagator.PushSelection(px, py, pz, p);
             Resolution status = wavePropagator.ban(px, py, pz, p);
 
             i++;

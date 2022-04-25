@@ -37,7 +37,7 @@ public class MainWindowViewModel : ViewModelBase {
 
     private bool _pencilModeEnabled, _eraseModeEnabled, _paintKeepModeEnabled, _paintEraseModeEnabled, _isRunning;
 
-    private HoverableTextViewModel _selectedCategory;
+    private HoverableTextViewModel _selectedCategory = new();
     
     private string _categoryDescription = "",
         _selectedInputImage = "",

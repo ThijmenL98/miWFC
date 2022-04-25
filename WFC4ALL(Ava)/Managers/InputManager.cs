@@ -321,19 +321,7 @@ public class InputManager {
         bool showPixel;
 
         if (parentCM.getWFCHandler().isOverlappingModel()) {
-            int seamlessOffset = (mainWindowVM.SeamlessOutput ||
-                                  mainWindow.getInputControl().getCategory().Contains("Side")) ? 0 : 2;
-            int adaptedA = a - seamlessOffset;
-            int adaptedB = b - seamlessOffset;
-
-            if (adaptedA < 0 || adaptedB < 0 || adaptedA >= mainWindowVM.ImageOutWidth - 4 ||
-                adaptedB >= mainWindowVM.ImageOutHeight - 4) {
-                Trace.WriteLine("Clicked on edge");
-                //TODO proper actual (literal) edge cases
-                return false;
-            }
-
-            (bitmap, showPixel) = parentCM.getWFCHandler().setTile(adaptedA, adaptedB, tileIdx);
+            (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
         } else {
             (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
         }
@@ -351,13 +339,25 @@ public class InputManager {
     private int lastProcessedX = -1, lastProcessedY = -1;
     
     public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, bool force = false) {
+        int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+            b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
         if (parentCM.getWFCHandler().isOverlappingModel()) {
-            // TODO fix for overlapping model?
-            return; 
+            List<Color> availableAtLoc;
+            try {
+                availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<Color>(a, b);
+            } catch (Exception) {
+                return;
+            }
+            
+            mainWindowVM.HelperTiles.Clear();
+            int selectedIndex = parentCM.getPaintingWindow().getSelectedPaintIndex();
+            foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
+                if (availableAtLoc.Contains(parentCM.getWFCHandler().getColorFromIndex(tvm.PatternIndex))) {
+                    tvm.Highlighted = tvm.PatternIndex == selectedIndex;
+                    mainWindowVM.HelperTiles.Add(tvm);
+                }
+            }
         } else {
-            int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
-                b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
-
             if (lastProcessedX == a && lastProcessedY == b && !force) {
                 return;
             }
@@ -367,7 +367,7 @@ public class InputManager {
 
             List<int> availableAtLoc;
             try {
-                availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation(a, b);
+                availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);
             } catch (Exception) {
                 return;
             }

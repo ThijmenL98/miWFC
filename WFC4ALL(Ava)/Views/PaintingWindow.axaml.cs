@@ -124,6 +124,7 @@ public partial class PaintingWindow : Window {
         return sizes[_paintingSizeCB.SelectedIndex];
     }
 
+    // ReSharper disable twice UnusedParameter.Local
     private void Window_OnClosing(object? sender, CancelEventArgs e) {
         centralManager?.getUIManager().handlePaintingClose(false);
     }

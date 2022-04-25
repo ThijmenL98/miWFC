@@ -220,12 +220,7 @@ public class WavePropagator {
         patternModelConstraint.Propagate();
         return Status;
     }
-
-    public void PushSelection(int px, int py, int pz, int pattern) {
-        int index = Topology.GetIndex(px, py, pz);
-        PushSelection(index, pattern);
-    }
-
+    
     public void PushSelection(int index, int pattern) {
         backtrackItemsLengths.Push(droppedBacktrackItemsCount + backtrackItems.Count);
         prevChoices.Push(new IndexPatternItem {Index = index, Pattern = pattern});
@@ -359,7 +354,7 @@ public class WavePropagator {
                     BacktrackCount++;
 
                     // Mark the given choice as impossible
-                    if (InternalBan(item.Index, item.Pattern)) {
+                    if (item.Index >= 0 && InternalBan(item.Index, item.Pattern)) {
                         Status = Resolution.CONTRADICTION;
                     }
                 }
@@ -378,6 +373,10 @@ public class WavePropagator {
                 StepConstraints();
             }
         }
+    }
+    
+    public void AddBacktrackPoint() {
+        RecordBacktrack(-1, -1);
     }
 
     public void DoCustomBacktrack() {

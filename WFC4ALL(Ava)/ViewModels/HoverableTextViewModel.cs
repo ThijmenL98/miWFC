@@ -17,7 +17,7 @@ public class HoverableTextViewModel : ReactiveObject {
         init => this.RaiseAndSetIfChanged(ref _toolTipText, value);
     }
     
-    public HoverableTextViewModel(string displayText, string hoverText) {
+    public HoverableTextViewModel(string displayText = "", string hoverText = "") {
         DisplayText = displayText;
         ToolTipText = hoverText;
     }

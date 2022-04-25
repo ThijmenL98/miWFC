@@ -110,8 +110,8 @@ public class TileViewModel : ReactiveObject {
      * Button callbacks
      */
 
-    private long lastIncMillis = 0, lastDecMillis = 0;
-    private int incCount = 0, decCount = 0;
+    private long lastIncMillis, lastDecMillis;
+    private int incCount, decCount;
     private double incAmount = 0.1d, decAmount = 0.1d;
 
     public void OnIncrement() {

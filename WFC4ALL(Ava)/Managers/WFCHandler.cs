@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -425,68 +426,81 @@ public class WFCHandler {
         return getLatestOutputBM();
     }
 
+    public Color getColorFromIndex(int index) {
+        return toAddPaint[index].PatternColour;
+    }
+
+    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public (WriteableBitmap?, bool) setTile(int a, int b, int toSet) {
         Resolution status;
-        Trace.WriteLine("");
+        const bool internalDebug = false;
+        if (internalDebug) {
+            Trace.WriteLine("");
+        }
 
         if (isOverlappingModel()) {
+            #region Overlapping Tile Selection
+
             dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int o);
-            Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
+            if (internalDebug) {
+                Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
+            }
+
+            List<Color> possibleTiles = getAvailablePatternsAtLocation<Color>(a, b);
+
+            if (internalDebug) {
+                Trace.WriteLine($@"Available colours: {string.Join(", ", possibleTiles)}");
+            }
 
             Color c = toAddPaint[toSet].PatternColour;
-            IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
-                .Where(tile => ((Color) tile.Value).Equals(c));
-            TilePropagatorTileSet tileSet = dbPropagator.CreateTileSet(tilesToSelect);
 
-            ISet<int> patterns = dbPropagator.tileModelMapping.GetPatterns(tileSet, o);
-            int selectedIndex = dbPropagator.Topology.GetIndex(px, py, pz);
+            if (possibleTiles.Count == 1 || !possibleTiles.Contains(c)) {
+                if (internalDebug) {
+                    Trace.WriteLine(possibleTiles.Count == 1
+                        ? "Returning because already collapsed"
+                        : "Returning because not allowed");
+                }
 
-            Trace.WriteLine($@"Available patterns: {patterns.Count}");
-
-            List<int> allowedPatterns = getAvailablePatternsAtLocation(a, b);
-
-            List<int> intersection = allowedPatterns.Intersect(patterns).ToList();
-
-            Trace.WriteLine($@"Allowed patterns: {allowedPatterns.Count}");
-            Trace.WriteLine($@"Cross product: {string.Join(", ", intersection)}");
-
-            if (intersection.Count == 0) {
-                Trace.WriteLine("Returning because illegal move");
                 return (null, false);
             }
 
-            List<Tile> toPaintWith = new();
-            foreach (TileViewModel tvm in toAddPaint) {
-                if (intersection.Contains(tvm.PatternIndex)) {
-                    Trace.WriteLine(@$"Adding tile {tvm.PatternIndex} W:{tvm.PatternWeight}");
-                    Tile tile = tiles.toArray2d().Cast<Tile>().ToList()[tvm.PatternIndex];
-                    toPaintWith.Add(tile);
-                }
+            IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
+                .Where(tile => ((Color) tile.Value).Equals(c));
+
+            dbPropagator.AddBackTrackPoint();
+            status = dbPropagator.select(a, b, 0, tilesToSelect);
+
+            if (internalDebug) {
+                Trace.WriteLine($@"Proceeded with status: {status}");
             }
 
-            // status = dbPropagator.select(a, b, 0, toPaintWith, out int patternCount);
-            // Trace.WriteLine($@"Proceeded with status: {status}");
-            //
-            // if (status.Equals(Resolution.UNDECIDED)) {
-            //     return (getLatestOutputBM(), true);
-            // } else {
-            //     for (int i = 0; i < patternCount; i++) {
-            //         dbPropagator.doBacktrack();
-            //     }
-            //     return (null, false);
-            // }
+            if (status.Equals(Resolution.CONTRADICTION)) {
+                Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
+                Trace.WriteLine($@"Available patterns: {string.Join(", ", tilesToSelect)}");
+                Trace.WriteLine("");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("");
+                stepBackWfc();
+                return (null, false);
+            }
+
+            return (getLatestOutputBM(), true);
+
+            #endregion
         } else {
             #region Adjacent Tile Selection
 
             int descrambledIndex = getDescrambledIndex(toSet);
-            const bool internalDebug = false;
 
             if (internalDebug) {
                 Trace.WriteLine(
                     $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
             }
 
-            List<int> availableAtLoc = getAvailablePatternsAtLocation(a, b);
+            List<int> availableAtLoc = getAvailablePatternsAtLocation<int>(a, b);
 
             if (internalDebug) {
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
@@ -513,7 +527,8 @@ public class WFCHandler {
             }
 
             if (status.Equals(Resolution.CONTRADICTION)) {
-                Trace.WriteLine($@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
+                Trace.WriteLine(
+                    $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
                 Trace.WriteLine("");
                 Trace.WriteLine("CONTRADICITON");
@@ -529,21 +544,28 @@ public class WFCHandler {
 
             #endregion
         }
-
-        return (null, false);
     }
 
     public int getDescrambledIndex(int raw) {
         return dbPropagator.getTMM().GetPatterns(tileCache[raw].Item2, 0).First();
     }
 
-    public List<int> getAvailablePatternsAtLocation(int a, int b) {
-        List<int> availableAtLoc = new();
-        dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int _);
-        for (int pattern = 0; pattern < dbPropagator.getWP().PatternCount; pattern++) {
-            if (dbPropagator.getWP().Wave.Get(dbPropagator.Topology.GetIndex(px, py, pz), pattern)) {
-                availableAtLoc.Add(pattern);
+    public List<T> getAvailablePatternsAtLocation<T>(int a, int b) {
+        List<T> availableAtLoc;
+        if (isOverlappingModel()) {
+            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int o);
+            int selectedIndex = dbPropagator.Topology.GetIndex(px, py, pz);
+            availableAtLoc = dbPropagator.GetPossibleValues<T>(selectedIndex).ToList();
+        } else {
+            List<int> tempList = new();
+            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int _);
+            for (int pattern = 0; pattern < dbPropagator.getWP().PatternCount; pattern++) {
+                if (dbPropagator.getWP().Wave.Get(dbPropagator.Topology.GetIndex(px, py, pz), pattern)) {
+                    tempList.Add(pattern);
+                }
             }
+
+            availableAtLoc = new List<T>((IEnumerable<T>) tempList);
         }
 
         return availableAtLoc;
@@ -583,15 +605,22 @@ public class WFCHandler {
                 uint* dest = backBuffer + (int) y * stride / 4;
                 for (int x = 0; x < outputWidth; x++) {
                     Color c = dbOutput.get(x, (int) y);
-                    Color toSet = currentColors!.Contains(c)
-                        ? c
-                        : grid
-                            ? (x + y) % 2 == 0 ? Color.Parse("#11000000") :
-                            Color.Parse("#00000000")
-                            : Color.Parse("#00000000");
+
+                    dbPropagator.TileCoordToPatternCoord(x, (int) y, 0, out int px, out int py, out int pz, out int _);
+                    int selectedIndex = dbPropagator.Topology.GetIndex(px, py, pz);
+                    ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
+
+                    Color toSet = possibleTiles.Count == 1 && x == px && y == py
+                        ? possibleTiles.First()
+                        : currentColors!.Contains(c)
+                            ? c
+                            : grid
+                                ? (x + y) % 2 == 0 ? Color.Parse("#11000000") :
+                                Color.Parse("#00000000")
+                                : Color.Parse("#00000000");
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
-                    if (toSet.A == 255) {
+                    if (toSet.A > 0) {
                         Interlocked.Increment(ref collapsedTiles);
                     }
                 }
