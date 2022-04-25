@@ -28,11 +28,11 @@ public class InputManager {
 
     private readonly CentralManager parentCM;
     private readonly Stack<int> savePoints;
-    
+
     private int lastPaintedAmountCollapsed;
 
     private Color[,] maskColours;
-    
+
     private DispatcherTimer timer = new();
 
     public InputManager(CentralManager parent) {
@@ -77,7 +77,7 @@ public class InputManager {
         }
 
         lastPaintedAmountCollapsed = 0;
-        
+
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
@@ -159,7 +159,6 @@ public class InputManager {
                     }
                 }
             }
-
         } catch (Exception exception) {
 #if (DEBUG)
             Trace.WriteLine(exception);
@@ -173,14 +172,21 @@ public class InputManager {
     }
 
     public void placeMarker() {
+        if (parentCM.getWFCHandler().isCollapsed()) {
+            return;
+        }
+        
         int curStep = parentCM.getWFCHandler().getAmountCollapsed();
         if (curStep == 0) {
             return;
         }
 
         mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
-            mainWindow.getOutputControl().getTimelineWidth() * parentCM.getWFCHandler().getPercentageCollapsed() +
-            1));
+            (parentCM.getMainWindow().IsVisible
+                ? mainWindow.getOutputControl().getTimelineWidth()
+                : parentCM.getPaintingWindow().getTimelineWidth()) *
+            parentCM.getWFCHandler().getPercentageCollapsed() + 1));
+
         while (true) {
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                 savePoints.Pop();
@@ -215,7 +221,7 @@ public class InputManager {
 
             prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
         }
-
+        
         if (lastPaintedAmountCollapsed != 0 &&
             prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
             parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
@@ -316,7 +322,7 @@ public class InputManager {
     public bool processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
-        
+
         WriteableBitmap? bitmap;
         bool showPixel;
 
@@ -337,7 +343,7 @@ public class InputManager {
     }
 
     private int lastProcessedX = -1, lastProcessedY = -1;
-    
+
     public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, bool force = false) {
         int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
@@ -348,7 +354,7 @@ public class InputManager {
             } catch (Exception) {
                 return;
             }
-            
+
             mainWindowVM.HelperTiles.Clear();
             int selectedIndex = parentCM.getPaintingWindow().getSelectedPaintIndex();
             foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
@@ -430,5 +436,9 @@ public class InputManager {
         }
 
         mainWindowVM.OutputImageMask = bitmap;
+    }
+
+    public void resetHoverAvailability() {
+        mainWindowVM.HelperTiles.Clear();
     }
 }

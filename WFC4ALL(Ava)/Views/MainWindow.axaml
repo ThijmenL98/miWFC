@@ -121,6 +121,7 @@
                                 </Border>
                             </Grid>
                         </Grid>
+                        
                         <ucontrols:OutputControl DataContext="{Binding VM}"
                                                  Grid.Column="1" x:Name="outputControl" />
                     </Grid>

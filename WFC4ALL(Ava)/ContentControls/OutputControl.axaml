@@ -105,7 +105,7 @@
 
         <GridSplitter Grid.Row="4" IsEnabled="False" Background="Transparent" />
 
-        <Grid Grid.Row="5" ColumnDefinitions="*, 50*, *">
+        <Grid Grid.Row="5" ColumnDefinitions="*, 50*, *" Width="680">
             <GridSplitter IsEnabled="False" Grid.Column="0" Background="Transparent" />
             <Grid Grid.Column="1" RowDefinitions="*, *" x:Name="timeline" Margin="0 ,0, 0, 10">
                 <ItemsControl Items="{Binding Markers}" MinHeight="25" Margin="-10" Grid.Row="0">

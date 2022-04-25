@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -80,8 +81,10 @@ public class UIManager {
     }
 
     public void updateTimeStampPosition(double amountCollapsed) {
-        double tWidth = mainWindow.getOutputControl().getTimelineWidth();
-        mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
+        double tWidth = parentCM.getMainWindow().IsVisible
+            ? mainWindow.getOutputControl().getTimelineWidth()
+            : parentCM.getPaintingWindow().getTimelineWidth();
+        mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 8;
     }
 
     /*
@@ -106,7 +109,8 @@ public class UIManager {
         patternCount = 0;
     }
 
-    public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries, int rawIndex) {
+    public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries,
+        int rawIndex) {
         int n = colors.Height;
         WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
@@ -216,6 +220,17 @@ public class UIManager {
 
         source.Hide();
         target.Show();
+
+        ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
+
+        mainWindowVM.Markers.Clear();
+        foreach (MarkerViewModel mvm in mvmListCopy) {
+            mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
+                Math.Round(mvm.MarkerOffset * (window.Equals(Windows.MAIN) ? 0.73513513513d : 1.36029411765d), 3,
+                    MidpointRounding.ToEven)));
+        }
+
+        updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
 
         target.Position = source.Position;
 

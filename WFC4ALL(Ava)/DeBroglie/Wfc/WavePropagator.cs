@@ -245,8 +245,6 @@ public class WavePropagator {
                 // Pick a tile to select at that index
                 int pattern = patternPicker.GetRandomPossiblePatternAt(index, RandomDouble);
                 
-                Trace.WriteLine(@$"Selecting pattern {pattern} @ {index}");
-
                 RecordBacktrack(index, pattern);
 
                 // Use the pick

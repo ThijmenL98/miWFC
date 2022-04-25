@@ -412,15 +412,9 @@ public class WFCHandler {
     }
 
     public WriteableBitmap stepBackWfc(int steps = 1) {
-        bool lastStepWasPaint = false;
-
         for (int i = 0; i < steps; i++) {
             dbPropagator.doBacktrack();
             actionsTaken--;
-        }
-
-        if (lastStepWasPaint) {
-            runWfcDB();
         }
 
         return getLatestOutputBM();
@@ -431,6 +425,8 @@ public class WFCHandler {
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+    [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
+#pragma warning disable CS0162
     public (WriteableBitmap?, bool) setTile(int a, int b, int toSet) {
         Resolution status;
         const bool internalDebug = false;
@@ -441,7 +437,7 @@ public class WFCHandler {
         if (isOverlappingModel()) {
             #region Overlapping Tile Selection
 
-            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int o);
+            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int _, out int _);
             if (internalDebug) {
                 Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
             }
@@ -478,10 +474,10 @@ public class WFCHandler {
                 Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", tilesToSelect)}");
                 Trace.WriteLine("");
-                Trace.WriteLine("CONTRADICITON");
-                Trace.WriteLine("CONTRADICITON");
-                Trace.WriteLine("CONTRADICITON");
-                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICTION");
+                Trace.WriteLine("CONTRADICTION");
+                Trace.WriteLine("CONTRADICTION");
+                Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("");
                 stepBackWfc();
                 return (null, false);
@@ -490,6 +486,7 @@ public class WFCHandler {
             return (getLatestOutputBM(), true);
 
             #endregion
+            // ReSharper disable once RedundantIfElseBlock
         } else {
             #region Adjacent Tile Selection
 
@@ -531,10 +528,10 @@ public class WFCHandler {
                     $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
                 Trace.WriteLine("");
-                Trace.WriteLine("CONTRADICITON");
-                Trace.WriteLine("CONTRADICITON");
-                Trace.WriteLine("CONTRADICITON");
-                Trace.WriteLine("CONTRADICITON");
+                Trace.WriteLine("CONTRADICTION");
+                Trace.WriteLine("CONTRADICTION");
+                Trace.WriteLine("CONTRADICTION");
+                Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("");
                 stepBackWfc();
                 return (null, false);
@@ -545,6 +542,7 @@ public class WFCHandler {
             #endregion
         }
     }
+#pragma warning restore CS0162
 
     public int getDescrambledIndex(int raw) {
         return dbPropagator.getTMM().GetPatterns(tileCache[raw].Item2, 0).First();
@@ -553,8 +551,7 @@ public class WFCHandler {
     public List<T> getAvailablePatternsAtLocation<T>(int a, int b) {
         List<T> availableAtLoc;
         if (isOverlappingModel()) {
-            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int pz, out int o);
-            int selectedIndex = dbPropagator.Topology.GetIndex(px, py, pz);
+            int selectedIndex = dbPropagator.Topology.GetIndex(a, b, 0);
             availableAtLoc = dbPropagator.GetPossibleValues<T>(selectedIndex).ToList();
         } else {
             List<int> tempList = new();
@@ -606,11 +603,10 @@ public class WFCHandler {
                 for (int x = 0; x < outputWidth; x++) {
                     Color c = dbOutput.get(x, (int) y);
 
-                    dbPropagator.TileCoordToPatternCoord(x, (int) y, 0, out int px, out int py, out int pz, out int _);
-                    int selectedIndex = dbPropagator.Topology.GetIndex(px, py, pz);
+                    int selectedIndex = dbPropagator.Topology.GetIndex(x, (int) y, 0);
                     ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
 
-                    Color toSet = possibleTiles.Count == 1 && x == px && y == py
+                    Color toSet = possibleTiles.Count == 1 
                         ? possibleTiles.First()
                         : currentColors!.Contains(c)
                             ? c
@@ -620,7 +616,7 @@ public class WFCHandler {
                                 : Color.Parse("#00000000");
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
-                    if (toSet.A > 0) {
+                    if (toSet.A > 200) {
                         Interlocked.Increment(ref collapsedTiles);
                     }
                 }

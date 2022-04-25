@@ -80,7 +80,7 @@ public partial class PaintingWindow : Window {
     public int getSelectedPaintIndex() {
         return _paintingPatternsCB.SelectedIndex;
     }
-
+    
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
                 || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
@@ -100,14 +100,20 @@ public partial class PaintingWindow : Window {
 #endif
             }
         } else if (centralManager!.getMainWindowVM().PencilModeEnabled) {
-            (double clickX2, double clickY2) = e.GetPosition(e.Source as Image);
+            (double hoverX, double hoverY) = e.GetPosition(e.Source as Image);
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
 
-            centralManager?.getInputManager().processHoverAvailability((int) Math.Round(clickX2),
-                (int) Math.Round(clickY2),
+            centralManager?.getInputManager().processHoverAvailability((int) Math.Round(hoverX),
+                (int) Math.Round(hoverY),
                 (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                 (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom));
         }
+
+        e.Handled = true;
+    }
+
+    private void OnPointerMoved(object sender, PointerEventArgs e) {
+        centralManager?.getInputManager().resetHoverAvailability();
     }
 
     public void setPaintingPatterns(TileViewModel[]? values, int idx = 0) {
@@ -117,6 +123,10 @@ public partial class PaintingWindow : Window {
         }
 
         _paintingPatternsCB.SelectedIndex = idx;
+    }
+
+    public double getTimelineWidth() {
+        return this.Find<Grid>("timeline").Bounds.Width;
     }
 
     public int getPaintBrushSize() {

@@ -3,7 +3,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         d:DesignHeight="800" d:DesignWidth="1400" MinWidth="1400" MinHeight="800"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        PointerMoved="OnPointerMoved">
 
 	<Window.Resources>
 		<!-- Hover resources -->
@@ -12,12 +13,16 @@
 		<Image Source="/Assets/EraseHover.png" x:Key="hoverEraseKey" x:Name="hoverErase" />
 		<Image Source="/Assets/PaintKeepHover.png" x:Key="hoverPaintKeepKey" x:Name="hoverPaintKeep" />
 		<Image Source="/Assets/PaintEraseHover.png" x:Key="hoverPaintEraseKey" x:Name="hoverPaintErase" />
+		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
+		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
 		<Image Source="/Assets/PencilHover.png" x:Key="clickPencilKey" x:Name="clickPencil" />
 		<Image Source="/Assets/EraseHover.png" x:Key="clickEraseKey" x:Name="clickErase" />
 		<Image Source="/Assets/PaintKeepHover.png" x:Key="clickPaintKeepKey" x:Name="clickPaintKeep" />
 		<Image Source="/Assets/PaintEraseHover.png" x:Key="clickPaintEraseKey" x:Name="clickPaintErase" />
+		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
+		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -195,28 +200,62 @@
 						<!-- </StackPanel> -->
 					</Grid>
 
-					<Grid Grid.Column="1" RowDefinitions="*" HorizontalAlignment="Center">
-						<Grid ColumnDefinitions="*" VerticalAlignment="Center">
-							<Border Margin="10" Background="#11000000" CornerRadius="10">
-								<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
-								       x:Name="outputImage" Source="{Binding OutputImage}"
-								       PointerPressed="OutputImageOnPointerPressed"
-								       PointerMoved="OutputImageOnPointerMoved" />
-							</Border>
+					<Grid Grid.Column="1" RowDefinitions="*, Auto">
+						<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+							<Grid ColumnDefinitions="*" VerticalAlignment="Center">
+								<Border Margin="10" Background="#11000000" CornerRadius="10">
+									<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+									       x:Name="outputImage" Source="{Binding OutputImage}"
+									       PointerPressed="OutputImageOnPointerPressed"
+									       PointerMoved="OutputImageOnPointerMoved" />
+								</Border>
+							</Grid>
+						</Grid>
+
+						<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+							<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
+								<Border Margin="10" CornerRadius="10">
+									<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+									       x:Name="outputImageMask" Source="{Binding OutputImageMask}" Opacity=".25"
+									       IsHitTestVisible="False" />
+								</Border>
+							</Grid>
+						</Grid>
+
+						<Grid Grid.Row="1" ColumnDefinitions="*, 50*, *" Margin="0, 0, 0, 15">
+							<GridSplitter IsEnabled="False" Grid.Column="0" Background="Transparent" />
+							<Grid Grid.Column="1" RowDefinitions="*, *" x:Name="timeline" Margin="0 ,0, 0, 10">
+								<ItemsControl Items="{Binding Markers}" MinHeight="25" Margin="-10" Grid.Row="0">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<Canvas HorizontalAlignment="Left" ClipToBounds="False" />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Grid>
+												<Image Height="25" Source="/Assets/TimeStamp.png">
+													<Image.RenderTransform>
+														<TranslateTransform X="{Binding MarkerOffset}" />
+													</Image.RenderTransform>
+												</Image>
+											</Grid>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+								<Image Grid.Row="1" Height="25" Margin="0" HorizontalAlignment="Left"
+								       Source="/Assets/NowMarker.png" Width="35">
+									<Image.RenderTransform>
+										<TranslateTransform X="{Binding TimeStampOffset}" Y="10" />
+									</Image.RenderTransform>
+								</Image>
+							</Grid>
+							<Separator Grid.Column="1" Background="Black" Height="4" CornerRadius="2" Margin="0,0,0,10" />
+							<GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
 						</Grid>
 					</Grid>
 
-					<Grid Grid.Column="1" RowDefinitions="*" HorizontalAlignment="Center">
-						<Grid ColumnDefinitions="*" VerticalAlignment="Center">
-							<Border Margin="10" CornerRadius="10">
-								<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
-								       x:Name="outputImageMask" Source="{Binding OutputImageMask}" Opacity=".25"
-								       IsHitTestVisible="False" />
-							</Border>
-						</Grid>
-					</Grid>
-
-					<Grid Grid.Column="2" RowDefinitions="Auto, Auto, *">
+					<Grid Grid.Column="2" RowDefinitions="Auto, Auto, *, Auto">
 						<Button Grid.Row="0" Padding="0" Background="Transparent"
 						        Command="{Binding OnCustomizeWindowSwitch}"
 						        CommandParameter="M" VerticalAlignment="Top"
@@ -301,7 +340,7 @@
 												<Border Width="50" Height="50" Grid.Column="0"
 												        BoxShadow="0 0 15 0.25 #000" IsVisible="{Binding !Highlighted}"
 												        Background="#000" Margin="5">
-													<Image Width="50" Height="50" 
+													<Image Width="50" Height="50"
 													       Source="{Binding PatternImage}"
 													       RenderOptions.BitmapInterpolationMode="Default">
 														<Image.RenderTransform>
@@ -336,6 +375,59 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
+
+						<Grid Grid.Row="3" ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">
+							<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnSave}" Margin="5"
+							        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
+								<Button.Styles>
+									<Style Selector="Button:disabled /template/ ContentPresenter">
+										<Setter Property="Background" Value="Transparent" />
+										<Setter Property="Opacity" Value="160" />
+									</Style>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverSaveKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickSaveKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Save.png" />
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock>Place a new marker</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+							<Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OnLoad}" Margin="5"
+							        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
+								<Button.Styles>
+									<Style Selector="Button:disabled /template/ ContentPresenter">
+										<Setter Property="Opacity" Value="160" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverLoadKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickLoadKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Load.png" />
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock>Revert back to last marker (if available)</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+						</Grid>
 					</Grid>
 				</Grid>
 			</Border>
