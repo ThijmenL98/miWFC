@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
@@ -43,7 +44,7 @@ public class MainWindowViewModel : ViewModelBase {
         _selectedInputImage = "",
         _stepAmountString = "Steps to take: 1";
 
-    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3;
+    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3, _selectedTabIndex = 0;
     private double _timeStampOffset, _timelineWidth = 600d;
 
     private CentralManager? centralManager;
@@ -128,6 +129,11 @@ public class MainWindowViewModel : ViewModelBase {
     public int PatternSize {
         get => _patternSize;
         set => this.RaiseAndSetIfChanged(ref _patternSize, value);
+    }
+
+    public int SelectedTabIndex {
+        get => _selectedTabIndex;
+        set => this.RaiseAndSetIfChanged(ref _selectedTabIndex, value);
     }
 
     public double TimeStampOffset {
@@ -240,7 +246,7 @@ public class MainWindowViewModel : ViewModelBase {
     /*
      * Logic
      */
-
+    
     public void setCentralManager(CentralManager cm) {
         lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
         lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
@@ -259,8 +265,8 @@ public class MainWindowViewModel : ViewModelBase {
             OnAnimate();
         }
 
-        bool changingToSmart = !SimpleModelSelected;
-
+        bool changingToSmart = SelectedTabIndex != 0;
+        
         string lastCat = CategorySelection.DisplayText;
 
         string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");

@@ -34,6 +34,13 @@ public partial class MainWindow : Window {
     /*
      * Event Handlers
      */
+    private void OnTabChange(object? sender, SelectionChangedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+        
+        centralManager!.getMainWindowVM().OnModelClick();
+    }
 
     private void keyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {

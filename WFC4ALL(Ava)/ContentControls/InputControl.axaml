@@ -25,7 +25,7 @@
             <TextBlock Grid.Column="0" Grid.Row="0">
                 Category
             </TextBlock>
-            <ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0"
+            <ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0" MinHeight="40"
                       SelectedItem="{Binding CategorySelection}"
                       SelectionChanged="catCBChangeHandler" x:Name="categoryCB">
                 <ComboBox.ItemTemplate>
@@ -46,7 +46,7 @@
             <TextBlock Grid.Column="0" Grid.Row="1">
                 Input Image
             </TextBlock>
-            <ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0"
+            <ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0" MinHeight="40"
                       SelectedItem="{Binding InputImageSelection}"
                       SelectionChanged="inImgCBChangeHandler" x:Name="inputCB" />
         </Grid>
@@ -97,24 +97,7 @@
 
             <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" IsEnabled="False" Background="Transparent" />
 
-            <Button Background="Transparent" Command="{Binding OnModelClick}" Grid.Column="3" Grid.Row="0"
-                    MaxHeight="80" Padding="0" Margin="5">
-                <Button.Styles>
-                    <Style Selector="Button:pointerover /template/ ContentPresenter">
-                        <Setter Property="Content" Value="{DynamicResource hoverModeKey}" />
-                        <Setter Property="Background" Value="Transparent" />
-                    </Style>
-                    <Style Selector="Button:pressed /template/ ContentPresenter">
-                        <Setter Property="Content" Value="{DynamicResource clickModeKey}" />
-                        <Setter Property="Background" Value="Transparent" />
-                    </Style>
-                </Button.Styles>
-                <Panel>
-                    <Image Source="/Assets/Mode.png" />
-                </Panel>
-            </Button>
-
-            <Button Padding="0" Grid.Column="3" Grid.Row="1" Width="80" Margin="0" Command="{Binding OnWeightReset}"
+            <Button Padding="0" Grid.Column="3" Grid.Row="0" Grid.RowSpan="2" Width="80" Margin="0" Command="{Binding OnWeightReset}"
                     IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
                 <Button.Styles>
                     <Style Selector="Button:pointerover /template/ ContentPresenter">

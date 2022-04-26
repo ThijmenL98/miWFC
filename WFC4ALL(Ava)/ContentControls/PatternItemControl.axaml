@@ -49,10 +49,40 @@
 											</StackPanel>
 										</ToolTip.Tip>
 									</Grid>
-						
+
 									<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *" Margin="-10, 0, 0, 0">
-										<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}" Background="Transparent"/>
-										<RepeatButton Grid.Row="1" Padding="4" VerticalAlignment="Bottom" Content="▼" Command="{Binding OnDecrement}" Background="Transparent"/>
+										<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}"
+										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}" >
+											<RepeatButton.Styles>
+												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+													<Setter Property="RepeatButton.Foreground" Value="#70c3ff" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="RepeatButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+													<Setter Property="RepeatButton.Foreground" Value="#1affc6" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+											</RepeatButton.Styles>
+										</RepeatButton>
+										<RepeatButton Grid.Row="1" Padding="4" VerticalAlignment="Bottom" Content="▼" Command="{Binding OnDecrement}"
+										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}">
+											<RepeatButton.Styles>
+												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+													<Setter Property="RepeatButton.Foreground" Value="#70c3ff" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="RepeatButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
+													<Setter Property="RepeatButton.Foreground" Value="#1affc6" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+											</RepeatButton.Styles>
+										</RepeatButton>
 									</Grid>
 								</Grid>
 							</Border>
