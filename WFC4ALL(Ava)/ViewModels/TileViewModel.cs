@@ -110,53 +110,47 @@ public class TileViewModel : ReactiveObject {
      * Button callbacks
      */
 
-    private long lastIncMillis, lastDecMillis;
-    private int incCount, decCount;
-    private double incAmount = 0.1d, decAmount = 0.1d;
+    private long lastUpdateMillis;
+    private int clickCount;
+    private double changeAmount = 0.1d;
 
     public void OnIncrement() {
-        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        long diff = now - lastIncMillis;
-        lastIncMillis = now;
-
-        if (diff < 400) {
-            incCount++;
-            incAmount = incCount switch {
-                >= 18 when PatternWeight % 10 == 0 => 10d,
-                > 9 when PatternWeight % 1 == 0 => 1d,
-                _ => incAmount
-            };
-        } else {
-            incAmount = 0.1d;
-            incCount = 0;
-        }
-
-        PatternWeight += incAmount;
-        PatternWeight = Math.Round(PatternWeight, 1);
+        handleWeightChange(true);
     }
 
     public void OnDecrement() {
-        if (PatternWeight > 0) {
-            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            long diff = now - lastDecMillis;
-            lastDecMillis = now;
+        handleWeightChange(false);
+    }
 
-            if (diff < 400) {
-                decCount++;
-                decAmount = decCount switch {
-                    >= 18 when PatternWeight % 10 == 0 => 10d,
-                    > 9 when PatternWeight % 1 == 0 => 1d,
-                    _ => decAmount
-                };
-            } else {
-                decAmount = 0.1d;
-                decCount = 0;
-            }
-
-            PatternWeight -= decAmount;
-            PatternWeight = Math.Max(0, PatternWeight);
-            PatternWeight = Math.Round(PatternWeight, 1);
+    private void handleWeightChange(bool increment) {
+        if (!(PatternWeight > 0)) {
+            return;
         }
+
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long diff = now - lastUpdateMillis;
+        lastUpdateMillis = now;
+
+        if (diff < 400) {
+            clickCount++;
+            changeAmount = clickCount switch {
+                >= 18 when PatternWeight % 10 == 0 => 10d,
+                > 9 when PatternWeight % 1 == 0 => 1d,
+                _ => changeAmount
+            };
+        } else {
+            changeAmount = 0.1d;
+            clickCount = 0;
+        }
+
+        if (increment) {
+            PatternWeight += changeAmount;
+        } else {
+            PatternWeight -= changeAmount;
+            PatternWeight = Math.Max(0, PatternWeight);
+        }
+
+        PatternWeight = Math.Round(PatternWeight, 1);
     }
 
     public void OnRotateClick() {

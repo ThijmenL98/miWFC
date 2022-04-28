@@ -67,8 +67,7 @@
 							</Panel>
 							<ToolTip.Tip>
 								<StackPanel>
-									<TextBlock>Paint a single pixel using the</TextBlock>
-									<TextBlock>value from the list below</TextBlock>
+									<TextBlock TextWrapping="Wrap">Paint a single pixel using the value from the list below</TextBlock>
 								</StackPanel>
 							</ToolTip.Tip>
 						</Button>
@@ -275,7 +274,7 @@
 							</Panel>
 							<ToolTip.Tip>
 								<StackPanel>
-									<TextBlock>Start/Stop generation animation</TextBlock>
+									<TextBlock TextWrapping="Wrap">Start/Stop generation animation</TextBlock>
 								</StackPanel>
 							</ToolTip.Tip>
 						</Button>
@@ -293,48 +292,6 @@
 								<DataTemplate>
 									<Border Padding="1" Margin="7, 7, 7,7">
 										<Grid>
-											<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-											<Border Padding="5"
-											        CornerRadius="10"
-											        IsVisible="{ReflectionBinding #patternItemsControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
-												<Grid RowDefinitions="*, *" ColumnDefinitions="*, *">
-													<Border Width="50" Height="50" Grid.Row="0"
-													        BoxShadow="0 0 15 0.25 Black"
-													        Background="Gray" Margin="10, 5, 15, 5">
-														<Image Width="50" Height="50"
-														       Source="{Binding PatternImage}"
-														       RenderOptions.BitmapInterpolationMode="Default" />
-													</Border>
-													<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-													<Grid Grid.Column="0" Grid.Row="1" RowDefinitions="*, *"
-													      ColumnDefinitions="*, *"
-													      IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning, TargetNullValue=False, FallbackValue=False}">
-														<!-- <NumericUpDown Grid.Row="1" Grid.Column="0" -->
-														<!--                Grid.ColumnSpan="2" MaxHeight="8" -->
-														<!--                Minimum="0" Width="75" -->
-														<!--                FormatString="0.#;;~0" -->
-														<!--                Margin="0" MaxWidth="64" -->
-														<!--                Value="{Binding PatternWeight}" /> -->
-
-														<TextBlock Grid.Column="0" Grid.Row="2"
-														           Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
-														           Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#F005" />
-														<ToolTip.Tip>
-															<StackPanel>
-																<TextBlock TextWrapping="Wrap">Set the weight of this pattern '~0' means it tries to be 0, but might be forced to place a tile</TextBlock>
-															</StackPanel>
-														</ToolTip.Tip>
-													</Grid>
-
-													<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *" Margin="-10, 0, 0, 0">
-														<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲"
-														              Command="{Binding OnIncrement}" Background="Transparent" />
-														<RepeatButton Grid.Row="1" Padding="4" VerticalAlignment="Bottom" Content="▼"
-														              Command="{Binding OnDecrement}" Background="Transparent" />
-													</Grid>
-												</Grid>
-											</Border>
-
 											<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
 											<Grid>
 												<Border Width="50" Height="50" Grid.Column="0"
@@ -398,7 +355,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock>Place a new marker</TextBlock>
+										<TextBlock TextWrapping="Wrap">Place a new marker</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -423,7 +380,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock>Revert back to last marker (if available)</TextBlock>
+										<TextBlock TextWrapping="Wrap">Revert back to last marker (if available)</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>

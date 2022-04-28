@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using WFC4ALL.Managers;
@@ -8,7 +7,7 @@ using WFC4ALL.ViewModels;
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable UnusedParameter.Local
 
-namespace WFC4ALL.ContentControls; 
+namespace WFC4ALL.ContentControls;
 
 public partial class InputControl : UserControl {
     private readonly ComboBox _categoryCB, _inputCB, _patternSizeCB;
@@ -49,7 +48,11 @@ public partial class InputControl : UserControl {
         e.Handled = true;
     }
 
-    public void inImgCBChangeHandler(object? _, SelectionChangedEventArgs? e) {
+    public void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e) {
+        inImgCBChangeHandler(o, e, -1);
+    }
+
+    public void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e, int newTab) {
         if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
             return;
         }
@@ -67,8 +70,10 @@ public partial class InputControl : UserControl {
         }
 
         centralManager.getWFCHandler().setImageChanging(false);
+        if (newTab > 1 || newTab == -1) {
+            centralManager.getInputManager().restartSolution("Image CB Handler", true);
+        }
 
-        centralManager.getInputManager().restartSolution();
         if (e != null) {
             e.Handled = true;
         }
@@ -81,7 +86,9 @@ public partial class InputControl : UserControl {
 
         centralManager.getWFCHandler().setInputChanged("Pattern Size CB");
         e.Handled = true;
-        centralManager.getInputManager().restartSolution();
+        if (centralManager.getMainWindowVM().SelectedTabIndex > 1) {
+            centralManager.getInputManager().restartSolution("Pattern CB Handler");
+        }
     }
 
     /*

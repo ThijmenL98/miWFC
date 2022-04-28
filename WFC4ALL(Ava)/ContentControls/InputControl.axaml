@@ -26,7 +26,7 @@
                 Category
             </TextBlock>
             <ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0" MinHeight="40"
-                      SelectedItem="{Binding CategorySelection}"
+                      SelectedItem="{Binding CategorySelection}" IsEnabled="{Binding !Task1Ongoing}"
                       SelectionChanged="catCBChangeHandler" x:Name="categoryCB">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -47,7 +47,7 @@
                 Input Image
             </TextBlock>
             <ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0" MinHeight="40"
-                      SelectedItem="{Binding InputImageSelection}"
+                      SelectedItem="{Binding InputImageSelection}" IsEnabled="{Binding !Task1Ongoing}"
                       SelectionChanged="inImgCBChangeHandler" x:Name="inputCB" />
         </Grid>
 
@@ -128,7 +128,7 @@
                 </Panel>
                 <ToolTip.Tip>
                     <StackPanel>
-                        <TextBlock>Reset the weights to default</TextBlock>
+                        <TextBlock TextWrapping="Wrap">Reset the weights to default</TextBlock>
                     </StackPanel>
                 </ToolTip.Tip>
             </Button>
@@ -156,7 +156,7 @@
 
             <GridSplitter Grid.Column="1" IsEnabled="False" Background="Transparent" />
 
-            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal">
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal" IsEnabled="{Binding !Task1Ongoing}">
                 <TextBlock TextWrapping="Wrap" Text="Advanced Settings" TextAlignment="Center" MaxWidth="80" />
 
                 <ToggleSwitch OffContent="" OnContent="" Margin="10, 0, 0, 0"

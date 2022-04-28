@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -39,7 +40,15 @@ public partial class MainWindow : Window {
             return;
         }
         
-        centralManager!.getMainWindowVM().OnModelClick();
+        int newTab = (sender as TabControl)!.SelectedIndex;
+        centralManager.getMainWindowVM().updateTaskUI(newTab);
+        if (centralManager.getMainWindowVM().SelectedTabIndex % 2 != newTab % 2) {
+            centralManager!.getMainWindowVM().OnModelClick(newTab);
+        } else if (newTab == 0) {
+            centralManager.getMainWindowVM().updateTaskAccess(newTab);
+        }
+        
+        e.Handled = true;
     }
 
     private void keyDownHandler(object? sender, KeyEventArgs e) {
@@ -89,7 +98,7 @@ public partial class MainWindow : Window {
                 e.Handled = true;
                 break;
             case Key.R:
-                centralManager.getInputManager().restartSolution();
+                centralManager.getInputManager().restartSolution("Keydown Restart");
                 e.Handled = true;
                 break;
             case Key.C:
@@ -118,13 +127,20 @@ public partial class MainWindow : Window {
                 break;
         }
     } // ReSharper disable twice UnusedParameter.Local
+    
     private void WindowBase_OnActivated(object? sender, EventArgs e) {
         if (triggered) {
             return;
         }
 
-        centralManager?.getInputManager().restartSolution(true);
+        centralManager!.getMainWindowVM().updateTaskAccess(0);
+        centralManager!.getMainWindowVM().updateTaskUI(0);
+        centralManager!.getInputManager().restartSolution("Window activation", true);
         triggered = true;
+    }
+
+    public bool isWindowTriggered() {
+        return triggered;
     }
 
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e) {

@@ -55,7 +55,7 @@ public class InputManager {
         (int[] patternSizeDataSource, int i) = getImagePatternDimensions(inputImageDataSource[0]);
         mainWindow.getInputControl().setPatternSizes(patternSizeDataSource, i);
 
-        restartSolution();
+        restartSolution("Constructor");
         parentCM.getUIManager().updateInstantCollapse(1);
 
         lastPaintedAmountCollapsed = 0;
@@ -65,8 +65,12 @@ public class InputManager {
      * Functionality
      */
 
-    public async void restartSolution(bool force = false) {
+    public async void restartSolution(string source, bool force = false) {
         if (parentCM.getWFCHandler().isChangingModels() || parentCM.getWFCHandler().isChangingImages()) {
+            return;
+        }
+
+        if (!parentCM.getMainWindow().isWindowTriggered() && !source.Equals("Window activation")) {
             return;
         }
 
@@ -91,7 +95,7 @@ public class InputManager {
         try {
             int stepAmount = mainWindowVM.StepAmount;
             mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
-                .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force)).Item1;
+                .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, source, force)).Item1;
         } catch (InvalidOperationException) {
             // Error caused by multithreading which will be ignored
         } catch (Exception exception) {
@@ -109,14 +113,15 @@ public class InputManager {
             bool weightReset = false;
             if (!mainWindowVM.IsRunning) {
                 parentCM.getWFCHandler().updateWeights();
-                restartSolution();
+                restartSolution("Advance step");
                 weightReset = true;
             }
 
             (WriteableBitmap result2, bool finished) = await parentCM.getWFCHandler()
                 .initAndRunWfcDB(
                     mainWindowVM.ImageOutWidth != (int) currentWidth ||
-                    mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
+                    mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount,
+                    "Advance step");
 
             if (finished) {
                 return;
@@ -175,7 +180,7 @@ public class InputManager {
         if (parentCM.getWFCHandler().isCollapsed()) {
             return;
         }
-        
+
         int curStep = parentCM.getWFCHandler().getAmountCollapsed();
         if (curStep == 0) {
             return;
@@ -221,7 +226,7 @@ public class InputManager {
 
             prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
         }
-        
+
         if (lastPaintedAmountCollapsed != 0 &&
             prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
             parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
@@ -262,18 +267,18 @@ public class InputManager {
 
     public void animate() {
         if (parentCM.getWFCHandler().isCollapsed()) {
-            restartSolution();
+            restartSolution("Animate");
         }
 
         (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
         if (mainWindowVM.ImageOutWidth != (int) currentWidth ||
             mainWindowVM.ImageOutHeight != (int) currentHeight) {
-            restartSolution();
+            restartSolution("Animate");
         }
 
         if (!mainWindowVM.IsRunning && mainWindowVM.IsPlaying) {
             parentCM.getWFCHandler().updateWeights();
-            restartSolution();
+            restartSolution("Animate");
         }
 
         bool startAnimation = mainWindowVM.IsPlaying;
@@ -300,7 +305,7 @@ public class InputManager {
                 timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                 try {
                     (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
-                        .initAndRunWfcDB(false, mainWindowVM.StepAmount).Result;
+                        .initAndRunWfcDB(false, mainWindowVM.StepAmount, "Animation timer").Result;
                     mainWindowVM.OutputImage = result2;
 
                     if (finished) {
@@ -319,12 +324,12 @@ public class InputManager {
         }
     }
 
-    public bool processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx) {
+    public bool? processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
         WriteableBitmap? bitmap;
-        bool showPixel;
+        bool? showPixel;
 
         if (parentCM.getWFCHandler().isOverlappingModel()) {
             (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
@@ -332,7 +337,7 @@ public class InputManager {
             (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
         }
 
-        if (showPixel) {
+        if (showPixel != null && (bool) showPixel) {
             mainWindowVM.OutputImage = bitmap!;
             processHoverAvailability(clickX, clickY, imgWidth, imgHeight, true);
         } else {

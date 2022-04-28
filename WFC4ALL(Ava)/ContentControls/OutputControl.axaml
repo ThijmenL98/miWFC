@@ -31,7 +31,7 @@
                 Output Image Size
             </TextBlock>
 
-            <Grid Grid.Column="1" RowDefinitions="*, *" ColumnDefinitions="Auto, *">
+            <Grid Grid.Column="1" RowDefinitions="*, *" ColumnDefinitions="Auto, *" IsEnabled="{Binding !Task2Ongoing}">
                 <TextBlock Grid.Column="0" Grid.Row="0" Text="Width:" />
                 <NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutWidth}"
                                IsEnabled="{Binding !IsRunning}" />
@@ -66,7 +66,7 @@
                 </Panel>
                 <ToolTip.Tip>
                     <StackPanel>
-                        <TextBlock>Generate a new image</TextBlock>
+                        <TextBlock TextWrapping="Wrap">Generate a new image</TextBlock>
                     </StackPanel>
                 </ToolTip.Tip>
             </Button>
@@ -86,7 +86,7 @@
                 </Panel>
                 <ToolTip.Tip>
                     <StackPanel>
-                        <TextBlock>Export the current output</TextBlock>
+                        <TextBlock TextWrapping="Wrap">Export the current output</TextBlock>
                     </StackPanel>
                 </ToolTip.Tip>
             </Button>
@@ -170,7 +170,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Start/Stop generation animation</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Start/Stop generation animation</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
@@ -194,7 +194,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Start/Stop generation animation</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Start/Stop generation animation</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
@@ -233,7 +233,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Take a specified number of steps back</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Take a specified number of steps back</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
@@ -258,7 +258,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Place a new marker</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Place a new marker</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
@@ -283,7 +283,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Advance a specified number of steps</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Advance a specified number of steps</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
@@ -308,7 +308,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Revert back to last marker (if available)</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Revert back to last marker (if available)</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
@@ -363,7 +363,7 @@
                     </Panel>
                     <ToolTip.Tip>
                         <StackPanel>
-                            <TextBlock>Switch to the painting customization editor</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Switch to the painting customization editor</TextBlock>
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>

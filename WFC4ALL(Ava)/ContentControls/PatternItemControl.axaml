@@ -51,8 +51,30 @@
 									</Grid>
 
 									<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *" Margin="-10, 0, 0, 0">
+										<!-- <Button Padding="4" Grid.Row="1" Background="Transparent" HorizontalContentAlignment="Center" Command="{Binding OnManualValuePopup}" -->
+										<!--         VerticalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, -7, 0, -10"> -->
+										<!-- 	<Button.Styles> -->
+										<!-- 		<Style Selector="Button:disabled /template/ ContentPresenter"> -->
+										<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+										<!-- 		</Style> -->
+										<!-- 		<Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter"> -->
+										<!-- 			<Setter Property="Button.Foreground" Value="#70c3ff" /> -->
+										<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+										<!-- 		</Style> -->
+										<!-- 		<Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter"> -->
+										<!-- 			<Setter Property="Button.Foreground" Value="#1affc6" /> -->
+										<!-- 			<Setter Property="Background" Value="Transparent" /> -->
+										<!-- 		</Style> -->
+										<!-- 	</Button.Styles> -->
+										<!-- 	<ToolTip.Tip> -->
+										<!-- 		<StackPanel> -->
+										<!-- 			<TextBlock TextWrapping="Wrap">Set manually</TextBlock> -->
+										<!-- 		</StackPanel> -->
+										<!-- 	</ToolTip.Tip> -->
+										<!-- 	<TextBlock Text="ꕯ" FontWeight="Bold"/> -->
+										<!-- </Button> -->
 										<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}"
-										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}" >
+										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}">
 											<RepeatButton.Styles>
 												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
 													<Setter Property="Background" Value="Transparent" />
@@ -66,6 +88,11 @@
 													<Setter Property="Background" Value="Transparent" />
 												</Style>
 											</RepeatButton.Styles>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Increase</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
 										</RepeatButton>
 										<RepeatButton Grid.Row="1" Padding="4" VerticalAlignment="Bottom" Content="▼" Command="{Binding OnDecrement}"
 										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}">
@@ -82,6 +109,11 @@
 													<Setter Property="Background" Value="Transparent" />
 												</Style>
 											</RepeatButton.Styles>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Decrease</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
 										</RepeatButton>
 									</Grid>
 								</Grid>

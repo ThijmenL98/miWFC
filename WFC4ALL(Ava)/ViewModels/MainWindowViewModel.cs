@@ -1,16 +1,17 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
 using WFC4ALL.Managers;
 using WFC4ALL.Utils;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedMember.Global
 
-namespace WFC4ALL.ViewModels; 
+namespace WFC4ALL.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase {
     private Bitmap _inputImage
@@ -39,12 +40,12 @@ public class MainWindowViewModel : ViewModelBase {
     private bool _pencilModeEnabled, _eraseModeEnabled, _paintKeepModeEnabled, _paintEraseModeEnabled, _isRunning;
 
     private HoverableTextViewModel _selectedCategory = new();
-    
+
     private string _categoryDescription = "",
         _selectedInputImage = "",
         _stepAmountString = "Steps to take: 1";
 
-    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3, _selectedTabIndex = 0;
+    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3, _selectedTabIndex;
     private double _timeStampOffset, _timelineWidth = 600d;
 
     private CentralManager? centralManager;
@@ -56,7 +57,9 @@ public class MainWindowViewModel : ViewModelBase {
             this.RaiseAndSetIfChanged(ref _simpleModel, value);
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
-            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
+            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -65,7 +68,9 @@ public class MainWindowViewModel : ViewModelBase {
         // ReSharper disable once UnusedMember.Local
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
-            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
+            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -118,12 +123,12 @@ public class MainWindowViewModel : ViewModelBase {
 
     public int ImageOutWidth {
         get => _imgOutWidth;
-        private set => this.RaiseAndSetIfChanged(ref _imgOutWidth, Math.Min(Math.Max(10, value), 128));
+        set => this.RaiseAndSetIfChanged(ref _imgOutWidth, Math.Min(Math.Max(10, value), 128));
     }
 
     public int ImageOutHeight {
         get => _imgOutHeight;
-        private set => this.RaiseAndSetIfChanged(ref _imgOutHeight, Math.Min(Math.Max(10, value), 128));
+        set => this.RaiseAndSetIfChanged(ref _imgOutHeight, Math.Min(Math.Max(10, value), 128));
     }
 
     public int PatternSize {
@@ -219,7 +224,9 @@ public class MainWindowViewModel : ViewModelBase {
             this.RaiseAndSetIfChanged(ref _advancedEnabled, value);
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
-            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
+            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -246,7 +253,7 @@ public class MainWindowViewModel : ViewModelBase {
     /*
      * Logic
      */
-    
+
     public void setCentralManager(CentralManager cm) {
         lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
         lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
@@ -254,44 +261,51 @@ public class MainWindowViewModel : ViewModelBase {
 
         ImageOutWidth = 24;
         ImageOutHeight = 24;
+        centralManager.getMainWindowVM().updateTaskAccess(0);
     }
 
-    public void OnModelClick() {
+    public void OnModelClick(int newTab) {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
-        OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled && !centralManager!.getMainWindow().getInputControl().getCategory().Contains("Side");
-        
+        OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
+                                       !centralManager!.getMainWindow().getInputControl().getCategory()
+                                           .Contains("Side");
+
         if (IsPlaying) {
             OnAnimate();
         }
 
-        bool changingToSmart = SelectedTabIndex != 0;
-        
-        string lastCat = CategorySelection.DisplayText;
-
-        string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
-
-        string lastImg = InputImageSelection;
-        int catIndex = changingToSmart
-            ? Array.IndexOf(catDataSource, lastOverlapSelection!.Item1)
-            : Array.IndexOf(catDataSource, lastSimpleSelection!.Item1);
-        centralManager.getUIManager().updateCategories(catDataSource, catIndex);
-
-        string[] images = Util.getModelImages(
-            changingToSmart ? "overlapping" : "simpletiled",
-            changingToSmart ? lastOverlapSelection!.Item1 : lastSimpleSelection!.Item1);
-
-        int index = changingToSmart
-            ? Array.IndexOf(images, lastOverlapSelection!.Item2)
-            : Array.IndexOf(images, lastSimpleSelection!.Item2);
-        centralManager.getUIManager().updateInputImages(images, index);
-        (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[index]);
-        centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
-
-        if (changingToSmart) {
-            lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
+        if (newTab < 2) {
+            centralManager!.getMainWindowVM().updateTaskAccess(newTab);
         } else {
-            lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
+            bool changingToSmart = newTab is 0 or 2;
+
+            string lastCat = CategorySelection.DisplayText;
+
+            string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
+
+            string lastImg = InputImageSelection;
+            int catIndex = changingToSmart
+                ? Array.IndexOf(catDataSource, lastOverlapSelection!.Item1)
+                : Array.IndexOf(catDataSource, lastSimpleSelection!.Item1);
+            centralManager.getUIManager().updateCategories(catDataSource, catIndex);
+
+            string[] images = Util.getModelImages(
+                changingToSmart ? "overlapping" : "simpletiled",
+                changingToSmart ? lastOverlapSelection!.Item1 : lastSimpleSelection!.Item1);
+
+            int index = changingToSmart
+                ? Array.IndexOf(images, lastOverlapSelection!.Item2)
+                : Array.IndexOf(images, lastSimpleSelection!.Item2);
+            centralManager.getUIManager().updateInputImages(images, index);
+            (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[index]);
+            centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
+
+            if (changingToSmart) {
+                lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
+            } else {
+                lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
+            }
         }
 
         centralManager.getWFCHandler().setModelChanging(false);
@@ -305,13 +319,13 @@ public class MainWindowViewModel : ViewModelBase {
         }
 
         SeamlessOutput = !SeamlessOutput;
-        centralManager!.getInputManager().restartSolution();
+        centralManager!.getInputManager().restartSolution("Padding Toggle Change");
     }
 
     public void OnInputWrappingChanged() {
         InputWrapping = !InputWrapping;
         centralManager!.getWFCHandler().setInputChanged("Input Wrapping Change");
-        centralManager!.getInputManager().restartSolution();
+        centralManager!.getInputManager().restartSolution("Input Wrapping Change");
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
@@ -327,7 +341,7 @@ public class MainWindowViewModel : ViewModelBase {
 
         centralManager!.getWFCHandler().updateWeights();
 
-        centralManager!.getInputManager().restartSolution();
+        centralManager!.getInputManager().restartSolution("Restart UI call");
     }
 
     public void OnWeightReset() {
@@ -430,5 +444,79 @@ public class MainWindowViewModel : ViewModelBase {
     public void setLoading(bool value) {
         IsLoading = value;
         centralManager?.getMainWindow().InvalidateVisual();
+    }
+
+    /*
+     * To remove after, for UT2 only
+     */
+
+    private bool _task1Ongoing;
+
+    public bool Task1Ongoing {
+        get => _task1Ongoing;
+        set => this.RaiseAndSetIfChanged(ref _task1Ongoing, value);
+    }
+
+    private bool _task2Ongoing;
+
+    public bool Task2Ongoing {
+        get => _task2Ongoing;
+        set => this.RaiseAndSetIfChanged(ref _task2Ongoing, value);
+    }
+
+    public void updateTaskUI(int newTab) {
+        switch (newTab) {
+            case 0: {
+                Task1Ongoing = true;
+                Task2Ongoing = true;
+                centralManager!.getMainWindowVM().ImageOutWidth = 40;
+                centralManager!.getMainWindowVM().ImageOutHeight = 40;
+                break;
+            }
+            case 1: {
+                Task1Ongoing = false;
+                Task2Ongoing = true;
+                centralManager!.getMainWindowVM().ImageOutWidth = 40;
+                centralManager!.getMainWindowVM().ImageOutHeight = 40;
+                break;
+            }
+            default: {
+                Task1Ongoing = false;
+                Task2Ongoing = false;
+                centralManager!.getMainWindowVM().ImageOutWidth = 24;
+                centralManager!.getMainWindowVM().ImageOutHeight = 24;
+                break;
+            }
+        }
+    }
+
+    public void updateTaskAccess(int newTab) {
+        switch (newTab) {
+            case 0: {
+                string[] catDataSource = Util.getCategories("overlapping");
+                centralManager!.getUIManager().updateCategories(catDataSource, 5);
+
+                string[] images = Util.getModelImages("overlapping", "Worlds Top-Down");
+
+                centralManager.getUIManager().updateInputImages(images, 1);
+                (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[1]);
+                centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
+                return;
+            }
+            case 1: {                
+                string[] catDataSource = Util.getCategories("simpletiled");
+                centralManager!.getUIManager().updateCategories(catDataSource);
+
+                string[] images = Util.getModelImages("simpletiled", "Worlds Top-Down");
+
+                centralManager.getUIManager().updateInputImages(images);
+                (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[0]);
+                centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
 }
