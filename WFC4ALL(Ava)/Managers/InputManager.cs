@@ -95,7 +95,7 @@ public class InputManager {
         try {
             int stepAmount = mainWindowVM.StepAmount;
             mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
-                .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, source, force)).Item1;
+                .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force)).Item1;
         } catch (InvalidOperationException) {
             // Error caused by multithreading which will be ignored
         } catch (Exception exception) {
@@ -120,8 +120,7 @@ public class InputManager {
             (WriteableBitmap result2, bool finished) = await parentCM.getWFCHandler()
                 .initAndRunWfcDB(
                     mainWindowVM.ImageOutWidth != (int) currentWidth ||
-                    mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount,
-                    "Advance step");
+                    mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
 
             if (finished) {
                 return;
@@ -190,7 +189,7 @@ public class InputManager {
             (parentCM.getMainWindow().IsVisible
                 ? mainWindow.getOutputControl().getTimelineWidth()
                 : parentCM.getPaintingWindow().getTimelineWidth()) *
-            parentCM.getWFCHandler().getPercentageCollapsed() + 1));
+            parentCM.getWFCHandler().getPercentageCollapsed() + 1, parentCM.getWFCHandler().getPercentageCollapsed()));
 
         while (true) {
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
@@ -305,7 +304,7 @@ public class InputManager {
                 timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                 try {
                     (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
-                        .initAndRunWfcDB(false, mainWindowVM.StepAmount, "Animation timer").Result;
+                        .initAndRunWfcDB(false, mainWindowVM.StepAmount).Result;
                     mainWindowVM.OutputImage = result2;
 
                     if (finished) {

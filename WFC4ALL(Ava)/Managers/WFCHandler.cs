@@ -115,14 +115,12 @@ public class WFCHandler {
      * Direct WFC Manipulation
      */
 
-    public async Task<(WriteableBitmap, bool)> initAndRunWfcDB(bool reset, int steps, string source, bool force = false) {
+    public async Task<(WriteableBitmap, bool)> initAndRunWfcDB(bool reset, int steps, bool force = false) {
         if (isChangingModels() || !mainWindow.IsActive && !force) {
             return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
                 true);
         }
         
-        Trace.WriteLine(@$"Init source: {source}");
-
         mainWindowVM.setLoading(true);
 
         if (reset) {

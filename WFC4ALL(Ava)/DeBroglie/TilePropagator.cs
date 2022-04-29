@@ -358,6 +358,9 @@ public class TilePropagator {
                 return status;
             }
         }
+#if DEBUG
+        Trace.WriteLine(@$"Selecting {tile.Value} @ ({x}, {y})");
+#endif
 
         return Resolution.UNDECIDED;
     }
@@ -370,15 +373,6 @@ public class TilePropagator {
     /// <returns>The current <see cref="Status" /></returns>
     public Resolution @select(int x, int y, int z, IEnumerable<Tile> tiles) {
         return @select(x, y, z, CreateTileSet(tiles));
-    }
-
-    public Resolution @select(int x, int y, int z, IEnumerable<Tile> tiles, out int i) {
-        try {
-            return @select(x, y, z, CreateTileSet(tiles), out i);
-        } catch (Exception) {
-            i = 0;
-            return Resolution.CONTRADICTION;
-        }
     }
 
     /// <summary>
@@ -400,40 +394,11 @@ public class TilePropagator {
                 return status;
             }
         }
+#if DEBUG
+        Trace.WriteLine(@$"Selecting {tiles.Tiles.ToList()[0].Value} @ ({x}, {y})");
+#endif
 
         return Resolution.UNDECIDED;
-    }
-
-    /// <summary>
-    ///     Marks the given tiles as the only valid choice at a given location.
-    ///     This is equivalent to banning all other tiles.
-    ///     Then it propagates that information to other nearby tiles.
-    /// </summary>
-    /// <returns>The current <see cref="Status" /></returns>
-    public Resolution @select(int x, int y, int z, TilePropagatorTileSet tiles, out int i) {
-        TileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
-        ISet<int> patterns = tileModelMapping.GetPatterns(tiles, o);
-        i = 0;
-        for (int p = 0; p < wavePropagator.PatternCount; p++) {
-            if (patterns.Contains(p)) {
-                continue;
-            }
-
-            Resolution status = wavePropagator.ban(px, py, pz, p);
-
-            i++;
-            if (status != Resolution.UNDECIDED) {
-                return status;
-            }
-        }
-
-        return Resolution.UNDECIDED;
-    }
-
-    public Resolution selWith(int x, int y, int z, Tile tile) {
-        TileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
-        return wavePropagator.StepWith(Topology.GetIndex(px, py, pz),
-            tileModelMapping.GetPatterns(tile, o).First());
     }
 
     public Resolution selWith(int x, int y, int pattern) {

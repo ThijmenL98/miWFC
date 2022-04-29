@@ -84,7 +84,7 @@ public class UIManager {
         double tWidth = parentCM.getMainWindow().IsVisible
             ? mainWindow.getOutputControl().getTimelineWidth()
             : parentCM.getPaintingWindow().getTimelineWidth();
-        mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 8;
+        mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
 
     /*
@@ -225,9 +225,12 @@ public class UIManager {
 
         mainWindowVM.Markers.Clear();
         foreach (MarkerViewModel mvm in mvmListCopy) {
+            double offset = (parentCM.getMainWindow().IsVisible
+                    ? mainWindow.getOutputControl().getTimelineWidth()
+                    : parentCM.getPaintingWindow().getTimelineWidth()) *
+                mvm.MarkerCollapsePercentage + 1;
             mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
-                Math.Round(mvm.MarkerOffset * (window.Equals(Windows.MAIN) ? 0.73513513513d : 1.36029411765d), 3,
-                    MidpointRounding.ToEven)));
+                offset, mvm.MarkerCollapsePercentage));
         }
 
         updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());

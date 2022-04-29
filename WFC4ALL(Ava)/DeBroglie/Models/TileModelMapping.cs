@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Wfc;
 
@@ -94,7 +96,6 @@ public struct TileModelMapping {
             patterns = new HashSet<int>(tileSet.Tiles.SelectMany(tile => GetPatterns(tilesToPatterns, tile)));
             tileSet.OffsetToPatterns[offset] = patterns;
         }
-
         return patterns;
     }
 }

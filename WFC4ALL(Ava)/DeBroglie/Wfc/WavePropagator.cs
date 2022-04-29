@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.DeBroglie.Trackers;
 
@@ -220,12 +221,6 @@ public class WavePropagator {
         patternModelConstraint.Propagate();
         return Status;
     }
-    
-    public void PushSelection(int index, int pattern) {
-        backtrackItemsLengths.Push(droppedBacktrackItemsCount + backtrackItems.Count);
-        prevChoices.Push(new IndexPatternItem {Index = index, Pattern = pattern});
-        backtrackItems.Push(new IndexPatternItem {Index = index, Pattern = pattern});
-    }
 
     /**
          * Make some progress in the WaveFunctionCollapseAlgorithm
@@ -240,10 +235,11 @@ public class WavePropagator {
         if (Status == Resolution.UNDECIDED) {
             // Pick a index to use
             int index = indexPicker.GetRandomIndex(RandomDouble);
+            int pattern = 0;
 
             if (index != -1) {
                 // Pick a tile to select at that index
-                int pattern = patternPicker.GetRandomPossiblePatternAt(index, RandomDouble);
+                pattern = patternPicker.GetRandomPossiblePatternAt(index, RandomDouble);
                 
                 RecordBacktrack(index, pattern);
 
@@ -261,6 +257,10 @@ public class WavePropagator {
             if (Status == Resolution.UNDECIDED) {
                 StepConstraints();
             }
+#if DEBUG
+            Topology.GetCoord(index, out int x, out int y, out _);
+            Trace.WriteLine(@$"Stepping {pattern} @ ({x}, {y})");
+#endif
 
             // If we've made all possible choices, and found no contradictions,
             // then we've succeeded.
@@ -302,6 +302,11 @@ public class WavePropagator {
             if (Status == Resolution.UNDECIDED) {
                 StepConstraints();
             }
+            
+#if DEBUG
+            Topology.GetCoord(index, out int x, out int y, out _);
+            Trace.WriteLine(@$"Stepping {pattern} @ ({x}, {y})");
+#endif
 
             // If we've made all possible choices, and found no contradictions,
             // then we've succeeded.
@@ -355,6 +360,10 @@ public class WavePropagator {
                     if (item.Index >= 0 && InternalBan(item.Index, item.Pattern)) {
                         Status = Resolution.CONTRADICTION;
                     }
+#if DEBUG
+                    Topology.GetCoord(item.Index, out int x, out int y, out _);
+                    Trace.WriteLine(@$"Undoing {item.Pattern} @ ({x}, {y}) -> Should pop");
+#endif
                 }
             }
 
@@ -397,6 +406,11 @@ public class WavePropagator {
         if (Status == Resolution.UNDECIDED) {
             StepConstraints();
         }
+#if DEBUG
+        IndexPatternItem item = prevChoices.Pop();
+        Topology.GetCoord(item.Index, out int x, out int y, out _);
+        Trace.WriteLine(@$"Undoing {item.Pattern} @ ({x}, {y}) -> Should pop");
+#endif
     }
 
     // Actually does the work of undoing what was previously recorded
@@ -416,7 +430,7 @@ public class WavePropagator {
                 tracker.UndoBan(index, pattern);
             }
 
-            // Next, undo the decremenents done in Propagate
+            // Next, undo the decrements done in Propagate
             patternModelConstraint.UndoBan(index, pattern);
         }
     }
