@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
@@ -123,7 +124,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     private void handleWeightChange(bool increment) {
-        if (!(PatternWeight > 0)) {
+        if (!increment && !(PatternWeight > 0)) {
             return;
         }
 

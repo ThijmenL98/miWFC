@@ -45,7 +45,6 @@
     <overlapping category="Worlds Top-Down" name="Office2" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Paths" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Qud" patternSize="3" periodic="True"/>
-    <overlapping category="Worlds Top-Down" name="RedDot" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="RedMaze" patternSize="2"/>
     <overlapping category="Worlds Top-Down" name="Rooms" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="ScaledMaze" patternSize="2" periodic="True"/>
@@ -53,10 +52,8 @@
     <overlapping category="Worlds Top-Down" name="SimpleMaze" patternSize="2"/>
     <overlapping category="Worlds Top-Down" name="Skew1" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Skew2" patternSize="3" periodic="True"/>
-    <overlapping category="Worlds Top-Down" name="SmileCity" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Town" patternSize="3" periodic="True"/>
     <overlapping category="Worlds Top-Down" name="Village" patternSize="3" periodic="True"/>
-    <overlapping category="Worlds Top-Down" name="WalledDot" patternSize="3"/>
 
     <simpletiled category="Textures" name="Circles"/>
     <simpletiled category="Textures" name="Circuit" periodic="True"/>

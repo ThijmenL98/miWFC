@@ -99,9 +99,7 @@ public class InputManager {
         } catch (InvalidOperationException) {
             // Error caused by multithreading which will be ignored
         } catch (Exception exception) {
-#if (DEBUG)
             Trace.WriteLine(exception);
-#endif
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -128,9 +126,7 @@ public class InputManager {
 
             mainWindowVM.OutputImage = result2;
         } catch (Exception exception) {
-#if (DEBUG)
             Trace.WriteLine(exception);
-#endif
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -164,9 +160,7 @@ public class InputManager {
                 }
             }
         } catch (Exception exception) {
-#if (DEBUG)
             Trace.WriteLine(exception);
-#endif
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -239,9 +233,7 @@ public class InputManager {
                 }
             }
         } catch (Exception exception) {
-#if (DEBUG)
             Trace.WriteLine(exception);
-#endif
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -312,9 +304,7 @@ public class InputManager {
                         return;
                     }
                 } catch (Exception exception) {
-#if (DEBUG)
                     Trace.WriteLine(exception);
-#endif
                     mainWindowVM.OutputImage = noResultFoundBM;
                 }
 

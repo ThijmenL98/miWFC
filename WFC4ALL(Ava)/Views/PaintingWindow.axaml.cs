@@ -95,9 +95,7 @@ public partial class PaintingWindow : Window {
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
                     centralManager!.getMainWindowVM().PaintKeepModeEnabled);
             } catch (IndexOutOfRangeException exception) {
-#if DEBUG
                 Trace.WriteLine(exception);
-#endif
             }
         } else if (centralManager!.getMainWindowVM().PencilModeEnabled) {
             (double hoverX, double hoverY) = e.GetPosition(e.Source as Image);

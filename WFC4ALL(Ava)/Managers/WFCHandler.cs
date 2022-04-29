@@ -120,7 +120,7 @@ public class WFCHandler {
             return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
                 true);
         }
-        
+
         mainWindowVM.setLoading(true);
 
         if (reset) {
@@ -240,7 +240,9 @@ public class WFCHandler {
                 weight = weight == 0 ? 0.00000000001d : weight;
                 ((AdjacentModel) dbModel).setFrequency(tileCache[parent].Item2, weight);
                 if (weight == 0) {
+#if DEBUG
                     Trace.WriteLine("Zero weight found");
+#endif
                     dbPropagator.updateZeroWeight(parent);
                 }
 
@@ -271,7 +273,7 @@ public class WFCHandler {
                 new TileRotation(hasRotations ? 4 : 1, false));
 
         originalWeights = patternWeights;
-        
+
         toAdd.AddRange(patternList.Select((t, i) => parentCM.getUIManager()
                 .addPattern(t, patternWeights[i], tileSymmetries, i))
             .Where(nextTVM => nextTVM != null)!);
@@ -460,7 +462,7 @@ public class WFCHandler {
                 if (possibleTiles.Count == 1 && possibleTiles.Contains(c)) {
                     return (null, null);
                 }
-                
+
                 return (null, false);
             }
 
@@ -490,6 +492,7 @@ public class WFCHandler {
             return (getLatestOutputBM(), true);
 
             #endregion
+
             // ReSharper disable once RedundantIfElseBlock
         } else {
             #region Adjacent Tile Selection
@@ -610,13 +613,12 @@ public class WFCHandler {
                     int selectedIndex = dbPropagator.Topology.GetIndex(x, (int) y, 0);
                     ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
 
-                    Color toSet = possibleTiles.Count == 1 
+                    Color toSet = possibleTiles.Count == 1
                         ? possibleTiles.First()
                         : currentColors!.Contains(c)
                             ? c
                             : grid
-                                ? (x + y) % 2 == 0 ? Color.Parse("#11000000") :
-                                Color.Parse("#00000000")
+                                ? (x + y) % 2 == 0 ? Color.Parse("#11000000") : Color.Parse("#00000000")
                                 : Color.Parse("#00000000");
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
@@ -658,8 +660,9 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                           (int) Math.Floor((double) y / tileSize)) % 2 == 0 ? Color.Parse("#11000000") :
-                        Color.Parse("#00000000")
+                           (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                            ? Color.Parse("#11000000")
+                            : Color.Parse("#00000000")
                         : Color.Parse("#00000000"));
                     dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
 
