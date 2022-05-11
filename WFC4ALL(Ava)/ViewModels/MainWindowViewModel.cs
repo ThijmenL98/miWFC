@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -261,7 +260,6 @@ public class MainWindowViewModel : ViewModelBase {
 
         ImageOutWidth = 24;
         ImageOutHeight = 24;
-        centralManager.getMainWindowVM().updateTaskAccess(0);
     }
 
     public void OnModelClick(int newTab) {
@@ -275,37 +273,33 @@ public class MainWindowViewModel : ViewModelBase {
             OnAnimate();
         }
 
-        if (newTab < 2) {
-            centralManager!.getMainWindowVM().updateTaskAccess(newTab);
+        bool changingToSmart = newTab is 0 or 2;
+
+        string lastCat = CategorySelection.DisplayText;
+
+        string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
+
+        string lastImg = InputImageSelection;
+        int catIndex = changingToSmart
+            ? Array.IndexOf(catDataSource, lastOverlapSelection!.Item1)
+            : Array.IndexOf(catDataSource, lastSimpleSelection!.Item1);
+        centralManager.getUIManager().updateCategories(catDataSource, catIndex);
+
+        string[] images = Util.getModelImages(
+            changingToSmart ? "overlapping" : "simpletiled",
+            changingToSmart ? lastOverlapSelection!.Item1 : lastSimpleSelection!.Item1);
+
+        int index = changingToSmart
+            ? Array.IndexOf(images, lastOverlapSelection!.Item2)
+            : Array.IndexOf(images, lastSimpleSelection!.Item2);
+        centralManager.getUIManager().updateInputImages(images, index);
+        (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[index]);
+        centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
+
+        if (changingToSmart) {
+            lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
         } else {
-            bool changingToSmart = newTab is 0 or 2;
-
-            string lastCat = CategorySelection.DisplayText;
-
-            string[] catDataSource = Util.getCategories(changingToSmart ? "overlapping" : "simpletiled");
-
-            string lastImg = InputImageSelection;
-            int catIndex = changingToSmart
-                ? Array.IndexOf(catDataSource, lastOverlapSelection!.Item1)
-                : Array.IndexOf(catDataSource, lastSimpleSelection!.Item1);
-            centralManager.getUIManager().updateCategories(catDataSource, catIndex);
-
-            string[] images = Util.getModelImages(
-                changingToSmart ? "overlapping" : "simpletiled",
-                changingToSmart ? lastOverlapSelection!.Item1 : lastSimpleSelection!.Item1);
-
-            int index = changingToSmart
-                ? Array.IndexOf(images, lastOverlapSelection!.Item2)
-                : Array.IndexOf(images, lastSimpleSelection!.Item2);
-            centralManager.getUIManager().updateInputImages(images, index);
-            (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[index]);
-            centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
-
-            if (changingToSmart) {
-                lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
-            } else {
-                lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
-            }
+            lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
         }
 
         centralManager.getWFCHandler().setModelChanging(false);
@@ -444,79 +438,5 @@ public class MainWindowViewModel : ViewModelBase {
     public void setLoading(bool value) {
         IsLoading = value;
         centralManager?.getMainWindow().InvalidateVisual();
-    }
-
-    /*
-     * To remove after, for UT2 only
-     */
-
-    private bool _task1Ongoing;
-
-    public bool Task1Ongoing {
-        get => _task1Ongoing;
-        set => this.RaiseAndSetIfChanged(ref _task1Ongoing, value);
-    }
-
-    private bool _task2Ongoing;
-
-    public bool Task2Ongoing {
-        get => _task2Ongoing;
-        set => this.RaiseAndSetIfChanged(ref _task2Ongoing, value);
-    }
-
-    public void updateTaskUI(int newTab) {
-        switch (newTab) {
-            case 0: {
-                Task1Ongoing = true;
-                Task2Ongoing = true;
-                centralManager!.getMainWindowVM().ImageOutWidth = 40;
-                centralManager!.getMainWindowVM().ImageOutHeight = 40;
-                break;
-            }
-            case 1: {
-                Task1Ongoing = false;
-                Task2Ongoing = true;
-                centralManager!.getMainWindowVM().ImageOutWidth = 40;
-                centralManager!.getMainWindowVM().ImageOutHeight = 40;
-                break;
-            }
-            default: {
-                Task1Ongoing = false;
-                Task2Ongoing = false;
-                centralManager!.getMainWindowVM().ImageOutWidth = 24;
-                centralManager!.getMainWindowVM().ImageOutHeight = 24;
-                break;
-            }
-        }
-    }
-
-    public void updateTaskAccess(int newTab) {
-        switch (newTab) {
-            case 0: {
-                string[] catDataSource = Util.getCategories("overlapping");
-                centralManager!.getUIManager().updateCategories(catDataSource, 5);
-
-                string[] images = Util.getModelImages("overlapping", "Worlds Top-Down");
-
-                centralManager.getUIManager().updateInputImages(images, 1);
-                (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[1]);
-                centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
-                return;
-            }
-            case 1: {                
-                string[] catDataSource = Util.getCategories("simpletiled");
-                centralManager!.getUIManager().updateCategories(catDataSource);
-
-                string[] images = Util.getModelImages("simpletiled", "Worlds Top-Down");
-
-                centralManager.getUIManager().updateInputImages(images);
-                (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(images[0]);
-                centralManager.getUIManager().updatePatternSizes(patternSizeDataSource, i);
-                break;
-            }
-            default: {
-                break;
-            }
-        }
     }
 }

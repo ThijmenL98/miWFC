@@ -31,7 +31,7 @@
                 Output Image Size
             </TextBlock>
 
-            <Grid Grid.Column="1" RowDefinitions="*, *" ColumnDefinitions="Auto, *" IsEnabled="{Binding !Task2Ongoing}">
+            <Grid Grid.Column="1" RowDefinitions="*, *" ColumnDefinitions="Auto, *">
                 <TextBlock Grid.Column="0" Grid.Row="0" Text="Width:" />
                 <NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutWidth}"
                                IsEnabled="{Binding !IsRunning}" />

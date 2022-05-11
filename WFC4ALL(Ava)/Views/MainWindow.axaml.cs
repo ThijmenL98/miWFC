@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -41,12 +40,7 @@ public partial class MainWindow : Window {
         }
         
         int newTab = (sender as TabControl)!.SelectedIndex;
-        centralManager.getMainWindowVM().updateTaskUI(newTab);
-        if (centralManager.getMainWindowVM().SelectedTabIndex % 2 != newTab % 2) {
-            centralManager!.getMainWindowVM().OnModelClick(newTab);
-        } else if (newTab == 0) {
-            centralManager.getMainWindowVM().updateTaskAccess(newTab);
-        }
+        centralManager!.getMainWindowVM().OnModelClick(newTab);
         
         e.Handled = true;
     }
@@ -133,8 +127,6 @@ public partial class MainWindow : Window {
             return;
         }
 
-        centralManager!.getMainWindowVM().updateTaskAccess(0);
-        centralManager!.getMainWindowVM().updateTaskUI(0);
         centralManager!.getInputManager().restartSolution("Window activation", true);
         triggered = true;
     }
