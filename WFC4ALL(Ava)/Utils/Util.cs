@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ public static class Util {
             = xDoc.Root.Elements("simpletiled").Concat(xDoc.Root.Elements("overlapping"));
         IEnumerable<int> matchingElements = xElements.Where(x =>
             (x.Attribute("name")?.Value ?? "") == imageName).Select(t =>
-            int.Parse(t.Attribute("patternSize")?.Value ?? "3"));
+            int.Parse(t.Attribute("patternSize")?.Value ?? "3", CultureInfo.InvariantCulture));
 
         List<int> patternDimensionsList = new();
         int j = 0;

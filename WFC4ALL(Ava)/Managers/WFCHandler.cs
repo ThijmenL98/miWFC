@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -308,7 +309,7 @@ public class WFCHandler {
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
                 new XElement("");
 
-        tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16");
+        tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
         tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
         tileSymmetries = new Dictionary<int, int[]>();
@@ -336,7 +337,7 @@ public class WFCHandler {
 
             List<int> symmetries = new();
 
-            double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0");
+            double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
             weights.Add(tileWeight);
 
             for (int t = 1; t < cardinality; t++) {
@@ -379,7 +380,7 @@ public class WFCHandler {
             string[] row = xTile.Value.Split(',');
             values[j] = new int[sampleDimension];
             for (int k = 0; k < sampleDimension; k++) {
-                values[j][k] = int.Parse(row[k]);
+                values[j][k] = int.Parse(row[k], CultureInfo.InvariantCulture);
             }
 
             j++;
@@ -593,8 +594,8 @@ public class WFCHandler {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        Graphics? g = Graphics.FromHwnd(IntPtr.Zero);
-        outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(g.DpiX, g.DpiY),
+        int dpi = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 96 : 110;
+        outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(dpi, dpi),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Premul);
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
@@ -638,9 +639,9 @@ public class WFCHandler {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        Graphics? g = Graphics.FromHwnd(IntPtr.Zero);
+        int dpi = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 96 : 110;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
-            new Vector(g.DpiX, g.DpiY),
+            new Vector(dpi, dpi),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Premul);
         ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);

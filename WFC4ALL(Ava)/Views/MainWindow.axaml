@@ -7,7 +7,8 @@
         xmlns:ucontrols="using:WFC4ALL.ContentControls"
         xmlns:avaloniaGif="clr-namespace:WFC4ALL.AvaloniaGif"
         d:DesignHeight="800" d:DesignWidth="1400"
-        MinWidth="1400" MinHeight="800"
+        MinWidth="1256" MinHeight="600"
+        Width="1400" Height="800"
         WindowStartupLocation="CenterOwner"
         Activated="WindowBase_OnActivated"
         PointerPressed="InputElement_OnPointerPressed">
@@ -170,9 +171,9 @@
 								<ucontrols:InputControl DataContext="{Binding VM}"
 								                        Grid.Row="0" x:Name="inputControl" />
 
-								<Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid" MinWidth="350">
+								<Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid" MinWidth="202">
 									<TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 5"
-									           Text="Extracted patterns with the current settings" />
+									           Text="Extracted patterns with the current settings" TextWrapping="Wrap"/>
 
 									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">
