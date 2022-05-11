@@ -594,8 +594,7 @@ public class WFCHandler {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        int dpi = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 96 : 110;
-        outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(dpi, dpi),
+        outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Premul);
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
@@ -639,9 +638,8 @@ public class WFCHandler {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        int dpi = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 96 : 110;
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
-            new Vector(dpi, dpi),
+            new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Premul);
         ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
