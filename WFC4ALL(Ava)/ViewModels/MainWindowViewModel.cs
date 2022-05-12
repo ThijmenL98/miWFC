@@ -18,6 +18,8 @@ public class MainWindowViewModel : ViewModelBase {
         _outputImage
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
         _outputImageMask
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+        _outputPreviewMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
 
     private bool _isPlaying,
@@ -163,6 +165,11 @@ public class MainWindowViewModel : ViewModelBase {
     public Bitmap OutputImageMask {
         get => _outputImageMask;
         set => this.RaiseAndSetIfChanged(ref _outputImageMask, value);
+    }
+
+    public Bitmap OutputPreviewMask {
+        get => _outputPreviewMask;
+        set => this.RaiseAndSetIfChanged(ref _outputPreviewMask, value);
     }
 
     public ObservableCollection<TileViewModel> PatternTiles {

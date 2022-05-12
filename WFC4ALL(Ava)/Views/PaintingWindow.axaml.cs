@@ -104,12 +104,14 @@ public partial class PaintingWindow : Window {
             centralManager?.getInputManager().processHoverAvailability((int) Math.Round(hoverX),
                 (int) Math.Round(hoverY),
                 (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom));
+                (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
+                _paintingPatternsCB.SelectedIndex);
         }
 
         e.Handled = true;
     }
 
+    // ReSharper disable twice UnusedParameter.Local
     private void OnPointerMoved(object sender, PointerEventArgs e) {
         centralManager?.getInputManager().resetHoverAvailability();
     }

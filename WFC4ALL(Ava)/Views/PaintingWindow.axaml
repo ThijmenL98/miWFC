@@ -215,6 +215,16 @@
 							<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
 								<Border Margin="10" CornerRadius="10">
 									<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+									       x:Name="outputPreviewMask" Source="{Binding OutputPreviewMask}" Opacity=".25"
+									       IsHitTestVisible="False" />
+								</Border>
+							</Grid>
+						</Grid>
+
+						<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+							<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
+								<Border Margin="10" CornerRadius="10">
+									<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
 									       x:Name="outputImageMask" Source="{Binding OutputImageMask}" Opacity=".25"
 									       IsHitTestVisible="False" />
 								</Border>

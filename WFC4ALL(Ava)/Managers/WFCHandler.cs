@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -177,8 +176,7 @@ public class WFCHandler {
         parentCM.getUIManager().resetPatterns();
     }
 
-    private void createPropagator(int outputWidth, int outputHeight,
-        bool seamlessOutput) {
+    private void createPropagator(int outputWidth, int outputHeight, bool seamlessOutput) {
         bool outputPaddingEnabled = isOverlappingModel() && seamlessOutput;
 
         GridTopology dbTopology = new(outputWidth, outputHeight, outputPaddingEnabled);
@@ -305,6 +303,7 @@ public class WFCHandler {
     private List<TileViewModel> initializeAdjacentModel(string inputImage) {
         List<TileViewModel> toAdd = new();
         dbModel = new AdjacentModel();
+        List<double> weights = new();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
                 new XElement("");
@@ -313,8 +312,6 @@ public class WFCHandler {
 
         tileCache = new Dictionary<int, Tuple<Color[], Tile>>();
         tileSymmetries = new Dictionary<int, int[]>();
-
-        List<double> weights = new();
 
         foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
             MemoryStream ms = new(File.ReadAllBytes(
@@ -337,7 +334,8 @@ public class WFCHandler {
 
             List<int> symmetries = new();
 
-            double tileWeight = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
+            double tileWeight
+                = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
             weights.Add(tileWeight);
 
             for (int t = 1; t < cardinality; t++) {
@@ -362,6 +360,7 @@ public class WFCHandler {
                 toAddPaint.Add(
                     new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip));
                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
+
                 symmetries.Add(myIdx);
             }
 
@@ -371,6 +370,7 @@ public class WFCHandler {
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
+
 
         const int sampleDimension = 50;
         int[][] values = new int[sampleDimension][];
@@ -542,6 +542,7 @@ public class WFCHandler {
                 Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("");
                 stepBackWfc();
+
                 return (null, false);
             }
 
@@ -576,9 +577,9 @@ public class WFCHandler {
         return availableAtLoc;
     }
 
-    public WriteableBitmap getLatestOutputBM() {
+    public WriteableBitmap getLatestOutputBM(bool gridOverride = true) {
         WriteableBitmap outputBitmap;
-        bool grid = !parentCM.getMainWindow().IsVisible;
+        bool grid = !parentCM.getMainWindow().IsVisible && gridOverride;
         if (isOverlappingModel()) {
             generateOverlappingBitmap(out outputBitmap, grid);
         } else {
@@ -686,7 +687,7 @@ public class WFCHandler {
     }
 
     public bool isCollapsed() {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse, MergeIntoPattern
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract, MergeIntoPattern
         return dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
     }
 

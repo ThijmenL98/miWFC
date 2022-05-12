@@ -317,18 +317,11 @@ public class InputManager {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
-        WriteableBitmap? bitmap;
-        bool? showPixel;
-
-        if (parentCM.getWFCHandler().isOverlappingModel()) {
-            (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
-        } else {
-            (bitmap, showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
-        }
+        (WriteableBitmap? bitmap, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
 
         if (showPixel != null && (bool) showPixel) {
             mainWindowVM.OutputImage = bitmap!;
-            processHoverAvailability(clickX, clickY, imgWidth, imgHeight, true);
+            processHoverAvailability(clickX, clickY, imgWidth, imgHeight, tileIdx, true);
         } else {
             mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
         }
@@ -338,7 +331,8 @@ public class InputManager {
 
     private int lastProcessedX = -1, lastProcessedY = -1;
 
-    public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, bool force = false) {
+    public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, int selectedValue,
+        bool force = false) {
         int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
         if (parentCM.getWFCHandler().isOverlappingModel()) {
@@ -347,6 +341,20 @@ public class InputManager {
                 availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<Color>(a, b);
             } catch (Exception) {
                 return;
+            }
+
+            try {
+                (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
+                if (showPixel != null && (bool) showPixel) {
+                    mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
+                    parentCM.getWFCHandler().stepBackWfc();
+                } else {
+                    mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                        PixelFormat.Bgra8888, AlphaFormat.Premul);
+                }
+            } catch (IndexOutOfRangeException) {
+                mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                    PixelFormat.Bgra8888, AlphaFormat.Premul);
             }
 
             mainWindowVM.HelperTiles.Clear();
@@ -370,6 +378,15 @@ public class InputManager {
                 availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);
             } catch (Exception) {
                 return;
+            }
+
+            (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
+            if (showPixel != null && (bool) showPixel) {
+                mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
+                parentCM.getWFCHandler().stepBackWfc();
+            } else {
+                mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                    PixelFormat.Bgra8888, AlphaFormat.Premul);
             }
 
             mainWindowVM.HelperTiles.Clear();
@@ -433,6 +450,8 @@ public class InputManager {
     }
 
     public void resetHoverAvailability() {
+        mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+            PixelFormat.Bgra8888, AlphaFormat.Premul);
         mainWindowVM.HelperTiles.Clear();
     }
 }
