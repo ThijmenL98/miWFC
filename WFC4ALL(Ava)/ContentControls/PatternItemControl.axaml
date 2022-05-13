@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:wfc4All="clr-namespace:WFC4ALL"
+             xmlns:ucontrols="using:WFC4ALL.ContentControls"
              mc:Ignorable="d">
 
 	<ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -21,109 +21,14 @@
 							<Border Padding="5"
 							        CornerRadius="10"
 							        IsVisible="{ReflectionBinding #patternItemsControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
-								<Grid RowDefinitions="*, *" ColumnDefinitions="*, *">
-									<Border Width="50" Height="50" Grid.Row="0"
-									        BoxShadow="0 0 15 0.25 Black"
-									        Background="Gray" Margin="10, 5, 15, 5">
-										<Image Width="50" Height="50"
-										       Source="{Binding PatternImage}"
-										       RenderOptions.BitmapInterpolationMode="Default" />
-									</Border>
-									<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-									<Grid Grid.Column="0" Grid.Row="1" RowDefinitions="*, *"
-									      ColumnDefinitions="*, *"
-									      IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning, TargetNullValue=False, FallbackValue=False}">
-										<!-- <NumericUpDown Grid.Row="1" Grid.Column="0" -->
-										<!--                Grid.ColumnSpan="2" MaxHeight="8" -->
-										<!--                Minimum="0" Width="75" -->
-										<!--                FormatString="0.#;;~0" -->
-										<!--                Margin="0" MaxWidth="64" -->
-										<!--                Value="{Binding PatternWeight}" /> -->
-
-										<TextBlock Grid.Column="0" Grid.Row="2"
-										           Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
-										           Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#F005" />
-										<ToolTip.Tip>
-											<StackPanel>
-												<TextBlock TextWrapping="Wrap">Set the weight of this pattern '~0' means it tries to be 0, but might be forced to place a tile</TextBlock>
-											</StackPanel>
-										</ToolTip.Tip>
-									</Grid>
-
-									<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *" Margin="-10, 0, 0, 0">
-										<!-- <Button Padding="4" Grid.Row="1" Background="Transparent" HorizontalContentAlignment="Center" Command="{Binding OnManualValuePopup}" -->
-										<!--         VerticalContentAlignment="Center" HorizontalAlignment="Center" Margin="0, -7, 0, -10"> -->
-										<!-- 	<Button.Styles> -->
-										<!-- 		<Style Selector="Button:disabled /template/ ContentPresenter"> -->
-										<!-- 			<Setter Property="Background" Value="Transparent" /> -->
-										<!-- 		</Style> -->
-										<!-- 		<Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter"> -->
-										<!-- 			<Setter Property="Button.Foreground" Value="#70c3ff" /> -->
-										<!-- 			<Setter Property="Background" Value="Transparent" /> -->
-										<!-- 		</Style> -->
-										<!-- 		<Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter"> -->
-										<!-- 			<Setter Property="Button.Foreground" Value="#1affc6" /> -->
-										<!-- 			<Setter Property="Background" Value="Transparent" /> -->
-										<!-- 		</Style> -->
-										<!-- 	</Button.Styles> -->
-										<!-- 	<ToolTip.Tip> -->
-										<!-- 		<StackPanel> -->
-										<!-- 			<TextBlock TextWrapping="Wrap">Set manually</TextBlock> -->
-										<!-- 		</StackPanel> -->
-										<!-- 	</ToolTip.Tip> -->
-										<!-- 	<TextBlock Text="ꕯ" FontWeight="Bold"/> -->
-										<!-- </Button> -->
-										<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}"
-										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}">
-											<RepeatButton.Styles>
-												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
-													<Setter Property="Background" Value="Transparent" />
-												</Style>
-												<Style Selector="RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-													<Setter Property="RepeatButton.Foreground" Value="#70c3ff" />
-													<Setter Property="Background" Value="Transparent" />
-												</Style>
-												<Style Selector="RepeatButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-													<Setter Property="RepeatButton.Foreground" Value="#1affc6" />
-													<Setter Property="Background" Value="Transparent" />
-												</Style>
-											</RepeatButton.Styles>
-											<ToolTip.Tip>
-												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Increase</TextBlock>
-												</StackPanel>
-											</ToolTip.Tip>
-										</RepeatButton>
-										<RepeatButton Grid.Row="1" Padding="4" VerticalAlignment="Bottom" Content="▼" Command="{Binding OnDecrement}"
-										              Background="Transparent" IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning}">
-											<RepeatButton.Styles>
-												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
-													<Setter Property="Background" Value="Transparent" />
-												</Style>
-												<Style Selector="RepeatButton:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-													<Setter Property="RepeatButton.Foreground" Value="#70c3ff" />
-													<Setter Property="Background" Value="Transparent" />
-												</Style>
-												<Style Selector="RepeatButton:pressed /template/ ContentPresenter#PART_ContentPresenter">
-													<Setter Property="RepeatButton.Foreground" Value="#1affc6" />
-													<Setter Property="Background" Value="Transparent" />
-												</Style>
-											</RepeatButton.Styles>
-											<ToolTip.Tip>
-												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Decrease</TextBlock>
-												</StackPanel>
-											</ToolTip.Tip>
-										</RepeatButton>
-									</Grid>
-								</Grid>
+								<ucontrols:SingleWeightedTilePattern/>
 							</Border>
 
 							<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
 							<Border Width="50" Height="50" Grid.Column="0"
 							        BoxShadow="0 0 15 0.25 Black"
 							        IsVisible="{ReflectionBinding !#patternItemsControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}"
-							        Background="Gray" Margin="5">
+							        Background="Gray">
 								<Image Width="50" Height="50"
 								       Source="{Binding PatternImage}"
 								       RenderOptions.BitmapInterpolationMode="Default" />

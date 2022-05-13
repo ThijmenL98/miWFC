@@ -183,7 +183,7 @@ public class WFCHandler {
         int curSeed = Environment.TickCount;
         dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
             RandomDouble = new Random(curSeed).NextDouble,
-            IndexPickerType = IndexPickerType.MIN_ENTROPY
+            IndexPickerType = IndexPickerType.HEAP_MIN_ENTROPY
         });
     }
 
@@ -588,6 +588,7 @@ public class WFCHandler {
 
         parentCM.getUIManager().updateTimeStampPosition(percentageCollapsed);
 
+        latestOutput = outputBitmap;
         return outputBitmap;
     }
 

@@ -11,11 +11,11 @@ public class TileViewModel : ReactiveObject {
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
-    private double _patternWeight;
+    private double _patternWeight, _changeAmount = 0.1d;
 
     private readonly CentralManager? parentCM;
     private bool _flipDisabled, _rotateDisabled, _highlighted;
-
+    
     /*
      * Used for input patterns
      */
@@ -67,6 +67,11 @@ public class TileViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _patternWeight, value);
     }
 
+    public double ChangeAmount {
+        get => _changeAmount;
+        set => this.RaiseAndSetIfChanged(ref _changeAmount, value);
+    }
+
     public int PatternIndex {
         get => _patternIndex;
         private init => this.RaiseAndSetIfChanged(ref _patternIndex, value);
@@ -111,10 +116,6 @@ public class TileViewModel : ReactiveObject {
      * Button callbacks
      */
 
-    private long lastUpdateMillis;
-    private int clickCount;
-    private double changeAmount = 0.1d;
-
     public void OnIncrement() {
         handleWeightChange(true);
     }
@@ -123,32 +124,69 @@ public class TileViewModel : ReactiveObject {
         handleWeightChange(false);
     }
 
+    public void OnWeightIncrement() {
+        handleWeightGapChange(true);
+    }
+
+    public void OnWeightDecrement() {
+        handleWeightGapChange(false);
+    }
+
+    private void handleWeightGapChange(bool increment) {
+        switch (ChangeAmount) {
+            case < 1:
+                if (increment) {
+                    ChangeAmount += 0.1d;
+                } else {
+                    ChangeAmount -= 0.1d;
+                    ChangeAmount = Math.Max(ChangeAmount, 0.1d);
+                }
+                break;
+            case 1:
+                if (increment) {
+                    ChangeAmount++;
+                } else {
+                    ChangeAmount -= 0.1d;
+                }
+                break;
+            case < 10:
+                if (increment) {
+                    ChangeAmount++;
+                } else {
+                    ChangeAmount--;
+                }
+                break;
+            case 10:
+                if (increment) {
+                    ChangeAmount += 10;
+                } else {
+                    ChangeAmount -= 1;
+                }
+                break;
+            default:
+                if (increment) {
+                    ChangeAmount += 10;
+                    ChangeAmount = Math.Min(ChangeAmount, 100d);
+                } else {
+                    ChangeAmount -= 10;
+                }
+                break;
+        }
+
+        ChangeAmount = Math.Round(ChangeAmount, 1);
+    }
+    
     private void handleWeightChange(bool increment) {
-        if (!increment && !(PatternWeight > 0)) {
-            return;
-        }
-
-        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        long diff = now - lastUpdateMillis;
-        lastUpdateMillis = now;
-
-        if (diff < 400) {
-            clickCount++;
-            changeAmount = clickCount switch {
-                >= 18 when PatternWeight % 10 == 0 => 10d,
-                > 9 when PatternWeight % 1 == 0 => 1d,
-                _ => changeAmount
-            };
-        } else {
-            changeAmount = 0.1d;
-            clickCount = 0;
-        }
-
-        if (increment) {
-            PatternWeight += changeAmount;
-        } else {
-            PatternWeight -= changeAmount;
-            PatternWeight = Math.Max(0, PatternWeight);
+        switch (increment) {
+            case false when !(PatternWeight > 0):
+                return;
+            case true:
+                PatternWeight += ChangeAmount;
+                break;
+            default:
+                PatternWeight -= ChangeAmount;
+                PatternWeight = Math.Max(0, PatternWeight);
+                break;
         }
 
         PatternWeight = Math.Round(PatternWeight, 1);

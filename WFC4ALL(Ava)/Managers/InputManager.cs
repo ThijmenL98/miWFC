@@ -335,6 +335,15 @@ public class InputManager {
         bool force = false) {
         int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+        
+        if (lastProcessedX == a && lastProcessedY == b && !force) {
+            return;
+        }
+
+        lastProcessedX = a;
+        lastProcessedY = b;
+        
+        
         if (parentCM.getWFCHandler().isOverlappingModel()) {
             List<Color> availableAtLoc;
             try {
@@ -366,13 +375,6 @@ public class InputManager {
                 }
             }
         } else {
-            if (lastProcessedX == a && lastProcessedY == b && !force) {
-                return;
-            }
-
-            lastProcessedX = a;
-            lastProcessedY = b;
-
             List<int> availableAtLoc;
             try {
                 availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);

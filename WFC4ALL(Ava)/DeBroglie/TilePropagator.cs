@@ -133,123 +133,11 @@ public class TilePropagator {
         }
     }
 
-    private Tuple<IIndexPicker, IPatternPicker> MakePickers(TilePropagatorOptions options) {
-        EdgedPathConstraint? pathConstraint = options.Constraints?.OfType<EdgedPathConstraint>().FirstOrDefault();
-        ConnectedConstraint? connectedConstraint
-            = options.Constraints?.OfType<ConnectedConstraint>().FirstOrDefault();
-        bool connectedPickHeuristic = connectedConstraint != null && connectedConstraint.UsePickHeuristic;
-
-        if (connectedPickHeuristic) {
-            // Lists pickers that implement IFilteredIndexPicker
-            if (options.IndexPickerType != IndexPickerType.DEFAULT &&
-                options.IndexPickerType != IndexPickerType.MIN_ENTROPY &&
-                options.IndexPickerType != IndexPickerType.ORDERED) {
-                throw new Exception(
-                    $"Connected Pick Heuristic is incompatible with the selected IndexPikcerType {options.IndexPickerType}");
-            }
-
-            if (options.IndexPickerType == IndexPickerType.DEFAULT) {
-                options.IndexPickerType = IndexPickerType.MIN_ENTROPY;
-            }
-        }
-
+    private Tuple<HeapEntropyTracker, WeightedRandomPatternPicker> MakePickers(TilePropagatorOptions options) {
         // Use the appropriate random picker
         // Generally this is HeapEntropyTracker, but it doesn't support some features
         // so there's a few slower implementations for that
-        IIndexPicker indexPicker = null;
-        IPatternPicker patternPicker = null;
-        
-        switch (options.IndexPickerType) {
-            case IndexPickerType.ORDERED: {
-                if (options.IndexOrder != null) {
-                    indexPicker = new OrderedIndexPicker(options.IndexOrder);
-                } else {
-                    indexPicker = new SimpleOrderedIndexPicker();
-                }
-
-                break;
-            }
-            case IndexPickerType.ARRAY_PRIORITY_MIN_ENTROPY: {
-                if (options.WeightSetByIndex == null || options.WeightSets == null) {
-                    throw new ArgumentNullException("Expected WeightSetByIndex and WeightSets to be set");
-                }
-
-                if (options.TilePickerType != TilePickerType.ARRAY_PRIORITY
-                    && options.TilePickerType != TilePickerType.DEFAULT) {
-                    throw new Exception("ArrayPriorityMinEntropy only works with Default tile picker");
-                }
-
-                WeightSetCollection weightSetCollection = new(options.WeightSetByIndex,
-                    options.WeightSets, tileModelMapping);
-                ArrayPriorityEntropyTracker entropyTracker = new(weightSetCollection);
-
-                indexPicker = entropyTracker;
-                patternPicker = entropyTracker;
-                break;
-            }
-            case IndexPickerType.MIN_ENTROPY: {
-                indexPicker = new EntropyTracker();
-                break;
-            }
-            case IndexPickerType.DEFAULT:
-            case IndexPickerType.HEAP_MIN_ENTROPY: {
-                indexPicker = new HeapEntropyTracker();
-                break;
-            }
-            case IndexPickerType.DIRTY: {
-                // Create clean patterns
-                if (tileModelMapping.TileCoordToPatternCoordIndexAndOffset != null) {
-                    throw new NotSupportedException();
-                }
-
-                if (options.CleanTiles == null) {
-                    throw new ArgumentNullException($"{nameof(options.CleanTiles)} is null");
-                }
-
-                ITopoArray<int> cleanPatterns
-                    = options.CleanTiles.Map(t => tileModelMapping.TilesToPatternsByOffset[0][t].First());
-
-                indexPicker = new DirtyIndexPicker(new SimpleOrderedIndexPicker(), cleanPatterns);
-                break;
-            }
-            default:
-                throw new Exception($"Unknown IndexPickerType {options.IndexPickerType}");
-        }
-
-        if (patternPicker == null) {
-            switch (options.TilePickerType) {
-                case TilePickerType.DEFAULT:
-                case TilePickerType.WEIGHTED:
-                    patternPicker = new WeightedRandomPatternPicker();
-                    break;
-                case TilePickerType.ORDERED:
-                    patternPicker = new SimpleOrderedPatternPicker();
-                    break;
-                case TilePickerType.ARRAY_PRIORITY:
-                    if (options.WeightSetByIndex == null || options.WeightSets == null) {
-                        throw new ArgumentNullException("Expected WeightSetByIndex and WeightSets to be set");
-                    }
-
-                    WeightSetCollection weightSetCollection = new(options.WeightSetByIndex,
-                        options.WeightSets, tileModelMapping);
-                    patternPicker = new ArrayPriorityPatternPicker(weightSetCollection);
-                    break;
-                default:
-                    throw new Exception($"Unknown TilePickerType {options.TilePickerType}");
-            }
-        }
-
-        if (connectedPickHeuristic) {
-            indexPicker = connectedConstraint.GetHeuristic(
-                (IFilteredIndexPicker) indexPicker,
-                this);
-        }
-
-        if (options.MemoizeIndices) {
-            indexPicker = new MemoizeIndexPicker(indexPicker);
-        }
-
-        return Tuple.Create(indexPicker, patternPicker);
+        return Tuple.Create(new HeapEntropyTracker(), new WeightedRandomPatternPicker());
     }
 
     public void TileCoordToPatternCoord(int x, int y, int z, out int px, out int py, out int pz, out int offset) {
@@ -438,17 +326,6 @@ public class TilePropagator {
     /// </summary>
     public SelectedTracker CreateSelectedTracker(TilePropagatorTileSet tileSet) {
         SelectedTracker tracker = new(this, wavePropagator, tileModelMapping, tileSet);
-        ((ITracker) tracker).Reset();
-        wavePropagator.AddTracker(tracker);
-        return tracker;
-    }
-
-    /// <summary>
-    ///     Returns a tracker that runs a callback when the banned/selected status of tile changes with respect to a tileset.
-    /// </summary>
-    public SelectedChangeTracker CreateSelectedChangeTracker(TilePropagatorTileSet tileSet,
-        IQuadstateChanged onChange) {
-        SelectedChangeTracker tracker = new(this, wavePropagator, tileModelMapping, tileSet, onChange);
         ((ITracker) tracker).Reset();
         wavePropagator.AddTracker(tracker);
         return tracker;

@@ -78,23 +78,9 @@ public class WavePropagator {
         constraints = options.Constraints ?? new IWaveConstraint[0];
         Topology = topology;
         RandomDouble = options.RandomDouble ?? new Random().NextDouble;
-        indexPicker = options.IndexPicker ?? new EntropyTracker();
+        indexPicker = options.IndexPicker ?? new HeapEntropyTracker();
         patternPicker = options.PatternPicker ?? new WeightedRandomPatternPicker();
-
-        switch (options.ModelConstraintAlgorithm) {
-            case ModelConstraintAlgorithm.ONE_STEP:
-                patternModelConstraint = new OneStepPatternModelConstraint(this, model);
-                break;
-            case ModelConstraintAlgorithm.DEFAULT:
-            case ModelConstraintAlgorithm.AC4:
-                patternModelConstraint = new Ac4PatternModelConstraint(this, model);
-                break;
-            case ModelConstraintAlgorithm.AC3:
-                patternModelConstraint = new Ac3PatternModelConstraint(this, model);
-                break;
-            default:
-                throw new Exception();
-        }
+        patternModelConstraint = new Ac4PatternModelConstraint(this, model);
 
         if (options.Clear) {
             Clear();
