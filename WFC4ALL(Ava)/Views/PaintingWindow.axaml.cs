@@ -57,24 +57,10 @@ public partial class PaintingWindow : Window {
         centralManager = cm;
     }
 
-    public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
-        if (centralManager!.getMainWindowVM().PencilModeEnabled) {
-            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-            (double clickX, double clickY) = e.GetPosition(e.Source as Image);
+    private bool canUsePencil = true;
 
-            int idx = _paintingPatternsCB.SelectedIndex;
-
-            bool? success = centralManager?.getInputManager().processClick((int) Math.Round(clickX),
-                (int) Math.Round(clickY),
-                (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom), idx);
-            if (success != null && !(bool) success) {
-                centralManager?.getUIManager().dispatchError(this);
-            }
-        } else if (centralManager!.getMainWindowVM().PaintEraseModeEnabled
-                   || centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
-            OutputImageOnPointerMoved(sender, e);
-        }
+    public void OutputImageOnPointerReleased(object sender, PointerReleasedEventArgs e) {
+        canUsePencil = true;
     }
 
     public int getSelectedPaintIndex() {
@@ -82,11 +68,11 @@ public partial class PaintingWindow : Window {
     }
     
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
+        (double clickX, double clickY) = e.GetPosition(e.Source as Image);
         if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
                 || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
             && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-            (double clickX, double clickY) = e.GetPosition(e.Source as Image);
 
             try {
                 centralManager?.getInputManager().processClickMask((int) Math.Round(clickX),
@@ -97,9 +83,22 @@ public partial class PaintingWindow : Window {
             } catch (IndexOutOfRangeException exception) {
                 Trace.WriteLine(exception);
             }
-        } else if (centralManager!.getMainWindowVM().PencilModeEnabled) {
+        } else if (centralManager!.getMainWindowVM().PencilModeEnabled && canUsePencil) {
             (double hoverX, double hoverY) = e.GetPosition(e.Source as Image);
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+
+            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
+                int idx = _paintingPatternsCB.SelectedIndex;
+
+                bool? success = centralManager?.getInputManager().processClick((int) Math.Round(clickX),
+                    (int) Math.Round(clickY),
+                    (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+                    (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom), idx);
+                if (success != null && !(bool) success) {
+                    centralManager?.getUIManager().dispatchError(this);
+                    canUsePencil = false;
+                }
+            }
 
             centralManager?.getInputManager().processHoverAvailability((int) Math.Round(hoverX),
                 (int) Math.Round(hoverY),
