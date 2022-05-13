@@ -440,7 +440,14 @@ public class WFCHandler {
         if (isOverlappingModel()) {
             #region Overlapping Tile Selection
 
-            dbPropagator.TileCoordToPatternCoord(a, b, 0, out int px, out int py, out int _, out int _);
+            int px, py;
+            try {
+                dbPropagator.TileCoordToPatternCoord(a, b, 0, out px, out py, out int _, out int _);
+            } catch (IndexOutOfRangeException) {
+                // Click was continued beyond the size of the image
+                return (null, false);
+            }
+
             if (internalDebug) {
                 Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
             }

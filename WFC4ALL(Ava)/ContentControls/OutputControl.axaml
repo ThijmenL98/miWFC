@@ -42,8 +42,7 @@
 
             <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
 
-            <Grid Grid.Column="2" ColumnDefinitions="Auto, Auto" VerticalAlignment="Center" Margin="15"
-                  IsVisible="{Binding OverlappingAdvancedEnabledIW}">
+            <Grid Grid.Column="2" ColumnDefinitions="Auto, Auto" VerticalAlignment="Center" Margin="15">
                 <TextBlock Grid.Column="0" TextWrapping="Wrap" Text="Seamless Output" TextAlignment="Center"
                            MaxWidth="100" />
                 <ToggleSwitch Grid.Column="1" Command="{Binding OnPaddingToggle}" x:Name="borderPaddingToggle"

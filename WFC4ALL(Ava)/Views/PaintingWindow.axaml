@@ -67,7 +67,8 @@
 							</Panel>
 							<ToolTip.Tip>
 								<StackPanel>
-									<TextBlock TextWrapping="Wrap">Paint a single pixel using the value from the list below</TextBlock>
+									<TextBlock TextWrapping="Wrap">Using the value from the list below:</TextBlock>
+									<TextBlock TextWrapping="Wrap">Click to paint a single pixel, hold to draw continuously.</TextBlock>
 								</StackPanel>
 							</ToolTip.Tip>
 						</Button>
@@ -205,6 +206,7 @@
 								<Border Margin="10" Background="#11000000" CornerRadius="10">
 									<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
 									       x:Name="outputImage" Source="{Binding OutputImage}"
+									       PointerPressed="OutputImageOnPointerPressed"
 									       PointerReleased="OutputImageOnPointerReleased"
 									       PointerMoved="OutputImageOnPointerMoved" />
 								</Border>

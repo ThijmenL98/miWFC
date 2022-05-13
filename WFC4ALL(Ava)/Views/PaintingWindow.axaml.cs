@@ -59,6 +59,15 @@ public partial class PaintingWindow : Window {
 
     private bool canUsePencil = true;
 
+    public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
+        if (centralManager!.getMainWindowVM().PencilModeEnabled ||
+            centralManager!.getMainWindowVM().PaintEraseModeEnabled || 
+            centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
+            OutputImageOnPointerMoved(sender, e);
+        }
+
+    }
+
     public void OutputImageOnPointerReleased(object sender, PointerReleasedEventArgs e) {
         canUsePencil = true;
     }
