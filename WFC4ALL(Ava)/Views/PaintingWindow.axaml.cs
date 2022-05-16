@@ -6,6 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using WFC4ALL.Managers;
 using WFC4ALL.ViewModels;
 
@@ -20,7 +21,8 @@ public partial class PaintingWindow : Window {
 
         KeyDown += keyDownHandler;
         Closing += (_, e) => {
-            centralManager?.getUIManager().switchWindow(Windows.MAIN, false);
+            Color[,] mask = centralManager!.getInputManager().getMaskColours();
+            centralManager?.getUIManager().switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
             e.Cancel = true;
         };
 
@@ -77,15 +79,15 @@ public partial class PaintingWindow : Window {
     }
     
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
-        (double clickX, double clickY) = e.GetPosition(e.Source as Image);
+        (double posX, double posY) = e.GetPosition(e.Source as Image);
+        (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
         if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
                 || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
             && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
-            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
 
             try {
-                centralManager?.getInputManager().processClickMask((int) Math.Round(clickX),
-                    (int) Math.Round(clickY),
+                centralManager?.getInputManager().processClickMask((int) Math.Round(posX),
+                    (int) Math.Round(posY),
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
                     centralManager!.getMainWindowVM().PaintKeepModeEnabled);
@@ -93,14 +95,11 @@ public partial class PaintingWindow : Window {
                 Trace.WriteLine(exception);
             }
         } else if (centralManager!.getMainWindowVM().PencilModeEnabled && canUsePencil) {
-            (double hoverX, double hoverY) = e.GetPosition(e.Source as Image);
-            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
-                int idx = _paintingPatternsCB.SelectedIndex;
+                int idx = getSelectedPaintIndex();
 
-                bool? success = centralManager?.getInputManager().processClick((int) Math.Round(clickX),
-                    (int) Math.Round(clickY),
+                bool? success = centralManager?.getInputManager().processClick((int) Math.Round(posX),
+                    (int) Math.Round(posY),
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom), idx);
                 if (success != null && !(bool) success) {
@@ -108,13 +107,13 @@ public partial class PaintingWindow : Window {
                     canUsePencil = false;
                 }
             }
-
-            centralManager?.getInputManager().processHoverAvailability((int) Math.Round(hoverX),
-                (int) Math.Round(hoverY),
-                (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-                _paintingPatternsCB.SelectedIndex);
         }
+
+        centralManager?.getInputManager().processHoverAvailability((int) Math.Round(posX),
+            (int) Math.Round(posY),
+            (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+            (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
+            _paintingPatternsCB.SelectedIndex, centralManager!.getMainWindowVM().PencilModeEnabled);
 
         e.Handled = true;
     }
@@ -138,12 +137,7 @@ public partial class PaintingWindow : Window {
     }
 
     public int getPaintBrushSize() {
-        int[] sizes = {1, 2, 3, 6, 10, 15, 25};
+        int[] sizes = {-1, 1, 2, 3, 6, 10, 15, 25};
         return sizes[_paintingSizeCB.SelectedIndex];
-    }
-
-    // ReSharper disable twice UnusedParameter.Local
-    private void Window_OnClosing(object? sender, CancelEventArgs e) {
-        centralManager?.getUIManager().handlePaintingClose(false);
     }
 }

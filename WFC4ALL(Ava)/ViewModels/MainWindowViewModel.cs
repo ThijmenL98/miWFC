@@ -1,6 +1,8 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using ReactiveUI;
@@ -425,6 +427,19 @@ public class MainWindowViewModel : ViewModelBase {
         PaintKeepModeEnabled = false;
     }
 
+    public void OnApplyClick() {
+        Color[,] mask = centralManager!.getInputManager().getMaskColours();
+        if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
+            centralManager!.getUIManager().dispatchError(centralManager.getPaintingWindow());
+            return;
+        }
+        setLoading(true);
+
+        centralManager.getInputManager().resetOverwriteCache();
+        centralManager.getInputManager().updateMask();
+        centralManager.getWFCHandler().handlePaintBrush(mask);
+    }
+
     public void OnCustomizeWindowSwitch(string param) {
         switch (param) {
             case "P":
@@ -435,7 +450,9 @@ public class MainWindowViewModel : ViewModelBase {
                 centralManager!.getUIManager().switchWindow(Windows.PAINTING, false);
                 break;
             case "M":
-                centralManager!.getUIManager().switchWindow(Windows.MAIN, false);
+                Color[,] mask = centralManager!.getInputManager().getMaskColours();
+                centralManager!.getInputManager().resetOverwriteCache();
+                centralManager!.getUIManager().switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
                 break;
             default:
                 throw new NotImplementedException();

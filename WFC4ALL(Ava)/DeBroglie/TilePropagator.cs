@@ -566,7 +566,7 @@ public class TilePropagator {
     }
 
     public void updateZeroWeight(int pattern) {
-        //TODO test why it's not working
+        // TODO test why it's not working
         for (int index = 0; index < tileModelMapping.PatternTopology.IndexCount; index++) {
             wavePropagator.InternalBan(index, pattern);
         }

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -208,7 +209,7 @@ public class UIManager {
                 break;
             case Windows.PAINTING:
                 source = mainWindow;
-                mainWindowVM.PencilModeEnabled = true; // TODO Remove on adding new tools
+                mainWindowVM.PencilModeEnabled = true;
                 target = parentCM.getPaintingWindow();
                 break;
             default:
@@ -230,7 +231,7 @@ public class UIManager {
                     : parentCM.getPaintingWindow().getTimelineWidth()) *
                 mvm.MarkerCollapsePercentage + 1;
             mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
-                offset, mvm.MarkerCollapsePercentage));
+                offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
         }
 
         updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
@@ -243,14 +244,15 @@ public class UIManager {
     public void handlePaintingClose(bool checkClicked) {
         mainWindowVM.PaintEraseModeEnabled = false;
         mainWindowVM.EraseModeEnabled = false;
-        mainWindowVM.PencilModeEnabled = true; // TODO Remove on adding new tools
+        mainWindowVM.PencilModeEnabled = true;
         mainWindowVM.PaintKeepModeEnabled = false;
 
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
 
         if (!checkClicked) {
-            //TODO popup if not pressed check mark
+            // TODO popup if not pressed check mark
+            Trace.WriteLine("Todo show popup mate");
         }
     }
 

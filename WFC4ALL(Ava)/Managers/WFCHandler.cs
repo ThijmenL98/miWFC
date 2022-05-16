@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+#if DEBUG
 using System.Diagnostics;
+#endif
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -11,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Avalonia;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using WFC4ALL.DeBroglie;
@@ -20,8 +23,6 @@ using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
-using Color = Avalonia.Media.Color;
-using Size = Avalonia.Size;
 
 namespace WFC4ALL.Managers;
 
@@ -32,21 +33,18 @@ public class WFCHandler {
     private readonly MainWindowViewModel mainWindowVM;
     private readonly CentralManager parentCM;
 
-    private bool _isChangingModels, _isChangingImages;
-    private int amountCollapsed, actionsTaken;
+    private bool _isChangingModels, _isChangingImages, inputHasChanged;
+    private int amountCollapsed, actionsTaken, tileSize;
+    private double percentageCollapsed;
 
     private WriteableBitmap? currentBitmap;
     private TileModel dbModel;
 
     private TilePropagator dbPropagator;
-    private bool inputHasChanged;
 
     private WriteableBitmap latestOutput;
-
-    private double percentageCollapsed;
     private Dictionary<int, Tuple<Color[], Tile>> tileCache;
     private ITopoArray<Tile> tiles;
-    private int tileSize;
 
     private Dictionary<int, int[]> tileSymmetries;
 
@@ -224,7 +222,7 @@ public class WFCHandler {
             // foreach (TileViewModel tvm in parentCM.getMainWindowVM().PatternTiles) {
             //     userWeights[tvm.PatternIndex] = tvm.PatternWeight;
             // }
-            // // Todo properly get the toSet from the pattern TVM
+            // TODO properly get the toSet from the pattern TVM
             // foreach ((double weight, int idx) in userWeights.ToList().Select((w, i) => (w, i))) {
             //     Tile toSet = tiles.toArray2d().Cast<Tile>().ToArray()[idx];
             //     Trace.WriteLine($@"Pre: {((OverlappingModel) dbModel).getFrequency(toSet)} -> {weight}");
@@ -371,7 +369,6 @@ public class WFCHandler {
             toAddPaint.Add(tvm);
         }
 
-
         const int sampleDimension = 50;
         int[][] values = new int[sampleDimension][];
 
@@ -427,19 +424,131 @@ public class WFCHandler {
         return toAddPaint[index].PatternColour;
     }
 
+    public void handlePaintBrush(Color[,] colors) {
+        int imageWidth = mainWindowVM.ImageOutWidth, imageHeight = mainWindowVM.ImageOutHeight;
+        if (isOverlappingModel()) {
+            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
+
+            Color[,] newInput = new Color[imageWidth, imageHeight];
+            int i = 0;
+
+            for (int y = 0; y < imageHeight; y++) {
+                for (int x = 0; x < imageWidth; x++) {
+                    if (colors[x, y].Equals(Colors.Green)) {
+                        Color c = dbOutput.get(x, y);
+                        int selectedIndex = dbPropagator.Topology.GetIndex(x, y, 0);
+                        ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
+
+                        Color? toSet = possibleTiles.Count == 1 ? possibleTiles.First() :
+                            currentColors!.Contains(c) ? c : null;
+
+                        if (toSet != null) {
+                            newInput[x, y] = (Color) toSet;
+                            i++;
+                        }
+                    }
+                }
+            }
+
+            parentCM.getInputManager().restartSolution("Paint Brush", true);
+            dbOutput = dbPropagator.toValueArray<Color>(); //TODO REMOVE?
+            int j = 0;
+            while (i > j) {
+                for (int y = 0; y < imageHeight; y++) {
+                    for (int x = 0; x < imageWidth; x++) {
+                        Color toSet = newInput[x, y];
+                        if (toSet.A > 200 && dbOutput.get(x, y).A > 200) {
+                            int idx = -1;
+                            foreach (TileViewModel tvm in toAddPaint.Where(tvm => tvm.PatternColour.Equals(toSet))) {
+                                idx = tvm.PatternIndex;
+                                break;
+                            }
+
+                            if (idx != -1) {
+                                parentCM?.getInputManager().processClick(x, y, imageWidth, imageHeight, idx);
+                            }
+                        }
+                    }
+                }
+
+                dbOutput = dbPropagator.toValueArray<Color>();
+
+                for (int y = 0; y < imageHeight; y++) {
+                    for (int x = 0; x < imageWidth; x++) {
+                        Color c = dbOutput.get(x, y);
+                        Color c2 = newInput[x, y];
+                        if (c2.A > 200 && c.A > 200 && c.Equals(c2)) {
+                            j++;
+                        }
+                    }
+                }
+            }
+        } else {
+            ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
+            int[,] newInput = new int[imageWidth, imageHeight];
+            int i = 0;
+
+            for (int y = 0; y < imageHeight; y++) {
+                for (int x = 0; x < imageWidth; x++) {
+                    int value = dbOutput.get(x, y);
+                    bool isCollapsed = value >= 0;
+
+                    if (isCollapsed && colors[x, y].Equals(Colors.Green)) {
+                        newInput[x, y] = value;
+                        i++;
+                    } else {
+                        newInput[x, y] = -1;
+                    }
+                }
+            }
+
+            parentCM.getInputManager().restartSolution("Paint Brush", true);
+
+            int j = 0;
+            while (i > j) {
+                for (int y = 0; y < imageHeight; y++) {
+                    for (int x = 0; x < imageWidth; x++) {
+                        int toSet = newInput[x, y];
+                        if (toSet != -1) {
+                            parentCM?.getInputManager().processClick(x, y, imageWidth, imageHeight, toSet);
+                        }
+                    }
+                }
+
+                dbOutput = dbPropagator.toValueArray(-1, -2);
+
+                for (int y = 0; y < imageHeight; y++) {
+                    for (int x = 0; x < imageWidth; x++) {
+                        int c = dbOutput.get(x, y);
+                        int c2 = newInput[x, y];
+                        if (c2 >= 0 && c.Equals(c2)) {
+                            j++;
+                        }
+                    }
+                }
+            }
+        }
+
+        mainWindowVM.OutputImage = getLatestOutputBM();
+        parentCM!.getInputManager().placeMarker(false);
+    }
+
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
 #pragma warning disable CS0162
     public (WriteableBitmap?, bool?) setTile(int a, int b, int toSet) {
         Resolution status;
+#if DEBUG
         const bool internalDebug = false;
         if (internalDebug) {
             Trace.WriteLine("");
         }
+#endif
 
         if (isOverlappingModel()) {
             #region Overlapping Tile Selection
 
+            // ReSharper disable twice NotAccessedVariable
             int px, py;
             try {
                 dbPropagator.TileCoordToPatternCoord(a, b, 0, out px, out py, out int _, out int _);
@@ -448,24 +557,30 @@ public class WFCHandler {
                 return (null, false);
             }
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
             }
+#endif
 
             List<Color> possibleTiles = getAvailablePatternsAtLocation<Color>(a, b);
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine($@"Available colours: {string.Join(", ", possibleTiles)}");
             }
+#endif
 
             Color c = toAddPaint[toSet].PatternColour;
 
             if (possibleTiles.Count == 1 || !possibleTiles.Contains(c)) {
+#if DEBUG
                 if (internalDebug) {
                     Trace.WriteLine(possibleTiles.Count == 1
                         ? "Returning because already collapsed"
                         : "Returning because not allowed");
                 }
+#endif
 
                 if (possibleTiles.Count == 1 && possibleTiles.Contains(c)) {
                     return (null, null);
@@ -480,11 +595,14 @@ public class WFCHandler {
             dbPropagator.AddBackTrackPoint();
             status = dbPropagator.select(a, b, 0, tilesToSelect);
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine($@"Proceeded with status: {status}");
             }
+#endif
 
             if (status.Equals(Resolution.CONTRADICTION)) {
+#if DEBUG
                 Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", tilesToSelect)}");
                 Trace.WriteLine("");
@@ -493,6 +611,7 @@ public class WFCHandler {
                 Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("");
+#endif
                 stepBackWfc();
                 return (null, false);
             }
@@ -507,38 +626,49 @@ public class WFCHandler {
 
             int descrambledIndex = getDescrambledIndex(toSet);
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine(
                     $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
             }
+#endif
 
             List<int> availableAtLoc = getAvailablePatternsAtLocation<int>(a, b);
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
             }
+#endif
 
             if (availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex)) {
+#if DEBUG
                 if (internalDebug) {
                     Trace.WriteLine(availableAtLoc.Count == 1
                         ? "Returning because already collapsed"
                         : "Returning because not allowed");
                 }
+#endif
 
                 return (null, false);
             }
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine("Painting is allowed, continuing");
             }
+#endif
 
             status = dbPropagator.selWith(a, b, descrambledIndex);
 
+#if DEBUG
             if (internalDebug) {
                 Trace.WriteLine($@"Proceeded with status: {status}");
             }
+#endif
 
             if (status.Equals(Resolution.CONTRADICTION)) {
+#if DEBUG
                 Trace.WriteLine(
                     $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
                 Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
@@ -548,6 +678,7 @@ public class WFCHandler {
                 Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("CONTRADICTION");
                 Trace.WriteLine("");
+#endif
                 stepBackWfc();
 
                 return (null, false);

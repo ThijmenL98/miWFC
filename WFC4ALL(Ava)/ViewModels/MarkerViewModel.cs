@@ -5,7 +5,8 @@ namespace WFC4ALL.ViewModels;
 
 public class MarkerViewModel : ReactiveObject {
     private readonly int _index;
-    private readonly double _widthOffset, _collapsePercentage; 
+    private readonly double _widthOffset, _collapsePercentage;
+    private readonly bool _revertible;
     // ReSharper disable trice UnusedMember.Local
     
     public int MarkerIndex {
@@ -23,9 +24,15 @@ public class MarkerViewModel : ReactiveObject {
         init => this.RaiseAndSetIfChanged(ref _collapsePercentage, value);
     }
 
-    public MarkerViewModel(int index, double offset, double collapsePercentage) {
+    public bool Revertible {
+        get => _revertible;
+        init => this.RaiseAndSetIfChanged(ref _revertible, value);
+    }
+
+    public MarkerViewModel(int index, double offset, double collapsePercentage, bool revertible) {
         MarkerIndex = index;
         MarkerOffset = offset;
         MarkerCollapsePercentage = collapsePercentage;
+        Revertible = revertible;
     }
 }

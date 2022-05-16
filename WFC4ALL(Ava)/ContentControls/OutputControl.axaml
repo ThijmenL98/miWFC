@@ -116,7 +116,12 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid>
-                                <Image Height="25" Source="/Assets/TimeStamp.png">
+                                <Image Height="25" Source="/Assets/TimeStamp.png" IsVisible="{Binding Revertible}">
+                                    <Image.RenderTransform>
+                                        <TranslateTransform X="{Binding MarkerOffset}" />
+                                    </Image.RenderTransform>
+                                </Image>
+                                <Image Height="25" Source="/Assets/TimeStampIrrevertible.png" IsVisible="{Binding !Revertible}">
                                     <Image.RenderTransform>
                                         <TranslateTransform X="{Binding MarkerOffset}" />
                                     </Image.RenderTransform>

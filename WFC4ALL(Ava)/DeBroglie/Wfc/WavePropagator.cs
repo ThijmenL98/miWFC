@@ -129,7 +129,7 @@ public class WavePropagator {
     }
 
     public void StepConstraints() {
-        // TODO: Do we need to worry about evaluating constraints multiple times?
+        // BORIS_TODO: Do we need to worry about evaluating constraints multiple times?
         foreach (IWaveConstraint constraint in constraints) {
             constraint.Check(this);
             if (Status != Resolution.UNDECIDED) {

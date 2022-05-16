@@ -11,6 +11,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
@@ -169,7 +170,11 @@ public class InputManager {
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
     }
 
-    public void placeMarker() {
+    public Color[,] getMaskColours() {
+        return maskColours;
+    }
+
+    public void placeMarker(bool revertible = true) {
         if (parentCM.getWFCHandler().isCollapsed()) {
             return;
         }
@@ -183,7 +188,8 @@ public class InputManager {
             (parentCM.getMainWindow().IsVisible
                 ? mainWindow.getOutputControl().getTimelineWidth()
                 : parentCM.getPaintingWindow().getTimelineWidth()) *
-            parentCM.getWFCHandler().getPercentageCollapsed() + 1, parentCM.getWFCHandler().getPercentageCollapsed()));
+            parentCM.getWFCHandler().getPercentageCollapsed() + 1, parentCM.getWFCHandler().getPercentageCollapsed(),
+            revertible));
 
         while (true) {
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
@@ -206,6 +212,13 @@ public class InputManager {
 
     public void loadMarker(bool doBacktrack = true) {
         int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
+
+        if (savePoints.Count != 0) {
+            if (!mainWindowVM.Markers[savePoints.Count - 1].Revertible) {
+                parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+                return;
+            }
+        }
 
         if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
             prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
@@ -313,7 +326,7 @@ public class InputManager {
         }
     }
 
-    public bool? processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx) {
+    public bool? processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
@@ -321,9 +334,11 @@ public class InputManager {
 
         if (showPixel != null && (bool) showPixel) {
             mainWindowVM.OutputImage = bitmap!;
-            processHoverAvailability(clickX, clickY, imgWidth, imgHeight, tileIdx, true);
+            processHoverAvailability(clickX, clickY, imgWidth, imgHeight, tileIdx, true, true);
         } else {
-            mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+            if (!skipUI) {
+                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+            }
         }
 
         return showPixel;
@@ -332,18 +347,17 @@ public class InputManager {
     private int lastProcessedX = -1, lastProcessedY = -1;
 
     public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, int selectedValue,
-        bool force = false) {
+        bool pencilSelected, bool force = false) {
         int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
-        
+
         if (lastProcessedX == a && lastProcessedY == b && !force) {
             return;
         }
 
         lastProcessedX = a;
         lastProcessedY = b;
-        
-        
+
         if (parentCM.getWFCHandler().isOverlappingModel()) {
             List<Color> availableAtLoc;
             try {
@@ -352,18 +366,20 @@ public class InputManager {
                 return;
             }
 
-            try {
-                (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
-                if (showPixel != null && (bool) showPixel) {
-                    mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
-                    parentCM.getWFCHandler().stepBackWfc();
-                } else {
+            if (pencilSelected) {
+                try {
+                    (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
+                    if (showPixel != null && (bool) showPixel) {
+                        mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
+                        parentCM.getWFCHandler().stepBackWfc();
+                    } else {
+                        mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                            PixelFormat.Bgra8888, AlphaFormat.Premul);
+                    }
+                } catch (IndexOutOfRangeException) {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Premul);
                 }
-            } catch (IndexOutOfRangeException) {
-                mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                    PixelFormat.Bgra8888, AlphaFormat.Premul);
             }
 
             mainWindowVM.HelperTiles.Clear();
@@ -382,13 +398,15 @@ public class InputManager {
                 return;
             }
 
-            (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
-            if (showPixel != null && (bool) showPixel) {
-                mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
-                parentCM.getWFCHandler().stepBackWfc();
-            } else {
-                mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                    PixelFormat.Bgra8888, AlphaFormat.Premul);
+            if (pencilSelected) {
+                (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
+                if (showPixel != null && (bool) showPixel) {
+                    mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
+                    parentCM.getWFCHandler().stepBackWfc();
+                } else {
+                    mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                        PixelFormat.Bgra8888, AlphaFormat.Premul);
+                }
             }
 
             mainWindowVM.HelperTiles.Clear();
@@ -416,18 +434,38 @@ public class InputManager {
 
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        for (int x = 0; x < outputWidth; x++) {
-            for (int y = 0; y < outputHeight; y++) {
-                double dx = (double) x - a;
-                double dy = (double) y - b;
-                double distanceSquared = dx * dx + dy * dy;
+        if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+            if (rawBrushSize == -1) {
+                maskColours[a, b] = add ? Colors.Green : Colors.Red;
+                for (int x = 0; x < outputWidth; x++) {
+                    for (int y = 0; y < outputHeight; y++) {
+                        if (maskColours[x, y] == default) {
+                            maskColours[x, y] = add ? Colors.Red : Colors.Green;
+                        }
+                    }
+                }
+            } else {
+                for (int x = 0; x < outputWidth; x++) {
+                    for (int y = 0; y < outputHeight; y++) {
+                        double dx = (double) x - a;
+                        double dy = (double) y - b;
+                        double distanceSquared = dx * dx + dy * dy;
 
-                if (distanceSquared <= brushSize) {
-                    maskColours[x, y] = add ? Colors.Green : Colors.Red;
+                        if (distanceSquared <= brushSize) {
+                            maskColours[x, y] = add ? Colors.Green : Colors.Red;
+                        } else if (maskColours[x, y] == default) {
+                            maskColours[x, y] = add ? Colors.Red : Colors.Green;
+                        }
+                    }
                 }
             }
         }
 
+        updateMask();
+    }
+
+    public void updateMask() {
+        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         WriteableBitmap bitmap = new(new PixelSize(outputWidth, outputHeight),
             new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
