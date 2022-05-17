@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-#if DEBUG
+﻿#if DEBUG
 using System.Diagnostics;
 #endif
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -424,13 +425,11 @@ public class WFCHandler {
         return toAddPaint[index].PatternColour;
     }
 
-    public void handlePaintBrush(Color[,] colors) {
+    public async void handlePaintBrush(Color[,] colors) {
         int imageWidth = mainWindowVM.ImageOutWidth, imageHeight = mainWindowVM.ImageOutHeight;
         if (isOverlappingModel()) {
             ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
-
-            Color[,] newInput = new Color[imageWidth, imageHeight];
-            int i = 0;
+            Dictionary<Tuple<int, int>, Color> newInputDict = new();
 
             for (int y = 0; y < imageHeight; y++) {
                 for (int x = 0; x < imageWidth; x++) {
@@ -443,50 +442,49 @@ public class WFCHandler {
                             currentColors!.Contains(c) ? c : null;
 
                         if (toSet != null) {
-                            newInput[x, y] = (Color) toSet;
-                            i++;
+                            newInputDict.Add(new Tuple<int, int>(x, y), (Color) toSet);
                         }
                     }
                 }
             }
 
             parentCM.getInputManager().restartSolution("Paint Brush", true);
-            dbOutput = dbPropagator.toValueArray<Color>(); //TODO REMOVE?
-            int j = 0;
-            while (i > j) {
-                for (int y = 0; y < imageHeight; y++) {
-                    for (int x = 0; x < imageWidth; x++) {
-                        Color toSet = newInput[x, y];
-                        if (toSet.A > 200 && dbOutput.get(x, y).A > 200) {
-                            int idx = -1;
-                            foreach (TileViewModel tvm in toAddPaint.Where(tvm => tvm.PatternColour.Equals(toSet))) {
-                                idx = tvm.PatternIndex;
-                                break;
-                            }
+            int oldInputDictSize = newInputDict.Count;
+            Trace.WriteLine(oldInputDictSize);
 
-                            if (idx != -1) {
-                                parentCM?.getInputManager().processClick(x, y, imageWidth, imageHeight, idx);
-                            }
-                        }
+            await Task.Delay(1);
+
+            while (newInputDict.Count > 0) {
+                foreach ((Tuple<int, int> key, Color toSet) in new Dictionary<Tuple<int, int>, Color>(newInputDict)) {
+                    int idx = -1;
+                    foreach (TileViewModel tvm in
+                             toAddPaint.Where(tvm => tvm.PatternColour.Equals(toSet))) {
+                        idx = tvm.PatternIndex;
+                        break;
+                    }
+
+                    bool? success = parentCM?.getInputManager()
+                        .processClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true);
+
+                    if (success != null && (bool) success) {
+                        newInputDict.Remove(key);
                     }
                 }
 
-                dbOutput = dbPropagator.toValueArray<Color>();
-
-                for (int y = 0; y < imageHeight; y++) {
-                    for (int x = 0; x < imageWidth; x++) {
-                        Color c = dbOutput.get(x, y);
-                        Color c2 = newInput[x, y];
-                        if (c2.A > 200 && c.A > 200 && c.Equals(c2)) {
-                            j++;
-                        }
-                    }
+                if (oldInputDictSize.Equals(newInputDict.Count)) {
+#if DEBUG
+                    Trace.WriteLine("");
+                    Trace.WriteLine("AYOAYOAYO");
+                    Trace.WriteLine("");
+#endif
+                    break;
                 }
+
+                oldInputDictSize = newInputDict.Count;
             }
         } else {
             ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
-            int[,] newInput = new int[imageWidth, imageHeight];
-            int i = 0;
+            Dictionary<Tuple<int, int>, int> newInputDict = new();
 
             for (int y = 0; y < imageHeight; y++) {
                 for (int x = 0; x < imageWidth; x++) {
@@ -494,38 +492,36 @@ public class WFCHandler {
                     bool isCollapsed = value >= 0;
 
                     if (isCollapsed && colors[x, y].Equals(Colors.Green)) {
-                        newInput[x, y] = value;
-                        i++;
-                    } else {
-                        newInput[x, y] = -1;
+                        newInputDict.Add(new Tuple<int, int>(x, y), value);
                     }
                 }
             }
 
             parentCM.getInputManager().restartSolution("Paint Brush", true);
+            int oldInputDictSize = newInputDict.Count;
 
-            int j = 0;
-            while (i > j) {
-                for (int y = 0; y < imageHeight; y++) {
-                    for (int x = 0; x < imageWidth; x++) {
-                        int toSet = newInput[x, y];
-                        if (toSet != -1) {
-                            parentCM?.getInputManager().processClick(x, y, imageWidth, imageHeight, toSet);
-                        }
+            await Task.Delay(1);
+
+            while (newInputDict.Count > 0) {
+                foreach ((Tuple<int, int> key, int value) in new Dictionary<Tuple<int, int>, int>(newInputDict)) {
+                    bool? success = parentCM?.getInputManager()
+                        .processClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true);
+
+                    if (success != null && (bool) success) {
+                        newInputDict.Remove(key);
                     }
                 }
 
-                dbOutput = dbPropagator.toValueArray(-1, -2);
-
-                for (int y = 0; y < imageHeight; y++) {
-                    for (int x = 0; x < imageWidth; x++) {
-                        int c = dbOutput.get(x, y);
-                        int c2 = newInput[x, y];
-                        if (c2 >= 0 && c.Equals(c2)) {
-                            j++;
-                        }
-                    }
+                if (oldInputDictSize.Equals(newInputDict.Count)) {
+#if DEBUG
+                    Trace.WriteLine("");
+                    Trace.WriteLine("AYOAYOAYO");
+                    Trace.WriteLine("");
+#endif
+                    break;
                 }
+
+                oldInputDictSize = newInputDict.Count;
             }
         }
 
@@ -536,7 +532,7 @@ public class WFCHandler {
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
 #pragma warning disable CS0162
-    public (WriteableBitmap?, bool?) setTile(int a, int b, int toSet) {
+    public (WriteableBitmap?, bool?) setTile(int a, int b, int toSet, bool returnTrueAlreadyCorrect = false) {
         Resolution status;
 #if DEBUG
         const bool internalDebug = false;
@@ -583,7 +579,7 @@ public class WFCHandler {
 #endif
 
                 if (possibleTiles.Count == 1 && possibleTiles.Contains(c)) {
-                    return (null, null);
+                    return (null, returnTrueAlreadyCorrect ? true : null);
                 }
 
                 return (null, false);
@@ -650,7 +646,8 @@ public class WFCHandler {
                 }
 #endif
 
-                return (null, false);
+                bool hasItself = availableAtLoc.Count == 1 && availableAtLoc.Contains(descrambledIndex);
+                return (null, returnTrueAlreadyCorrect && hasItself);
             }
 
 #if DEBUG

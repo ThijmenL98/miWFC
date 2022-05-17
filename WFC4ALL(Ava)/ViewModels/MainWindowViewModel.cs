@@ -404,6 +404,8 @@ public class MainWindowViewModel : ViewModelBase {
         EraseModeEnabled = false;
         PaintKeepModeEnabled = false;
         PaintEraseModeEnabled = false;
+        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().updateMask();
     }
 
     public void OnEraseModeClick() {
@@ -411,6 +413,8 @@ public class MainWindowViewModel : ViewModelBase {
         PencilModeEnabled = false;
         PaintKeepModeEnabled = false;
         PaintEraseModeEnabled = false;
+        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().updateMask();
     }
 
     public void OnPaintKeepModeClick() {
@@ -434,6 +438,7 @@ public class MainWindowViewModel : ViewModelBase {
             return;
         }
         setLoading(true);
+        centralManager!.getMainWindowVM().StepAmount = 1;
 
         centralManager.getInputManager().resetOverwriteCache();
         centralManager.getInputManager().updateMask();

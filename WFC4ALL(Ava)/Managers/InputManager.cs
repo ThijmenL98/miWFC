@@ -11,7 +11,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 using static WFC4ALL.Utils.Util;
@@ -326,17 +325,19 @@ public class InputManager {
         }
     }
 
-    public bool? processClick(int clickX, int clickY, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
-        int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
-            b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+    public bool? processClick(int a, int b, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
+        if (!skipUI) {
+            a = (int) Math.Floor(a * mainWindowVM.ImageOutWidth / (double) imgWidth);
+            b = (int) Math.Floor(b * mainWindowVM.ImageOutHeight / (double) imgHeight);
+        }
 
-        (WriteableBitmap? bitmap, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx);
+        (WriteableBitmap? bitmap, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx, skipUI);
 
-        if (showPixel != null && (bool) showPixel) {
-            mainWindowVM.OutputImage = bitmap!;
-            processHoverAvailability(clickX, clickY, imgWidth, imgHeight, tileIdx, true, true);
-        } else {
-            if (!skipUI) {
+        if (!skipUI) {
+            if (showPixel != null && (bool) showPixel) {
+                mainWindowVM.OutputImage = bitmap!;
+                processHoverAvailability(a, b, imgWidth, imgHeight, tileIdx, true, true);
+            } else {
                 mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
             }
         }
