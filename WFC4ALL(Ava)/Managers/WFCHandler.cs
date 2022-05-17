@@ -431,7 +431,7 @@ public class WFCHandler {
         return isBrushing;
     }
 
-    public async void handlePaintBrush(Color[,] colors) {
+    public async Task handlePaintBrush(Color[,] colors) {
         isBrushing = true;
         int imageWidth = mainWindowVM.ImageOutWidth, imageHeight = mainWindowVM.ImageOutHeight;
         if (isOverlappingModel()) {

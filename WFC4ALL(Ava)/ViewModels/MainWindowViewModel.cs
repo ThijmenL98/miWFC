@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -431,7 +432,7 @@ public class MainWindowViewModel : ViewModelBase {
         PaintKeepModeEnabled = false;
     }
 
-    public void OnApplyClick() {
+    public async Task OnApplyClick() {
         Color[,] mask = centralManager!.getInputManager().getMaskColours();
         if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
             centralManager!.getUIManager().dispatchError(centralManager.getPaintingWindow());
@@ -442,22 +443,22 @@ public class MainWindowViewModel : ViewModelBase {
 
         centralManager.getInputManager().resetOverwriteCache();
         centralManager.getInputManager().updateMask();
-        centralManager.getWFCHandler().handlePaintBrush(mask);
+        await centralManager.getWFCHandler().handlePaintBrush(mask);
     }
 
-    public void OnCustomizeWindowSwitch(string param) {
+    public async void OnCustomizeWindowSwitch(string param) {
         switch (param) {
             case "P":
                 if (IsPlaying) {
                     OnAnimate();
                 }
 
-                centralManager!.getUIManager().switchWindow(Windows.PAINTING, false);
+                await centralManager!.getUIManager().switchWindow(Windows.PAINTING, false);
                 break;
             case "M":
                 Color[,] mask = centralManager!.getInputManager().getMaskColours();
+                await centralManager!.getUIManager().switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
                 centralManager!.getInputManager().resetOverwriteCache();
-                centralManager!.getUIManager().switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
                 break;
             default:
                 throw new NotImplementedException();

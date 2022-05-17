@@ -11,7 +11,12 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using Avalonia.Threading;
+using MessageBox.Avalonia.BaseWindows.Base;
+using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
+using MessageBox.Avalonia.Models;
 using WFC4ALL.DeBroglie.Models;
 using WFC4ALL.Utils;
 using WFC4ALL.ViewModels;
@@ -197,14 +202,18 @@ public class UIManager {
         dt.Start();
     }
 
-    public void switchWindow(Windows window, bool checkClicked) {
+    public async Task switchWindow(Windows window, bool checkClicked) {
         Window target, source;
 
         switch (window) {
             case Windows.MAIN:
                 target = mainWindow;
                 source = parentCM.getPaintingWindow();
-                handlePaintingClose(checkClicked);
+                bool stillApply = await handlePaintingClose(checkClicked);
+
+                if (stillApply) {
+                    await parentCM.getMainWindowVM().OnApplyClick();
+                }
 
                 break;
             case Windows.PAINTING:
@@ -241,7 +250,27 @@ public class UIManager {
         mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
     }
 
-    public void handlePaintingClose(bool checkClicked) {
+    private async Task<bool> handlePaintingClose(bool checkClicked) {
+        if (!checkClicked) {
+            Trace.WriteLine("Todo show popup mate");
+
+            IMsBoxWindow<string> messageBoxCustomWindow = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxCustomWindow(new MessageBoxCustomParams {
+                    ContentMessage = "Brush mask has not been applied!",
+                    ButtonDefinitions = new[] {
+                        new ButtonDefinition {Name = "Apply"},
+                        new ButtonDefinition {Name = "Discard"}
+                    },
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                });
+
+            string? value = await messageBoxCustomWindow.Show();
+
+            if (value is "Apply") {
+                return true;
+            }
+        }
+
         mainWindowVM.PaintEraseModeEnabled = false;
         mainWindowVM.EraseModeEnabled = false;
         mainWindowVM.PencilModeEnabled = true;
@@ -249,11 +278,7 @@ public class UIManager {
 
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
-
-        if (!checkClicked) {
-            // TODO popup if not pressed check mark
-            Trace.WriteLine("Todo show popup mate");
-        }
+        return false;
     }
 
     /*
