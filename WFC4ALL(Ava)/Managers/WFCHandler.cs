@@ -263,8 +263,8 @@ public class WFCHandler {
         tiles = dbSample.toTiles();
         dbModel = new OverlappingModel(patternSize);
         bool hasRotations = (category.Equals("Worlds Top-Down")
-                             || category.Equals("Knots") || category.Equals("Knots") ||
-                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+            || category.Equals("Knots") || category.Equals("Knots") ||
+            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles,
@@ -305,7 +305,7 @@ public class WFCHandler {
         List<double> weights = new();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-                new XElement("");
+            new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -425,104 +425,119 @@ public class WFCHandler {
         return toAddPaint[index].PatternColour;
     }
 
+    private bool isBrushing = false;
+
+    public bool IsBrushing() {
+        return isBrushing;
+    }
+
     public async void handlePaintBrush(Color[,] colors) {
+        isBrushing = true;
         int imageWidth = mainWindowVM.ImageOutWidth, imageHeight = mainWindowVM.ImageOutHeight;
         if (isOverlappingModel()) {
-            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
+                        ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
             Dictionary<Tuple<int, int>, Color> newInputDict = new();
 
-            for (int y = 0; y < imageHeight; y++) {
-                for (int x = 0; x < imageWidth; x++) {
-                    if (colors[x, y].Equals(Colors.Green)) {
-                        Color c = dbOutput.get(x, y);
-                        int selectedIndex = dbPropagator.Topology.GetIndex(x, y, 0);
-                        ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
+            await Task.Run(() => {
+                for (int y = 0; y < imageHeight; y++) {
+                    for (int x = 0; x < imageWidth; x++) {
+                        if (colors[x, y].Equals(Colors.Green)) {
+                            Color c = dbOutput.get(x, y);
+                            int selectedIndex = dbPropagator.Topology.GetIndex(x, y, 0);
+                            ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
 
-                        Color? toSet = possibleTiles.Count == 1 ? possibleTiles.First() :
-                            currentColors!.Contains(c) ? c : null;
+                            Color? toSet = possibleTiles.Count == 1 ? possibleTiles.First() :
+                                currentColors!.Contains(c) ? c : null;
 
-                        if (toSet != null) {
-                            newInputDict.Add(new Tuple<int, int>(x, y), (Color) toSet);
+                            if (toSet != null) {
+                                newInputDict.Add(new Tuple<int, int>(x, y), (Color) toSet);
+                            }
                         }
                     }
                 }
-            }
-
+            });
+            
             parentCM.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
-            Trace.WriteLine(oldInputDictSize);
 
-            await Task.Delay(1);
+            await Task.Delay(1000);
 
-            while (newInputDict.Count > 0) {
-                foreach ((Tuple<int, int> key, Color toSet) in new Dictionary<Tuple<int, int>, Color>(newInputDict)) {
-                    int idx = -1;
-                    foreach (TileViewModel tvm in
-                             toAddPaint.Where(tvm => tvm.PatternColour.Equals(toSet))) {
-                        idx = tvm.PatternIndex;
+            await Task.Run(() => {
+                while (newInputDict.Count > 0) {
+                    foreach ((Tuple<int, int> key, Color toSet) in
+                             new Dictionary<Tuple<int, int>, Color>(newInputDict)) {
+                        int idx = -1;
+                        foreach (TileViewModel tvm in
+                                 toAddPaint.Where(tvm => tvm.PatternColour.Equals(toSet))) {
+                            idx = tvm.PatternIndex;
+                            break;
+                        }
+
+                        bool? success = parentCM?.getInputManager()
+                            .processClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true);
+
+                        if (success != null && (bool) success) {
+                            newInputDict.Remove(key);
+                        }
+                    }
+
+                    if (oldInputDictSize.Equals(newInputDict.Count)) {
+#if DEBUG
+                        Trace.WriteLine("\nAYOAYOAYO\n");
+#endif
                         break;
                     }
 
-                    bool? success = parentCM?.getInputManager()
-                        .processClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true);
-
-                    if (success != null && (bool) success) {
-                        newInputDict.Remove(key);
-                    }
+                    oldInputDictSize = newInputDict.Count;
                 }
 
-                if (oldInputDictSize.Equals(newInputDict.Count)) {
-#if DEBUG
-                    Trace.WriteLine("");
-                    Trace.WriteLine("AYOAYOAYO");
-                    Trace.WriteLine("");
-#endif
-                    break;
-                }
-
-                oldInputDictSize = newInputDict.Count;
-            }
+                isBrushing = false;
+                mainWindowVM.setLoading(false);
+            });
         } else {
-            ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
             Dictionary<Tuple<int, int>, int> newInputDict = new();
+            await Task.Run(() => {
+                ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
+                for (int y = 0; y < imageHeight; y++) {
+                    for (int x = 0; x < imageWidth; x++) {
+                        int value = dbOutput.get(x, y);
+                        bool isCollapsed = value >= 0;
 
-            for (int y = 0; y < imageHeight; y++) {
-                for (int x = 0; x < imageWidth; x++) {
-                    int value = dbOutput.get(x, y);
-                    bool isCollapsed = value >= 0;
-
-                    if (isCollapsed && colors[x, y].Equals(Colors.Green)) {
-                        newInputDict.Add(new Tuple<int, int>(x, y), value);
+                        if (isCollapsed && colors[x, y].Equals(Colors.Green)) {
+                            newInputDict.Add(new Tuple<int, int>(x, y), value);
+                        }
                     }
                 }
-            }
+            });
 
             parentCM.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
-
             await Task.Delay(1);
 
-            while (newInputDict.Count > 0) {
-                foreach ((Tuple<int, int> key, int value) in new Dictionary<Tuple<int, int>, int>(newInputDict)) {
-                    bool? success = parentCM?.getInputManager()
-                        .processClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true);
+            await Task.Run(() => {
+                while (newInputDict.Count > 0) {
+                    foreach ((Tuple<int, int> key, int value) in new Dictionary<Tuple<int, int>, int>(newInputDict)) {
+                        bool? success = parentCM?.getInputManager()
+                            .processClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true);
 
-                    if (success != null && (bool) success) {
-                        newInputDict.Remove(key);
+                        if (success != null && (bool) success) {
+                            newInputDict.Remove(key);
+                        }
                     }
-                }
 
-                if (oldInputDictSize.Equals(newInputDict.Count)) {
+                    if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
-                    Trace.WriteLine("");
-                    Trace.WriteLine("AYOAYOAYO");
-                    Trace.WriteLine("");
+                        Trace.WriteLine("\nAYOAYOAYO\n");
 #endif
-                    break;
+                        break;
+                    }
+
+                    oldInputDictSize = newInputDict.Count;
                 }
 
-                oldInputDictSize = newInputDict.Count;
-            }
+                isBrushing = false;
+                mainWindowVM.setLoading(false);
+            });
         }
 
         mainWindowVM.OutputImage = getLatestOutputBM();
@@ -599,20 +614,14 @@ public class WFCHandler {
 
             if (status.Equals(Resolution.CONTRADICTION)) {
 #if DEBUG
-                Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
-                Trace.WriteLine($@"Available patterns: {string.Join(", ", tilesToSelect)}");
-                Trace.WriteLine("");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("");
+                Trace.WriteLine(
+                    $@"Overlapping CONTRADICTION: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}, Available patterns: {string.Join(", ", tilesToSelect)}");
 #endif
                 stepBackWfc();
                 return (null, false);
             }
 
-            return (getLatestOutputBM(), true);
+            return (returnTrueAlreadyCorrect ? null : getLatestOutputBM(), true);
 
             #endregion
 
@@ -667,21 +676,14 @@ public class WFCHandler {
             if (status.Equals(Resolution.CONTRADICTION)) {
 #if DEBUG
                 Trace.WriteLine(
-                    $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
-                Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
-                Trace.WriteLine("");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("CONTRADICTION");
-                Trace.WriteLine("");
+                    $@"Adjacency CONTRADICTION: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}, Available patterns: {string.Join(", ", availableAtLoc)}");
 #endif
                 stepBackWfc();
 
                 return (null, false);
             }
 
-            return (getLatestOutputBM(), true);
+            return (returnTrueAlreadyCorrect ? null : getLatestOutputBM(), true);
 
             #endregion
         }
@@ -796,7 +798,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                           (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                            (int) Math.Floor((double) y / tileSize)) % 2 == 0
                             ? Color.Parse("#11000000")
                             : Color.Parse("#00000000")
                         : Color.Parse("#00000000"));

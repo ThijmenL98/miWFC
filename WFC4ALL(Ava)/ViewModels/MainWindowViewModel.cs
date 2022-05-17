@@ -465,7 +465,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void setLoading(bool value) {
-        IsLoading = value;
+        IsLoading = value || centralManager!.getWFCHandler().IsBrushing();
         centralManager?.getMainWindow().InvalidateVisual();
     }
 }
