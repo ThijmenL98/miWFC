@@ -381,6 +381,8 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Premul);
                 }
+            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled || parentCM.getMainWindowVM().PaintKeepModeEnabled) {
+                updateHoverBrushMask(a, b);
             }
 
             mainWindowVM.HelperTiles.Clear();
@@ -408,6 +410,8 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Premul);
                 }
+            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled || parentCM.getMainWindowVM().PaintKeepModeEnabled) {
+                updateHoverBrushMask(a, b);
             }
 
             mainWindowVM.HelperTiles.Clear();
@@ -420,6 +424,39 @@ public class InputManager {
                 }
             }
         }
+    }
+
+    private void updateHoverBrushMask(int a, int b) {
+        int rawBrushSize = parentCM.getPaintingWindow().getPaintBrushSize();
+        bool add = parentCM.getMainWindowVM().PaintKeepModeEnabled;
+                
+        double brushSize = rawBrushSize switch {
+            1 => rawBrushSize,
+            2 => rawBrushSize * 2d,
+            _ => rawBrushSize * 3d
+        };
+                
+        Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
+                
+        if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+            if (rawBrushSize == -1) {
+                hoverMaskColours[a, b] = add ? Colors.Green : Colors.Red;
+            } else {
+                for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
+                    for (int y = 0; y < mainWindowVM.ImageOutHeight; y++) {
+                        double dx = (double) x - a;
+                        double dy = (double) y - b;
+                        double distanceSquared = dx * dx + dy * dy;
+
+                        if (distanceSquared <= brushSize) {
+                            hoverMaskColours[x, y] = add ? Colors.Green : Colors.Red;
+                        }
+                    }
+                }
+            }
+        }
+                
+        updateMask(hoverMaskColours, false);
     }
 
     public void processClickMask(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
@@ -462,10 +499,14 @@ public class InputManager {
             }
         }
 
-        updateMask();
+        updateMask(maskColours, true);
     }
 
     public void updateMask() {
+        updateMask(maskColours, true);
+    }
+
+    private void updateMask(Color[,] colors, bool updateMain) {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         WriteableBitmap bitmap = new(new PixelSize(outputWidth, outputHeight),
             new Vector(96, 96),
@@ -481,13 +522,17 @@ public class InputManager {
             Parallel.For(0L, outputHeight, yy => {
                 uint* dest = backBuffer + (int) yy * stride / 4;
                 for (int xx = 0; xx < outputWidth; xx++) {
-                    Color c = maskColours[xx, (int) yy];
+                    Color c = colors[xx, (int) yy];
                     dest[xx] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
                 }
             });
         }
 
-        mainWindowVM.OutputImageMask = bitmap;
+        if (updateMain) {
+            mainWindowVM.OutputImageMask = bitmap;
+        } else {
+            mainWindowVM.OutputPreviewMask = bitmap;
+        }
     }
 
     public void resetHoverAvailability() {
