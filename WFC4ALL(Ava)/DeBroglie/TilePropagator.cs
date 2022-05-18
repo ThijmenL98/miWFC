@@ -506,7 +506,7 @@ public class TilePropagator {
     }
 
     public ISet<T> GetPossibleValues<T>(int index) {
-        // TODO
+        // BORIS_TODO
         tileModelMapping.GetTileCoordToPatternCoord(index, out int patternIndex, out int o);
         IEnumerable<int> patterns = wavePropagator.GetPossiblePatterns(patternIndex);
         HashSet<T> hs = new();

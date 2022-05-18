@@ -140,7 +140,8 @@
 
         <Grid ColumnDefinitions="Auto, *, Auto" Grid.Row="4" Margin="5, -30, 5, 5">
             <Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
-                    Margin="-5" MaxHeight="70" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                    CommandParameter="M"
+                    Margin="-5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
                 <Button.Styles>
                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                         <Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />

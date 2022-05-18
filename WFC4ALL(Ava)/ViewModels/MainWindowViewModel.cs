@@ -30,7 +30,7 @@ public class MainWindowViewModel : ViewModelBase {
         _seamlessOutput,
         _inputWrapping,
         _instantCollapse,
-        _popupVisible,
+        _mainInfoPopupVisible,
         _isLoading,
         _advancedEnabled,
         _simpleModel,
@@ -212,9 +212,9 @@ public class MainWindowViewModel : ViewModelBase {
 
     public MainWindowViewModel VM => this;
 
-    public bool PopupVisible {
-        get => _popupVisible;
-        set => this.RaiseAndSetIfChanged(ref _popupVisible, value);
+    public bool MainInfoPopupVisible {
+        get => _mainInfoPopupVisible;
+        set => this.RaiseAndSetIfChanged(ref _mainInfoPopupVisible, value);
     }
 
     public bool PencilModeEnabled {
@@ -403,12 +403,12 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getInputManager().exportSolution();
     }
 
-    public void OnInfoClick() {
+    public void OnInfoClick(string param) {
         if (IsPlaying) {
             OnAnimate();
         }
 
-        centralManager!.getUIManager().showPopUp();
+        centralManager!.getUIManager().showPopUp(param);
     }
 
     public void OnCloseClick() {
@@ -492,5 +492,17 @@ public class MainWindowViewModel : ViewModelBase {
     public void setLoading(bool value) {
         IsLoading = value || centralManager!.getWFCHandler().IsBrushing();
         centralManager?.getMainWindow().InvalidateVisual();
+    }
+
+    public void OnAddItemEntry() {
+        // TODO
+    }
+
+    public void OnEditItemEntry() {
+        // TODO
+    }
+
+    public void OnRemoveItemEntry() {
+        // TODO
     }
 }

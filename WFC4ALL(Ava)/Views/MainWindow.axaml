@@ -107,7 +107,7 @@
 		<vm:MainWindowViewModel />
 	</Design.DataContext>
 
-	<Grid IsHitTestVisible="{Binding !PopupVisible}">
+	<Grid IsHitTestVisible="{Binding !MainInfoPopupVisible}">
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
 			<Grid>
 				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 0, 0 ,0" />
@@ -124,7 +124,7 @@
 					<Grid>
 						<Grid ColumnDefinitions="*, Auto">
 							<!-- Help Popup-->
-							<Popup IsOpen="{Binding PopupVisible}" HorizontalAlignment="Center"
+							<Popup IsOpen="{Binding MainInfoPopupVisible}" HorizontalAlignment="Center"
 							       VerticalAlignment="Top" PlacementMode="Pointer" x:Name="infoPopup"
 							       PlacementTarget="{Binding ElementName=patternGrid}">
 								<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
@@ -135,7 +135,7 @@
 										<Border Padding="1">
 											<Grid Margin="5">
 												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphic.png"
-												       Stretch="None" />
+												       Stretch="Uniform" MaxHeight="700"/>
 												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 												        VerticalAlignment="Top"
 												        x:Name="borderPaddingToggle" Background="Transparent"

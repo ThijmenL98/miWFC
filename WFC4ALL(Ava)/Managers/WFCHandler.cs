@@ -830,7 +830,8 @@ public class WFCHandler {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract, MergeIntoPattern
         bool isC = dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
 
-        parentCM.getMainWindowVM().ItemEditorEnabled = (parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC);
+        parentCM.getMainWindowVM().ItemEditorEnabled = true;
+            //(parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC);
 
         return isC;
     }

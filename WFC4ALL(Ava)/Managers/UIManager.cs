@@ -97,16 +97,18 @@ public class UIManager {
      * UI Window Manipulation
      */
 
-    public void showPopUp() {
-        mainWindowVM.PopupVisible = true;
+    public void showPopUp(string param) {
+        if (param.Equals("M")) {
+            mainWindowVM.MainInfoPopupVisible = true;
+        }
     }
 
     public void hidePopUp() {
-        mainWindowVM.PopupVisible = false;
+        mainWindowVM.MainInfoPopupVisible = false;
     }
 
     public bool popUpOpened() {
-        return mainWindowVM.PopupVisible;
+        return mainWindowVM.MainInfoPopupVisible;
     }
 
     public void resetPatterns() {
@@ -204,11 +206,13 @@ public class UIManager {
 
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         Window target, source;
-
+        
         switch (window) {
             case Windows.MAIN:
+                // Goto main
                 target = mainWindow;
-                source = parentCM.getPaintingWindow();
+                source = parentCM.getPaintingWindow().IsVisible ? parentCM.getPaintingWindow() : parentCM.getItemWindow();
+                
                 bool stillApply = await handlePaintingClose(checkClicked);
 
                 if (stillApply) {
@@ -217,13 +221,16 @@ public class UIManager {
 
                 break;
             case Windows.PAINTING:
-                source = mainWindow;
+                // Goto paint
                 mainWindowVM.PencilModeEnabled = true;
                 target = parentCM.getPaintingWindow();
+                source =  mainWindow;
                 break;
             case Windows.ITEMS:
-                // TODO
-                return;
+                // Goto items
+                target = parentCM.getItemWindow();
+                source = mainWindow;
+                break;
             default:
                 throw new NotImplementedException();
         }
@@ -234,19 +241,21 @@ public class UIManager {
         source.Hide();
         target.Show();
 
-        ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
+        if (!Equals(target, parentCM.getItemWindow()) && !Equals(source, parentCM.getItemWindow())) {
+            ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
+            
+            mainWindowVM.Markers.Clear();
+            foreach (MarkerViewModel mvm in mvmListCopy) {
+                double offset = (parentCM.getMainWindow().IsVisible
+                        ? mainWindow.getOutputControl().getTimelineWidth()
+                        : parentCM.getPaintingWindow().getTimelineWidth()) *
+                    mvm.MarkerCollapsePercentage + 1;
+                mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
+                    offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
+            }
 
-        mainWindowVM.Markers.Clear();
-        foreach (MarkerViewModel mvm in mvmListCopy) {
-            double offset = (parentCM.getMainWindow().IsVisible
-                    ? mainWindow.getOutputControl().getTimelineWidth()
-                    : parentCM.getPaintingWindow().getTimelineWidth()) *
-                mvm.MarkerCollapsePercentage + 1;
-            mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
-                offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
+            updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
         }
-
-        updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
 
         target.Position = source.Position;
 
@@ -255,8 +264,6 @@ public class UIManager {
 
     private async Task<bool> handlePaintingClose(bool checkClicked) {
         if (!checkClicked) {
-            Trace.WriteLine("Todo show popup mate");
-
             IMsBoxWindow<string> messageBoxCustomWindow = MessageBox.Avalonia.MessageBoxManager
                 .GetMessageBoxCustomWindow(new MessageBoxCustomParams {
                     ContentMessage = "Brush mask has not been applied!",

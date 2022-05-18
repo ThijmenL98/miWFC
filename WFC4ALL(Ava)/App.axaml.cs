@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using WFC4ALL.Managers;
@@ -10,6 +11,8 @@ namespace WFC4ALL;
 
 public class App : Application {
     public override void Initialize() {
+        
+        var dataGridType = typeof(DataGrid); // HACK
         AvaloniaXamlLoader.Load(this);
         ConsoleTraceListener myWriter = new();
         Trace.Listeners.Add(myWriter);
@@ -24,12 +27,16 @@ public class App : Application {
             PaintingWindow pW = new() {
                 DataContext = mWVM
             };
+            ItemWindow iW = new() {
+                DataContext = mWVM
+            };
             desktop.MainWindow = mW;
 
-            CentralManager cm = new(mWVM, mW, pW);
+            CentralManager cm = new(mWVM, mW, pW, iW);
 
             mW.setCentralManager(cm);
             pW.setCentralManager(cm);
+            iW.setCentralManager(cm);
             mWVM.setCentralManager(cm);
         }
 

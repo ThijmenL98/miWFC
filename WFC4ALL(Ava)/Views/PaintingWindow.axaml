@@ -225,6 +225,24 @@
 								</ToolTip.Tip>
 							</Button>
 						</Grid>
+                                
+						<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
+						        CommandParameter="P"
+						        Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+							<Button.Styles>
+								<Style Selector="Button:pointerover /template/ ContentPresenter">
+									<Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />
+									<Setter Property="Background" Value="Transparent" />
+								</Style>
+								<Style Selector="Button:pressed /template/ ContentPresenter">
+									<Setter Property="Content" Value="{DynamicResource clickInfoKey}" />
+									<Setter Property="Background" Value="Transparent" />
+								</Style>
+							</Button.Styles>
+							<Panel>
+								<Image Source="/Assets/Info.png" />
+							</Panel>
+						</Button>
 
 						<Grid Grid.Column="1" RowDefinitions="*, Auto">
 							<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
@@ -301,34 +319,10 @@
 							</Grid>
 						</Grid>
 
-						<Grid Grid.Column="2" RowDefinitions="Auto, Auto, *, Auto">
-							<Button Grid.Row="0" Padding="0" Background="Transparent"
-							        Command="{Binding OnCustomizeWindowSwitch}"
-							        CommandParameter="M" VerticalAlignment="Top"
-							        HorizontalAlignment="Right" Margin="10" MaxWidth="65">
-								<Button.Styles>
-									<Style Selector="Button:pointerover /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
-										<Setter Property="Background" Value="Transparent" />
-									</Style>
-									<Style Selector="Button:pressed /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource clickBackKey}" />
-										<Setter Property="Background" Value="Transparent" />
-									</Style>
-								</Button.Styles>
-								<Panel>
-									<Image Source="/Assets/Back.png" />
-								</Panel>
-								<ToolTip.Tip>
-									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Start/Stop generation animation</TextBlock>
-									</StackPanel>
-								</ToolTip.Tip>
-							</Button>
+						<Grid Grid.Column="2" RowDefinitions="Auto, *, Auto">
+							<TextBlock Grid.Row="0" Margin="10" Text="Available Tiles at mouse position:" HorizontalAlignment="Center" />
 
-							<TextBlock Grid.Row="1" Margin="10" Text="Available Tiles at mouse position:" HorizontalAlignment="Center" />
-
-							<ItemsControl Grid.Row="2" Items="{Binding HelperTiles}"
+							<ItemsControl Grid.Row="1" Items="{Binding HelperTiles}"
 							              x:Name="patternItemsControl" Margin="10">
 								<ItemsControl.ItemsPanel>
 									<ItemsPanelTemplate>
@@ -380,8 +374,10 @@
 								</ItemsControl.ItemTemplate>
 							</ItemsControl>
 
-							<Grid Grid.Row="3" ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">
-								<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnSave}" Margin="5"
+							<Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto, *, Auto">
+								<GridSplitter Grid.Column="0" IsEnabled="False" Background="Transparent" />
+								
+								<Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OnSave}" Margin="5"
 								        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
 									<Button.Styles>
 										<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -407,7 +403,7 @@
 									</ToolTip.Tip>
 								</Button>
 								
-								<Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OnLoad}" Margin="5"
+								<Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnLoad}" Margin="5"
 								        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
 									<Button.Styles>
 										<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -429,6 +425,32 @@
 									<ToolTip.Tip>
 										<StackPanel>
 											<TextBlock TextWrapping="Wrap">Revert back to last marker (if available)</TextBlock>
+										</StackPanel>
+									</ToolTip.Tip>
+								</Button>
+								
+								<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
+								
+								<Button Grid.Column="4" Padding="0" Background="Transparent"
+								        Command="{Binding OnCustomizeWindowSwitch}"
+								        CommandParameter="M" VerticalAlignment="Center"
+								        HorizontalAlignment="Right" Margin="10" MaxWidth="80">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickBackKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/Back.png" />
+									</Panel>
+									<ToolTip.Tip>
+										<StackPanel>
+											<TextBlock TextWrapping="Wrap">Go back to the main screen</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
