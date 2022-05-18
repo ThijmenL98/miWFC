@@ -27,6 +27,7 @@
                     <Setter Property="Background" Value="Transparent" />
                 </Style>
             </Grid.Styles>
+            
             <TextBlock Grid.Column="0" VerticalAlignment="Center">
                 Output Image Size
             </TextBlock>
@@ -69,6 +70,7 @@
                     </StackPanel>
                 </ToolTip.Tip>
             </Button>
+
             <Button Padding="0" Grid.Column="4" Width="80" Margin="0" Command="{Binding OnExport}">
                 <Button.Styles>
                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -96,8 +98,12 @@
         <Grid Grid.Row="3" RowDefinitions="*" HorizontalAlignment="Center">
             <Grid ColumnDefinitions="*" VerticalAlignment="Center">
                 <Border Background="#22000000" BoxShadow="0 0 15 0.25 Black" MaxWidth="675" Margin="10">
-                    <Image RenderOptions.BitmapInterpolationMode="Default"
-                           x:Name="outputImage" Source="{Binding OutputImage}" />
+                    <Grid>
+                        <Image RenderOptions.BitmapInterpolationMode="Default"
+                               x:Name="outputImage" Source="{Binding OutputImage}" />
+                        <Image RenderOptions.BitmapInterpolationMode="Default"
+                               x:Name="itemOverlayImage" Source="{Binding ItemOverlay}" />
+                    </Grid>
                 </Border>
             </Grid>
         </Grid>
@@ -106,6 +112,7 @@
 
         <Grid Grid.Row="5" ColumnDefinitions="*, 50*, *" Width="680">
             <GridSplitter IsEnabled="False" Grid.Column="0" Background="Transparent" />
+            
             <Grid Grid.Column="1" RowDefinitions="*, *" x:Name="timeline" Margin="0 ,0, 0, 10">
                 <ItemsControl Items="{Binding Markers}" MinHeight="25" Margin="-10" Grid.Row="0">
                     <ItemsControl.ItemsPanel>
@@ -121,7 +128,8 @@
                                         <TranslateTransform X="{Binding MarkerOffset}" />
                                     </Image.RenderTransform>
                                 </Image>
-                                <Image Height="25" Source="/Assets/TimeStampIrrevertible.png" IsVisible="{Binding !Revertible}">
+                                <Image Height="25" Source="/Assets/TimeStampIrrevertible.png"
+                                       IsVisible="{Binding !Revertible}">
                                     <Image.RenderTransform>
                                         <TranslateTransform X="{Binding MarkerOffset}" />
                                     </Image.RenderTransform>
@@ -130,6 +138,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                
                 <Image Grid.Row="1" Height="25" Margin="0" HorizontalAlignment="Left"
                        Source="/Assets/NowMarker.png" Width="35">
                     <Image.RenderTransform>
@@ -137,7 +146,9 @@
                     </Image.RenderTransform>
                 </Image>
             </Grid>
+            
             <Separator Grid.Column="1" Background="Black" Height="4" CornerRadius="2" Margin="0,0,0,10" />
+           
             <GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
         </Grid>
 
@@ -178,6 +189,7 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
+                
                 <Button Padding="0" Background="Transparent"
                         Command="{Binding OnAnimate}" Grid.Column="0"
                         Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
@@ -202,6 +214,7 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
+                
                 <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnRevert}" Margin="5"
                         Grid.Row="0" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
@@ -241,6 +254,7 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
+                
                 <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnSave}" Margin="5"
                         Grid.Row="1" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
@@ -266,6 +280,7 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
+                
                 <Button Padding="0" Background="Transparent" Grid.Column="3" Command="{Binding OnAdvance}" Margin="5"
                         Grid.Row="0" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
@@ -291,6 +306,7 @@
                         </StackPanel>
                     </ToolTip.Tip>
                 </Button>
+                
                 <Button Padding="0" Background="Transparent" Grid.Column="3" Command="{Binding OnLoad}" Margin="5"
                         Grid.Row="1" HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
                     <Button.Styles>
@@ -346,12 +362,12 @@
 
             <GridSplitter Grid.Column="4" IsEnabled="False" Background="Transparent" />
 
-            <Grid Grid.Column="5" RowDefinitions="*, Auto, *, Auto, *">
+            <Grid Grid.Column="5" RowDefinitions="*, Auto, Auto, *">
                 <GridSplitter Grid.Row="0" Background="Transparent" IsEnabled="False" />
 
                 <Button Padding="0" Background="Transparent" Command="{Binding OnCustomizeWindowSwitch}"
                         CommandParameter="P" Grid.Row="1"
-                        HorizontalAlignment="Center" Margin="10" MaxWidth="80">
+                        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
                     <Button.Styles>
                         <Style Selector="Button:pointerover /template/ ContentPresenter">
                             <Setter Property="Content" Value="{DynamicResource hoverCustomizeKey}" />
@@ -372,9 +388,56 @@
                     </ToolTip.Tip>
                 </Button>
 
-                <GridSplitter Grid.Row="2" Background="Transparent" IsEnabled="False" />
+                <Button Padding="0" Background="Transparent" Command="{Binding OnCustomizeWindowSwitch}"
+                        CommandParameter="I" Grid.Row="2" IsEnabled="{Binding ItemEditorEnabled}"
+                        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+                    <Button.Styles>
+                        <Style Selector="Button:disabled /template/ ContentPresenter">
+                            <Setter Property="Opacity" Value="160" />
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        <!-- <Style Selector="Button:pointerover /template/ ContentPresenter"> -->
+                        <!--     <Setter Property="Content" Value="{DynamicResource hoverCustomizeKey}" /> -->
+                        <!--     <Setter Property="Background" Value="Transparent" /> -->
+                        <!-- </Style> -->
+                        <!-- <Style Selector="Button:pressed /template/ ContentPresenter"> -->
+                        <!--     <Setter Property="Content" Value="{DynamicResource clickCustomizeKey}" /> -->
+                        <!--     <Setter Property="Background" Value="Transparent" /> -->
+                        <!-- </Style> -->
+                    </Button.Styles>
+                    <Panel>
+                        <Image Source="/Assets/ItemsEditor.png" />
+                    </Panel>
+                    <ToolTip.Tip>
+                        <StackPanel>
+                            <TextBlock TextWrapping="Wrap">Switch to the items customization editor</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Only available for the "Worlds Top-Down" category and if the output is fully generated</TextBlock>
+                        </StackPanel>
+                    </ToolTip.Tip>
+                </Button>
 
-                <GridSplitter Grid.Row="4" IsEnabled="False" Background="Transparent" />
+                <Button Padding="0" Background="Transparent" Grid.Row="2" IsVisible="{Binding !ItemEditorEnabled}"
+                        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+                    <Button.Styles>
+                        <Style Selector="Button:pointerover /template/ ContentPresenter">
+                            <Setter Property="Background" Value="#01010101" />
+                        </Style>
+                        <Style Selector="Button:pressed /template/ ContentPresenter">
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                    </Button.Styles>
+                    <Panel>
+                        <Image Source="/Assets/TransparentBtn.png" />
+                    </Panel>
+                    <ToolTip.Tip>
+                        <StackPanel>
+                            <TextBlock TextWrapping="Wrap">Switch to the items customization editor</TextBlock>
+                            <TextBlock TextWrapping="Wrap">Only available for the "Worlds Top-Down" category and if the output is fully generated</TextBlock>
+                        </StackPanel>
+                    </ToolTip.Tip>
+                </Button>
+
+                <GridSplitter Grid.Row="3" IsEnabled="False" Background="Transparent" />
             </Grid>
 
             <GridSplitter Grid.Column="6" IsEnabled="False" Background="Transparent" />

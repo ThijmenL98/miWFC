@@ -45,7 +45,7 @@ public partial class MainWindow : Window {
         e.Handled = true;
     }
 
-    private void keyDownHandler(object? sender, KeyEventArgs e) {
+    private async void keyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
         }
@@ -96,7 +96,7 @@ public partial class MainWindow : Window {
                 e.Handled = true;
                 break;
             case Key.C:
-                centralManager.getUIManager().switchWindow(Windows.PAINTING, false);
+                await centralManager.getUIManager().switchWindow(Windows.PAINTING);
                 e.Handled = true;
                 break;
             case Key.Escape:

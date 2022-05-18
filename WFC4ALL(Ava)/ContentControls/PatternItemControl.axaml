@@ -13,6 +13,7 @@
 					<WrapPanel HorizontalAlignment="Center" Margin="3" />
 				</ItemsPanelTemplate>
 			</ItemsControl.ItemsPanel>
+			
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
 					<Border Padding="1" Margin="7, 7, 7,7">

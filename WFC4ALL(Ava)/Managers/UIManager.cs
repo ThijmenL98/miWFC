@@ -202,7 +202,7 @@ public class UIManager {
         dt.Start();
     }
 
-    public async Task switchWindow(Windows window, bool checkClicked) {
+    public async Task switchWindow(Windows window, bool checkClicked = false) {
         Window target, source;
 
         switch (window) {
@@ -221,6 +221,9 @@ public class UIManager {
                 mainWindowVM.PencilModeEnabled = true;
                 target = parentCM.getPaintingWindow();
                 break;
+            case Windows.ITEMS:
+                // TODO
+                return;
             default:
                 throw new NotImplementedException();
         }
@@ -293,5 +296,6 @@ public class UIManager {
 
 public enum Windows {
     MAIN,
-    PAINTING
+    PAINTING,
+    ITEMS
 }

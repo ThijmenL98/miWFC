@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
@@ -20,6 +19,8 @@ public class MainWindowViewModel : ViewModelBase {
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
         _outputImage
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+        _itemOverlay
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
         _outputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
         _outputPreviewMask
@@ -35,13 +36,17 @@ public class MainWindowViewModel : ViewModelBase {
         _simpleModel,
         _advancedOverlapping,
         simpleAdvanced,
-        _advancedOverlappingIW;
+        _advancedOverlappingIW,
+        _itemEditorEnabled,
+        _pencilModeEnabled,
+        _eraseModeEnabled,
+        _paintKeepModeEnabled,
+        _paintEraseModeEnabled,
+        _isRunning;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
     private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new(), _helperTiles = new();
-
-    private bool _pencilModeEnabled, _eraseModeEnabled, _paintKeepModeEnabled, _paintEraseModeEnabled, _isRunning;
 
     private HoverableTextViewModel _selectedCategory = new();
 
@@ -62,8 +67,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
         }
     }
 
@@ -73,8 +78,8 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -113,6 +118,11 @@ public class MainWindowViewModel : ViewModelBase {
     public bool InstantCollapse {
         get => _instantCollapse;
         set => this.RaiseAndSetIfChanged(ref _instantCollapse, value);
+    }
+
+    public bool ItemEditorEnabled {
+        get => _itemEditorEnabled;
+        set => this.RaiseAndSetIfChanged(ref _itemEditorEnabled, value);
     }
 
     public int StepAmount {
@@ -163,6 +173,11 @@ public class MainWindowViewModel : ViewModelBase {
     public Bitmap OutputImage {
         get => _outputImage;
         set => this.RaiseAndSetIfChanged(ref _outputImage, value);
+    }
+
+    public Bitmap ItemOverlay {
+        get => _itemOverlay;
+        set => this.RaiseAndSetIfChanged(ref _itemOverlay, value);
     }
 
     public Bitmap OutputImageMask {
@@ -234,8 +249,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
         }
     }
 
@@ -276,8 +291,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                       !centralManager!.getMainWindow().getInputControl().getCategory()
-                                           .Contains("Side");
+            !centralManager!.getMainWindow().getInputControl().getCategory()
+                .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -438,6 +453,7 @@ public class MainWindowViewModel : ViewModelBase {
             centralManager!.getUIManager().dispatchError(centralManager.getPaintingWindow());
             return;
         }
+
         setLoading(true);
         centralManager!.getMainWindowVM().StepAmount = 1;
 
@@ -453,12 +469,20 @@ public class MainWindowViewModel : ViewModelBase {
                     OnAnimate();
                 }
 
-                await centralManager!.getUIManager().switchWindow(Windows.PAINTING, false);
+                await centralManager!.getUIManager().switchWindow(Windows.PAINTING);
                 break;
             case "M":
                 Color[,] mask = centralManager!.getInputManager().getMaskColours();
-                await centralManager!.getUIManager().switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+                await centralManager!.getUIManager().switchWindow(Windows.MAIN,
+                    !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
                 centralManager!.getInputManager().resetOverwriteCache();
+                break;
+            case "I":
+                if (!centralManager!.getWFCHandler().isCollapsed()) {
+                    centralManager.getUIManager().dispatchError(centralManager.getMainWindow());
+                }
+
+                await centralManager!.getUIManager().switchWindow(Windows.ITEMS);
                 break;
             default:
                 throw new NotImplementedException();

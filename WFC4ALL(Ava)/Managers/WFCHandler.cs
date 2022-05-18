@@ -162,6 +162,7 @@ public class WFCHandler {
         mainWindowVM.setLoading(false);
 
         (latestOutput, bool decided) = runWfcDB(steps);
+        parentCM.getWFCHandler().isCollapsed();
         return (latestOutput, decided);
     }
 
@@ -413,6 +414,7 @@ public class WFCHandler {
     }
 
     public WriteableBitmap stepBackWfc(int steps = 1) {
+        isCollapsed();
         for (int i = 0; i < steps; i++) {
             dbPropagator.doBacktrack();
             actionsTaken--;
@@ -435,7 +437,7 @@ public class WFCHandler {
         isBrushing = true;
         int imageWidth = mainWindowVM.ImageOutWidth, imageHeight = mainWindowVM.ImageOutHeight;
         if (isOverlappingModel()) {
-                        ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
+            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
             Dictionary<Tuple<int, int>, Color> newInputDict = new();
 
             await Task.Run(() => {
@@ -456,7 +458,7 @@ public class WFCHandler {
                     }
                 }
             });
-            
+
             parentCM.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
 
@@ -826,7 +828,11 @@ public class WFCHandler {
 
     public bool isCollapsed() {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract, MergeIntoPattern
-        return dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
+        bool isC = dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
+
+        parentCM.getMainWindowVM().ItemEditorEnabled = (parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC);
+
+        return isC;
     }
 
     public WriteableBitmap getLatestOutput() {

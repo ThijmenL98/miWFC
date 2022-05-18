@@ -1,7 +1,7 @@
 ﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        d:DesignHeight="800" d:DesignWidth="1400" MinWidth="1400" MinHeight="800"
+        d:DesignHeight="800" d:DesignWidth="1410" MinWidth="1256" MinHeight="600"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avaloniaGif="clr-namespace:WFC4ALL.AvaloniaGif"
         xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -261,6 +261,7 @@
 
 							<Grid Grid.Row="1" ColumnDefinitions="*, 50*, *" Margin="0, 0, 0, 15">
 								<GridSplitter IsEnabled="False" Grid.Column="0" Background="Transparent" />
+								
 								<Grid Grid.Column="1" RowDefinitions="*, *" x:Name="timeline" Margin="0 ,0, 0, 10">
 									<ItemsControl Items="{Binding Markers}" MinHeight="25" Margin="-10" Grid.Row="0">
 										<ItemsControl.ItemsPanel>
@@ -285,6 +286,7 @@
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
+									
 									<Image Grid.Row="1" Height="25" Margin="0" HorizontalAlignment="Left"
 									       Source="/Assets/NowMarker.png" Width="35">
 										<Image.RenderTransform>
@@ -292,7 +294,9 @@
 										</Image.RenderTransform>
 									</Image>
 								</Grid>
+								
 								<Separator Grid.Column="1" Background="Black" Height="4" CornerRadius="2" Margin="0,0,0,10" />
+								
 								<GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
 							</Grid>
 						</Grid>
@@ -402,6 +406,7 @@
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
+								
 								<Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OnLoad}" Margin="5"
 								        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
 									<Button.Styles>
@@ -437,6 +442,7 @@
 				</Grid>
 			</Border>
 		</Border>
+		
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />

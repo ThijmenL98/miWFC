@@ -22,9 +22,11 @@
                     <Setter Property="VerticalAlignment" Value="Center" />
                 </Style>
             </Grid.Styles>
+            
             <TextBlock Grid.Column="0" Grid.Row="0">
                 Category
             </TextBlock>
+            
             <ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0" MinHeight="40"
                       SelectedItem="{Binding CategorySelection}"
                       SelectionChanged="catCBChangeHandler" x:Name="categoryCB">
@@ -43,9 +45,11 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+            
             <TextBlock Grid.Column="0" Grid.Row="1">
                 Input Image
             </TextBlock>
+            
             <ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0" MinHeight="40"
                       SelectedItem="{Binding InputImageSelection}"
                       SelectionChanged="inImgCBChangeHandler" x:Name="inputCB" />
