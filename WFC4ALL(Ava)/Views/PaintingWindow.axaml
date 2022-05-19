@@ -17,12 +17,15 @@
 		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
 		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
 		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
+		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+		
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
-		<Image Source="/Assets/PencilHover.png" x:Key="clickPencilKey" x:Name="clickPencil" />
-		<Image Source="/Assets/EraseHover.png" x:Key="clickEraseKey" x:Name="clickErase" />
-		<Image Source="/Assets/PaintKeepHover.png" x:Key="clickPaintKeepKey" x:Name="clickPaintKeep" />
-		<Image Source="/Assets/PaintEraseHover.png" x:Key="clickPaintEraseKey" x:Name="clickPaintErase" />
+		<Image Source="/Assets/PencilClick.png" x:Key="clickPencilKey" x:Name="clickPencil" />
+		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+		<Image Source="/Assets/EraseClick.png" x:Key="clickEraseKey" x:Name="clickErase" />
+		<Image Source="/Assets/PaintKeepClick.png" x:Key="clickPaintKeepKey" x:Name="clickPaintKeep" />
+		<Image Source="/Assets/PaintEraseClick.png" x:Key="clickPaintEraseKey" x:Name="clickPaintErase" />
 		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
 		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
 		<Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />

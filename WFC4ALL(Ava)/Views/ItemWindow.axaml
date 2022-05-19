@@ -13,14 +13,17 @@
         <Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
         <Image Source="/Assets/PencilHover.png" x:Key="hoverPencilKey" x:Name="hoverPencil" />
         <Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
-        <Image Source="/Assets/ApplyHover.png" x:Key="hoverAddNewKey" x:Name="hoverAddNew" />
-        <Image Source="/Assets/ApplyHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
+        <Image Source="/Assets/CreateNewHover.png" x:Key="hoverAddNewKey" x:Name="hoverAddNew" />
+        <Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
+        <Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+        
         <!-- Click resources -->
         <Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
-        <Image Source="/Assets/PencilHover.png" x:Key="clickPencilKey" x:Name="clickPencil" />
+        <Image Source="/Assets/PencilClick.png" x:Key="clickPencilKey" x:Name="clickPencil" />
         <Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
-        <Image Source="/Assets/ApplyClick.png" x:Key="clickAddNewKey" x:Name="clickAddNew" />
-        <Image Source="/Assets/ApplyClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
+        <Image Source="/Assets/CreateNewClick.png" x:Key="clickAddNewKey" x:Name="clickAddNew" />
+        <Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
+        <Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
     </Window.Resources>
 
     <Window.Styles>

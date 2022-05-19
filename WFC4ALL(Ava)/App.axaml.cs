@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,8 +12,7 @@ namespace WFC4ALL;
 
 public class App : Application {
     public override void Initialize() {
-        
-        var dataGridType = typeof(DataGrid); // HACK
+        Type dataGridType = typeof(DataGrid); // HACK
         AvaloniaXamlLoader.Load(this);
         ConsoleTraceListener myWriter = new();
         Trace.Listeners.Add(myWriter);

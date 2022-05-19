@@ -28,6 +28,8 @@
 		<Image Source="/Assets/ModeHover.png" x:Key="hoverModeKey" x:Name="hoverMode" />
 		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
 		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
+		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
+		
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
 		<Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance" />
@@ -42,6 +44,7 @@
 		<Image Source="/Assets/ModeClick.png" x:Key="clickModeKey" x:Name="clickMode" />
 		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
 		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
+		<Image Source="/Assets/ItemsEditorClick.png" x:Key="clickItemsEditorKey" x:Name="clickItemsEditor" />
 	</Window.Resources>
 
 	<Window.Styles>
