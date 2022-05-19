@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
@@ -24,6 +25,8 @@ public class MainWindowViewModel : ViewModelBase {
         _outputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
         _outputPreviewMask
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+        _currentItemImage
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
 
     private bool _isPlaying,
@@ -42,7 +45,9 @@ public class MainWindowViewModel : ViewModelBase {
         _eraseModeEnabled,
         _paintKeepModeEnabled,
         _paintEraseModeEnabled,
-        _isRunning;
+        _isRunning,
+        _inItemMenu,
+        _itemsMayAppearAnywhere;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
@@ -52,13 +57,16 @@ public class MainWindowViewModel : ViewModelBase {
 
     private string _categoryDescription = "",
         _selectedInputImage = "",
-        _stepAmountString = "Steps to take: 1";
+        _stepAmountString = "Steps to take: 1",
+        _itemDescription = "Placeholder";
 
-    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3, _selectedTabIndex;
+    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3, _selectedTabIndex, _itemsToAddValue = 1;
     private double _timeStampOffset, _timelineWidth = 600d;
 
     private CentralManager? centralManager;
     private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
+
+    private ItemType _selectedItemToAdd;
 
     public bool SimpleModelSelected {
         get => _simpleModel;
@@ -67,8 +75,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -78,8 +86,8 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -98,6 +106,11 @@ public class MainWindowViewModel : ViewModelBase {
     public string StepAmountString {
         get => _stepAmountString;
         set => this.RaiseAndSetIfChanged(ref _stepAmountString, value);
+    }
+
+    public string ItemDescription {
+        get => _itemDescription;
+        set => this.RaiseAndSetIfChanged(ref _itemDescription, value);
     }
 
     public bool IsPlaying {
@@ -155,6 +168,11 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _selectedTabIndex, value);
     }
 
+    public int ItemsToAddValue {
+        get => _itemsToAddValue;
+        set => this.RaiseAndSetIfChanged(ref _itemsToAddValue, value);
+    }
+
     public double TimeStampOffset {
         get => _timeStampOffset;
         set => this.RaiseAndSetIfChanged(ref _timeStampOffset, value);
@@ -188,6 +206,11 @@ public class MainWindowViewModel : ViewModelBase {
     public Bitmap OutputPreviewMask {
         get => _outputPreviewMask;
         set => this.RaiseAndSetIfChanged(ref _outputPreviewMask, value);
+    }
+
+    public Bitmap CurrentItemImage {
+        get => _currentItemImage;
+        set => this.RaiseAndSetIfChanged(ref _currentItemImage, value);
     }
 
     public ObservableCollection<TileViewModel> PatternTiles {
@@ -249,8 +272,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -274,6 +297,21 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _isRunning, value);
     }
 
+    public bool InItemMenu {
+        get => _inItemMenu;
+        set => this.RaiseAndSetIfChanged(ref _inItemMenu, value);
+    }
+
+    public bool ItemsMayAppearAnywhere {
+        get => _itemsMayAppearAnywhere;
+        set => this.RaiseAndSetIfChanged(ref _itemsMayAppearAnywhere, value);
+    }
+
+    private ItemType SelectedItemToAdd {
+        get => _selectedItemToAdd;
+        set => this.RaiseAndSetIfChanged(ref _selectedItemToAdd, value);
+    }
+
     /*
      * Logic
      */
@@ -291,8 +329,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-            !centralManager!.getMainWindow().getInputControl().getCategory()
-                .Contains("Side");
+                                       !centralManager!.getMainWindow().getInputControl().getCategory()
+                                           .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -462,6 +500,17 @@ public class MainWindowViewModel : ViewModelBase {
         await centralManager.getWFCHandler().handlePaintBrush(mask);
     }
 
+    public void OnItemMenuApply() {
+        // TODO Apply Item
+        // TODO Reset menu values
+        InItemMenu = false;
+    }
+
+    public void OnExitItemAddition() {
+        InItemMenu = false;
+        // TODO Reset menu values
+    }
+    
     public async void OnCustomizeWindowSwitch(string param) {
         switch (param) {
             case "P":
@@ -495,14 +544,17 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnAddItemEntry() {
-        // TODO
+        centralManager!.getItemWindow().getItemAddMenu().updateIndex();
+        centralManager!.getMainWindowVM().ItemDescription = ItemType.ItemTypes[0].Description;
+        InItemMenu = true;
     }
 
     public void OnEditItemEntry() {
-        // TODO
+        // TODO Set values to selected item
+        InItemMenu = true;
     }
 
     public void OnRemoveItemEntry() {
-        // TODO
+        // TODO Remove item
     }
 }

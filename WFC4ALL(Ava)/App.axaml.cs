@@ -1,7 +1,5 @@
-using System;
 using System.Diagnostics;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using WFC4ALL.Managers;
@@ -12,7 +10,6 @@ namespace WFC4ALL;
 
 public class App : Application {
     public override void Initialize() {
-        Type dataGridType = typeof(DataGrid); // HACK
         AvaloniaXamlLoader.Load(this);
         ConsoleTraceListener myWriter = new();
         Trace.Listeners.Add(myWriter);

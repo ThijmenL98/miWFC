@@ -658,7 +658,7 @@ public class WFCHandler {
 #endif
 
                 bool hasItself = availableAtLoc.Count == 1 && availableAtLoc.Contains(descrambledIndex);
-                return (null, returnTrueAlreadyCorrect && hasItself);
+                return (null, returnTrueAlreadyCorrect ? hasItself : null);
             }
 
 #if DEBUG

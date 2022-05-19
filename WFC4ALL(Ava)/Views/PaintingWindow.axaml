@@ -1,4 +1,4 @@
-﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
+﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL - Painting Mode" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         d:DesignHeight="800" d:DesignWidth="1410" MinWidth="1256" MinHeight="600"

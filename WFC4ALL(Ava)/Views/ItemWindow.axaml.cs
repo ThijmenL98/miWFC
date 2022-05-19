@@ -1,8 +1,9 @@
-﻿using Avalonia;
+﻿using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
+using WFC4ALL.ContentControls;
 using WFC4ALL.Managers;
 
 namespace WFC4ALL.Views; 
@@ -30,6 +31,10 @@ public partial class ItemWindow : Window {
 
     public void setCentralManager(CentralManager cm) {
         centralManager = cm;
+    }
+    
+    public ItemAddMenu getItemAddMenu() {
+        return this.Find<ItemAddMenu>("itemAddMenu");
     }
 
     /*

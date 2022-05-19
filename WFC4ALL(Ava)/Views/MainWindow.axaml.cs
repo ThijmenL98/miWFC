@@ -74,7 +74,6 @@ public partial class MainWindow : Window {
                 e.Handled = true;
                 break;
             case Key.Space:
-            case Key.P:
                 centralManager.getInputManager().animate();
                 e.Handled = true;
                 break;
@@ -95,8 +94,12 @@ public partial class MainWindow : Window {
                 centralManager.getInputManager().restartSolution("Keydown Restart");
                 e.Handled = true;
                 break;
-            case Key.C:
+            case Key.P:
                 await centralManager.getUIManager().switchWindow(Windows.PAINTING);
+                e.Handled = true;
+                break;
+            case Key.I:
+                await centralManager.getUIManager().switchWindow(Windows.ITEMS);
                 e.Handled = true;
                 break;
             case Key.Escape:

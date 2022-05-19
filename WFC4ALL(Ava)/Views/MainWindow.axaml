@@ -137,7 +137,7 @@
 									<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 										<Border Padding="1">
 											<Grid Margin="5">
-												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphic.png"
+												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicMain.png"
 												       Stretch="Uniform" MaxHeight="700"/>
 												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 												        VerticalAlignment="Top"
