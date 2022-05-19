@@ -33,6 +33,10 @@ public class ItemType {
         get => identifier;
     }
 
+    public static ItemType getItemTypeByID(int id) {
+        return ItemTypes[id];
+    }
+
     public static ItemType[] ItemTypes = {
         new(0, "#FF0000", "Key Item", "A shiny collectible usually meant for unlocking something."),
 
