@@ -7,7 +7,8 @@
 		<Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
 			<Grid Grid.Row="0" RowDefinitions="Auto, *" ColumnDefinitions="Auto, Auto, *" Margin="5">
 				<ComboBox Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Stretch" MinWidth="200"
-				          MinHeight="40" SelectedItem="{Binding SelectedItemToAdd}" x:Name="itemTypesCB">
+				          MinHeight="40" SelectedItem="{Binding SelectedItemToAdd}" x:Name="itemTypesCB"
+				          SelectionChanged="OnItemChanged">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
 							<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"

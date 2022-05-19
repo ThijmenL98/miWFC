@@ -13,7 +13,7 @@ public partial class ItemWindow : Window {
     
     public ItemWindow() {
         InitializeComponent();
-        
+
         KeyDown += keyDownHandler;
         Closing += (_, e) => {
             centralManager?.getUIManager().switchWindow(Windows.MAIN, true);
@@ -31,6 +31,7 @@ public partial class ItemWindow : Window {
 
     public void setCentralManager(CentralManager cm) {
         centralManager = cm;
+        this.Find<ItemAddMenu>("itemAddMenu").setCentralManager(cm);
     }
     
     public ItemAddMenu getItemAddMenu() {
