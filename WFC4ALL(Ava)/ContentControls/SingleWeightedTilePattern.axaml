@@ -17,7 +17,7 @@
 		      ColumnDefinitions="*, *"
 		      IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning, TargetNullValue=False, FallbackValue=False}">
 
-			<TextBlock Grid.Column="0" Grid.Row="2"
+			<TextBlock Grid.Column="0" Grid.Row="1"
 			           Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
 			           Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#F005" />
 			<ToolTip.Tip>

@@ -15,6 +15,10 @@ public partial class MainWindow : Window {
         InitializeComponent();
 
         KeyDown += keyDownHandler;
+        Closing += (_, e) => {
+            centralManager!.getPaintingWindow().Close();
+            centralManager!.getItemWindow().Close();
+        };
     }
 
     public void setCentralManager(CentralManager cm) {

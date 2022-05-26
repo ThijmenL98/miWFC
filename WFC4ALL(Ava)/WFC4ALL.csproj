@@ -70,4 +70,16 @@
             <SubType>Designer</SubType>
         </AvaloniaXaml>
     </ItemGroup>
+    <ItemGroup>
+      <UpToDateCheckInput Remove="samples\Rooms\bend.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\corner.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\corridor.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\data.xml" />
+      <UpToDateCheckInput Remove="samples\Rooms\door.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\empty.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\side.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\t.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\turn.png" />
+      <UpToDateCheckInput Remove="samples\Rooms\wall.png" />
+    </ItemGroup>
 </Project>

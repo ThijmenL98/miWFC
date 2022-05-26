@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,6 +123,11 @@ public class WFCHandler {
 
         mainWindowVM.setLoading(true);
 
+        if (dbPropagator is {Status: Resolution.DECIDED} && !reset) {
+            updateWeights();
+            parentCM.getInputManager().restartSolution("Force Reset Decided");
+        }
+
         if (reset) {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
@@ -152,7 +158,14 @@ public class WFCHandler {
                 createPropagator(outputWidth, outputHeight, seamlessOutput);
 
                 if (isOverlappingModel() && inputWrappingEnabled) {
-                    handleSideViewInit(outputHeight, inputImage);
+                    bool success = false;
+                    while (!success) {
+                        try {
+                            handleSideViewInit(outputHeight, inputImage);
+                            success = true;
+                        } catch (TargetException) {
+                        }
+                    }
                 }
             });
 

@@ -13,7 +13,7 @@ public class MarkerViewModel : ReactiveObject {
         get => _index;
         init => this.RaiseAndSetIfChanged(ref _index, value);
     }
-
+    
     public double MarkerOffset {
         get => _widthOffset;
         init => this.RaiseAndSetIfChanged(ref _widthOffset, value);

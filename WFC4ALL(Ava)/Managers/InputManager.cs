@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -105,6 +106,11 @@ public class InputManager {
     }
 
     public async void advanceStep() {
+        if (parentCM.getWFCHandler().getAmountCollapsed().Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
+            parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+            return;
+        }
+        
         try {
             (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
 
@@ -115,15 +121,10 @@ public class InputManager {
                 weightReset = true;
             }
 
-            (WriteableBitmap result2, bool finished) = await parentCM.getWFCHandler()
+            (WriteableBitmap result2, bool _) = await parentCM.getWFCHandler()
                 .initAndRunWfcDB(
                     mainWindowVM.ImageOutWidth != (int) currentWidth ||
                     mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
-
-            if (finished) {
-                return;
-            }
-
             mainWindowVM.OutputImage = result2;
         } catch (Exception exception) {
             Trace.WriteLine(exception);
@@ -138,16 +139,47 @@ public class InputManager {
                 return;
             }
 
+            if (mainWindowVM.Markers.Count > 0) {
+                MarkerViewModel curMarker = mainWindowVM.Markers[savePoints.Count - 1];
+                bool canReturn
+                    = Math.Abs(parentCM.getWFCHandler().getPercentageCollapsed() - curMarker.MarkerCollapsePercentage) >
+                    0.00001d || curMarker.Revertible;
+                if (!canReturn) {
+                    parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+                    return;
+                }
+            }
+
             int loggedAT = parentCM.getWFCHandler().getActionsTaken();
 
             Bitmap? avaloniaBitmap = null;
+            int curStep = parentCM.getWFCHandler().getAmountCollapsed();
+
             while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed - mainWindowVM.StepAmount) {
-                avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc(mainWindowVM.StepAmount);
+                for (int i = 0; i < mainWindowVM.StepAmount; i++) {
+                    curStep = parentCM.getWFCHandler().getAmountCollapsed();
+
+                    if (savePoints.Count != 0 && curStep <= savePoints.Peek()) {
+                        foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
+                            if (marker.MarkerIndex.Equals(savePoints.Count - 1)) {
+                                if (!marker.Revertible) {
+                                    goto exitOuterLoop;
+                                } else {
+                                    mainWindowVM.Markers.Remove(marker);
+                                    savePoints.Pop();
+                                }
+                            }
+                        }
+                    }
+
+                    avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc();
+                }
             }
+
+            exitOuterLoop:
 
             mainWindowVM.OutputImage = avaloniaBitmap!;
 
-            int curStep = parentCM.getWFCHandler().getAmountCollapsed();
             parentCM.getWFCHandler().setActionsTaken(loggedAT - 1);
 
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
@@ -173,6 +205,10 @@ public class InputManager {
         return maskColours;
     }
 
+    public Stack<int> getSavePoints() {
+        return savePoints;
+    }
+
     public void placeMarker(bool revertible = true) {
         if (parentCM.getWFCHandler().isCollapsed()) {
             return;
@@ -180,6 +216,11 @@ public class InputManager {
 
         int curStep = parentCM.getWFCHandler().getAmountCollapsed();
         if (curStep == 0) {
+            return;
+        }
+
+        if (mainWindowVM.Markers.Count > 0 && mainWindowVM.Markers[^1].MarkerCollapsePercentage
+                .Equals(parentCM.getWFCHandler().getPercentageCollapsed())) {
             return;
         }
 
@@ -270,7 +311,9 @@ public class InputManager {
 
     public void animate() {
         if (parentCM.getWFCHandler().isCollapsed()) {
-            restartSolution("Animate");
+            mainWindowVM.IsPlaying = false;
+            parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+            return;
         }
 
         (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
@@ -381,7 +424,8 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Premul);
                 }
-            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled || parentCM.getMainWindowVM().PaintKeepModeEnabled) {
+            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled ||
+                       parentCM.getMainWindowVM().PaintKeepModeEnabled) {
                 updateHoverBrushMask(a, b);
             }
 
@@ -410,7 +454,8 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Premul);
                 }
-            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled || parentCM.getMainWindowVM().PaintKeepModeEnabled) {
+            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled ||
+                       parentCM.getMainWindowVM().PaintKeepModeEnabled) {
                 updateHoverBrushMask(a, b);
             }
 
@@ -429,15 +474,15 @@ public class InputManager {
     private void updateHoverBrushMask(int a, int b) {
         int rawBrushSize = parentCM.getPaintingWindow().getPaintBrushSize();
         bool add = parentCM.getMainWindowVM().PaintKeepModeEnabled;
-                
+
         double brushSize = rawBrushSize switch {
             1 => rawBrushSize,
             2 => rawBrushSize * 2d,
             _ => rawBrushSize * 3d
         };
-                
+
         Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
-                
+
         if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (rawBrushSize == -1) {
                 hoverMaskColours[a, b] = add ? Colors.Green : Colors.Red;
@@ -455,7 +500,7 @@ public class InputManager {
                 }
             }
         }
-                
+
         updateMask(hoverMaskColours, false);
     }
 

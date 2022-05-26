@@ -11,7 +11,7 @@ public class TileViewModel : ReactiveObject {
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
-    private double _patternWeight, _changeAmount = 0.1d;
+    private double _patternWeight, _changeAmount = 1.0d;
 
     private readonly CentralManager? parentCM;
     private bool _flipDisabled, _rotateDisabled, _highlighted;
@@ -133,34 +133,17 @@ public class TileViewModel : ReactiveObject {
     }
 
     private void handleWeightGapChange(bool increment) {
-        switch (ChangeAmount) {
-            case < 1:
-                if (increment) {
-                    ChangeAmount += 0.1d;
-                } else {
-                    ChangeAmount -= 0.1d;
-                    ChangeAmount = Math.Max(ChangeAmount, 0.1d);
-                }
-                break;
+        switch ((int) ChangeAmount) {
             case 1:
                 if (increment) {
-                    ChangeAmount++;
-                } else {
-                    ChangeAmount -= 0.1d;
-                }
-                break;
-            case < 10:
-                if (increment) {
-                    ChangeAmount++;
-                } else {
-                    ChangeAmount--;
+                    ChangeAmount = 10;
                 }
                 break;
             case 10:
                 if (increment) {
                     ChangeAmount += 10;
                 } else {
-                    ChangeAmount -= 1;
+                    ChangeAmount = 1;
                 }
                 break;
             default:
