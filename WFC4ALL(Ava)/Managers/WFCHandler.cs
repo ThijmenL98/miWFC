@@ -918,7 +918,7 @@ public class WFCHandler {
                 tileViewModel.PatternWeight = Math.Max(0d, Math.Min(1d, tileViewModel.PatternWeight));
 
                 ((OverlappingModel) dbModel).MultiplyFrequency(
-                    tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex], mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight/origWeight);
+                    tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex], 4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight/origWeight);
             }
         }
     }
