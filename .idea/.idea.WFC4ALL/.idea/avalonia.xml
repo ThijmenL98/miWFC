@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="WFC4ALL(Ava)/App.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
+        <entry key="WFC4ALL(Ava)/ContentControls/AdvancedPatternItemControl.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
         <entry key="WFC4ALL(Ava)/ContentControls/InputControl.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
         <entry key="WFC4ALL(Ava)/ContentControls/ItemAddMenu.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />
         <entry key="WFC4ALL(Ava)/ContentControls/OutputControl.axaml" value="WFC4ALL(Ava)/WFC4ALL.csproj" />

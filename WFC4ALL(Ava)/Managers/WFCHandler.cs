@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -163,8 +162,7 @@ public class WFCHandler {
                         try {
                             handleSideViewInit(outputHeight, inputImage);
                             success = true;
-                        } catch (TargetException) {
-                        }
+                        } catch (TargetException) { }
                     }
                 }
             });
@@ -268,6 +266,8 @@ public class WFCHandler {
         }
     }
 
+    private Dictionary<int, double> origTileWeights = new Dictionary<int, double>();
+
     private List<TileViewModel> initializeOverlappingModel(string category, string inputImage, int patternSize,
         bool inputPaddingEnabled) {
         List<TileViewModel> toAdd = new();
@@ -275,10 +275,11 @@ public class WFCHandler {
         (Color[][] colorArray, currentColors) = imageToColourArray(currentBitmap!);
         ITopoArray<Color> dbSample = TopoArray.create(colorArray, inputPaddingEnabled);
         tiles = dbSample.toTiles();
+
         dbModel = new OverlappingModel(patternSize);
         bool hasRotations = (category.Equals("Worlds Top-Down")
-            || category.Equals("Knots") || category.Equals("Knots") ||
-            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+                             || category.Equals("Knots") || category.Equals("Knots") ||
+                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles,
@@ -289,6 +290,9 @@ public class WFCHandler {
         toAdd.AddRange(patternList.Select((t, i) => parentCM.getUIManager()
                 .addPattern(t, patternWeights[i], tileSymmetries, i))
             .Where(nextTVM => nextTVM != null)!);
+
+        Dictionary<int, double> weights = new();
+        double total = 0d;
 
         foreach ((Tile t, int index) in tiles.toArray2d().Cast<Tile>().Distinct()
                      .Select((tile, idx) => (tile, idx))) {
@@ -307,8 +311,20 @@ public class WFCHandler {
                     = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
             }
 
-            toAddPaint.Add(new TileViewModel(pattern, index, c));
+            toAddPaint.Add(new TileViewModel(pattern, index, c, parentCM));
+            double curWeight = ((OverlappingModel) dbModel).getFrequency(t).Sum();
+            total += curWeight;
+            weights[index] = curWeight;
         }
+
+        origTileWeights = weights;
+
+        foreach ((int index, double weightAvg) in weights) {
+            double percentage = weightAvg / total;
+            toAddPaint[index].PatternWeight = percentage;
+            Trace.WriteLine(@$"Tile {index} -> {percentage*100d}%");
+        }
+
 
         return toAdd;
     }
@@ -319,7 +335,7 @@ public class WFCHandler {
         List<double> weights = new();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-            new XElement("");
+                new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -813,7 +829,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                            (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                           (int) Math.Floor((double) y / tileSize)) % 2 == 0
                             ? Color.Parse("#11000000")
                             : Color.Parse("#00000000")
                         : Color.Parse("#00000000"));
@@ -844,7 +860,7 @@ public class WFCHandler {
         bool isC = dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
 
         parentCM.getMainWindowVM().ItemEditorEnabled = true;
-            //(parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC);
+        //(parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC);
 
         return isC;
     }
@@ -876,6 +892,34 @@ public class WFCHandler {
     public void resetWeights() {
         foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
             tileViewModel.PatternWeight = originalWeights[tileViewModel.RawPatternIndex];
+        }
+    }
+
+    public void propagateWeightChange(int changedIdx, double change) {
+        double totalUnbalanced
+            = Math.Round(
+                mainWindowVM.PaintTiles.Where(tileViewModel => tileViewModel.PatternIndex != changedIdx)
+                    .Sum(tileViewModel => tileViewModel.PatternWeight), 5);
+
+        double origWeight = origTileWeights[changedIdx];
+        ((OverlappingModel) dbModel).MultiplyFrequency(
+            tiles.toArray2d().Cast<Tile>().Distinct().ToList()[changedIdx], mainWindowVM.PaintTiles[changedIdx].PatternWeight/origWeight);
+        
+        foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
+            if (tileViewModel.PatternIndex != changedIdx) {
+                origWeight = origTileWeights[tileViewModel.PatternIndex];
+                double ratio = tileViewModel.PatternWeight / totalUnbalanced;
+                ratio = ratio switch {
+                    double.NaN when totalUnbalanced == 0d => 1d / (mainWindowVM.PaintTiles.Count - 1d),
+                    double.NaN => 0d,
+                    _ => ratio
+                };
+                tileViewModel.PatternWeight += ratio * change;
+                tileViewModel.PatternWeight = Math.Max(0d, Math.Min(1d, tileViewModel.PatternWeight));
+
+                ((OverlappingModel) dbModel).MultiplyFrequency(
+                    tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex], mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight/origWeight);
+            }
         }
     }
 }

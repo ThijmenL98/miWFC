@@ -82,4 +82,9 @@
       <UpToDateCheckInput Remove="samples\Rooms\turn.png" />
       <UpToDateCheckInput Remove="samples\Rooms\wall.png" />
     </ItemGroup>
+    <ItemGroup>
+      <Compile Update="ContentControls\SimplePatternItemControl.axaml.cs">
+        <DependentUpon>SimplePatternItemControl.axaml</DependentUpon>
+      </Compile>
+    </ItemGroup>
 </Project>

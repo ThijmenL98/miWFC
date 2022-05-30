@@ -6,9 +6,9 @@
         xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ucontrols="using:WFC4ALL.ContentControls"
         xmlns:avaloniaGif="clr-namespace:WFC4ALL.AvaloniaGif"
-        d:DesignHeight="800" d:DesignWidth="1410"
+        d:DesignHeight="800" d:DesignWidth="1476"
         MinWidth="1256" MinHeight="600"
-        Width="1410" Height="800"
+        Width="1476" Height="800"
         WindowStartupLocation="CenterOwner"
         Activated="WindowBase_OnActivated"
         PointerPressed="InputElement_OnPointerPressed">
@@ -29,7 +29,7 @@
 		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
 		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
 		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
-		
+
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
 		<Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance" />
@@ -96,9 +96,9 @@
 			<Setter Property="Margin" Value="0, 5, 0, 0" />
 			<Setter Property="Height" Value="25" />
 		</Style>
-		
+
 		<Style Selector="TabItem:pointerover Border">
-			<Setter Property="Background" Value="#41658a"/>
+			<Setter Property="Background" Value="#41658a" />
 		</Style>
 	</Window.Styles>
 
@@ -116,13 +116,15 @@
 				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 0, 0 ,0" />
 				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 14, 0 ,0" />
 				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 20, 0 ,0" />
-				
+
 				<TabControl Margin="0, 0 ,0, 0" SelectedIndex="{Binding SelectedTabIndex}"
 				            SelectionChanged="OnTabChange" Height="25" VerticalAlignment="Top">
-					<TabItem Header="Smart Mode Sandbox" Height="25" MinWidth="195" VerticalContentAlignment="Center" Margin="30, 0, 2, 0"/>
-					<TabItem Header="Simple Mode Sandbox" Height="25" MinWidth="195" VerticalContentAlignment="Center" Margin="2, 0, 2, 0" />
+					<TabItem Header="Smart Mode Sandbox" Height="25" MinWidth="195" VerticalContentAlignment="Center"
+					         Margin="30, 0, 2, 0" />
+					<TabItem Header="Simple Mode Sandbox" Height="25" MinWidth="195" VerticalContentAlignment="Center"
+					         Margin="2, 0, 2, 0" />
 				</TabControl>
-				
+
 				<Border BorderBrush="#485288" BorderThickness="5" CornerRadius="15" Margin="0,25, 0 ,0">
 					<Grid>
 						<Grid ColumnDefinitions="*, Auto">
@@ -138,7 +140,7 @@
 										<Border Padding="1">
 											<Grid Margin="5">
 												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicMain.png"
-												       Stretch="Uniform" MaxHeight="700"/>
+												       Stretch="Uniform" MaxHeight="700" />
 												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 												        VerticalAlignment="Top"
 												        x:Name="borderPaddingToggle" Background="Transparent"
@@ -174,13 +176,19 @@
 								<ucontrols:InputControl DataContext="{Binding VM}"
 								                        Grid.Row="0" x:Name="inputControl" />
 
-								<Grid Grid.Column="1" RowDefinitions="Auto, *" x:Name="patternGrid" MinWidth="202">
+								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
 									<TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 5"
-									           Text="Extracted patterns with the current settings" TextWrapping="Wrap"/>
+									           Text="Extracted patterns with the current settings" TextWrapping="Wrap" />
 
 									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
+									        CornerRadius="15"
+									        IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}">
+										<ucontrols:AdvancedPatternItemControl DataContext="{Binding VM}" />
+									</Border>
+
+									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">
-										<ucontrols:PatternItemControl DataContext="{Binding VM}" />
+										<ucontrols:SimplePatternItemControl DataContext="{Binding VM}" />
 									</Border>
 								</Grid>
 							</Grid>
@@ -196,7 +204,7 @@
 				</Border>
 			</Grid>
 		</Border>
-		
+
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />

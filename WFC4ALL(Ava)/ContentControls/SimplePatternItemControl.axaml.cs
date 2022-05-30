@@ -5,8 +5,8 @@ using Avalonia.Markup.Xaml;
 
 namespace WFC4ALL.ContentControls;
 
-public partial class PatternItemControl : UserControl {
-    public PatternItemControl() {
+public partial class SimplePatternItemControl : UserControl {
+    public SimplePatternItemControl() {
         InitializeComponent();
 
         Button incButton = this.Find<Button>("patternIncButton");
