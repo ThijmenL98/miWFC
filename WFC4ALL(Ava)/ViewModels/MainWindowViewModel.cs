@@ -1,16 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using HarfBuzzSharp;
 using ReactiveUI;
+using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.Managers;
 using WFC4ALL.Utils;
+using Buffer = System.Buffer;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedMember.Global
@@ -19,17 +25,17 @@ namespace WFC4ALL.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase {
     private Bitmap _inputImage
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _outputImage
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _itemOverlay
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _outputImageMask
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _outputPreviewMask
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _currentItemImage
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
     private bool _isPlaying,
         _seamlessOutput,
@@ -60,6 +66,8 @@ public class MainWindowViewModel : ViewModelBase {
 
     private HoverableTextViewModel _selectedCategory = new();
 
+    private Random r;
+
     private string _categoryDescription = "",
         _selectedInputImage = "",
         _stepAmountString = "Steps to take: 1",
@@ -87,8 +95,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -98,8 +106,8 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -284,8 +292,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -333,6 +341,10 @@ public class MainWindowViewModel : ViewModelBase {
      * Logic
      */
 
+    public void setR(Random newRand) {
+        r = newRand;
+    }
+
     public void setCentralManager(CentralManager cm) {
         lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
         lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
@@ -346,8 +358,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-            !centralManager!.getMainWindow().getInputControl().getCategory()
-                .Contains("Side");
+                                       !centralManager!.getMainWindow().getInputControl().getCategory()
+                                           .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -552,7 +564,7 @@ public class MainWindowViewModel : ViewModelBase {
             List<int> mySet = new(allowedTiles.Select(model => model.PatternIndex));
             List<int> compared = new(ivm.AllowedTiles.Select(model => model.PatternIndex));
             if (ivm.ItemType.ID.Equals(itemType.ID) && mySet.All(compared.Contains)
-                && mySet.Count.Equals(compared.Count)) {
+                                                    && mySet.Count.Equals(compared.Count)) {
                 if (_isEditing) {
                     ivm.Amount = amount;
                 } else {
@@ -570,11 +582,12 @@ public class MainWindowViewModel : ViewModelBase {
         ItemsMayAppearAnywhere = false;
         ItemsToAddValue = 1;
 
-        foreach (TileViewModel tvm  in PaintTiles) {
+        foreach (TileViewModel tvm in PaintTiles) {
             tvm.ItemAddChecked = false;
         }
-        
+
         centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
+        ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
     }
 
     public void OnExitItemAddition() {
@@ -583,10 +596,10 @@ public class MainWindowViewModel : ViewModelBase {
         ItemsMayAppearAnywhere = false;
         ItemsToAddValue = 1;
 
-        foreach (TileViewModel tvm  in PaintTiles) {
+        foreach (TileViewModel tvm in PaintTiles) {
             tvm.ItemAddChecked = false;
         }
-        
+
         centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
     }
 
@@ -629,17 +642,16 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnEditItemEntry() {
-        // TODO Set values to selected item
         DataGrid dg = centralManager!.getItemWindow().getDataGrid();
         int selectedIndex = dg.SelectedIndex;
         if (selectedIndex.Equals(-1)) {
             centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
             return;
         }
-        
+
         InItemMenu = true;
         ItemViewModel itemSelected = ItemDataGrid[selectedIndex];
-        
+
         ItemsMayAppearAnywhere = itemSelected.AllowedTiles.Count.Equals(PaintTiles.Count);
         ItemsToAddValue = itemSelected.Amount;
         centralManager!.getItemWindow().getItemAddMenu().updateIndex(itemSelected.ItemType.ID);
@@ -664,5 +676,146 @@ public class MainWindowViewModel : ViewModelBase {
 
         ItemDataGrid.RemoveAt(selectedIndex);
         dg.SelectedIndex = -1;
+    }
+
+    public void OnApplyItemsClick() {
+        if (ItemDataGrid.Count < 1) {
+            centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+            return;
+        }
+
+        int[,] itemGrid = new int[ImageOutWidth, ImageOutHeight];
+
+        for (int x = 0; x < ImageOutWidth; x++) {
+            for (int y = 0; y < ImageOutHeight; y++) {
+                itemGrid[x, y] = -1;
+            }
+        }
+
+        Color[,] distinctColourCount = { };
+        int[,] distinctIndexCount = new int[0, 0];
+
+        int[] spacesLeft = new int[PaintTiles.Count];
+        if (centralManager!.getWFCHandler().isOverlappingModel()) {
+            distinctColourCount = centralManager!.getWFCHandler().getPropagatorOutputO().toArray2d();
+            int width = distinctColourCount.GetLength(0);
+            int height = distinctColourCount.GetLength(1);
+            List<Color> distinctList = new(width * height);
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    distinctList.Add(distinctColourCount[i, j]);
+                }
+            }
+
+            foreach (TileViewModel tvm in PaintTiles) {
+                spacesLeft[tvm.PatternIndex] = distinctList.Count(c => c.Equals(tvm.PatternColour));
+            }
+        } else {
+            distinctIndexCount = centralManager!.getWFCHandler().getPropagatorOutputA().toArray2d();
+            int width = distinctIndexCount.GetLength(0);
+            int height = distinctIndexCount.GetLength(1);
+            List<int> distinctList = new(width * height);
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    distinctList.Add(distinctIndexCount[i, j]);
+                }
+            }
+
+            foreach (TileViewModel tvm in PaintTiles) {
+                spacesLeft[tvm.PatternIndex] = distinctList.Count(c => c.Equals(tvm.PatternIndex));
+            }
+        }
+
+        foreach (ItemViewModel ivm in ItemDataGrid) {
+            List<int> allowedAdd = ivm.AllowedTiles.Select(tvm => tvm.PatternIndex).ToList();
+            for (int i = 0; i < ivm.Amount; i++) {
+                bool added = false;
+                while (!added) {
+                    if (allowedAdd.Select(x => spacesLeft[x]).Sum() == 0) {
+                        centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+                        return;
+                    }
+
+                    int randLoc = r.Next(ImageOutWidth * ImageOutHeight);
+                    int xLoc = randLoc / ImageOutWidth;
+                    int yLoc = randLoc % ImageOutWidth;
+                    bool allowedAtLoc = false;
+                    if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                        Color colorAtPos = distinctColourCount[xLoc, yLoc];
+                        if (PaintTiles.Where(tvm => tvm.PatternColour.Equals(colorAtPos)).Any(tvm => allowedAdd.Contains(tvm.PatternIndex))) {
+                            allowedAtLoc = true;
+                        }
+                    } else {
+                        int valAtPos = distinctIndexCount[xLoc, yLoc];
+                        allowedAtLoc = allowedAdd.Contains(valAtPos);
+                    }
+
+                    if (allowedAtLoc) {
+                        if (itemGrid[xLoc, yLoc] == -1) {
+                            itemGrid[xLoc, yLoc] = ivm.ItemType.ID;
+                            if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                                Color addedLoc = distinctColourCount[xLoc, yLoc];
+                                foreach (TileViewModel tvm in PaintTiles) {
+                                    if (tvm.PatternColour.Equals(addedLoc)) {
+                                        int cIdx = tvm.PatternIndex;
+                                        spacesLeft[cIdx]--;
+                                    }
+
+                                    break;
+                                }
+                            } else {
+                                spacesLeft[distinctIndexCount[xLoc, yLoc]]--;
+                            }
+
+                            added = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        ItemOverlay = generateItemOverlay(itemGrid);
+    }
+
+    private WriteableBitmap generateItemOverlay(int[,] itemGrid) {
+        const int itemDimension = 17;
+        int xDimension = ImageOutWidth * itemDimension;
+        int yDimension = ImageOutHeight * itemDimension;
+        
+        WriteableBitmap outputBitmap = new(new PixelSize(xDimension, yDimension), new Vector(96, 96),
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
+
+        Dictionary<int, Color[] > items = new();
+        for (int x = 0; x < ImageOutWidth; x++) {
+            for (int y = 0; y < ImageOutHeight; y++) {
+                int itemId = itemGrid[x, y];
+                if (itemId != -1 && !items.ContainsKey(itemId)) {
+                    Color[] itemBitmap = centralManager!.getItemWindow().getItemAddMenu()
+                        .getItemImageRaw(ItemType.getItemTypeByID(itemId));
+                    items[itemId] = itemBitmap;
+                }
+            }
+        }
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+        
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, yDimension, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < xDimension; x++) {
+                    int itemId = itemGrid[x / itemDimension, y / itemDimension];
+                    if (itemId != -1) {
+                        Color toSet = items[itemId][y % itemDimension * itemDimension + x % itemDimension];
+                        dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
+                    }
+                }
+            });
+        }
+
+        return outputBitmap;
     }
 }

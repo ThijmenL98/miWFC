@@ -185,7 +185,7 @@ public class TileViewModel : ReactiveObject {
 
         PatternWeight = isOverlapping ? Math.Min(1d, PatternWeight) : Math.Round(PatternWeight, 1);
         double change = oldWeight -  PatternWeight;
-        Trace.WriteLine(change);
+
         if (isOverlapping && change != 0d) {
             parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
         }

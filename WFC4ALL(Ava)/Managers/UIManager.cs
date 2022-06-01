@@ -122,7 +122,7 @@ public class UIManager {
         int n = colors.Height;
         WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Premul);
+            AlphaFormat.Unpremul);
 
         ConcurrentDictionary<Point, Color> data = new();
 
@@ -287,7 +287,7 @@ public class UIManager {
         mainWindowVM.PaintKeepModeEnabled = false;
 
         mainWindowVM.OutputImageMask
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         return false;
     }
 

@@ -34,7 +34,7 @@ public class WFCHandler {
     private readonly MainWindowViewModel mainWindowVM;
     private readonly CentralManager parentCM;
 
-    private bool _isChangingModels, _isChangingImages, inputHasChanged;
+    private bool _isChangingModels, _isChangingImages, inputHasChanged, isBrushing;
     private int amountCollapsed, actionsTaken, tileSize;
     private double percentageCollapsed;
 
@@ -69,7 +69,7 @@ public class WFCHandler {
         _isChangingImages = false;
         inputHasChanged = true;
         latestOutput
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         currentBitmap = null;
         currentColors = new HashSet<Color>();
         tileSize = 0;
@@ -116,7 +116,7 @@ public class WFCHandler {
 
     public async Task<(WriteableBitmap, bool)> initAndRunWfcDB(bool reset, int steps, bool force = false) {
         if (isChangingModels() || !mainWindow.IsActive && !force) {
-            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul),
+            return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
                 true);
         }
 
@@ -131,6 +131,7 @@ public class WFCHandler {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
             mainWindowVM.resetDataGrid();
+            parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
             if (inputHasChanged) {
@@ -154,8 +155,12 @@ public class WFCHandler {
             int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
             bool seamlessOutput = mainWindowVM.SeamlessOutput || category.Contains("Side");
 
+            int curSeed = Environment.TickCount;
+            Random rand = new(curSeed);
+            mainWindowVM.setR(rand);
+
             await Task.Run(() => {
-                createPropagator(outputWidth, outputHeight, seamlessOutput);
+                createPropagator(outputWidth, outputHeight, seamlessOutput, rand);
 
                 if (isOverlappingModel() && inputWrappingEnabled) {
                     bool success = false;
@@ -188,13 +193,12 @@ public class WFCHandler {
         parentCM.getUIManager().resetPatterns();
     }
 
-    private void createPropagator(int outputWidth, int outputHeight, bool seamlessOutput) {
+    private void createPropagator(int outputWidth, int outputHeight, bool seamlessOutput, Random rand) {
         bool outputPaddingEnabled = isOverlappingModel() && seamlessOutput;
 
         GridTopology dbTopology = new(outputWidth, outputHeight, outputPaddingEnabled);
-        int curSeed = Environment.TickCount;
         dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
-            RandomDouble = new Random(curSeed).NextDouble,
+            RandomDouble = rand.NextDouble,
             IndexPickerType = IndexPickerType.HEAP_MIN_ENTROPY
         });
     }
@@ -303,7 +307,7 @@ public class WFCHandler {
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                     ? PixelFormat.Bgra8888
                     : PixelFormat.Rgba8888,
-                AlphaFormat.Premul);
+                AlphaFormat.Unpremul);
 
             using ILockedFramebuffer? frameBuffer = pattern.Lock();
 
@@ -313,7 +317,7 @@ public class WFCHandler {
             }
 
             toAddPaint.Add(new TileViewModel(pattern, index, c, parentCM));
-            
+
             double curWeight = ((OverlappingModel) dbModel).getFrequency(t).Sum();
             total += curWeight;
             weights[index] = curWeight;
@@ -324,7 +328,6 @@ public class WFCHandler {
         foreach ((int index, double weightAvg) in weights) {
             double percentage = weightAvg / total;
             toAddPaint[index].PatternWeight = percentage;
-            Trace.WriteLine(@$"Tile {index} -> {percentage*100d}%");
         }
 
 
@@ -389,7 +392,8 @@ public class WFCHandler {
                 weights.Add(tileWeight);
 
                 toAddPaint.Add(
-                    new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip, parentCM));
+                    new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip,
+                        parentCM));
                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
 
                 symmetries.Add(myIdx);
@@ -451,14 +455,13 @@ public class WFCHandler {
             actionsTaken--;
         }
 
+        parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         return getLatestOutputBM();
     }
 
     public Color getColorFromIndex(int index) {
         return toAddPaint[index].PatternColour;
     }
-
-    private bool isBrushing = false;
 
     public bool IsBrushing() {
         return isBrushing;
@@ -574,7 +577,7 @@ public class WFCHandler {
         }
 
         mainWindowVM.OutputImage = getLatestOutputBM();
-        parentCM!.getInputManager().placeMarker(false);
+        parentCM.getInputManager().placeMarker(false);
     }
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
@@ -768,7 +771,7 @@ public class WFCHandler {
 
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth, outputHeight), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Premul);
+            AlphaFormat.Unpremul);
         ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
@@ -813,7 +816,7 @@ public class WFCHandler {
         outputBitmap = new WriteableBitmap(new PixelSize(outputWidth * tileSize, outputHeight * tileSize),
             new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Premul);
+            AlphaFormat.Unpremul);
         ITopoArray<int> dbOutput = dbPropagator.toValueArray(-1, -2);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
@@ -861,8 +864,8 @@ public class WFCHandler {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract, MergeIntoPattern
         bool isC = dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
 
-        parentCM.getMainWindowVM().ItemEditorEnabled = true;
-        //(parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC);
+        parentCM.getMainWindowVM().ItemEditorEnabled
+            = parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC;
 
         return isC;
     }
@@ -905,8 +908,9 @@ public class WFCHandler {
 
         double origWeight = origTileWeights[changedIdx];
         ((OverlappingModel) dbModel).MultiplyFrequency(
-            tiles.toArray2d().Cast<Tile>().Distinct().ToList()[changedIdx], mainWindowVM.PaintTiles[changedIdx].PatternWeight/origWeight);
-        
+            tiles.toArray2d().Cast<Tile>().Distinct().ToList()[changedIdx],
+            mainWindowVM.PaintTiles[changedIdx].PatternWeight / origWeight);
+
         foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
             if (tileViewModel.PatternIndex != changedIdx) {
                 origWeight = origTileWeights[tileViewModel.PatternIndex];
@@ -920,8 +924,17 @@ public class WFCHandler {
                 tileViewModel.PatternWeight = Math.Max(0d, Math.Min(1d, tileViewModel.PatternWeight));
 
                 ((OverlappingModel) dbModel).MultiplyFrequency(
-                    tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex], 4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight/origWeight);
+                    tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex],
+                    4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight / origWeight);
             }
         }
+    }
+
+    public ITopoArray<Color> getPropagatorOutputO() {
+        return dbPropagator.toValueArray<Color>();
+    }
+
+    public ITopoArray<int> getPropagatorOutputA() {
+        return dbPropagator.toValueArray(-1, -2);
     }
 }

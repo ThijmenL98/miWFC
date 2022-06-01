@@ -85,7 +85,7 @@ public class InputManager {
 
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         mainWindowVM.OutputImageMask
-            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Premul);
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
         if (!getModelImages(parentCM.getWFCHandler().isOverlappingModel() ? "overlapping" : "simpletiled",
                     mainWindow.getInputControl().getCategory())
@@ -418,11 +418,11 @@ public class InputManager {
                         parentCM.getWFCHandler().stepBackWfc();
                     } else {
                         mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                            PixelFormat.Bgra8888, AlphaFormat.Premul);
+                            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                     }
                 } catch (IndexOutOfRangeException) {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                        PixelFormat.Bgra8888, AlphaFormat.Premul);
+                        PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                 }
             } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled ||
                        parentCM.getMainWindowVM().PaintKeepModeEnabled) {
@@ -452,7 +452,7 @@ public class InputManager {
                     parentCM.getWFCHandler().stepBackWfc();
                 } else {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                        PixelFormat.Bgra8888, AlphaFormat.Premul);
+                        PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                 }
             } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled ||
                        parentCM.getMainWindowVM().PaintKeepModeEnabled) {
@@ -556,7 +556,7 @@ public class InputManager {
         WriteableBitmap bitmap = new(new PixelSize(outputWidth, outputHeight),
             new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Premul);
+            AlphaFormat.Unpremul);
 
         using ILockedFramebuffer? frameBuffer = bitmap.Lock();
 
@@ -582,7 +582,7 @@ public class InputManager {
 
     public void resetHoverAvailability() {
         mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-            PixelFormat.Bgra8888, AlphaFormat.Premul);
+            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         mainWindowVM.HelperTiles.Clear();
     }
 }

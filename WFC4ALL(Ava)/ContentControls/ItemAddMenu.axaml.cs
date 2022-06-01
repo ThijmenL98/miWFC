@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -8,7 +7,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -46,7 +44,7 @@ public partial class ItemAddMenu : UserControl {
         _itemsCB = this.Find<ComboBox>("itemTypesCB");
 
         _itemsCB.Items = ItemType.ItemTypes;
-        
+
         _itemsCB.SelectedIndex = 0;
     }
 
@@ -59,7 +57,7 @@ public partial class ItemAddMenu : UserControl {
 
         checkBoxes = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
     }
-    
+
     public void updateCheckBoxesLength() {
         checkBoxes = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
     }
@@ -68,12 +66,67 @@ public partial class ItemAddMenu : UserControl {
         _itemsCB.SelectedIndex = idx;
     }
 
-    private WriteableBitmap getItemImage(ItemType itemType, int index = -1) {
-        if (imageCache.ContainsKey(itemType.ID)) { return imageCache[itemType.ID]; }
+    public Color[] getItemImageRaw(ItemType itemType, int index = -1) {
+        bool singleDigit = false;
+        bool[][] segments = Array.Empty<bool[]>();
+        if (index != -1) {
+            (singleDigit, segments) = getSegments(index);
+        }
+
+        Color[] rawColorData = new Color[Dimension * Dimension];
+
+        for (int x = 0; x < Dimension; x++) {
+            for (int y = 0; y < Dimension; y++) {
+                Color toSet;
+                double distance = Math.Sqrt(Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d));
+                if (distance < Radius + 0.5d) {
+                    Tuple<int, int> key = new(x, y);
+                    toSet = border.Contains(key) ? Colors.Black : itemType.Color;
+                } else {
+                    toSet = Colors.Transparent;
+                }
+
+                if (index != -1) {
+                    if (singleDigit) {
+                        if (x is >= 7 and <= 9 && y is >= 6 and <= 10) {
+                            int idx = (x - 7) % 3 + (y - 6) * 3;
+                            if (segments[0][idx]) {
+                                toSet = Colors.White;
+                            }
+                        }
+                    } else {
+                        // ReSharper disable once MergeIntoPattern
+                        if (x >= 5 && x <= 11 && x != 8 && y is >= 6 and <= 10) {
+                            if (x < 8) {
+                                int idx = (x - 5) % 3 + (y - 6) * 3;
+                                if (segments[1][idx]) {
+                                    toSet = Colors.White;
+                                }
+                            } else {
+                                int idx = (x - 9) % 3 + (y - 6) * 3;
+                                if (segments[0][idx]) {
+                                    toSet = Colors.White;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                rawColorData[y * Dimension + x] = toSet;
+            }
+        }
+
+        return rawColorData;
+    }
+
+    public WriteableBitmap getItemImage(ItemType itemType, int index = -1) {
+        if (imageCache.ContainsKey(itemType.ID)) {
+            return imageCache[itemType.ID];
+        }
 
         WriteableBitmap outputBitmap = new(new PixelSize(Dimension, Dimension), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Premul);
+            AlphaFormat.Unpremul);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
         bool singleDigit = false;
@@ -90,7 +143,7 @@ public partial class ItemAddMenu : UserControl {
                 uint* dest = backBuffer + (int) y * stride / 4;
                 for (int x = 0; x < Dimension; x++) {
                     Color toSet;
-                    var distance = Math.Sqrt(Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d));
+                    double distance = Math.Sqrt(Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d));
                     if (distance < Radius + 0.5d) {
                         Tuple<int, int> key = new(x, (int) y);
                         toSet = border.Contains(key) ? Colors.Black : itemType.Color;
@@ -182,7 +235,8 @@ public partial class ItemAddMenu : UserControl {
     }
 
     private void InputElement_OnPointerReleased(object? sender, PointerReleasedEventArgs e) {
-        TileViewModel? clickedTvm = ((sender as Border)?.Parent?.Parent as ContentPresenter)?.Content as TileViewModel ?? null;
+        TileViewModel? clickedTvm
+            = ((sender as Border)?.Parent?.Parent as ContentPresenter)?.Content as TileViewModel ?? null;
         if (clickedTvm != null) {
             clickedTvm.ItemAddChecked = !clickedTvm.ItemAddChecked;
             clickedTvm.OnCheckChange();

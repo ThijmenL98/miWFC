@@ -20,8 +20,6 @@ public class ItemViewModel : ReactiveObject {
 #pragma warning disable CS8618
     public ItemViewModel(ItemType itemType, int amount, ObservableCollection<TileViewModel> allowedTiles) {
 #pragma warning restore CS8618
-        Trace.WriteLine(@$"To add: {itemType.DisplayName} {amount} {string.Join(", ", allowedTiles.Select(model => model.PatternIndex))}");
-
         ItemType = itemType;
         Amount = amount;
         AllowedTiles = allowedTiles;

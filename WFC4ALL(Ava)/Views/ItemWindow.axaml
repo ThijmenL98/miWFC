@@ -63,7 +63,7 @@
                                         <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
                                             <Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
                                                    x:Name="itemOverlayImage" Source="{Binding ItemOverlay}"
-                                                   IsHitTestVisible="False" />
+                                                   IsHitTestVisible="False"/>
                                         </Grid>
                                     </Grid>
                                 </Grid>
@@ -241,7 +241,7 @@
                                     <GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
 
                                     <Button Padding="0" Background="Transparent" Grid.Column="4"
-                                            Command="{Binding OnApplyClick}"
+                                            Command="{Binding OnApplyItemsClick}"
                                             HorizontalAlignment="Center" Margin="5" MaxWidth="80">
                                         <Button.Styles>
                                             <Style Selector="Button:disabled /template/ ContentPresenter">
