@@ -1,7 +1,7 @@
 ﻿<Window Icon="/Assets/icon.ico" Title="WFC4ALL - Painting Mode" mc:Ignorable="d" x:Class="WFC4ALL.Views.PaintingWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        d:DesignHeight="800" d:DesignWidth="1410" MinWidth="1256" MinHeight="600"
+        d:DesignHeight="800" d:DesignWidth="1476" MinWidth="1256" MinHeight="600"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:avaloniaGif="clr-namespace:WFC4ALL.AvaloniaGif"
         xmlns:vm="using:WFC4ALL.ViewModels" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,7 +18,7 @@
 		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
 		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
-		
+
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
 		<Image Source="/Assets/PencilClick.png" x:Key="clickPencilKey" x:Name="clickPencil" />
@@ -51,13 +51,12 @@
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
 			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 				<Grid>
-					<Grid ColumnDefinitions="Auto, Auto, *" x:Name="paintingMainGrid">
+					<Grid ColumnDefinitions="Auto, *, Auto" x:Name="paintingMainGrid">
 						<Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, *" Margin="10"
 						      VerticalAlignment="Top">
 							<Button Padding="0" Background="Transparent" Grid.Row="0"
 							        Command="{Binding OnPencilModeClick}" Grid.Column="0"
-							        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-							        IsEnabled="{Binding InstantCollapse}">
+							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">
 								<Button.Styles>
 									<Style Selector="Button:pointerover /template/ ContentPresenter">
 										<Setter Property="Content" Value="{DynamicResource hoverPencilKey}" />
@@ -155,9 +154,9 @@
 								</ToolTip.Tip>
 							</Button>
 
-							<ComboBox Grid.Column="0" Grid.Row="2" SelectedIndex="0" Items="{Binding PaintTiles}"
+							<ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0" Items="{Binding PaintTiles}"
 							          x:Name="tilePaintSelectCB" HorizontalAlignment="Center" VerticalAlignment="Center"
-							          Margin="15"
+							          Margin="15" IsVisible="{Binding PencilModeEnabled}"
 							          Padding="10,5,0,5">
 								<ComboBox.ItemsPanel>
 									<ItemsPanelTemplate>
@@ -188,26 +187,9 @@
 								</ComboBox.ItemTemplate>
 							</ComboBox>
 
-							<StackPanel Grid.Column="1" Grid.Row="2" Margin="15" IsVisible="{Binding !PencilModeEnabled}">
-								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15, 15, 15, 7">
-									Brush Size
-								</TextBlock>
-								<ComboBox SelectedIndex="2" x:Name="BrushSizeCB" HorizontalAlignment="Center"
-								          VerticalAlignment="Center" Margin="-10, 8, -10, 15" Padding="12,3,0,4">
-									<ComboBoxItem>Single</ComboBoxItem>
-									<ComboBoxItem>Tiny</ComboBoxItem>
-									<ComboBoxItem>Very Small</ComboBoxItem>
-									<ComboBoxItem>Small</ComboBoxItem>
-									<ComboBoxItem>Medium</ComboBoxItem>
-									<ComboBoxItem>Large</ComboBoxItem>
-									<ComboBoxItem>Very Large</ComboBoxItem>
-									<ComboBoxItem>Huge</ComboBoxItem>
-								</ComboBox>
-							</StackPanel>
-
-							<Button Padding="0" Background="Transparent" Grid.Row="3" VerticalAlignment="Bottom"
-							        Command="{Binding OnApplyClick}" Grid.Column="0"
-							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">
+							<Button Padding="0" Background="Transparent" Grid.Row="2" VerticalAlignment="Bottom"
+							        Command="{Binding OnApplyClick}" Grid.Column="1"
+							        HorizontalAlignment="Center" Margin="10" MaxWidth="110" IsVisible="{Binding !PencilModeEnabled}">
 								<Button.Styles>
 									<Style Selector="Button:pointerover /template/ ContentPresenter">
 										<Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
@@ -227,8 +209,61 @@
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
+							
+							<Button Padding="0" Grid.Row="2" Grid.Column="0" Margin="10" MaxWidth="110"
+							        Command="{Binding OnMaskReset}" Background="Transparent">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
+										<Setter Property="Background" Value="Transparent" />
+										<Setter Property="RenderTransform">
+											<Setter.Value>
+												<RotateTransform Angle="-90" />
+											</Setter.Value>
+										</Setter>
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
+										<Setter Property="Background" Value="Transparent" />
+										<Setter Property="RenderTransform">
+											<Setter.Value>
+												<RotateTransform Angle="-90" />
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Restart.png">
+										<Image.RenderTransform>
+											<RotateTransform Angle="-90" />
+										</Image.RenderTransform>
+									</Image>
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Reset the mask</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+
+							<StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="15" IsVisible="{Binding !PencilModeEnabled}">
+								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15, 15, 15, 7">
+									Brush Size
+								</TextBlock>
+								<ComboBox SelectedIndex="2" x:Name="BrushSizeCB" HorizontalAlignment="Center"
+								          VerticalAlignment="Center" Margin="-10, 8, -10, 15" Padding="12,3,0,4">
+									<ComboBoxItem>Single</ComboBoxItem>
+									<ComboBoxItem>Tiny</ComboBoxItem>
+									<ComboBoxItem>Very Small</ComboBoxItem>
+									<ComboBoxItem>Small</ComboBoxItem>
+									<ComboBoxItem>Medium</ComboBoxItem>
+									<ComboBoxItem>Large</ComboBoxItem>
+									<ComboBoxItem>Very Large</ComboBoxItem>
+									<ComboBoxItem>Huge</ComboBoxItem>
+								</ComboBox>
+							</StackPanel>
 						</Grid>
-                                
+
 						<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
 						        CommandParameter="P"
 						        Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
@@ -280,9 +315,9 @@
 								</Grid>
 							</Grid>
 
-							<Grid Grid.Row="1" ColumnDefinitions="*, 50*, *" Margin="0, 0, 0, 15">
+							<Grid Grid.Row="1" ColumnDefinitions="*, 50*, *" Margin="0, 0, 0, 15" Width="680">
 								<GridSplitter IsEnabled="False" Grid.Column="0" Background="Transparent" />
-								
+
 								<Grid Grid.Column="1" RowDefinitions="*, *" x:Name="timeline" Margin="0 ,0, 0, 10">
 									<ItemsControl Items="{Binding Markers}" MinHeight="25" Margin="-10" Grid.Row="0">
 										<ItemsControl.ItemsPanel>
@@ -307,7 +342,7 @@
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
-									
+
 									<Image Grid.Row="1" Height="25" Margin="0" HorizontalAlignment="Left"
 									       Source="/Assets/NowMarker.png" Width="35">
 										<Image.RenderTransform>
@@ -315,14 +350,14 @@
 										</Image.RenderTransform>
 									</Image>
 								</Grid>
-								
+
 								<Separator Grid.Column="1" Background="Black" Height="4" CornerRadius="2" Margin="0,0,0,10" />
-								
+
 								<GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
 							</Grid>
 						</Grid>
 
-						<Grid Grid.Column="2" RowDefinitions="Auto, *, Auto">
+						<Grid Grid.Column="2" RowDefinitions="Auto, *, Auto" Width="400">
 							<TextBlock Grid.Row="0" Margin="10" Text="Available Tiles at mouse position:" HorizontalAlignment="Center" />
 
 							<ItemsControl Grid.Row="1" Items="{Binding HelperTiles}"
@@ -379,7 +414,7 @@
 
 							<Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto, *, Auto">
 								<GridSplitter Grid.Column="0" IsEnabled="False" Background="Transparent" />
-								
+
 								<Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OnSave}" Margin="5"
 								        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
 									<Button.Styles>
@@ -405,7 +440,7 @@
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
-								
+
 								<Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnLoad}" Margin="5"
 								        HorizontalAlignment="Center" MaxWidth="80" IsEnabled="{Binding InstantCollapse}">
 									<Button.Styles>
@@ -431,9 +466,9 @@
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
-								
+
 								<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
-								
+
 								<Button Grid.Column="4" Padding="0" Background="Transparent"
 								        Command="{Binding OnCustomizeWindowSwitch}"
 								        CommandParameter="M" VerticalAlignment="Center"
@@ -467,7 +502,7 @@
 				</Grid>
 			</Border>
 		</Border>
-		
+
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />

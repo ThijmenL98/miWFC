@@ -6,7 +6,7 @@
         xmlns:avaloniaGif="clr-namespace:WFC4ALL.AvaloniaGif"
         xmlns:vm="using:WFC4ALL.ViewModels"
         xmlns:ucontrols="using:WFC4ALL.ContentControls"
-        d:DesignHeight="800" d:DesignWidth="1410" MinWidth="1256" MinHeight="600"
+        d:DesignHeight="800" d:DesignWidth="1476" MinWidth="1256" MinHeight="600"
         Icon="/Assets/icon.ico" Title="WFC4ALL - Item Mode">
 
     <Window.Resources>

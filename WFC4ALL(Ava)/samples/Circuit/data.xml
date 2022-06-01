@@ -1,19 +1,19 @@
 <set size="14">
     <tiles>
-        <tile name="bridge" symmetry="I" weight="1.0"/>
-        <tile name="component" symmetry="X" weight="20.0"/>
-        <tile name="connection" symmetry="T" weight="10.0"/>
-        <tile name="corner" symmetry="L" weight="10.0"/>
-        <tile name="substrate" symmetry="X" weight="2.0"/>
-        <tile name="t" symmetry="T" weight="0.1"/>
-        <tile name="track" symmetry="I" weight="2.0"/>
-        <tile name="transition" symmetry="T" weight="0.4"/>
-        <tile name="turn" symmetry="L" weight="1.0"/>
-        <tile name="viad" symmetry="I" weight="0.1"/>
-        <tile name="vias" symmetry="T" weight="0.3"/>
-        <tile name="wire" symmetry="I" weight="0.5"/>
-        <tile name="skew" symmetry="L" weight="2.0"/>
-        <tile name="dskew" symmetry="\" weight="2.0"/>
+        <tile name="bridge" symmetry="I" weight="10.0"/>
+        <tile name="component" symmetry="X" weight="200.0"/>
+        <tile name="connection" symmetry="T" weight="100.0"/>
+        <tile name="corner" symmetry="L" weight="100.0"/>
+        <tile name="substrate" symmetry="X" weight="20.0"/>
+        <tile name="t" symmetry="T" weight="1.0"/>
+        <tile name="track" symmetry="I" weight="20.0"/>
+        <tile name="transition" symmetry="T" weight="4.0"/>
+        <tile name="turn" symmetry="L" weight="10.0"/>
+        <tile name="viad" symmetry="I" weight="1.0"/>
+        <tile name="vias" symmetry="T" weight="3.0"/>
+        <tile name="wire" symmetry="I" weight="5.0"/>
+        <tile name="skew" symmetry="L" weight="20.0"/>
+        <tile name="dskew" symmetry="\" weight="20.0"/>
     </tiles>
     <rows>
         <row>

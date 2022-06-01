@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace WFC4ALL.DeBroglie.Wfc; 
 
@@ -43,14 +44,18 @@ public class Wave {
 
     // Returns true if there is a contradiction
     public bool RemovePossibility(int index, int pattern) {
-        Debug.Assert(possibilities[index * patternCount + pattern]);
+        if (!possibilities[index * patternCount + pattern]) {
+            throw new TargetException();
+        }
         possibilities[index * patternCount + pattern] = false;
         int c = --patternCounts[index];
         return c == 0;
     }
 
     public void AddPossibility(int index, int pattern) {
-        Debug.Assert(possibilities[index * patternCount + pattern] == false);
+        if (possibilities[index * patternCount + pattern]) {
+            throw new TargetException();
+        }
         possibilities[index * patternCount + pattern] = true;
         patternCounts[index]++;
     }

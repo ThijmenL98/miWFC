@@ -17,7 +17,7 @@
               ColumnDefinitions="*, *"
               IsEnabled="{Binding !#patternItemsControl.DataContext.IsRunning, TargetNullValue=False, FallbackValue=False}">
 
-            <TextBlock Grid.Column="0" Grid.Row="2"
+            <TextBlock Grid.Column="0" Grid.Row="1"
                        Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
                        Margin="0, -25, 0, -5" FontSize="30" FontWeight="UltraBold" Foreground="#F005" />
             <ToolTip.Tip>
@@ -139,50 +139,50 @@
                 </ToolTip.Tip>
             </RepeatButton>
         </Grid>
-        
+
         <Grid Grid.Column="3" RowDefinitions="Auto, Auto">
-                <Button Grid.Row="0" MaxHeight="32" Padding="0"
-                        Background="Transparent" Margin="1" Command="{Binding OnRotateClick}">
-                    <Button.Styles>
-                        <Style Selector="Button:disabled /template/ ContentPresenter">
-                            <Setter Property="Opacity" Value="160" />
-                            <Setter Property="Background" Value="Transparent" />
-                        </Style>
-                        <Style Selector="Button:pointerover /template/ ContentPresenter">
-                            <Setter Property="Content" Value="{DynamicResource hoverRotateKey}" />
-                            <Setter Property="Background" Value="Transparent" />
-                        </Style>
-                        <Style Selector="Button:pressed /template/ ContentPresenter">
-                            <Setter Property="Content" Value="{DynamicResource clickRotateKey}" />
-                            <Setter Property="Background" Value="Transparent" />
-                        </Style>
-                    </Button.Styles>
-                    <Panel>
-                        <Image Source="/Assets/Rotate.png" IsVisible="{Binding !RotateDisabled}" />
-                        <Image Source="/Assets/RotateDisabled.png" IsVisible="{Binding RotateDisabled}" />
-                    </Panel>
-                </Button>
-                <Button Grid.Row="1" MaxHeight="32" Padding="0"
-                        Background="Transparent" Margin="1" Command="{Binding OnFlipClick}">
-                    <Button.Styles>
-                        <Style Selector="Button:disabled /template/ ContentPresenter">
-                            <Setter Property="Opacity" Value="160" />
-                            <Setter Property="Background" Value="Transparent" />
-                        </Style>
-                        <Style Selector="Button:pointerover /template/ ContentPresenter">
-                            <Setter Property="Content" Value="{DynamicResource hoverFlipKey}" />
-                            <Setter Property="Background" Value="Transparent" />
-                        </Style>
-                        <Style Selector="Button:pressed /template/ ContentPresenter">
-                            <Setter Property="Content" Value="{DynamicResource clickFlipKey}" />
-                            <Setter Property="Background" Value="Transparent" />
-                        </Style>
-                    </Button.Styles>
-                    <Panel>
-                        <Image Source="/Assets/Flip.png" IsVisible="{Binding !FlipDisabled}" />
-                        <Image Source="/Assets/FlipDisabled.png" IsVisible="{Binding FlipDisabled}" />
-                    </Panel>
-                </Button>
-            </Grid>
+            <Button Grid.Row="0" MaxHeight="32" Padding="0"
+                    Background="Transparent" Margin="1" Command="{Binding OnRotateClick}">
+                <Button.Styles>
+                    <Style Selector="Button:disabled /template/ ContentPresenter">
+                        <Setter Property="Opacity" Value="160" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Content" Value="{DynamicResource hoverRotateKey}" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Content" Value="{DynamicResource clickRotateKey}" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </Button.Styles>
+                <Panel>
+                    <Image Source="/Assets/Rotate.png" IsVisible="{Binding !RotateDisabled}" />
+                    <Image Source="/Assets/RotateDisabled.png" IsVisible="{Binding RotateDisabled}" />
+                </Panel>
+            </Button>
+            <Button Grid.Row="1" MaxHeight="32" Padding="0"
+                    Background="Transparent" Margin="1" Command="{Binding OnFlipClick}">
+                <Button.Styles>
+                    <Style Selector="Button:disabled /template/ ContentPresenter">
+                        <Setter Property="Opacity" Value="160" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter">
+                        <Setter Property="Content" Value="{DynamicResource hoverFlipKey}" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="Button:pressed /template/ ContentPresenter">
+                        <Setter Property="Content" Value="{DynamicResource clickFlipKey}" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </Button.Styles>
+                <Panel>
+                    <Image Source="/Assets/Flip.png" IsVisible="{Binding !FlipDisabled}" />
+                    <Image Source="/Assets/FlipDisabled.png" IsVisible="{Binding FlipDisabled}" />
+                </Panel>
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>

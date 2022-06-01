@@ -422,6 +422,11 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().resetWeights();
     }
 
+    public void OnMaskReset() {
+        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().updateMask();
+    }
+
     public void OnRevert() {
         if (IsPlaying) {
             OnAnimate();

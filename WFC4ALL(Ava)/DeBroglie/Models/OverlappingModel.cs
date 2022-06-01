@@ -14,6 +14,7 @@ namespace WFC4ALL.DeBroglie.Models;
 /// </summary>
 public class OverlappingModel : TileModel {
     private readonly List<double> frequencies;
+    private List<double> originalFrequencies;
     private readonly List<PatternArray> patternArrays;
 
     private readonly Dictionary<PatternArray, int> patternIndices;
@@ -42,6 +43,7 @@ public class OverlappingModel : TileModel {
         NZ = nz;
         patternIndices = new Dictionary<PatternArray, int>(new PatternArrayComparer());
         frequencies = new List<double>();
+        originalFrequencies = new List<double>();
         patternArrays = new List<PatternArray>();
         propagator = new List<int[][]>();
     }
@@ -78,6 +80,8 @@ public class OverlappingModel : TileModel {
             OverlappingAnalysis.GetPatterns(s, NX, NY, NZ, periodicX, periodicY, periodicZ, patternIndices,
                 patternArrays, frequencies);
         }
+        
+        originalFrequencies = new List<double>(frequencies);
 
         sampleTopologyDirections = topology.Directions;
         propagator = null; // Mark as dirty
@@ -329,11 +333,29 @@ public class OverlappingModel : TileModel {
                 for (int y = 0; y < patternArray.Height; y++) {
                     for (int z = 0; z < patternArray.Depth; z++) {
                         if (patternArray.Values[x, y, z] == tile) {
-                            frequencies[p] *= multiplier;
+                            frequencies[p] = Math.Max(originalFrequencies[p] * multiplier, 0.00000000001d);
                         }
                     }
                 }
             }
         }
+    }
+
+    public List<double> getFrequency(Tile tile) {
+        List<double> weights = new();
+        for (int p = 0; p < patternArrays.Count; p++) {
+            PatternArray patternArray = patternArrays[p];
+            for (int x = 0; x < patternArray.Width; x++) {
+                for (int y = 0; y < patternArray.Height; y++) {
+                    for (int z = 0; z < patternArray.Depth; z++) {
+                        if (patternArray.Values[x, y, z] == tile) {
+                            weights.Add(frequencies[p]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return weights;
     }
 }

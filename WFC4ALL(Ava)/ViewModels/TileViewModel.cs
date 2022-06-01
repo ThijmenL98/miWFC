@@ -11,7 +11,7 @@ public class TileViewModel : ReactiveObject {
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
-    private double _patternWeight, _changeAmount = 0.1d;
+    private double _patternWeight, _changeAmount = 1.0d;
 
     private readonly CentralManager? parentCM;
     private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked;
@@ -55,7 +55,6 @@ public class TileViewModel : ReactiveObject {
         PatternColour = c;
         PatternRotation = 0;
         PatternFlipping = 1;
-        
         parentCM = cm;
     }
 
@@ -141,34 +140,19 @@ public class TileViewModel : ReactiveObject {
 
     private void handleWeightGapChange(bool increment) {
         switch (ChangeAmount) {
-            case < 1:
+            case 1d:
                 if (increment) {
-                    ChangeAmount += 0.1d;
-                } else {
-                    ChangeAmount -= 0.1d;
-                    ChangeAmount = Math.Max(ChangeAmount, 0.1d);
-                }
+                    ChangeAmount = 10;
+                } 
+
                 break;
-            case 1:
-                if (increment) {
-                    ChangeAmount++;
-                } else {
-                    ChangeAmount -= 0.1d;
-                }
-                break;
-            case < 10:
-                if (increment) {
-                    ChangeAmount++;
-                } else {
-                    ChangeAmount--;
-                }
-                break;
-            case 10:
+            case 10d:
                 if (increment) {
                     ChangeAmount += 10;
                 } else {
-                    ChangeAmount -= 1;
+                    ChangeAmount = 1;
                 }
+
                 break;
             default:
                 if (increment) {
@@ -177,26 +161,34 @@ public class TileViewModel : ReactiveObject {
                 } else {
                     ChangeAmount -= 10;
                 }
+
                 break;
         }
 
         ChangeAmount = Math.Round(ChangeAmount, 1);
     }
-    
+
     private void handleWeightChange(bool increment) {
+        bool isOverlapping = parentCM != null && parentCM!.getWFCHandler().isOverlappingModel();
+        double oldWeight = PatternWeight;
         switch (increment) {
             case false when !(PatternWeight > 0):
                 return;
             case true:
-                PatternWeight += ChangeAmount;
+                PatternWeight += isOverlapping ? ChangeAmount / 100d : ChangeAmount;
                 break;
             default:
-                PatternWeight -= ChangeAmount;
+                PatternWeight -= isOverlapping ? ChangeAmount / 100d : ChangeAmount;
                 PatternWeight = Math.Max(0, PatternWeight);
                 break;
         }
 
-        PatternWeight = Math.Round(PatternWeight, 1);
+        PatternWeight = isOverlapping ? Math.Min(1d, PatternWeight) : Math.Round(PatternWeight, 1);
+        double change = oldWeight -  PatternWeight;
+        Trace.WriteLine(change);
+        if (isOverlapping && change != 0d) {
+            parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
+        }
     }
 
     public void OnRotateClick() {
