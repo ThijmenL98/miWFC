@@ -14,12 +14,12 @@ public class TileViewModel : ReactiveObject {
     private double _patternWeight, _changeAmount = 0.1d;
 
     private readonly CentralManager? parentCM;
-    private bool _flipDisabled, _rotateDisabled, _highlighted;
+    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked;
     
     /*
      * Used for input patterns
      */
-    public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, bool isF = false, CentralManager? cm = null) {
+    public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, CentralManager cm, bool isF = false) {
         PatternImage = image;
         PatternWeight = weight;
         PatternIndex = index;
@@ -27,9 +27,7 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = isF ? -1 : 1;
         RawPatternIndex = rawIndex;
 
-        if (cm != null) {
-            parentCM = cm;
-        }
+        parentCM = cm;
 
         FlipDisabled = false;
         RotateDisabled = false;
@@ -38,23 +36,27 @@ public class TileViewModel : ReactiveObject {
     /*
      * Used for Adjacent Tiles
      */
-    public TileViewModel(WriteableBitmap image, double weight, int index, int patternRotation, int patternFlipping) {
+    public TileViewModel(WriteableBitmap image, double weight, int index, int patternRotation, int patternFlipping, CentralManager cm) {
         PatternImage = image;
         PatternIndex = index;
         PatternWeight = weight;
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
+        
+        parentCM = cm;
     }
 
     /*
      * Used for Overlapping Tiles
      */
-    public TileViewModel(WriteableBitmap image, int index, Color c) {
+    public TileViewModel(WriteableBitmap image, int index, Color c, CentralManager cm) {
         PatternImage = image;
         PatternIndex = index;
         PatternColour = c;
         PatternRotation = 0;
         PatternFlipping = 1;
+        
+        parentCM = cm;
     }
 
     public WriteableBitmap PatternImage {
@@ -110,6 +112,11 @@ public class TileViewModel : ReactiveObject {
     public bool Highlighted {
         get => _highlighted;
         set => this.RaiseAndSetIfChanged(ref _highlighted, value);
+    }
+
+    public bool ItemAddChecked {
+        get => _itemAddChecked;
+        set => this.RaiseAndSetIfChanged(ref _itemAddChecked, value);
     }
 
     /*
@@ -198,5 +205,9 @@ public class TileViewModel : ReactiveObject {
 
     public void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
+    }
+
+    public void OnCheckChange() {
+        parentCM!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
     }
 }

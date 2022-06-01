@@ -125,6 +125,7 @@ public class WFCHandler {
         if (reset) {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
+            mainWindowVM.resetDataGrid();
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
             if (inputHasChanged) {
@@ -294,7 +295,7 @@ public class WFCHandler {
                     = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
             }
 
-            toAddPaint.Add(new TileViewModel(pattern, index, c));
+            toAddPaint.Add(new TileViewModel(pattern, index, c, parentCM));
         }
 
         return toAdd;
@@ -358,7 +359,7 @@ public class WFCHandler {
                 weights.Add(tileWeight);
 
                 toAddPaint.Add(
-                    new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip));
+                    new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip, parentCM));
                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
 
                 symmetries.Add(myIdx);
@@ -366,7 +367,7 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, cardinality > 4);
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, parentCM, cardinality > 4);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }

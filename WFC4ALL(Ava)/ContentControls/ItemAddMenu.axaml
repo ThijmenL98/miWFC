@@ -67,12 +67,12 @@
 								<ItemsControl.ItemTemplate>
 									<DataTemplate>
 										<Grid ColumnDefinitions="Auto, Auto" Margin="5">
-											<CheckBox Grid.Column="0" Margin="10, 0, -10, 0"></CheckBox>
+											<CheckBox Grid.Column="0" Margin="10, 0, -10, 0" Command="{Binding OnCheckChange}" IsChecked="{Binding ItemAddChecked}"/>
 											<Border Grid.Column="1" Width="58" Padding="1" Background="#55000000" CornerRadius="9"
-											        Margin="5">
+											        Margin="5" PointerReleased="InputElement_OnPointerReleased">
 												<Border Padding="-4" CornerRadius="5" ClipToBounds="True" Margin="4"
 												        Background="#552FACED">
-													<Image Width="50" Height="50" Margin="4"
+													<Image Width="50" Height="50" Margin="4" 
 													       Source="{Binding PatternImage}"
 													       RenderOptions.BitmapInterpolationMode="Default">
 														<Image.RenderTransform>

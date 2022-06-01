@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using WFC4ALL.Managers;
 using WFC4ALL.Utils;
+using WFC4ALL.ViewModels;
 
 namespace WFC4ALL.ContentControls;
 
@@ -25,6 +30,8 @@ public partial class ItemAddMenu : UserControl {
     private const int Dimension = 17;
     private const double Radius = 6d;
 
+    private bool[] checkBoxes;
+
     public ItemAddMenu() {
         InitializeComponent();
 
@@ -39,6 +46,7 @@ public partial class ItemAddMenu : UserControl {
         _itemsCB = this.Find<ComboBox>("itemTypesCB");
 
         _itemsCB.Items = ItemType.ItemTypes;
+        
         _itemsCB.SelectedIndex = 0;
     }
 
@@ -48,15 +56,19 @@ public partial class ItemAddMenu : UserControl {
 
     public void setCentralManager(CentralManager cm) {
         centralManager = cm;
+
+        checkBoxes = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
+    }
+    
+    public void updateCheckBoxesLength() {
+        checkBoxes = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
     }
 
-    public void updateIndex() {
-        _itemsCB.SelectedIndex = 0;
+    public void updateIndex(int idx = 0) {
+        _itemsCB.SelectedIndex = idx;
     }
 
-    private WriteableBitmap getItemImage(ItemType itemType) {
-        // TODO : add numbers for dependencies if necessary
-        
+    private WriteableBitmap getItemImage(ItemType itemType, int index = -1) {
         if (imageCache.ContainsKey(itemType.ID)) { return imageCache[itemType.ID]; }
 
         WriteableBitmap outputBitmap = new(new PixelSize(Dimension, Dimension), new Vector(96, 96),
@@ -64,6 +76,11 @@ public partial class ItemAddMenu : UserControl {
             AlphaFormat.Premul);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+        bool singleDigit = false;
+        bool[][] segments = Array.Empty<bool[]>();
+        if (index != -1) {
+            (singleDigit, segments) = getSegments(index);
+        }
 
         unsafe {
             uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
@@ -72,13 +89,39 @@ public partial class ItemAddMenu : UserControl {
             Parallel.For(0L, Dimension, y => {
                 uint* dest = backBuffer + (int) y * stride / 4;
                 for (int x = 0; x < Dimension; x++) {
-                    var distance = Math.Sqrt((Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d)));
                     Color toSet;
+                    var distance = Math.Sqrt(Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d));
                     if (distance < Radius + 0.5d) {
                         Tuple<int, int> key = new(x, (int) y);
                         toSet = border.Contains(key) ? Colors.Black : itemType.Color;
                     } else {
                         toSet = Colors.Transparent;
+                    }
+
+                    if (index != -1) {
+                        if (singleDigit) {
+                            if (x is >= 7 and <= 9 && y is >= 6 and <= 10) {
+                                int idx = (x - 7) % 3 + ((int) y - 6) * 3;
+                                if (segments[0][idx]) {
+                                    toSet = Colors.White;
+                                }
+                            }
+                        } else {
+                            // ReSharper disable once MergeIntoPattern
+                            if (x >= 5 && x <= 11 && x != 8 && y is >= 6 and <= 10) {
+                                if (x < 8) {
+                                    int idx = (x - 5) % 3 + ((int) y - 6) * 3;
+                                    if (segments[1][idx]) {
+                                        toSet = Colors.White;
+                                    }
+                                } else {
+                                    int idx = (x - 9) % 3 + ((int) y - 6) * 3;
+                                    if (segments[0][idx]) {
+                                        toSet = Colors.White;
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
@@ -91,6 +134,28 @@ public partial class ItemAddMenu : UserControl {
         return outputBitmap;
     }
 
+    private static (bool, bool[][]) getSegments(int i) {
+        int digits = i <= 9 ? 1 : 2;
+        bool[][] pixels = new bool[digits][];
+
+        for (int d = 0; d < digits; d++) {
+            pixels[d] = getSegment(d == 0 ? i % 10 : i / 10);
+        }
+
+        return (digits == 1, pixels);
+    }
+
+    private static bool[] getSegment(int i) {
+        bool[] segment = {
+            i != 1, i != 4, i != 1, i != 2 && i != 3 && i != 7, i == 1, i != 1 && i != 5 && i != 6, i != 1 && i != 7,
+            i != 0 && i != 7, i != 1, i is 2 or 6 or 8 or 0, i == 1, i != 1 && i != 2, i != 4 && i != 7,
+            i != 4 && i != 7,
+            true
+        };
+        return segment;
+    }
+
+    // ReSharper disable twice UnusedParameter.Local
     private void OnItemChanged(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
@@ -100,6 +165,27 @@ public partial class ItemAddMenu : UserControl {
         if (index >= 0) {
             ItemType selection = ItemType.getItemTypeByID(index);
             centralManager!.getMainWindowVM().CurrentItemImage = getItemImage(selection);
+            centralManager!.getMainWindowVM().ItemDescription = selection.Description;
+        }
+    }
+
+    public ItemType getItemType() {
+        return ItemType.getItemTypeByID(_itemsCB.SelectedIndex);
+    }
+
+    public void forwardCheckChange(int i, bool allowed) {
+        checkBoxes[i] = allowed;
+    }
+
+    public bool[] getAllowedTiles() {
+        return checkBoxes;
+    }
+
+    private void InputElement_OnPointerReleased(object? sender, PointerReleasedEventArgs e) {
+        TileViewModel? clickedTvm = ((sender as Border)?.Parent?.Parent as ContentPresenter)?.Content as TileViewModel ?? null;
+        if (clickedTvm != null) {
+            clickedTvm.ItemAddChecked = !clickedTvm.ItemAddChecked;
+            clickedTvm.OnCheckChange();
         }
     }
 }

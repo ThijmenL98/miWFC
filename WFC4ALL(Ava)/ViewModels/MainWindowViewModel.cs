@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -47,11 +49,14 @@ public class MainWindowViewModel : ViewModelBase {
         _paintEraseModeEnabled,
         _isRunning,
         _inItemMenu,
-        _itemsMayAppearAnywhere;
+        _itemsMayAppearAnywhere,
+        _isEditing;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
     private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new(), _helperTiles = new();
+
+    private ObservableCollection<ItemViewModel> _itemDataGrid = new();
 
     private HoverableTextViewModel _selectedCategory = new();
 
@@ -60,7 +65,14 @@ public class MainWindowViewModel : ViewModelBase {
         _stepAmountString = "Steps to take: 1",
         _itemDescription = "Placeholder";
 
-    private int _stepAmount = 1, _animSpeed = 100, _imgOutWidth, _imgOutHeight, _patternSize = 3, _selectedTabIndex, _itemsToAddValue = 1;
+    private int _stepAmount = 1,
+        _animSpeed = 100,
+        _imgOutWidth,
+        _imgOutHeight,
+        _patternSize = 3,
+        _selectedTabIndex,
+        _itemsToAddValue = 1;
+
     private double _timeStampOffset, _timelineWidth = 600d;
 
     private CentralManager? centralManager;
@@ -75,8 +87,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
         }
     }
 
@@ -86,8 +98,8 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -272,8 +284,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
         }
     }
 
@@ -312,6 +324,11 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _selectedItemToAdd, value);
     }
 
+    public ObservableCollection<ItemViewModel> ItemDataGrid {
+        get => _itemDataGrid;
+        set => this.RaiseAndSetIfChanged(ref _itemDataGrid, value);
+    }
+
     /*
      * Logic
      */
@@ -329,8 +346,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                       !centralManager!.getMainWindow().getInputControl().getCategory()
-                                           .Contains("Side");
+            !centralManager!.getMainWindow().getInputControl().getCategory()
+                .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -500,17 +517,74 @@ public class MainWindowViewModel : ViewModelBase {
         await centralManager.getWFCHandler().handlePaintBrush(mask);
     }
 
+    public void resetDataGrid() {
+        ItemDataGrid = new ObservableCollection<ItemViewModel>();
+    }
+
     public void OnItemMenuApply() {
-        // TODO Apply Item
-        // TODO Reset menu values
+        ItemType itemType = centralManager!.getItemWindow().getItemAddMenu().getItemType();
+        int amount = ItemsToAddValue;
+        bool anywhere = ItemsMayAppearAnywhere;
+        List<TileViewModel> allowedTiles = new();
+
+        if (!anywhere) {
+            bool[] allowedCheck = centralManager!.getItemWindow().getItemAddMenu().getAllowedTiles();
+            foreach ((bool allowed, int idx) in allowedCheck.Select((b, i) => (b, i))) {
+                if (allowed) {
+                    allowedTiles.Add(PaintTiles[idx]);
+                }
+            }
+        } else {
+            allowedTiles = new List<TileViewModel>(PaintTiles);
+        }
+
+        if (allowedTiles.Count == 0) {
+            centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+            return;
+        }
+
+        foreach (ItemViewModel ivm in ItemDataGrid) {
+            List<int> mySet = new(allowedTiles.Select(model => model.PatternIndex));
+            List<int> compared = new(ivm.AllowedTiles.Select(model => model.PatternIndex));
+            if (ivm.ItemType.ID.Equals(itemType.ID) && mySet.All(compared.Contains)
+                && mySet.Count.Equals(compared.Count)) {
+                if (_isEditing) {
+                    ivm.Amount = amount;
+                } else {
+                    ivm.Amount += amount;
+                }
+
+                InItemMenu = false;
+                return;
+            }
+        }
+
+        ItemDataGrid.Add(new ItemViewModel(itemType, amount, new ObservableCollection<TileViewModel>(allowedTiles)));
+
         InItemMenu = false;
+        ItemsMayAppearAnywhere = false;
+        ItemsToAddValue = 1;
+
+        foreach (TileViewModel tvm  in PaintTiles) {
+            tvm.ItemAddChecked = false;
+        }
+        
+        centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
     }
 
     public void OnExitItemAddition() {
         InItemMenu = false;
-        // TODO Reset menu values
+        _isEditing = false;
+        ItemsMayAppearAnywhere = false;
+        ItemsToAddValue = 1;
+
+        foreach (TileViewModel tvm  in PaintTiles) {
+            tvm.ItemAddChecked = false;
+        }
+        
+        centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
     }
-    
+
     public async void OnCustomizeWindowSwitch(string param) {
         switch (param) {
             case "P":
@@ -551,10 +625,39 @@ public class MainWindowViewModel : ViewModelBase {
 
     public void OnEditItemEntry() {
         // TODO Set values to selected item
+        DataGrid dg = centralManager!.getItemWindow().getDataGrid();
+        int selectedIndex = dg.SelectedIndex;
+        if (selectedIndex.Equals(-1)) {
+            centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+            return;
+        }
+        
         InItemMenu = true;
+        ItemViewModel itemSelected = ItemDataGrid[selectedIndex];
+        
+        ItemsMayAppearAnywhere = itemSelected.AllowedTiles.Count.Equals(PaintTiles.Count);
+        ItemsToAddValue = itemSelected.Amount;
+        centralManager!.getItemWindow().getItemAddMenu().updateIndex(itemSelected.ItemType.ID);
+
+        foreach ((TileViewModel tvm, int index) in PaintTiles.Select((model, i) => (model, i))) {
+            if (itemSelected.AllowedTiles.Select(at => at.PatternIndex).Contains(index)) {
+                tvm.ItemAddChecked = true;
+                centralManager!.getItemWindow().getItemAddMenu().forwardCheckChange(index, true);
+            }
+        }
+
+        _isEditing = true;
     }
 
     public void OnRemoveItemEntry() {
-        // TODO Remove item
+        DataGrid dg = centralManager!.getItemWindow().getDataGrid();
+        int selectedIndex = dg.SelectedIndex;
+        if (selectedIndex.Equals(-1)) {
+            centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+            return;
+        }
+
+        ItemDataGrid.RemoveAt(selectedIndex);
+        dg.SelectedIndex = -1;
     }
 }

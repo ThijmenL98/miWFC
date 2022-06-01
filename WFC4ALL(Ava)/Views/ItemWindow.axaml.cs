@@ -17,7 +17,13 @@ public partial class ItemWindow : Window {
         KeyDown += keyDownHandler;
         Closing += (_, e) => {
             centralManager?.getUIManager().switchWindow(Windows.MAIN, true);
+            getDataGrid().SelectedIndex = -1;
             e.Cancel = true;
+        };
+        Opened += (_, e) => {
+            if (centralManager != null) {
+                centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
+            }
         };
     }
 
@@ -36,6 +42,10 @@ public partial class ItemWindow : Window {
     
     public ItemAddMenu getItemAddMenu() {
         return this.Find<ItemAddMenu>("itemAddMenu");
+    }
+
+    public DataGrid getDataGrid() {
+        return this.Find<DataGrid>("itemsDataGrid");
     }
 
     /*
