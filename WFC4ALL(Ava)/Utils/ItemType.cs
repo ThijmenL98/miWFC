@@ -51,7 +51,7 @@ public class ItemType {
         new(10, "#FFA0C0", "Checkpoint",
             "Location for the player to use as a safe location or to continue progression."),
 
-        new(11, "#008080", "Triggerable Object",
+        new(11, "#00FF00", "Triggerable Object",
             "Buttons, levers, anything interactable by the player that would cause a connected action to occur."),
 
         new(12, "#00FFFF", "NPC Spawn Location",

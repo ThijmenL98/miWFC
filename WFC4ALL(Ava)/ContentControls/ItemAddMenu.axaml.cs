@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -76,6 +77,7 @@ public partial class ItemAddMenu : UserControl {
         }
 
         Color[] rawColorData = new Color[Dimension * Dimension];
+        int[] whiteBorders = {5, 7, 8, 9, 10};
 
         for (int x = 0; x < Dimension; x++) {
             for (int y = 0; y < Dimension; y++) {
@@ -83,7 +85,7 @@ public partial class ItemAddMenu : UserControl {
                 double distance = Math.Sqrt(Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d));
                 if (distance < Radius + 0.5d) {
                     Tuple<int, int> key = new(x, y);
-                    toSet = border.Contains(key) ? Colors.Black : itemType.Color;
+                    toSet = border.Contains(key) ? whiteBorders.Contains(itemType.ID) ? Colors.White : Colors.Black : itemType.Color;
                 } else {
                     toSet = Colors.Transparent;
                 }
@@ -131,11 +133,7 @@ public partial class ItemAddMenu : UserControl {
             AlphaFormat.Unpremul);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-        bool singleDigit = false;
-        bool[][] segments = Array.Empty<bool[]>();
-        if (index != -1) {
-            (singleDigit, segments) = getSegments(index);
-        }
+        Color[] rawColours = getItemImageRaw(itemType, index);
 
         unsafe {
             uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
@@ -144,40 +142,7 @@ public partial class ItemAddMenu : UserControl {
             Parallel.For(0L, Dimension, y => {
                 uint* dest = backBuffer + (int) y * stride / 4;
                 for (int x = 0; x < Dimension; x++) {
-                    Color toSet;
-                    double distance = Math.Sqrt(Math.Pow(x - 8d, 2d) + Math.Pow(y - 8d, 2d));
-                    if (distance < Radius + 0.5d) {
-                        Tuple<int, int> key = new(x, (int) y);
-                        toSet = border.Contains(key) ? Colors.Black : itemType.Color;
-                    } else {
-                        toSet = Colors.Transparent;
-                    }
-
-                    if (index != -1) {
-                        if (singleDigit) {
-                            if (x is >= 7 and <= 9 && y is >= 6 and <= 10) {
-                                int idx = (x - 7) % 3 + ((int) y - 6) * 3;
-                                if (segments[0][idx]) {
-                                    toSet = Colors.White;
-                                }
-                            }
-                        } else {
-                            // ReSharper disable once MergeIntoPattern
-                            if (x >= 5 && x <= 11 && x != 8 && y is >= 6 and <= 10) {
-                                if (x < 8) {
-                                    int idx = (x - 5) % 3 + ((int) y - 6) * 3;
-                                    if (segments[1][idx]) {
-                                        toSet = Colors.White;
-                                    }
-                                } else {
-                                    int idx = (x - 9) % 3 + ((int) y - 6) * 3;
-                                    if (segments[0][idx]) {
-                                        toSet = Colors.White;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    Color toSet = rawColours[y % Dimension * Dimension + x % Dimension];
 
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
                 }

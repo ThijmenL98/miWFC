@@ -21,7 +21,7 @@
                                 Name="PART_ContentPresenter"
                                 Padding="{TemplateBinding Padding}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            <StackPanel Grid.Column="0"
+                            <StackPanel Grid.Column="2"
                                 IsVisible="{TemplateBinding ShowButtonSpinner}"
                                 Name="PART_SpinnerPanel"
                                 Orientation="Vertical" Width="25">
