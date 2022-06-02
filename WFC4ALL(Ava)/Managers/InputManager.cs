@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -106,11 +105,12 @@ public class InputManager {
     }
 
     public async void advanceStep() {
-        if (parentCM.getWFCHandler().getAmountCollapsed().Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
+        if (parentCM.getWFCHandler().getAmountCollapsed()
+            .Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
             parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
             return;
         }
-        
+
         try {
             (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
 

@@ -126,7 +126,7 @@ public static class TopoArrayUtils {
             return tileRotation.Rotate(tile, rotation, out result);
         }
 
-        return SquareRotate(original, rotation, tileRotation == null ? null : tileRotate);
+        return SquareRotate<Tile>(original, rotation, tileRotation == null ? null : tileRotate);
     }
 
     public static ITopoArray<T> SquareRotate<T>(ITopoArray<T> original, Rotation rotation,
@@ -148,7 +148,7 @@ public static class TopoArrayUtils {
             return tileRotation.Rotate(tile, rotation, out result);
         }
 
-        return HexRotate(original, rotation, tileRotation == null ? null : tileRotate);
+        return HexRotate<Tile>(original, rotation, tileRotation == null ? null : tileRotate);
     }
 
     public static ITopoArray<T> HexRotate<T>(ITopoArray<T> original, Rotation rotation,

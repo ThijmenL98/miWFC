@@ -21,16 +21,18 @@
                                 Name="PART_ContentPresenter"
                                 Padding="{TemplateBinding Padding}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            <StackPanel
+                            <StackPanel Grid.Column="0"
                                 IsVisible="{TemplateBinding ShowButtonSpinner}"
                                 Name="PART_SpinnerPanel"
                                 Orientation="Vertical" Width="25">
+                                <!-- ReSharper disable twice Xaml.StyleClassNotFound -->
                                 <RepeatButton
                                     Background="#00000000"
                                     BorderBrush="{TemplateBinding BorderBrush}"
                                     Classes="ButtonSpinnerRepeatButton"
                                     Foreground="{TemplateBinding Foreground}"
                                     Name="PART_IncreaseButton" VerticalContentAlignment="Center">
+                                    <!-- ReSharper disable twice Xaml.StaticResourceNotResolved -->
                                     <Path
                                         Data="{StaticResource ButtonSpinnerIncreaseButtonIcon}"
                                         Fill="{TemplateBinding Foreground}"

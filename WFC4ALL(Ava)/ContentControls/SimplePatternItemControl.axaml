@@ -21,7 +21,6 @@
 							<Border Padding="5"
 							        CornerRadius="10"
 							        IsVisible="{ReflectionBinding #advancedPatternItemControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
-								<!-- Paste SingleWeightedTilePattern Here -->
 								<!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
 								<Grid RowDefinitions="*, *" ColumnDefinitions="*, *">
 									<Border Width="50" Height="50" Grid.Row="0"
@@ -49,7 +48,8 @@
 									<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *, *" Margin="-15, 0, 0, 0">
 										<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}"
 										              HorizontalAlignment="Center"
-										              Background="Transparent" IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}">
+										              Background="Transparent"
+										              IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}">
 											<RepeatButton.Styles>
 												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
 													<Setter Property="Background" Value="Transparent" />
@@ -74,7 +74,8 @@
 										      Margin="0,-10">
 											<RepeatButton Grid.Column="0" Padding="4" VerticalAlignment="Top" Content="❮"
 											              Command="{Binding OnWeightDecrement}"
-											              Background="Transparent" IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
+											              Background="Transparent"
+											              IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
 											              FontWeight="UltraBold">
 												<RepeatButton.Styles>
 													<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
@@ -108,7 +109,8 @@
 
 											<RepeatButton Grid.Column="2" Padding="4" VerticalAlignment="Top" Content="❯"
 											              Command="{Binding OnWeightIncrement}"
-											              Background="Transparent" IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
+											              Background="Transparent"
+											              IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
 											              FontWeight="UltraBold">
 												<RepeatButton.Styles>
 													<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
@@ -133,7 +135,8 @@
 
 										<RepeatButton Grid.Row="2" Padding="4" VerticalAlignment="Bottom" Content="▼" Command="{Binding OnDecrement}"
 										              HorizontalAlignment="Center"
-										              Background="Transparent" IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}">
+										              Background="Transparent"
+										              IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}">
 											<RepeatButton.Styles>
 												<Style Selector="RepeatButton:disabled /template/ ContentPresenter">
 													<Setter Property="Background" Value="Transparent" />

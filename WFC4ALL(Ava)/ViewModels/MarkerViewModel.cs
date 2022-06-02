@@ -1,19 +1,18 @@
-﻿using System.Diagnostics;
-using ReactiveUI;
+﻿using ReactiveUI;
 
-namespace WFC4ALL.ViewModels; 
+namespace WFC4ALL.ViewModels;
 
 public class MarkerViewModel : ReactiveObject {
     private readonly int _index;
     private readonly double _widthOffset, _collapsePercentage;
     private readonly bool _revertible;
     // ReSharper disable trice UnusedMember.Local
-    
+
     public int MarkerIndex {
         get => _index;
         init => this.RaiseAndSetIfChanged(ref _index, value);
     }
-    
+
     public double MarkerOffset {
         get => _widthOffset;
         init => this.RaiseAndSetIfChanged(ref _widthOffset, value);

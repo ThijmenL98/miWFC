@@ -10,7 +10,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
-namespace WFC4ALL.Utils; 
+namespace WFC4ALL.Utils;
 
 public static class Util {
     private static readonly XDocument xDoc = XDocument.Load(AppContext.BaseDirectory + "/Assets/samples.xml");
@@ -130,7 +130,8 @@ public static class Util {
             "Shapes" => "Basic shapes and patterns",
             "Knots" => "Intertwined and/or tangled lines",
             "Fonts" => "Printable or displayable text characters",
-            "Worlds Side-View" => "Worlds as seen from the side (Seamless Output and Input Wrapping have been pre-set due to the nature of these images)",
+            "Worlds Side-View" =>
+                "Worlds as seen from the side (Seamless Output and Input Wrapping have been pre-set due to the nature of these images)",
             "Worlds Top-Down" => "(Game) Worlds as seen from above",
             _ => "???"
         };

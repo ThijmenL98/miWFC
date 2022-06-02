@@ -5,7 +5,7 @@ using Avalonia.Input;
 using WFC4ALL.ContentControls;
 using WFC4ALL.Managers;
 
-namespace WFC4ALL.Views; 
+namespace WFC4ALL.Views;
 
 public partial class MainWindow : Window {
     private CentralManager? centralManager;
@@ -15,7 +15,7 @@ public partial class MainWindow : Window {
         InitializeComponent();
 
         KeyDown += keyDownHandler;
-        Closing += (_, e) => {
+        Closing += (_, _) => {
             centralManager!.getPaintingWindow().Close();
             centralManager!.getItemWindow().Close();
         };
@@ -42,10 +42,10 @@ public partial class MainWindow : Window {
         if (centralManager == null) {
             return;
         }
-        
+
         int newTab = (sender as TabControl)!.SelectedIndex;
         centralManager!.getMainWindowVM().OnModelClick(newTab);
-        
+
         e.Handled = true;
     }
 
@@ -128,7 +128,7 @@ public partial class MainWindow : Window {
                 break;
         }
     } // ReSharper disable twice UnusedParameter.Local
-    
+
     private void WindowBase_OnActivated(object? sender, EventArgs e) {
         if (triggered) {
             return;

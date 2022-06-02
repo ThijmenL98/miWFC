@@ -131,7 +131,8 @@ public class WFCHandler {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
             mainWindowVM.resetDataGrid();
-            parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                PixelFormat.Bgra8888, AlphaFormat.Unpremul);
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
             if (inputHasChanged) {
@@ -455,7 +456,8 @@ public class WFCHandler {
             actionsTaken--;
         }
 
-        parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+        parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         return getLatestOutputBM();
     }
 

@@ -46,6 +46,8 @@ public partial class ItemAddMenu : UserControl {
         _itemsCB.Items = ItemType.ItemTypes;
 
         _itemsCB.SelectedIndex = 0;
+
+        checkBoxes = Array.Empty<bool>();
     }
 
     private void InitializeComponent() {

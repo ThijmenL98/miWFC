@@ -1,18 +1,15 @@
-﻿using System;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using WFC4ALL.ContentControls;
 using WFC4ALL.Managers;
 
-namespace WFC4ALL.Views; 
+namespace WFC4ALL.Views;
 
 public partial class ItemWindow : Window {
     private CentralManager? centralManager;
-    
+
     public ItemWindow() {
         InitializeComponent();
 
@@ -22,7 +19,7 @@ public partial class ItemWindow : Window {
             getDataGrid().SelectedIndex = -1;
             e.Cancel = true;
         };
-        Opened += (_, e) => {
+        Opened += (_, _) => {
             if (centralManager != null) {
                 centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
             }
@@ -41,7 +38,7 @@ public partial class ItemWindow : Window {
         centralManager = cm;
         this.Find<ItemAddMenu>("itemAddMenu").setCentralManager(cm);
     }
-    
+
     public ItemAddMenu getItemAddMenu() {
         return this.Find<ItemAddMenu>("itemAddMenu");
     }

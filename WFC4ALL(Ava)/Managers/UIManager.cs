@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -11,11 +10,10 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.Threading;
+using MessageBox.Avalonia;
 using MessageBox.Avalonia.BaseWindows.Base;
 using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
 using MessageBox.Avalonia.Models;
 using WFC4ALL.DeBroglie.Models;
 using WFC4ALL.Utils;
@@ -206,13 +204,15 @@ public class UIManager {
 
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         Window target, source;
-        
+
         switch (window) {
             case Windows.MAIN:
                 // Goto main
                 target = mainWindow;
-                source = parentCM.getPaintingWindow().IsVisible ? parentCM.getPaintingWindow() : parentCM.getItemWindow();
-                
+                source = parentCM.getPaintingWindow().IsVisible
+                    ? parentCM.getPaintingWindow()
+                    : parentCM.getItemWindow();
+
                 bool stillApply = await handlePaintingClose(checkClicked);
 
                 if (stillApply) {
@@ -224,7 +224,7 @@ public class UIManager {
                 // Goto paint
                 mainWindowVM.PencilModeEnabled = true;
                 target = parentCM.getPaintingWindow();
-                source =  mainWindow;
+                source = mainWindow;
                 break;
             case Windows.ITEMS:
                 // Goto items
@@ -243,7 +243,7 @@ public class UIManager {
 
         if (!Equals(target, parentCM.getItemWindow()) && !Equals(source, parentCM.getItemWindow())) {
             ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
-            
+
             mainWindowVM.Markers.Clear();
             foreach (MarkerViewModel mvm in mvmListCopy) {
                 double offset = (parentCM.getMainWindow().IsVisible
@@ -264,7 +264,7 @@ public class UIManager {
 
     private async Task<bool> handlePaintingClose(bool checkClicked) {
         if (!checkClicked) {
-            IMsBoxWindow<string> messageBoxCustomWindow = MessageBox.Avalonia.MessageBoxManager
+            IMsBoxWindow<string> messageBoxCustomWindow = MessageBoxManager
                 .GetMessageBoxCustomWindow(new MessageBoxCustomParams {
                     ContentMessage = "Brush mask has not been applied!",
                     ButtonDefinitions = new[] {

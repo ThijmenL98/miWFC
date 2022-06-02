@@ -1,7 +1,7 @@
 ﻿using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 
-namespace WFC4ALL.Managers; 
+namespace WFC4ALL.Managers;
 
 public class CentralManager {
     private readonly InputManager inputManager;
@@ -9,7 +9,7 @@ public class CentralManager {
     private readonly MainWindow mainWindow;
     private readonly PaintingWindow paintingWindow;
     private readonly ItemWindow itemWindow;
-    
+
     private readonly MainWindowViewModel mainWindowViewModel;
     private readonly UIManager uiManager;
     private readonly WFCHandler wfcHandler;
@@ -18,7 +18,7 @@ public class CentralManager {
         mainWindow = mW;
         paintingWindow = pW;
         itemWindow = iW;
-        
+
         mainWindowViewModel = mWVM;
 
         wfcHandler = new WFCHandler(this);

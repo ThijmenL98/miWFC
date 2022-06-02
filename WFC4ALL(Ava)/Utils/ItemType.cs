@@ -1,37 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 
 namespace WFC4ALL.Utils;
 
 public class ItemType {
-    private Color myColor;
-    private string displayName, description;
-    private int identifier;
-
     private ItemType(int id, string sColor, string dName, string desc) {
-        myColor = Color.Parse(sColor);
-        displayName = dName;
-        description = desc;
-        identifier = id;
+        Color = Color.Parse(sColor);
+        DisplayName = dName;
+        Description = desc;
+        ID = id;
     }
 
-    public Color Color {
-        get => myColor;
-    }
+    public Color Color { get; }
 
-    public string DisplayName {
-        get => displayName;
-    }
+    public string DisplayName { get; }
 
-    public string Description {
-        get => description;
-    }
+    public string Description { get; }
 
-    public int ID {
-        get => identifier;
-    }
+    public int ID { get; }
 
     public static ItemType getItemTypeByID(int id) {
         return ItemTypes[id];

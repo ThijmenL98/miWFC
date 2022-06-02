@@ -1,8 +1,7 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace WFC4ALL.ContentControls; 
+namespace WFC4ALL.ContentControls;
 
 public partial class AdvancedPatternItemControl : UserControl {
     public AdvancedPatternItemControl() {

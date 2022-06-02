@@ -9,306 +9,313 @@
         d:DesignHeight="800" d:DesignWidth="1476" MinWidth="1256" MinHeight="600"
         Icon="/Assets/icon.ico" Title="WFC4ALL - Item Mode">
 
-    <Window.Resources>
-        <!-- Hover resources -->
-        <Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
-        <Image Source="/Assets/PencilHover.png" x:Key="hoverPencilKey" x:Name="hoverPencil" />
-        <Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
-        <Image Source="/Assets/CreateNewHover.png" x:Key="hoverAddNewKey" x:Name="hoverAddNew" />
-        <Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
-        <Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+	<Window.Resources>
+		<!-- Hover resources -->
+		<Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
+		<Image Source="/Assets/PencilHover.png" x:Key="hoverPencilKey" x:Name="hoverPencil" />
+		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
+		<Image Source="/Assets/CreateNewHover.png" x:Key="hoverAddNewKey" x:Name="hoverAddNew" />
+		<Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
+		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 
-        <!-- Click resources -->
-        <Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
-        <Image Source="/Assets/PencilClick.png" x:Key="clickPencilKey" x:Name="clickPencil" />
-        <Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
-        <Image Source="/Assets/CreateNewClick.png" x:Key="clickAddNewKey" x:Name="clickAddNew" />
-        <Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
-        <Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
-    </Window.Resources>
+		<!-- Click resources -->
+		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
+		<Image Source="/Assets/PencilClick.png" x:Key="clickPencilKey" x:Name="clickPencil" />
+		<Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
+		<Image Source="/Assets/CreateNewClick.png" x:Key="clickAddNewKey" x:Name="clickAddNew" />
+		<Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
+		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+	</Window.Resources>
 
-    <Window.Styles>
-        <StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+	<Window.Styles>
+		<StyleInclude Source="/Styles/CustomNumericUD.axaml" />
 
-        <Style Selector="TextBlock">
-            <Setter Property="FontSize" Value="16" />
-        </Style>
-    </Window.Styles>
+		<Style Selector="TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+	</Window.Styles>
 
-    <Window.Background>
-        <ImageBrush Source="/Assets/backgroundImage3.jpg" Stretch="Fill" />
-    </Window.Background>
+	<Window.Background>
+		<ImageBrush Source="/Assets/backgroundImage3.jpg" Stretch="Fill" />
+	</Window.Background>
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
+	<Design.DataContext>
+		<vm:MainWindowViewModel />
+	</Design.DataContext>
 
-    <Grid>
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
-            <Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
-                <Grid>
-                    <Grid ColumnDefinitions="Auto, *">
-                        <Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
-                            <Grid>
-                                <Grid x:Name="itemImageGrid" IsVisible="{Binding !InItemMenu}">
-                                    <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
-                                        <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
-                                            <Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
-                                                   x:Name="outputImage" Source="{Binding OutputImage}"
-                                                   IsHitTestVisible="False" />
-                                        </Grid>
-                                    </Grid>
+	<Grid>
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+				<Grid>
+					<Grid ColumnDefinitions="Auto, *">
+						<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
+							<Grid>
+								<Grid x:Name="itemImageGrid" IsVisible="{Binding !InItemMenu}">
+									<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+										<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
+											<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+											       x:Name="outputImage" Source="{Binding OutputImage}"
+											       IsHitTestVisible="False" />
+										</Grid>
+									</Grid>
 
-                                    <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
-                                        <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
-                                            <Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
-                                                   x:Name="itemOverlayImage" Source="{Binding ItemOverlay}"
-                                                   IsHitTestVisible="False"/>
-                                        </Grid>
-                                    </Grid>
-                                </Grid>
+									<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+										<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
+											<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+											       x:Name="itemOverlayImage" Source="{Binding ItemOverlay}"
+											       IsHitTestVisible="False" />
+										</Grid>
+									</Grid>
+								</Grid>
 
-                                <ucontrols:ItemAddMenu DataContext="{Binding VM}" x:Name="itemAddMenu"
-                                                       IsVisible="{Binding InItemMenu}" />
-                            </Grid>
-                        </Border>
+								<ucontrols:ItemAddMenu DataContext="{Binding VM}" x:Name="itemAddMenu"
+								                       IsVisible="{Binding InItemMenu}" />
+							</Grid>
+						</Border>
 
-                        <Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
-                                CommandParameter="I"
-                                Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
-                            <Button.Styles>
-                                <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                    <Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />
-                                    <Setter Property="Background" Value="Transparent" />
-                                </Style>
-                                <Style Selector="Button:pressed /template/ ContentPresenter">
-                                    <Setter Property="Content" Value="{DynamicResource clickInfoKey}" />
-                                    <Setter Property="Background" Value="Transparent" />
-                                </Style>
-                            </Button.Styles>
-                            <Panel>
-                                <Image Source="/Assets/Info.png" />
-                            </Panel>
-                        </Button>
+						<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
+						        CommandParameter="I"
+						        Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+							<Button.Styles>
+								<Style Selector="Button:pointerover /template/ ContentPresenter">
+									<Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />
+									<Setter Property="Background" Value="Transparent" />
+								</Style>
+								<Style Selector="Button:pressed /template/ ContentPresenter">
+									<Setter Property="Content" Value="{DynamicResource clickInfoKey}" />
+									<Setter Property="Background" Value="Transparent" />
+								</Style>
+							</Button.Styles>
+							<Panel>
+								<Image Source="/Assets/Info.png" />
+							</Panel>
+						</Button>
 
-                        <Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="10">
-                            <Grid.Resources>
-                                <DataTemplate x:Key="ConstraintsDataTemplate">
-                                    <Grid ColumnDefinitions="Auto, *">
-                                        <TextBlock Grid.Column="0" Text="{Binding Constraints}"
-                                                   VerticalAlignment="Center" Margin="5"/>
-                                        <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Left">
-                                            <ItemsControl Items="{Binding AllowedTiles}" x:Name="itemMenuItemsControl">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <WrapPanel HorizontalAlignment="Center" Margin="0" />
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
+						<Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="10">
+							<Grid.Resources>
+								<DataTemplate x:Key="ConstraintsDataTemplate">
+									<Grid ColumnDefinitions="Auto, *">
+										<!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
+										<TextBlock Grid.Column="0" Text="{Binding Constraints}"
+										           VerticalAlignment="Center" Margin="5" />
+										<ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Left">
+											<ItemsControl Items="{Binding AllowedTiles}" x:Name="itemMenuItemsControl">
+												<ItemsControl.ItemsPanel>
+													<ItemsPanelTemplate>
+														<WrapPanel HorizontalAlignment="Center" Margin="0" />
+													</ItemsPanelTemplate>
+												</ItemsControl.ItemsPanel>
 
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Grid ColumnDefinitions="Auto, Auto" Margin="-3, 0">
-                                                            <Border Grid.Column="1" Width="50" Padding="1"
-                                                                    Background="#55000000" CornerRadius="9"
-                                                                    Margin="5">
-                                                                <Border Padding="-2" CornerRadius="5"
-                                                                        ClipToBounds="True" Margin="2"
-                                                                        Background="#552FACED">
-                                                                    <Image Width="46" Height="46" Margin="2"
-                                                                           Source="{Binding PatternImage}"
-                                                                           RenderOptions.BitmapInterpolationMode="Default">
-                                                                        <Image.RenderTransform>
-                                                                            <TransformGroup>
-                                                                                <RotateTransform
-                                                                                    Angle="{Binding Path=PatternRotation, TargetNullValue=0, FallbackValue=0}" />
-                                                                                <ScaleTransform
-                                                                                    ScaleX="{Binding Path=PatternFlipping, TargetNullValue=0, FallbackValue=0}" />
-                                                                            </TransformGroup>
-                                                                        </Image.RenderTransform>
-                                                                    </Image>
-                                                                </Border>
-                                                            </Border>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </ScrollViewer>
-                                    </Grid>
-                                </DataTemplate>
-                                <DataTemplate x:Key="ItemNameDataTemplate">
-                                    <TextBlock Text="{Binding Item}" TextWrapping="Wrap" Margin="5"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </DataTemplate>
-                            </Grid.Resources>
-                            <Border Background="#22000000" Grid.Row="0" CornerRadius="10" ClipToBounds="True">
-                                <DataGrid Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
-                                          GridLinesVisibility="All"
-                                          Items="{Binding ItemDataGrid}" x:Name="itemsDataGrid">
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="Item"
-                                                                CellTemplate="{StaticResource ItemNameDataTemplate}"
-                                                                MaxWidth="200" />
-                                        <DataGridTextColumn Header="#" Binding="{Binding Amount}" />
-                                        <DataGridTemplateColumn Header="Constraints" Width="*"
-                                                                CellTemplate="{StaticResource ConstraintsDataTemplate}" />
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Border>
+												<ItemsControl.ItemTemplate>
+													<DataTemplate>
+														<Grid ColumnDefinitions="Auto, Auto" Margin="-3, 0">
+															<Border Grid.Column="1" Width="50" Padding="1"
+															        Background="#55000000" CornerRadius="9"
+															        Margin="5">
+																<Border Padding="-2" CornerRadius="5"
+																        ClipToBounds="True" Margin="2"
+																        Background="#552FACED">
+																	<Image Width="46" Height="46" Margin="2"
+																	       Source="{Binding PatternImage}"
+																	       RenderOptions.BitmapInterpolationMode="Default">
+																		<Image.RenderTransform>
+																			<TransformGroup>
+																				<RotateTransform
+																					Angle="{Binding Path=PatternRotation, TargetNullValue=0, FallbackValue=0}" />
+																				<ScaleTransform
+																					ScaleX="{Binding Path=PatternFlipping, TargetNullValue=0, FallbackValue=0}" />
+																			</TransformGroup>
+																		</Image.RenderTransform>
+																	</Image>
+																</Border>
+															</Border>
+														</Grid>
+													</DataTemplate>
+												</ItemsControl.ItemTemplate>
+											</ItemsControl>
+										</ScrollViewer>
+									</Grid>
+								</DataTemplate>
 
-                            <Grid Grid.Row="1">
-                                <Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto, *, Auto">
-                                    <Button Padding="0" Background="Transparent" Grid.Row="0" Grid.Column="0"
-                                            Command="{Binding OnAddItemEntry}"
-                                            HorizontalAlignment="Center" Margin="5" MaxWidth="80">
-                                        <Button.Styles>
-                                            <Style Selector="Button:disabled /template/ ContentPresenter">
-                                                <Setter Property="Opacity" Value="160" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource hoverAddNewKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pressed /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource clickAddNewKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                        </Button.Styles>
-                                        <Panel>
-                                            <Image Source="/Assets/CreateNew.png" />
-                                        </Panel>
-                                        <ToolTip.Tip>
-                                            <StackPanel>
-                                                <TextBlock TextWrapping="Wrap">Add a new entry</TextBlock>
-                                            </StackPanel>
-                                        </ToolTip.Tip>
-                                    </Button>
+								<DataTemplate x:Key="ItemNameDataTemplate">
+									<Grid ColumnDefinitions="Auto, *">
+										<Image Grid.Column="0" Width="51" Height="51" Margin="0"
+										       Source="{Binding ItemIcon}"
+										       RenderOptions.BitmapInterpolationMode="Default" />
+										<TextBlock Grid.Column="1" Text="{Binding Item}" TextWrapping="Wrap" Margin="0, 5, 5, 5"
+										           HorizontalAlignment="Center" VerticalAlignment="Center" />
+									</Grid>
+								</DataTemplate>
+							</Grid.Resources>
+							<Border Background="#22000000" Grid.Row="0" CornerRadius="10" ClipToBounds="True">
+								<DataGrid Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
+								          GridLinesVisibility="All"
+								          Items="{Binding ItemDataGrid}" x:Name="itemsDataGrid">
+									<DataGrid.Columns>
+										<DataGridTemplateColumn Header="Item"
+										                        CellTemplate="{StaticResource ItemNameDataTemplate}"
+										                        MaxWidth="200" />
+										<DataGridTextColumn Header="#" Binding="{Binding Amount}" />
+										<DataGridTemplateColumn Header="Constraints" Width="*"
+										                        CellTemplate="{StaticResource ConstraintsDataTemplate}" />
+									</DataGrid.Columns>
+								</DataGrid>
+							</Border>
 
-                                    <Button Padding="0" Background="Transparent" Grid.Column="1"
-                                            Command="{Binding OnEditItemEntry}"
-                                            HorizontalAlignment="Center" Margin="5" MaxWidth="80">
-                                        <Button.Styles>
-                                            <Style Selector="Button:disabled /template/ ContentPresenter">
-                                                <Setter Property="Opacity" Value="160" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource hoverPencilKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pressed /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource clickPencilKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                        </Button.Styles>
-                                        <Panel>
-                                            <Image Source="/Assets/Pencil.png" />
-                                        </Panel>
-                                        <ToolTip.Tip>
-                                            <StackPanel>
-                                                <TextBlock TextWrapping="Wrap">Edit the currently selected entry</TextBlock>
-                                            </StackPanel>
-                                        </ToolTip.Tip>
-                                    </Button>
+							<Grid Grid.Row="1">
+								<Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto, *, Auto">
+									<Button Padding="0" Background="Transparent" Grid.Row="0" Grid.Column="0"
+									        Command="{Binding OnAddItemEntry}"
+									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+										<Button.Styles>
+											<Style Selector="Button:disabled /template/ ContentPresenter">
+												<Setter Property="Opacity" Value="160" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pointerover /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource hoverAddNewKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pressed /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource clickAddNewKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+										</Button.Styles>
+										<Panel>
+											<Image Source="/Assets/CreateNew.png" />
+										</Panel>
+										<ToolTip.Tip>
+											<StackPanel>
+												<TextBlock TextWrapping="Wrap">Add a new entry</TextBlock>
+											</StackPanel>
+										</ToolTip.Tip>
+									</Button>
 
-                                    <Button Padding="0" Background="Transparent" Grid.Column="2"
-                                            Command="{Binding OnRemoveItemEntry}"
-                                            HorizontalAlignment="Center" Margin="5" MaxWidth="80">
-                                        <Button.Styles>
-                                            <Style Selector="Button:disabled /template/ ContentPresenter">
-                                                <Setter Property="Opacity" Value="160" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource hoverDeleteKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pressed /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource clickDeleteKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                        </Button.Styles>
-                                        <Panel>
-                                            <Image Source="/Assets/Delete.png" />
-                                        </Panel>
-                                        <ToolTip.Tip>
-                                            <StackPanel>
-                                                <TextBlock TextWrapping="Wrap">Delete the currently selected entry</TextBlock>
-                                            </StackPanel>
-                                        </ToolTip.Tip>
-                                    </Button>
+									<Button Padding="0" Background="Transparent" Grid.Column="1"
+									        Command="{Binding OnEditItemEntry}"
+									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+										<Button.Styles>
+											<Style Selector="Button:disabled /template/ ContentPresenter">
+												<Setter Property="Opacity" Value="160" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pointerover /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource hoverPencilKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pressed /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource clickPencilKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+										</Button.Styles>
+										<Panel>
+											<Image Source="/Assets/Pencil.png" />
+										</Panel>
+										<ToolTip.Tip>
+											<StackPanel>
+												<TextBlock TextWrapping="Wrap">Edit the currently selected entry</TextBlock>
+											</StackPanel>
+										</ToolTip.Tip>
+									</Button>
 
-                                    <GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
+									<Button Padding="0" Background="Transparent" Grid.Column="2"
+									        Command="{Binding OnRemoveItemEntry}"
+									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+										<Button.Styles>
+											<Style Selector="Button:disabled /template/ ContentPresenter">
+												<Setter Property="Opacity" Value="160" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pointerover /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource hoverDeleteKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pressed /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource clickDeleteKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+										</Button.Styles>
+										<Panel>
+											<Image Source="/Assets/Delete.png" />
+										</Panel>
+										<ToolTip.Tip>
+											<StackPanel>
+												<TextBlock TextWrapping="Wrap">Delete the currently selected entry</TextBlock>
+											</StackPanel>
+										</ToolTip.Tip>
+									</Button>
 
-                                    <Button Padding="0" Background="Transparent" Grid.Column="4"
-                                            Command="{Binding OnApplyItemsClick}"
-                                            HorizontalAlignment="Center" Margin="5" MaxWidth="80">
-                                        <Button.Styles>
-                                            <Style Selector="Button:disabled /template/ ContentPresenter">
-                                                <Setter Property="Opacity" Value="160" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pressed /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource clickApplyKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                        </Button.Styles>
-                                        <Panel>
-                                            <Image Source="/Assets/Apply.png" />
-                                        </Panel>
-                                        <ToolTip.Tip>
-                                            <StackPanel>
-                                                <TextBlock TextWrapping="Wrap">(Re)Apply the current items to the image</TextBlock>
-                                            </StackPanel>
-                                        </ToolTip.Tip>
-                                    </Button>
+									<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
 
-                                    <GridSplitter Grid.Column="5" IsEnabled="False" Background="Transparent" />
+									<Button Padding="0" Background="Transparent" Grid.Column="4"
+									        Command="{Binding OnApplyItemsClick}"
+									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+										<Button.Styles>
+											<Style Selector="Button:disabled /template/ ContentPresenter">
+												<Setter Property="Opacity" Value="160" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pointerover /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pressed /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource clickApplyKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+										</Button.Styles>
+										<Panel>
+											<Image Source="/Assets/Apply.png" />
+										</Panel>
+										<ToolTip.Tip>
+											<StackPanel>
+												<TextBlock TextWrapping="Wrap">(Re)Apply the current items to the image</TextBlock>
+											</StackPanel>
+										</ToolTip.Tip>
+									</Button>
 
-                                    <Button Grid.Column="6" Padding="0" Background="Transparent"
-                                            Command="{Binding OnCustomizeWindowSwitch}"
-                                            CommandParameter="M" HorizontalAlignment="Center" Margin="5" MaxWidth="80">
-                                        <Button.Styles>
-                                            <Style Selector="Button:pointerover /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                            <Style Selector="Button:pressed /template/ ContentPresenter">
-                                                <Setter Property="Content" Value="{DynamicResource clickBackKey}" />
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </Style>
-                                        </Button.Styles>
-                                        <Panel>
-                                            <Image Source="/Assets/Back.png" />
-                                        </Panel>
-                                        <ToolTip.Tip>
-                                            <StackPanel>
-                                                <TextBlock TextWrapping="Wrap">Go back to the main screen</TextBlock>
-                                            </StackPanel>
-                                        </ToolTip.Tip>
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Grid>
+									<GridSplitter Grid.Column="5" IsEnabled="False" Background="Transparent" />
 
-                    <avaloniaGif:GifImage SourceUriRaw="resm:WFC4ALL.Assets.LoadingAnim.gif"
-                                          Stretch="Uniform" MaxWidth="300" IsVisible="{Binding IsLoading}"
-                                          StretchDirection="Both" />
-                </Grid>
-            </Border>
-        </Border>
+									<Button Grid.Column="6" Padding="0" Background="Transparent"
+									        Command="{Binding OnCustomizeWindowSwitch}"
+									        CommandParameter="M" HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+										<Button.Styles>
+											<Style Selector="Button:pointerover /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+											<Style Selector="Button:pressed /template/ ContentPresenter">
+												<Setter Property="Content" Value="{DynamicResource clickBackKey}" />
+												<Setter Property="Background" Value="Transparent" />
+											</Style>
+										</Button.Styles>
+										<Panel>
+											<Image Source="/Assets/Back.png" />
+										</Panel>
+										<ToolTip.Tip>
+											<StackPanel>
+												<TextBlock TextWrapping="Wrap">Go back to the main screen</TextBlock>
+											</StackPanel>
+										</ToolTip.Tip>
+									</Button>
+								</Grid>
+							</Grid>
+						</Grid>
+					</Grid>
 
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
-        <Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
-        <Border BorderBrush="Black" BorderThickness="2" />
-    </Grid>
+					<avaloniaGif:GifImage SourceUriRaw="resm:WFC4ALL.Assets.LoadingAnim.gif"
+					                      Stretch="Uniform" MaxWidth="300" IsVisible="{Binding IsLoading}"
+					                      StretchDirection="Both" />
+				</Grid>
+			</Border>
+		</Border>
+
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
+		<Border BorderBrush="Black" BorderThickness="2" />
+	</Grid>
 </Window>

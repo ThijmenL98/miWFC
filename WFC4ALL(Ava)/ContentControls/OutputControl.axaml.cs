@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using WFC4ALL.Managers;
 
-namespace WFC4ALL.ContentControls; 
+namespace WFC4ALL.ContentControls;
 
 public partial class OutputControl : UserControl {
     private CentralManager? centralManager;

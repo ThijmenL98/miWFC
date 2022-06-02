@@ -6,7 +6,7 @@ using WFC4ALL.Managers;
 using WFC4ALL.ViewModels;
 using WFC4ALL.Views;
 
-namespace WFC4ALL; 
+namespace WFC4ALL;
 
 public class App : Application {
     public override void Initialize() {

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -11,12 +9,10 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using HarfBuzzSharp;
 using ReactiveUI;
 using WFC4ALL.DeBroglie.Topo;
 using WFC4ALL.Managers;
 using WFC4ALL.Utils;
-using Buffer = System.Buffer;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedMember.Global
@@ -66,7 +62,7 @@ public class MainWindowViewModel : ViewModelBase {
 
     private HoverableTextViewModel _selectedCategory = new();
 
-    private Random r;
+    private Random r = new();
 
     private string _categoryDescription = "",
         _selectedInputImage = "",
@@ -86,7 +82,9 @@ public class MainWindowViewModel : ViewModelBase {
     private CentralManager? centralManager;
     private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
 
+#pragma warning disable CS8618
     private ItemType _selectedItemToAdd;
+#pragma warning restore CS8618
 
     public bool SimpleModelSelected {
         get => _simpleModel;
@@ -576,7 +574,8 @@ public class MainWindowViewModel : ViewModelBase {
             }
         }
 
-        ItemDataGrid.Add(new ItemViewModel(itemType, amount, new ObservableCollection<TileViewModel>(allowedTiles)));
+        ItemDataGrid.Add(new ItemViewModel(itemType, amount, new ObservableCollection<TileViewModel>(allowedTiles),
+            centralManager!.getItemWindow().getItemAddMenu().getItemImage(itemType)));
 
         InItemMenu = false;
         ItemsMayAppearAnywhere = false;
@@ -742,7 +741,8 @@ public class MainWindowViewModel : ViewModelBase {
                     bool allowedAtLoc = false;
                     if (centralManager!.getWFCHandler().isOverlappingModel()) {
                         Color colorAtPos = distinctColourCount[xLoc, yLoc];
-                        if (PaintTiles.Where(tvm => tvm.PatternColour.Equals(colorAtPos)).Any(tvm => allowedAdd.Contains(tvm.PatternIndex))) {
+                        if (PaintTiles.Where(tvm => tvm.PatternColour.Equals(colorAtPos))
+                            .Any(tvm => allowedAdd.Contains(tvm.PatternIndex))) {
                             allowedAtLoc = true;
                         }
                     } else {
@@ -773,7 +773,7 @@ public class MainWindowViewModel : ViewModelBase {
                 }
             }
         }
-        
+
         ItemOverlay = generateItemOverlay(itemGrid);
     }
 
@@ -781,12 +781,12 @@ public class MainWindowViewModel : ViewModelBase {
         const int itemDimension = 17;
         int xDimension = ImageOutWidth * itemDimension;
         int yDimension = ImageOutHeight * itemDimension;
-        
+
         WriteableBitmap outputBitmap = new(new PixelSize(xDimension, yDimension), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Unpremul);
 
-        Dictionary<int, Color[] > items = new();
+        Dictionary<int, Color[]> items = new();
         for (int x = 0; x < ImageOutWidth; x++) {
             for (int y = 0; y < ImageOutHeight; y++) {
                 int itemId = itemGrid[x, y];
@@ -799,7 +799,7 @@ public class MainWindowViewModel : ViewModelBase {
         }
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-        
+
         unsafe {
             uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
             int stride = frameBuffer.RowBytes;

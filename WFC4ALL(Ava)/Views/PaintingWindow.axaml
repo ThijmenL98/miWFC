@@ -209,7 +209,7 @@
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
-							
+
 							<Button Padding="0" Grid.Row="2" Grid.Column="0" Margin="10" MaxWidth="110"
 							        Command="{Binding OnMaskReset}" Background="Transparent">
 								<Button.Styles>
@@ -246,7 +246,8 @@
 								</ToolTip.Tip>
 							</Button>
 
-							<StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="15" IsVisible="{Binding !PencilModeEnabled}">
+							<StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="15"
+							            IsVisible="{Binding !PencilModeEnabled}">
 								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15, 15, 15, 7">
 									Brush Size
 								</TextBlock>

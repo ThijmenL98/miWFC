@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
@@ -15,11 +14,12 @@ public class TileViewModel : ReactiveObject {
 
     private readonly CentralManager? parentCM;
     private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked;
-    
+
     /*
      * Used for input patterns
      */
-    public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, CentralManager cm, bool isF = false) {
+    public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, CentralManager cm,
+        bool isF = false) {
         PatternImage = image;
         PatternWeight = weight;
         PatternIndex = index;
@@ -36,13 +36,14 @@ public class TileViewModel : ReactiveObject {
     /*
      * Used for Adjacent Tiles
      */
-    public TileViewModel(WriteableBitmap image, double weight, int index, int patternRotation, int patternFlipping, CentralManager cm) {
+    public TileViewModel(WriteableBitmap image, double weight, int index, int patternRotation, int patternFlipping,
+        CentralManager cm) {
         PatternImage = image;
         PatternIndex = index;
         PatternWeight = weight;
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
-        
+
         parentCM = cm;
     }
 
@@ -143,7 +144,7 @@ public class TileViewModel : ReactiveObject {
             case 1d:
                 if (increment) {
                     ChangeAmount = 10;
-                } 
+                }
 
                 break;
             case 10d:
@@ -184,7 +185,7 @@ public class TileViewModel : ReactiveObject {
         }
 
         PatternWeight = isOverlapping ? Math.Min(1d, PatternWeight) : Math.Round(PatternWeight, 1);
-        double change = oldWeight -  PatternWeight;
+        double change = oldWeight - PatternWeight;
 
         if (isOverlapping && change != 0d) {
             parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
