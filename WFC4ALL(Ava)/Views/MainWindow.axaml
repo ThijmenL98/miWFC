@@ -11,7 +11,8 @@
         Width="1476" Height="800"
         WindowStartupLocation="CenterOwner"
         Activated="WindowBase_OnActivated"
-        PointerPressed="InputElement_OnPointerPressed">
+        PointerPressed="InputElement_OnPointerPressed"
+        PointerMoved="InputElement_OnPointerMoved">
 
 	<Window.Resources>
 		<!-- Hover resources -->

@@ -70,7 +70,7 @@ public class InputManager {
             return;
         }
 
-        if (!parentCM.getMainWindow().isWindowTriggered() && !source.Equals("Window activation")) {
+        if (!mainWindow.isWindowTriggered() && !source.Equals("Window activation")) {
             return;
         }
 
@@ -107,7 +107,7 @@ public class InputManager {
     public async void advanceStep() {
         if (parentCM.getWFCHandler().getAmountCollapsed()
             .Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
-            parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+            parentCM.getUIManager().dispatchError(mainWindow);
             return;
         }
 
@@ -145,7 +145,7 @@ public class InputManager {
                     = Math.Abs(parentCM.getWFCHandler().getPercentageCollapsed() - curMarker.MarkerCollapsePercentage) >
                     0.00001d || curMarker.Revertible;
                 if (!canReturn) {
-                    parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+                    parentCM.getUIManager().dispatchError(mainWindow);
                     return;
                 }
             }
@@ -225,10 +225,10 @@ public class InputManager {
         }
 
         mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
-            (parentCM.getMainWindow().IsVisible
+            (mainWindow.IsVisible
                 ? mainWindow.getOutputControl().getTimelineWidth()
-                : parentCM.getPaintingWindow().getTimelineWidth()) *
-            parentCM.getWFCHandler().getPercentageCollapsed() + 1, parentCM.getWFCHandler().getPercentageCollapsed(),
+                : parentCM.getPaintingWindow().getTimelineWidth()) * parentCM.getWFCHandler().getPercentageCollapsed() +
+            1, parentCM.getWFCHandler().getPercentageCollapsed(),
             revertible));
 
         while (true) {
@@ -255,7 +255,7 @@ public class InputManager {
 
         if (savePoints.Count != 0) {
             if (!mainWindowVM.Markers[savePoints.Count - 1].Revertible) {
-                parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+                parentCM.getUIManager().dispatchError(mainWindow);
                 return;
             }
         }
@@ -275,7 +275,7 @@ public class InputManager {
 
         if (lastPaintedAmountCollapsed != 0 &&
             prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
-            parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+            parentCM.getUIManager().dispatchError(mainWindow);
             return;
         }
 
@@ -292,27 +292,48 @@ public class InputManager {
     }
 
     public async void exportSolution() {
+        bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down") &&
+                        parentCM.getWFCHandler().isCollapsed();
+
         SaveFileDialog sfd = new() {
             Title = @"Select export location & file name",
-            DefaultExtension = "jpg",
+            DefaultExtension = "png",
             Filters = new List<FileDialogFilter> {
                 new() {
-                    Extensions = new List<string> {"jpg"},
-                    Name = "JPeg Image"
+                    Extensions = new List<string> {"png"},
+                    Name = "PNG Image"
                 }
             }
         };
 
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
-            parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName);
+            if (hasItems) {
+                parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName.Replace(".png", "_worldLayer.png"));
+
+                int[,] itemsGrid = mainWindowVM.getLatestItemGrid();
+                int[] tmp = new int[itemsGrid.GetLength(0) * itemsGrid.GetLength(1)];
+                Buffer.BlockCopy(itemsGrid, 0, tmp, 0, tmp.Length * sizeof(int));
+                List<int> list = new(tmp);
+
+                if (list.Distinct().Count() > 1 || (!list.Distinct().Contains(-1) && list.Distinct().Any())) {
+                    generateRawItemImage(itemsGrid).Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
+                    combineBitmaps(parentCM.getWFCHandler().getLatestOutput(),
+                            parentCM.getWFCHandler().isOverlappingModel() ? 1 : parentCM.getWFCHandler().getTileSize(),
+                            getLatestItemBitMap(), getDimension(), mainWindowVM.ImageOutWidth,
+                            mainWindowVM.ImageOutHeight)
+                        .Save(settingsFileName);
+                }
+            } else {
+                parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName);
+            }
         }
     }
 
     public void animate() {
         if (parentCM.getWFCHandler().isCollapsed()) {
             mainWindowVM.IsPlaying = false;
-            parentCM.getUIManager().dispatchError(parentCM.getMainWindow());
+            parentCM.getUIManager().dispatchError(mainWindow);
             return;
         }
 
@@ -424,8 +445,7 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                 }
-            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled ||
-                       parentCM.getMainWindowVM().PaintKeepModeEnabled) {
+            } else if (mainWindowVM.PaintEraseModeEnabled || mainWindowVM.PaintKeepModeEnabled) {
                 updateHoverBrushMask(a, b);
             }
 
@@ -454,8 +474,7 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                 }
-            } else if (parentCM.getMainWindowVM().PaintEraseModeEnabled ||
-                       parentCM.getMainWindowVM().PaintKeepModeEnabled) {
+            } else if (mainWindowVM.PaintEraseModeEnabled || mainWindowVM.PaintKeepModeEnabled) {
                 updateHoverBrushMask(a, b);
             }
 
@@ -473,7 +492,7 @@ public class InputManager {
 
     private void updateHoverBrushMask(int a, int b) {
         int rawBrushSize = parentCM.getPaintingWindow().getPaintBrushSize();
-        bool add = parentCM.getMainWindowVM().PaintKeepModeEnabled;
+        bool add = mainWindowVM.PaintKeepModeEnabled;
 
         double brushSize = rawBrushSize switch {
             1 => rawBrushSize,

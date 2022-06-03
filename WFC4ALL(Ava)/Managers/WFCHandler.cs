@@ -811,6 +811,10 @@ public class WFCHandler {
         mainWindowVM.IsRunning = amountCollapsed != 0 && (int) percentageCollapsed != 1;
     }
 
+    public int getTileSize() {
+        return tileSize;
+    }
+
     private void generateAdjacentBitmap(out WriteableBitmap outputBitmap, bool grid) {
         int collapsedTiles = 0;
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;

@@ -148,4 +148,8 @@ public partial class MainWindow : Window {
             centralManager.getUIManager().hidePopUp();
         }
     }
+
+    private void InputElement_OnPointerMoved(object? sender, PointerEventArgs e) {
+        centralManager!.getWFCHandler().isCollapsed();
+    }
 }

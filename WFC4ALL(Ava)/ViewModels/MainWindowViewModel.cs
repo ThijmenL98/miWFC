@@ -64,6 +64,8 @@ public class MainWindowViewModel : ViewModelBase {
 
     private Random r = new();
 
+    private int[,] latestItemGrid = {{-1}};
+
     private string _categoryDescription = "",
         _selectedInputImage = "",
         _stepAmountString = "Steps to take: 1",
@@ -774,48 +776,13 @@ public class MainWindowViewModel : ViewModelBase {
             }
         }
 
-        ItemOverlay = generateItemOverlay(itemGrid);
+        latestItemGrid = itemGrid;
+        WriteableBitmap newItemOverlay = Util.generateItemOverlay(itemGrid, ImageOutWidth, ImageOutHeight);
+        Util.setLatestItemBitMap(newItemOverlay);
+        ItemOverlay = newItemOverlay;
     }
 
-    private WriteableBitmap generateItemOverlay(int[,] itemGrid) {
-        const int itemDimension = 17;
-        int xDimension = ImageOutWidth * itemDimension;
-        int yDimension = ImageOutHeight * itemDimension;
-
-        WriteableBitmap outputBitmap = new(new PixelSize(xDimension, yDimension), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
-
-        Dictionary<int, Color[]> items = new();
-        for (int x = 0; x < ImageOutWidth; x++) {
-            for (int y = 0; y < ImageOutHeight; y++) {
-                int itemId = itemGrid[x, y];
-                if (itemId != -1 && !items.ContainsKey(itemId)) {
-                    Color[] itemBitmap = centralManager!.getItemWindow().getItemAddMenu()
-                        .getItemImageRaw(ItemType.getItemTypeByID(itemId));
-                    items[itemId] = itemBitmap;
-                }
-            }
-        }
-
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, yDimension, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < xDimension; x++) {
-                    int itemId = itemGrid[x / itemDimension, y / itemDimension];
-                    if (itemId != -1) {
-                        Color toSet = items[itemId][y % itemDimension * itemDimension + x % itemDimension];
-                        dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                    }
-                }
-            });
-        }
-
-        return outputBitmap;
+    public int[,] getLatestItemGrid() {
+        return latestItemGrid;
     }
 }
