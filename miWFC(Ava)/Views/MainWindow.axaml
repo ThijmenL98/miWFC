@@ -1,0 +1,219 @@
+<Window Icon="/Assets/icon.ico"
+        Title="miWFC" mc:Ignorable="d" x:Class="miWFC.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ucontrols="using:miWFC.ContentControls"
+        xmlns:viewModels="clr-namespace:miWFC.ViewModels"
+        xmlns:contentControls="clr-namespace:miWFC.ContentControls"
+        xmlns:avaloniaGif="clr-namespace:miWFC.AvaloniaGif"
+        d:DesignHeight="800" d:DesignWidth="1476"
+        MinWidth="1256" MinHeight="600"
+        Width="1476" Height="800"
+        WindowStartupLocation="CenterOwner"
+        Activated="WindowBase_OnActivated"
+        PointerPressed="InputElement_OnPointerPressed"
+        PointerMoved="InputElement_OnPointerMoved">
+
+	<Window.Resources>
+		<!-- Hover resources -->
+		<Image Source="/Assets/AnimateHover.png" x:Key="hoverAnimateKey" x:Name="hoverAnimate" />
+		<Image Source="/Assets/AdvanceHover.png" x:Key="hoverAdvanceKey" x:Name="hoverAdvance" />
+		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
+		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
+		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
+		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
+		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
+		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+		<Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause" />
+		<Image Source="/Assets/CustomizeHover.png" x:Key="hoverCustomizeKey" x:Name="hoverCustomize" />
+		<Image Source="/Assets/ModeHover.png" x:Key="hoverModeKey" x:Name="hoverMode" />
+		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
+		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
+		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
+
+		<!-- Click resources -->
+		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
+		<Image Source="/Assets/AdvanceClick.png" x:Key="clickAdvanceKey" x:Name="clickAdvance" />
+		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
+		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
+		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
+		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
+		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
+		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+		<Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause" />
+		<Image Source="/Assets/CustomizeClick.png" x:Key="clickCustomizeKey" x:Name="clickCustomize" />
+		<Image Source="/Assets/ModeClick.png" x:Key="clickModeKey" x:Name="clickMode" />
+		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
+		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
+		<Image Source="/Assets/ItemsEditorClick.png" x:Key="clickItemsEditorKey" x:Name="clickItemsEditor" />
+	</Window.Resources>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+
+		<Style Selector="TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+
+		<Style Selector="TabControl">
+			<Setter Property="Background" Value="Transparent" />
+		</Style>
+		<Style Selector="TabControl WrapPanel">
+			<Setter Property="Background" Value="#000000" />
+		</Style>
+		<Style Selector="TabItem">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Height" Value="25" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Foreground" Value="#CCCCCC" />
+			<Setter Property="Background" Value="#2e3457" />
+			<Setter Property="Padding" Value="10 0" />
+		</Style>
+
+		<Style Selector="TabItem:selected">
+			<Setter Property="FontSize" Value="12" />
+			<Setter Property="Height" Value="25" />
+			<Setter Property="Foreground" Value="#FFFFFF" />
+			<Setter Property="Background" Value="#485288" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="Padding" Value="10 0" />
+		</Style>
+
+		<Style Selector="TabItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+			<Setter Property="TabItem.FontSize" Value="12" />
+			<Setter Property="TabItem.Foreground" Value="#AAAAAA" />
+			<Setter Property="TabItem.Background" Value="#41658a" />
+			<Setter Property="TabItem.HorizontalContentAlignment" Value="Center" />
+			<Setter Property="TabItem.VerticalContentAlignment" Value="Center" />
+			<Setter Property="VerticalAlignment" Value="Center" />
+			<Setter Property="HorizontalAlignment" Value="Center" />
+			<Setter Property="Margin" Value="0, 5, 0, 0" />
+			<Setter Property="Height" Value="25" />
+		</Style>
+
+		<Style Selector="TabItem:pointerover Border">
+			<Setter Property="Background" Value="#41658a" />
+		</Style>
+	</Window.Styles>
+
+	<Window.Background>
+		<ImageBrush Source="/Assets/backgroundImage1.jpg" Stretch="Fill" />
+	</Window.Background>
+
+	<Design.DataContext>
+		<viewModels:MainWindowViewModel />
+	</Design.DataContext>
+
+	<Grid IsHitTestVisible="{Binding !MainInfoPopupVisible}">
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+			<Grid>
+				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 0, 0 ,0" />
+				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 14, 0 ,0" />
+				<Border BorderBrush="#000000" BorderThickness="5" CornerRadius="15" Margin="0, 20, 0 ,0" />
+
+				<TabControl Margin="0, 0 ,0, 0" SelectedIndex="{Binding SelectedTabIndex}"
+				            SelectionChanged="OnTabChange" Height="25" VerticalAlignment="Top">
+					<TabItem Header="Smart Mode Sandbox" Height="25" MinWidth="195" VerticalContentAlignment="Center"
+					         Margin="30, 0, 2, 0" />
+					<TabItem Header="Simple Mode Sandbox" Height="25" MinWidth="195" VerticalContentAlignment="Center"
+					         Margin="2, 0, 2, 0" />
+				</TabControl>
+
+				<Border BorderBrush="#485288" BorderThickness="5" CornerRadius="15" Margin="0,25, 0 ,0">
+					<Grid>
+						<Grid ColumnDefinitions="*, Auto">
+							<!-- Help Popup-->
+							<Popup IsOpen="{Binding MainInfoPopupVisible}" HorizontalAlignment="Center"
+							       VerticalAlignment="Top" PlacementMode="Pointer" x:Name="infoPopup"
+							       PlacementTarget="{Binding ElementName=patternGrid}">
+								<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+									<Border.Background>
+										<ImageBrush Source="/Assets/backgroundImage2.png" Stretch="Fill" />
+									</Border.Background>
+									<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+										<Border Padding="1">
+											<Grid Margin="5">
+												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicMain.png"
+												       Stretch="Uniform" MaxHeight="700" />
+												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
+												        VerticalAlignment="Top"
+												        x:Name="borderPaddingToggle" Background="Transparent"
+												        Command="{Binding OnCloseClick}">
+													<Button.Styles>
+														<Style Selector="Button:pointerover /template/ ContentPresenter">
+															<Setter Property="Content"
+															        Value="{DynamicResource hoverCloseKey}" />
+															<Setter Property="Background" Value="Transparent" />
+														</Style>
+														<Style Selector="Button:pressed /template/ ContentPresenter">
+															<Setter Property="Content"
+															        Value="{DynamicResource clickCloseKey}" />
+															<Setter Property="Background" Value="Transparent" />
+														</Style>
+													</Button.Styles>
+													<Panel>
+														<Image Source="/Assets/Close.png" />
+													</Panel>
+													<ToolTip.Tip>
+														<StackPanel>
+															<TextBlock TextWrapping="Wrap">Close this popup</TextBlock>
+														</StackPanel>
+													</ToolTip.Tip>
+												</Button>
+											</Grid>
+										</Border>
+									</Border>
+								</Border>
+							</Popup>
+
+							<Grid ColumnDefinitions="Auto, *" Grid.Column="0">
+								<contentControls:InputControl DataContext="{Binding VM}"
+								                        Grid.Row="0" x:Name="inputControl" />
+
+								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
+									<TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 5"
+									           Text="Extracted patterns with the current settings" TextWrapping="Wrap" />
+
+									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
+									        CornerRadius="15"
+									        IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}">
+										<contentControls:AdvancedPatternItemControl DataContext="{Binding VM}" />
+									</Border>
+
+									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
+									        CornerRadius="15">
+										<contentControls:SimplePatternItemControl DataContext="{Binding VM}" />
+									</Border>
+								</Grid>
+							</Grid>
+
+							<contentControls:OutputControl DataContext="{Binding VM}"
+							                         Grid.Column="1" x:Name="outputControl" />
+						</Grid>
+
+						<avaloniaGif:GifImage SourceUriRaw="resm:miWFC.Assets.LoadingAnim.gif"
+						                      Stretch="Uniform" MaxWidth="300" IsVisible="{Binding IsLoading}"
+						                      StretchDirection="Both" />
+					</Grid>
+				</Border>
+			</Grid>
+		</Border>
+
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
+		<Border BorderBrush="Black" BorderThickness="2" />
+	</Grid>
+</Window>

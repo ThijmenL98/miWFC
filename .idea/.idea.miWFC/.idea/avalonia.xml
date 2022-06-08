@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="miWFC(Ava)/Views/ItemWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/Views/PaintingWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

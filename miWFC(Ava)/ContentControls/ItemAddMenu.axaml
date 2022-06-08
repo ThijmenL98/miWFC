@@ -1,0 +1,194 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinWidth="600" MaxWidth="766"
+             x:Class="miWFC.ContentControls.ItemAddMenu">
+
+    <Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10">
+        <Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
+            <Grid Grid.Row="0" RowDefinitions="Auto, *" ColumnDefinitions="Auto, Auto, *" Margin="5">
+                <ComboBox Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Stretch" MinWidth="200"
+                          MinHeight="40" SelectedItem="{Binding SelectedItemToAdd}" x:Name="itemTypesCB"
+                          SelectionChanged="OnItemChanged">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
+                                  VerticalAlignment="Stretch" Margin="0, -3, -8, -3">
+                                <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                <TextBlock Text="{Binding DisplayName}" HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Stretch" />
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="*, Auto">
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto, Auto, *" HorizontalAlignment="Center" Margin="0, 10, 0, -2">
+
+                        <TextBlock Grid.Column="0" Grid.Row="0" Text="Amount:" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" Margin="5" />
+                        <RadioButton Grid.Column="1" Margin="5, 0" IsChecked="{Binding !ItemsInRange}" Content="Fixed" />
+                        <RadioButton Grid.Column="2" Margin="5, 0" IsChecked="{Binding ItemsInRange}" Content="Range" />
+                    </Grid>
+                    
+                    <NumericUpDown Grid.Row="1" MaxHeight="10" Value="{Binding ItemsToAddValue}" IsVisible="{Binding !ItemsInRange}" HorizontalAlignment="Center" />
+                    
+                    <Grid Grid.Row="1" IsVisible="{Binding ItemsInRange}" ColumnDefinitions="Auto, Auto, Auto" HorizontalAlignment="Center">
+                        <NumericUpDown Grid.Column="0" MaxHeight="10" Value="{Binding ItemsToAddLower}"
+                                       HorizontalAlignment="Center" ValueChanged="AmountRange_OnValueChanged" x:Name="NUDLower" />
+                        <TextBlock Grid.Column="1" Text="to" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" Margin="5" />
+                        <NumericUpDown Grid.Column="2" MaxHeight="10" Value="{Binding ItemsToAddUpper}" 
+                                        HorizontalAlignment="Center" ValueChanged="AmountRange_OnValueChanged" x:Name="NUDUpper"/>
+                    </Grid>
+                </Grid>
+
+                <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BoxShadow="0 0 15 0.25 Black"
+                        Margin="15, 5, 15, 5"
+                        Background="#22000000" CornerRadius="10" HorizontalAlignment="Stretch" ClipToBounds="True">
+                    <Image Width="100" Height="100" Source="{Binding CurrentItemImage}"
+                           RenderOptions.BitmapInterpolationMode="Default" />
+                </Border>
+
+                <GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" IsEnabled="False" Background="Transparent"
+                              MinWidth="50" />
+
+                <TextBox Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="5, 0" Text="{Binding ItemDescription}"
+                         HorizontalAlignment="Stretch" TextWrapping="Wrap" />
+            </Grid>
+
+            <Separator Grid.Row="1" Background="#44000000" Height="4" CornerRadius="2" Margin="5" />
+
+            <Grid Grid.Row="2" RowDefinitions="Auto, Auto, *" ColumnDefinitions="*, Auto" Margin="5">
+                <Grid Grid.Row="0" RowDefinitions="Auto, Auto, Auto">
+                    <TextBlock Grid.Row="0" Text="Where to appear:" VerticalAlignment="Center" Margin="5" />
+
+                    <RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemsMayAppearAnywhere}"
+                                 Content="Dynamic" />
+                    <RadioButton Grid.Row="2" Margin="25, 0, 5, 0" IsChecked="{Binding ItemsMayAppearAnywhere}"
+                                 Content="Anywhere" />
+                </Grid>
+
+                <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Margin="5, 0, 5, 110" RowDefinitions="Auto, *"
+                      Width="230"
+                      IsVisible="{Binding !ItemsMayAppearAnywhere}">
+                    <TextBlock Grid.Row="0" Text="Please select the allowed tiles:" Margin="5, 5, 5, 15" />
+
+                    <Border Background="#22000000" Grid.Row="1"
+                            BoxShadow="0 0 15 0.25 Black" CornerRadius="15">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl Items="{Binding PaintTiles}" x:Name="itemMenuItemsControl">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel HorizontalAlignment="Center" Margin="3" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="Auto, Auto" Margin="5">
+                                            <!-- ReSharper disable twice Xaml.BindingWithContextNotResolved -->
+                                            <CheckBox Grid.Column="0" Margin="10, 0, -10, 0"
+                                                      Command="{Binding OnCheckChange}"
+                                                      IsChecked="{Binding ItemAddChecked}" />
+                                            <Border Grid.Column="1" Width="58" Padding="1" Background="#55000000"
+                                                    CornerRadius="9"
+                                                    Margin="5" PointerReleased="InputElement_OnPointerReleased">
+                                                <Border Padding="-4" CornerRadius="5" ClipToBounds="True" Margin="4"
+                                                        Background="#552FACED">
+                                                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                                                    <Image Width="50" Height="50" Margin="4"
+                                                           Source="{Binding PatternImage}"
+                                                           RenderOptions.BitmapInterpolationMode="Default">
+                                                        <Image.RenderTransform>
+                                                            <TransformGroup>
+                                                                <!-- ReSharper disable twice Xaml.BindingWithContextNotResolved -->
+                                                                <RotateTransform
+                                                                    Angle="{Binding Path=PatternRotation, TargetNullValue=0, FallbackValue=0}" />
+                                                                <ScaleTransform
+                                                                    ScaleX="{Binding Path=PatternFlipping, TargetNullValue=0, FallbackValue=0}" />
+                                                            </TransformGroup>
+                                                        </Image.RenderTransform>
+                                                    </Image>
+                                                </Border>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+
+                <Separator Grid.Column="0" Grid.Row="1" Margin="5" Background="#44000000" Height="4" CornerRadius="2" />
+
+                <Grid Grid.Column="0" Grid.Row="2" RowDefinitions="*, Auto"
+                      ColumnDefinitions="*, Auto, Auto, Auto, Auto, Auto"
+                      ColumnSpan="2">
+                    <GridSplitter Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
+                                  IsEnabled="False" Background="Transparent" />
+
+                    <!-- TODO Dependency Donut -->
+
+                    <GridSplitter Grid.Row="1" Grid.Column="1" Width="20"
+                                  IsEnabled="False" Background="Transparent"
+                                  IsVisible="{Binding !ItemsMayAppearAnywhere}" />
+
+                    <Button Padding="0" Background="Transparent" Grid.Row="1" VerticalAlignment="Bottom"
+                            Command="{Binding OnItemMenuApply}" Grid.Column="2"
+                            HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                <Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                            <Style Selector="Button:pressed /template/ ContentPresenter">
+                                <Setter Property="Content" Value="{DynamicResource clickApplyKey}" />
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                        </Button.Styles>
+                        <Panel>
+                            <Image Source="/Assets/Apply.png" />
+                        </Panel>
+                        <ToolTip.Tip>
+                            <StackPanel>
+                                <TextBlock TextWrapping="Wrap">Add the current item to the list</TextBlock>
+                            </StackPanel>
+                        </ToolTip.Tip>
+                    </Button>
+
+                    <GridSplitter Grid.Row="1" Grid.Column="3" Width="20"
+                                  IsEnabled="False" Background="Transparent"
+                                  IsVisible="{Binding !ItemsMayAppearAnywhere}" />
+
+                    <Button Grid.Row="1" Grid.Column="4" Padding="0" Background="Transparent"
+                            Command="{Binding OnExitItemAddition}"
+                            HorizontalAlignment="Center" Margin="5" MaxWidth="80"
+                            VerticalAlignment="Bottom">
+                        <Button.Styles>
+                            <Style Selector="Button:pointerover /template/ ContentPresenter">
+                                <Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                            <Style Selector="Button:pressed /template/ ContentPresenter">
+                                <Setter Property="Content" Value="{DynamicResource clickBackKey}" />
+                                <Setter Property="Background" Value="Transparent" />
+                            </Style>
+                        </Button.Styles>
+                        <Panel>
+                            <Image Source="/Assets/Back.png" />
+                        </Panel>
+                        <ToolTip.Tip>
+                            <StackPanel>
+                                <TextBlock TextWrapping="Wrap">Exit item editor and discard progress</TextBlock>
+                            </StackPanel>
+                        </ToolTip.Tip>
+                    </Button>
+
+                    <GridSplitter Grid.Row="1" Grid.Column="5" Width="20"
+                                  IsEnabled="False" Background="Transparent"
+                                  IsVisible="{Binding !ItemsMayAppearAnywhere}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
