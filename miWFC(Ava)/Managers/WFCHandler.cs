@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -21,6 +22,7 @@ using miWFC.DeBroglie;
 using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
+using miWFC.Utils;
 using miWFC.ViewModels;
 using miWFC.Views;
 using static miWFC.Utils.Util;
@@ -284,8 +286,8 @@ public class WFCHandler {
 
         dbModel = new OverlappingModel(patternSize);
         bool hasRotations = (category.Equals("Worlds Top-Down")
-                             || category.Equals("Knots") || category.Equals("Knots") ||
-                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+            || category.Equals("Knots") || category.Equals("Knots") ||
+            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles,
@@ -341,7 +343,7 @@ public class WFCHandler {
         List<double> weights = new();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-                new XElement("");
+            new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -512,7 +514,7 @@ public class WFCHandler {
                         }
 
                         bool? success = parentCM?.getInputManager()
-                            .processClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true);
+                            .processClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true).Result;
 
                         if (success != null && (bool) success) {
                             newInputDict.Remove(key);
@@ -556,7 +558,7 @@ public class WFCHandler {
                 while (newInputDict.Count > 0) {
                     foreach ((Tuple<int, int> key, int value) in new Dictionary<Tuple<int, int>, int>(newInputDict)) {
                         bool? success = parentCM?.getInputManager()
-                            .processClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true);
+                            .processClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true).Result;
 
                         if (success != null && (bool) success) {
                             newInputDict.Remove(key);
@@ -582,11 +584,16 @@ public class WFCHandler {
         parentCM.getInputManager().placeMarker(false);
     }
 
+    private readonly FixedSizeQueue<Tuple<int, int, int>> fsqAdj = new(10);
+    private readonly FixedSizeQueue<Tuple<int, int, Color>> fsqOve = new(10);
+
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
 #pragma warning disable CS0162
-    public (WriteableBitmap?, bool?) setTile(int a, int b, int toSet, bool returnTrueAlreadyCorrect = false) {
+    public async Task<(WriteableBitmap?, bool?)> setTile(int a, int b, int toSet, bool hover,
+        bool returnTrueAlreadyCorrect = false) {
         Resolution status;
+        bool paintOverwrite = !hover && mainWindowVM.IsPaintOverrideEnabled;
 #if DEBUG
         const bool internalDebug = false;
         if (internalDebug) {
@@ -622,7 +629,7 @@ public class WFCHandler {
 
             Color c = toAddPaint[toSet].PatternColour;
 
-            if (possibleTiles.Count == 1 || !possibleTiles.Contains(c)) {
+            if ((possibleTiles.Count == 1 || !possibleTiles.Contains(c)) && !paintOverwrite) {
 #if DEBUG
                 if (internalDebug) {
                     Trace.WriteLine(possibleTiles.Count == 1
@@ -638,11 +645,82 @@ public class WFCHandler {
                 return (null, false);
             }
 
-            IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
-                .Where(tile => ((Color) tile.Value).Equals(c));
+            if (paintOverwrite && (possibleTiles.Count == 1 || !possibleTiles.Contains(c))) {
+                mainWindowVM.setLoading(true);
 
-            dbPropagator.AddBackTrackPoint();
-            status = dbPropagator.select(a, b, 0, tilesToSelect);
+                Color[,] prevOutput = getPropagatorOutputO().toArray2d();
+                int width = prevOutput.GetLength(0);
+                int height = prevOutput.GetLength(1);
+                Dictionary<Tuple<int, int>, Color> distinctList = new();
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        Tuple<int, int> key = new(i, j);
+                        Color value = prevOutput[i, j];
+                        Color? toReSet = currentColors!.Contains(value) ? value : null;
+
+                        if (toReSet != null) {
+                            distinctList[key] = value;
+                        }
+                    }
+                }
+
+                parentCM.getInputManager().restartSolution("Override click", true, true);
+                await Task.Delay(10);
+
+                fsqOve.Enqueue(new Tuple<int, int, Color>(a, b, c));
+                Trace.WriteLine("Adding " + (new Tuple<int, int, Color>(a, b,c)).ToString());
+
+                int stepsToTake = fsqOve.toList().Count-1;
+                while (true) {
+                    int curSteps = 0;
+                    foreach ((int xLoc, int yLoc, Color value) in fsqOve.toList()) {
+                        IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
+                            .Where(tile => ((Color) tile.Value).Equals(value));
+                        Resolution forceRes = dbPropagator.select(xLoc, yLoc, 0, tilesToSelect);
+                        if (forceRes.Equals(Resolution.CONTRADICTION)) {
+                            parentCM.getInputManager().restartSolution("Override click", true, true);
+                            await Task.Delay(10);
+                            stepsToTake = curSteps;
+                            goto InnerEnd;
+                        }
+
+                        curSteps++;
+                        if (curSteps == stepsToTake) {
+                            goto OuterEnd;
+                        }
+                    }
+                    InnerEnd:;
+                }
+                OuterEnd: ;
+
+                try {
+                    await Task.Run(() => {
+                        foreach ((Tuple<int, int> key, Color value) in
+                                 new Dictionary<Tuple<int, int>, Color>(distinctList)) {
+                            foreach (TileViewModel tvm in toAddPaint.Where(tvm => tvm.PatternColour.Equals(value))) {
+#pragma warning disable CS4014
+                                setTile(key.Item1, key.Item2, tvm.PatternIndex, true, true);
+#pragma warning restore CS4014
+                            }
+                        }
+
+                        mainWindowVM.setLoading(false);
+                    });
+                } catch (TargetException) {
+                    mainWindowVM.OutputImage = parentCM.getInputManager().getNoResBM();
+                    return (null, false);
+                }
+
+                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+                parentCM.getInputManager().placeMarker(false);
+                status = dbPropagator.Status;
+            } else {
+                IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
+                    .Where(tile => ((Color) tile.Value).Equals(c));
+
+                dbPropagator.AddBackTrackPoint();
+                status = dbPropagator.select(a, b, 0, tilesToSelect);
+            }
 
 #if DEBUG
             if (internalDebug) {
@@ -653,7 +731,7 @@ public class WFCHandler {
             if (status.Equals(Resolution.CONTRADICTION)) {
 #if DEBUG
                 Trace.WriteLine(
-                    $@"Overlapping CONTRADICTION: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}, Available patterns: {string.Join(", ", tilesToSelect)}");
+                    $@"Overlapping CONTRADICTION: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}, Available patterns: ");
 #endif
                 stepBackWfc();
                 return (null, false);
@@ -684,7 +762,7 @@ public class WFCHandler {
             }
 #endif
 
-            if (availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex)) {
+            if ((availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex)) && !paintOverwrite) {
 #if DEBUG
                 if (internalDebug) {
                     Trace.WriteLine(availableAtLoc.Count == 1
@@ -699,11 +777,67 @@ public class WFCHandler {
 
 #if DEBUG
             if (internalDebug) {
-                Trace.WriteLine("Painting is allowed, continuing");
+                Trace.WriteLine(paintOverwrite ? "Painting override enabled" : "Painting is allowed, continuing");
             }
 #endif
 
-            status = dbPropagator.selWith(a, b, descrambledIndex);
+            if (paintOverwrite && (availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex))) {
+                mainWindowVM.setLoading(true);
+
+                int[,] prevOutput = getPropagatorOutputA().toArray2d();
+                int width = prevOutput.GetLength(0);
+                int height = prevOutput.GetLength(1);
+                Dictionary<Tuple<int, int>, int> distinctList = new();
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        Tuple<int, int> key = new(i, j);
+                        int value = prevOutput[i, j];
+                        bool isCollapsed = value >= 0;
+
+                        if (isCollapsed) {
+                            distinctList[key] = value;
+                        }
+                    }
+                }
+
+                parentCM.getInputManager().restartSolution("Override click", true, true);
+                await Task.Delay(1);
+
+                fsqAdj.Enqueue(new Tuple<int, int, int>(a, b, toSet));
+
+                Trace.WriteLine(fsqAdj.ToString());
+
+                foreach ((int xLoc, int yLoc, int value) in fsqAdj.toList()) {
+                    await setTile(xLoc, yLoc, value, true);
+                }
+
+                try {
+                    await Task.Run(() => {
+                        foreach ((Tuple<int, int> key, int value) in
+                                 new Dictionary<Tuple<int, int>, int>(distinctList)) {
+#pragma warning disable CS4014
+                            setTile(key.Item1, key.Item2, value, true, true);
+#pragma warning restore CS4014
+                        }
+
+                        mainWindowVM.setLoading(false);
+                    });
+                } catch (TargetException) {
+                    mainWindowVM.OutputImage = parentCM.getInputManager().getNoResBM();
+                    return (null, false);
+                }
+
+                parentCM.getInputManager().placeMarker(false);
+
+                status = dbPropagator.Status;
+            } else {
+                try {
+                    status = dbPropagator.selWith(a, b, descrambledIndex);
+                } catch (TargetException) {
+                    mainWindowVM.OutputImage = parentCM.getInputManager().getNoResBM();
+                    return (null, false);
+                }
+            }
 
 #if DEBUG
             if (internalDebug) {
@@ -840,7 +974,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                           (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                            (int) Math.Floor((double) y / tileSize)) % 2 == 0
                             ? Color.Parse("#11000000")
                             : Color.Parse("#00000000")
                         : Color.Parse("#00000000"));

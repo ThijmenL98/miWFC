@@ -157,7 +157,8 @@
                                 </ToolTip.Tip>
                             </Button>
 
-                            <Grid Grid.Column="1" Grid.Row="0" RowDefinitions="Auto, *">
+                            <Grid Grid.Column="1" Grid.Row="0" RowDefinitions="Auto, *"
+                                  IsVisible="{Binding PencilModeEnabled}">
                                 <ComboBox Grid.Row="0"
                                           SelectedIndex="0" Items="{Binding PaintTiles}"
                                           x:Name="tilePaintSelectCB" HorizontalAlignment="Center"
@@ -191,8 +192,14 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
-                                <ToggleSwitch Grid.Row="1" OffContent="Override" OnContent="Override"
-                                              IsChecked="{Binding IsPaintOverrideEnabled}"/>
+                                <ToggleSwitch Grid.Row="1" OffContent="Overwrite*" OnContent="Overwrite*"
+                                              IsChecked="{Binding IsPaintOverrideEnabled}">
+                                    <ToolTip.Tip>
+                                        <StackPanel>
+                                            <TextBlock TextWrapping="Wrap">Use with caution! Can only be used for single tile clicking</TextBlock>
+                                        </StackPanel>
+                                    </ToolTip.Tip>
+                                </ToggleSwitch>
                             </Grid>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="2" VerticalAlignment="Bottom"

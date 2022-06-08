@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -65,7 +64,7 @@ public partial class PaintingWindow : Window {
         if (centralManager!.getMainWindowVM().PencilModeEnabled ||
             centralManager!.getMainWindowVM().PaintEraseModeEnabled ||
             centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
-            OutputImageOnPointerMoved(sender, e);
+            OutputImageOnPointerMoved(sender, e, true);
         }
     }
 
@@ -78,11 +77,17 @@ public partial class PaintingWindow : Window {
     }
 
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
+        // ReSharper disable once IntroduceOptionalParameters.Local
+        OutputImageOnPointerMoved(sender, e, false);
+    }
+
+    private async void OutputImageOnPointerMoved(object sender, PointerEventArgs e, bool forceClick) {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+        bool allowClick = !centralManager!.getMainWindowVM().IsPaintOverrideEnabled || forceClick;
         if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
              || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
-            && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
+            && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
             try {
                 centralManager?.getInputManager().processClickMask((int) Math.Round(posX),
                     (int) Math.Round(posY),
@@ -93,14 +98,14 @@ public partial class PaintingWindow : Window {
                 Trace.WriteLine(exception);
             }
         } else if (centralManager!.getMainWindowVM().PencilModeEnabled && canUsePencil) {
-            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
+            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
                 int idx = getSelectedPaintIndex();
 
-                bool? success = centralManager?.getInputManager().processClick((int) Math.Round(posX),
+                bool? success = await centralManager?.getInputManager().processClick((int) Math.Round(posX),
                     (int) Math.Round(posY),
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-                    idx);
+                    idx)!;
                 if (success != null && !(bool) success) {
                     centralManager?.getUIManager().dispatchError(this);
                     canUsePencil = false;

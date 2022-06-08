@@ -65,7 +65,7 @@ public class InputManager {
      * Functionality
      */
 
-    public async void restartSolution(string source, bool force = false) {
+    public async void restartSolution(string source, bool force = false, bool keepOutput = false) {
         if (parentCM.getWFCHandler().isChangingModels() || parentCM.getWFCHandler().isChangingImages()) {
             return;
         }
@@ -94,8 +94,11 @@ public class InputManager {
 
         try {
             int stepAmount = mainWindowVM.StepAmount;
-            mainWindowVM.OutputImage = (await parentCM.getWFCHandler()
+            WriteableBitmap newOutputWb = (await parentCM.getWFCHandler()
                 .initAndRunWfcDB(true, stepAmount == 100 ? -1 : 0, force)).Item1;
+            if (!keepOutput) {
+                mainWindowVM.OutputImage = newOutputWb;
+            }
         } catch (InvalidOperationException) {
             // Error caused by multithreading which will be ignored
         } catch (Exception exception) {
@@ -389,13 +392,13 @@ public class InputManager {
         }
     }
 
-    public bool? processClick(int a, int b, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
+    public async Task<bool?> processClick(int a, int b, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
         if (!skipUI) {
             a = (int) Math.Floor(a * mainWindowVM.ImageOutWidth / (double) imgWidth);
             b = (int) Math.Floor(b * mainWindowVM.ImageOutHeight / (double) imgHeight);
         }
 
-        (WriteableBitmap? bitmap, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, tileIdx, skipUI);
+        (WriteableBitmap? bitmap, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, tileIdx, false, skipUI);
 
         if (!skipUI) {
             if (showPixel != null && (bool) showPixel) {
@@ -411,7 +414,7 @@ public class InputManager {
 
     private int lastProcessedX = -1, lastProcessedY = -1;
 
-    public void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, int selectedValue,
+    public async void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, int selectedValue,
         bool pencilSelected, bool force = false) {
         int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(hoverY * mainWindowVM.ImageOutHeight / (double) imgHeight);
@@ -433,7 +436,7 @@ public class InputManager {
 
             if (pencilSelected) {
                 try {
-                    (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
+                    (WriteableBitmap? _, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
                     if (showPixel != null && (bool) showPixel) {
                         mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
                         parentCM.getWFCHandler().stepBackWfc();
@@ -466,7 +469,7 @@ public class InputManager {
             }
 
             if (pencilSelected) {
-                (WriteableBitmap? _, bool? showPixel) = parentCM.getWFCHandler().setTile(a, b, selectedValue);
+                (WriteableBitmap? _, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
                 if (showPixel != null && (bool) showPixel) {
                     mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
                     parentCM.getWFCHandler().stepBackWfc();
@@ -603,5 +606,9 @@ public class InputManager {
         mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
             PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         mainWindowVM.HelperTiles.Clear();
+    }
+
+    public Bitmap getNoResBM() {
+        return noResultFoundBM;
     }
 }
