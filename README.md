@@ -1,4 +1,4 @@
-# WFC4All
+# miWFC
 
 ## Research Goal
 

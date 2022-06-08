@@ -24,7 +24,7 @@ public class ItemViewModel : ReactiveObject {
         ItemType = itemType;
         Amount = amount;
 
-        AmountStr = (amount.Item1 == amount.Item2) ? @$"{amount.Item2}" : @$"{amount.Item1} - {amount.Item2}";
+        AmountStr = amount.Item1 == amount.Item2 ? @$"{amount.Item2}" : @$"{amount.Item1} - {amount.Item2}";
         AllowedTiles = allowedTiles;
         ItemIcon = itemIcon;
 

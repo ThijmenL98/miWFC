@@ -610,7 +610,7 @@ public class MainWindowViewModel : ViewModelBase {
                     }
                 }
 
-                ivm.AmountStr = (ivm.Amount.Item1 == ivm.Amount.Item2) ? @$"{ivm.Amount.Item2}" : @$"{ivm.Amount.Item1} - {ivm.Amount.Item2}";
+                ivm.AmountStr = ivm.Amount.Item1 == ivm.Amount.Item2 ? @$"{ivm.Amount.Item2}" : @$"{ivm.Amount.Item1} - {ivm.Amount.Item2}";
                 InItemMenu = false;
                 return;
             }

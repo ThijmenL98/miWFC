@@ -1,0 +1,64 @@
+<samples>
+    <overlapping category="Fonts" name="BrownFox" patternSize="4"/>
+    <overlapping category="Fonts" name="Font" patternSize="5" periodic="True"/>
+
+    <overlapping category="Knots" name="Knot" patternSize="3" periodic="True"/>
+    <overlapping category="Knots" name="Link" patternSize="3" periodic="True"/>
+    <overlapping category="Knots" name="Link2" patternSize="3" periodic="True"/>
+    <overlapping category="Knots" name="Nested" patternSize="3" periodic="True"/>
+    <overlapping category="Knots" name="NotKnot" patternSize="3" periodic="True"/>
+    <overlapping category="Knots" name="SimpleKnot" patternSize="3" periodic="True"/>
+    <overlapping category="Knots" name="TrickKnot" patternSize="3" periodic="True"/>
+
+    <overlapping category="Shapes" name="Chess" patternSize="2" periodic="True"/>
+    <overlapping category="Shapes" name="Circle" patternSize="3" periodic="True"/>
+    <overlapping category="Shapes" name="Circle" patternSize="4" periodic="True"/>
+    <overlapping category="Shapes" name="Disk" patternSize="3" periodic="True"/>
+    <overlapping category="Shapes" name="Disk" patternSize="4" periodic="True"/>
+
+    <overlapping category="Textures" name="3Bricks" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="Cats" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="Mazelike" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="Mountains" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="Rule126" patternSize="3" periodic="False"/>
+    <overlapping category="Textures" name="Sand" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="SimpleWall" patternSize="2" periodic="True"/>
+    <overlapping category="Textures" name="SimpleWall" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="Spirals" patternSize="3" periodic="True"/>
+    <overlapping category="Textures" name="Wall" patternSize="2"/>
+    <overlapping category="Textures" name="Wall" patternSize="3"/>
+    <overlapping category="Textures" name="Water" patternSize="3" periodic="True"/>
+
+    <overlapping category="Worlds Side-View" name="Flowers" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Side-View" name="Skyline" patternSize="3" periodic="True"/>
+
+    <overlapping category="Worlds Top-Down" name="Angular" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="ColoredCity" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Dungeon" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Hogs" patternSize="2" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Hogs" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Lake" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="LessRooms" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Lines" patternSize="3"/>
+    <overlapping category="Worlds Top-Down" name="MagicOffice" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Office" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Office2" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Paths" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Qud" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="RedMaze" patternSize="2"/>
+    <overlapping category="Worlds Top-Down" name="Rooms" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="ScaledMaze" patternSize="2" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Sewers" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="SimpleMaze" patternSize="2"/>
+    <overlapping category="Worlds Top-Down" name="Skew1" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Skew2" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Town" patternSize="3" periodic="True"/>
+    <overlapping category="Worlds Top-Down" name="Village" patternSize="3" periodic="True"/>
+
+    <simpletiled category="Textures" name="Circles"/>
+    <simpletiled category="Textures" name="Circuit" periodic="True"/>
+    <simpletiled category="Textures" name="Knots" periodic="True"/>
+
+    <simpletiled category="Worlds Top-Down" name="Castle"/>
+    <simpletiled category="Worlds Top-Down" name="FloorPlan"/>
+</samples>

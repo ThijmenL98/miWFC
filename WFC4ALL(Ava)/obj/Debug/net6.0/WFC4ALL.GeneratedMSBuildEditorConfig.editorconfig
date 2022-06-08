@@ -1,0 +1,44 @@
+is_global = true
+build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
+build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
+build_property.AvaloniaNameGeneratorFilterByPath = *
+build_property.AvaloniaNameGeneratorFilterByNamespace = *
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = WFC4ALL
+build_property.ProjectDir = C:\Users\thijm\Documents\Git Repositories\thesis\WFC4ALL(Ava)\
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/App.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/ContentControls/AdvancedPatternItemControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/ContentControls/InputControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/ContentControls/ItemAddMenu.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/ContentControls/OutputControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/ContentControls/SimplePatternItemControl.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/Styles/CustomNumericUD.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/Views/ItemWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/thijm/Documents/Git Repositories/thesis/WFC4ALL(Ava)/Views/PaintingWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

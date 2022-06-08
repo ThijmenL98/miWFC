@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -286,8 +285,8 @@ public class WFCHandler {
 
         dbModel = new OverlappingModel(patternSize);
         bool hasRotations = (category.Equals("Worlds Top-Down")
-            || category.Equals("Knots") || category.Equals("Knots") ||
-            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+                             || category.Equals("Knots") || category.Equals("Knots") ||
+                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles,
@@ -343,7 +342,7 @@ public class WFCHandler {
         List<double> weights = new();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-            new XElement("");
+                new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -651,16 +650,33 @@ public class WFCHandler {
                 Color[,] prevOutput = getPropagatorOutputO().toArray2d();
                 int width = prevOutput.GetLength(0);
                 int height = prevOutput.GetLength(1);
-                Dictionary<Tuple<int, int>, Color> distinctList = new();
+
+                Dictionary<Tuple<int, int>, Color> distinctList = new(), tempList = new();
+                Dictionary<double, List<Tuple<int, int>>> distances = new();
+
                 for (int i = 0; i < width; i++) {
                     for (int j = 0; j < height; j++) {
                         Tuple<int, int> key = new(i, j);
+
                         Color value = prevOutput[i, j];
                         Color? toReSet = currentColors!.Contains(value) ? value : null;
 
                         if (toReSet != null) {
-                            distinctList[key] = value;
+                            tempList[key] = value;
+                            double dist = (a - i) * (a - i) + (b - j) * (b - j);
+
+                            if (!distances.ContainsKey(dist)) {
+                                distances[dist] = new List<Tuple<int, int>>();
+                            }
+
+                            distances[dist].Add(key);
                         }
+                    }
+                }
+
+                foreach ((double dist, List<Tuple<int, int>> keys) in distances.OrderBy(key => key.Key)) {
+                    foreach (Tuple<int, int> key in keys) {
+                        distinctList[key] = tempList[key];
                     }
                 }
 
@@ -668,44 +684,70 @@ public class WFCHandler {
                 await Task.Delay(10);
 
                 fsqOve.Enqueue(new Tuple<int, int, Color>(a, b, c));
-                Trace.WriteLine("Adding " + (new Tuple<int, int, Color>(a, b,c)).ToString());
+                Trace.WriteLine("Adding " + new Tuple<int, int, Color>(a, b, c));
 
-                int stepsToTake = fsqOve.toList().Count-1;
-                while (true) {
-                    int curSteps = 0;
-                    foreach ((int xLoc, int yLoc, Color value) in fsqOve.toList()) {
-                        IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
-                            .Where(tile => ((Color) tile.Value).Equals(value));
-                        Resolution forceRes = dbPropagator.select(xLoc, yLoc, 0, tilesToSelect);
-                        if (forceRes.Equals(Resolution.CONTRADICTION)) {
-                            parentCM.getInputManager().restartSolution("Override click", true, true);
-                            await Task.Delay(10);
-                            stepsToTake = curSteps;
-                            goto InnerEnd;
+                int stepsToTake = fsqOve.toList().Count - 1;
+                if (stepsToTake == 0) {
+                    IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
+                        .Where(tile => ((Color) tile.Value).Equals(c));
+                    dbPropagator.select(a, b, 0, tilesToSelect);
+                } else {
+                    while (true) {
+                        int curSteps = 0;
+                        foreach ((int xLoc, int yLoc, Color value) in fsqOve.toList()) {
+                            IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
+                                .Where(tile => ((Color) tile.Value).Equals(value));
+                            Resolution forceRes = dbPropagator.select(xLoc, yLoc, 0, tilesToSelect);
+                            if (forceRes.Equals(Resolution.CONTRADICTION)) {
+                                parentCM.getInputManager().restartSolution("Override click", true, true);
+                                await Task.Delay(10);
+                                stepsToTake = curSteps;
+                                goto InnerEnd;
+                            }
+
+                            curSteps++;
+                            if (curSteps == stepsToTake) {
+                                goto OuterEnd;
+                            }
                         }
 
-                        curSteps++;
-                        if (curSteps == stepsToTake) {
-                            goto OuterEnd;
-                        }
+                        InnerEnd: ;
                     }
-                    InnerEnd:;
+
+                    OuterEnd: ;
                 }
-                OuterEnd: ;
 
                 try {
                     await Task.Run(() => {
-                        foreach ((Tuple<int, int> key, Color value) in
-                                 new Dictionary<Tuple<int, int>, Color>(distinctList)) {
-                            foreach (TileViewModel tvm in toAddPaint.Where(tvm => tvm.PatternColour.Equals(value))) {
-#pragma warning disable CS4014
-                                setTile(key.Item1, key.Item2, tvm.PatternIndex, true, true);
-#pragma warning restore CS4014
+                        for (int retries = 0; retries < 3; retries++) {
+                            Trace.WriteLine(distinctList.Count);
+                            foreach ((Tuple<int, int> key, Color value) in
+                                     new Dictionary<Tuple<int, int>, Color>(distinctList)) {
+                                int idx = -1;
+                                foreach (TileViewModel tvm in
+                                         toAddPaint.Where(tvm => tvm.PatternColour.Equals(value))) {
+                                    idx = tvm.PatternIndex;
+                                    break;
+                                }
+
+                                if (idx != -1) {
+                                    (WriteableBitmap _, bool? successfulSet)
+                                        = setTile(key.Item1, key.Item2, idx, true, true).Result;
+                                    if (successfulSet != null && (bool) successfulSet) {
+                                        distinctList.Remove(key);
+                                    }
+                                }
                             }
+
+                            Trace.WriteLine(distinctList.Count);
                         }
 
                         mainWindowVM.setLoading(false);
                     });
+
+                    for (int i = 0; i < distinctList.Count; i++) {
+                        parentCM.getInputManager().advanceStep();
+                    }
                 } catch (TargetException) {
                     mainWindowVM.OutputImage = parentCM.getInputManager().getNoResBM();
                     return (null, false);
@@ -827,6 +869,7 @@ public class WFCHandler {
                     return (null, false);
                 }
 
+                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
                 parentCM.getInputManager().placeMarker(false);
 
                 status = dbPropagator.Status;
@@ -974,7 +1017,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                            (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                           (int) Math.Floor((double) y / tileSize)) % 2 == 0
                             ? Color.Parse("#11000000")
                             : Color.Parse("#00000000")
                         : Color.Parse("#00000000"));
