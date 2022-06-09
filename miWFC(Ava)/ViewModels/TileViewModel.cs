@@ -13,21 +13,25 @@ public class TileViewModel : ReactiveObject {
     private double _patternWeight, _changeAmount = 1.0d;
 
     private readonly CentralManager? parentCM;
-    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked;
+    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _mayRotate, _mayFlip, _mayTransform;
 
     /*
      * Used for input patterns
      */
     public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, CentralManager cm,
-        bool isF = false) {
+        int card) {
         PatternImage = image;
         PatternWeight = weight;
         PatternIndex = index;
         PatternRotation = 0;
-        PatternFlipping = isF ? -1 : 1;
+        PatternFlipping = card > 4 ? -1 : 1;
         RawPatternIndex = rawIndex;
 
         parentCM = cm;
+
+        MayFlip = card > 4;
+        MayRotate = card > 1;
+        MayTransform = MayFlip || MayRotate;
 
         FlipDisabled = false;
         RotateDisabled = false;
@@ -43,7 +47,7 @@ public class TileViewModel : ReactiveObject {
         PatternWeight = weight;
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
-
+        
         parentCM = cm;
     }
 
@@ -117,6 +121,27 @@ public class TileViewModel : ReactiveObject {
     public bool ItemAddChecked {
         get => _itemAddChecked;
         set => this.RaiseAndSetIfChanged(ref _itemAddChecked, value);
+    }
+
+    public bool MayRotate {
+        get => _mayRotate;
+        set {
+            this.RaiseAndSetIfChanged(ref _mayRotate, value);
+            MayTransform = MayFlip || MayRotate;
+        }
+    }
+
+    public bool MayFlip {
+        get => _mayFlip;
+        set {
+            this.RaiseAndSetIfChanged(ref _mayFlip, value);
+            MayTransform = MayFlip || MayRotate;
+        }
+    }
+
+    public bool MayTransform {
+        get => _mayTransform;
+        set => this.RaiseAndSetIfChanged(ref _mayTransform, value);
     }
 
     /*
@@ -194,10 +219,14 @@ public class TileViewModel : ReactiveObject {
 
     public void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
+        parentCM!.getWFCHandler().updateTransformations();
+        parentCM!.getInputManager().restartSolution("Rotate toggle", true);
     }
 
     public void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
+        parentCM!.getWFCHandler().updateTransformations();
+        parentCM!.getInputManager().restartSolution("Flip toggle", true);
     }
 
     public void OnCheckChange() {

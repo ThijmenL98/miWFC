@@ -22,7 +22,7 @@
 							        CornerRadius="10"
 							        IsVisible="{ReflectionBinding #advancedPatternItemControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
 								<!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
-								<Grid RowDefinitions="*, *" ColumnDefinitions="*, *">
+								<Grid RowDefinitions="*, *" ColumnDefinitions="*, *, Auto">
 									<Border Width="50" Height="50" Grid.Row="0"
 									        BoxShadow="0 0 15 0.25 Black"
 									        Background="Gray" Margin="10, 5, 15, 5">
@@ -157,8 +157,63 @@
 											</ToolTip.Tip>
 										</RepeatButton>
 									</Grid>
+
+									<StackPanel Grid.Row="0" Grid.Column="2" IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
+									            HorizontalAlignment="Center" VerticalAlignment="Center" Width="30">
+										<Button MaxHeight="32" Padding="0" IsVisible="{Binding MayRotate}"
+										        Background="Transparent" Margin="1" Command="{Binding OnRotateClick}">
+											<Button.Styles>
+												<Style Selector="Button:disabled /template/ ContentPresenter">
+													<Setter Property="Opacity" Value="160" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="Button:pointerover /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource hoverRotateKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="Button:pressed /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource clickRotateKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+											</Button.Styles>
+											<Panel>
+												<Image Source="/Assets/RotateEnabled.png" IsVisible="{Binding !RotateDisabled}" />
+												<Image Source="/Assets/RotateDisabled.png" IsVisible="{Binding RotateDisabled}" />
+											</Panel>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Toggle whether this tile may rotate. Disabled means the tile is invariant to rotations.</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
+										</Button>
+										<Button MaxHeight="32" Padding="0" IsVisible="{Binding MayFlip}"
+										        Background="Transparent" Margin="1" Command="{Binding OnFlipClick}">
+											<Button.Styles>
+												<Style Selector="Button:disabled /template/ ContentPresenter">
+													<Setter Property="Opacity" Value="160" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="Button:pointerover /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource hoverFlipKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="Button:pressed /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource clickFlipKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+											</Button.Styles>
+											<Panel>
+												<Image Source="/Assets/FlipEnabled.png" IsVisible="{Binding !FlipDisabled}" />
+												<Image Source="/Assets/FlipDisabled.png" IsVisible="{Binding FlipDisabled}" />
+											</Panel>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Toggle whether this tile may flip. Disabled means the tile is invariant to flipping.</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
+										</Button>
+									</StackPanel>
 								</Grid>
-								<!-- Until Here -->
 							</Border>
 
 							<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->

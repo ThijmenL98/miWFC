@@ -160,7 +160,7 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: parentCM);
+        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: parentCM, 0);
 
         patternCount++;
 

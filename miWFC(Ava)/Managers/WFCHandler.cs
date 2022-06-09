@@ -403,7 +403,7 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, parentCM, cardinality > 4);
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, parentCM, cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
@@ -433,6 +433,97 @@ public class WFCHandler {
         originalWeights = weights;
 
         return toAdd;
+    }
+
+    public void updateTransformations() {
+        string inputImage = mainWindow.getInputControl().getInputImage();
+
+        dbModel = new AdjacentModel();
+
+        xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
+                new XElement("");
+
+        tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
+
+        Dictionary<int, Tuple<Color[], Tile>> tempCache = new();
+        tileSymmetries = new Dictionary<int, int[]>();
+
+        foreach (TileViewModel tvm in mainWindowVM.PatternTiles) {
+            //TODO
+        }
+
+        foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
+            MemoryStream ms = new(File.ReadAllBytes(
+                $"{AppContext.BaseDirectory}/samples/{inputImage}/{xTile.Attribute("name")?.Value}.png"));
+            WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
+
+            Color[] cur = extractColours(writeableBitmap);
+            int val = tempCache.Count;
+            Tile curTile = new(val);
+            tempCache.Add(val, new Tuple<Color[], Tile>(cur, curTile));
+
+            int cardinality = char.Parse(xTile.Attribute("symmetry")?.Value ?? "X") switch {
+                'L' => 1,
+                'T' => 1,
+                'I' => 1,
+                '\\' => 1,
+                'F' => 1,
+                _ => 1
+            };
+            
+            List<int> symmetries = new();
+
+            double tileWeight
+                = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
+
+            for (int t = 1; t < cardinality; t++) {
+                int myIdx = tempCache.Count;
+                Color[] curCard = t <= 3
+                    ? rotate(tempCache[val + t - 1].Item1.ToArray(), tileSize)
+                    : reflect(tempCache[val + t - 4].Item1.ToArray(), tileSize);
+
+                int rotation, shouldFlip = 1;
+                if (t <= 3) {
+                    rotation = -90 * t;
+                } else {
+                    rotation = -90 * (t - 4);
+                    shouldFlip = -1;
+                    if (t == 4) {
+                        shouldFlip = 1;
+                    }
+                }
+                
+                toAddPaint.Add(
+                    new TileViewModel(writeableBitmap, tileWeight, tempCache.Count - 1, rotation, shouldFlip,
+                        parentCM));
+                tempCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
+                symmetries.Add(myIdx);
+            }
+
+            tileSymmetries.Add(val, symmetries.ToArray());
+
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tempCache.Count - 1, val, parentCM, cardinality);
+            toAddPaint.Add(tvm);
+        }
+
+        const int sampleDimension = 50;
+        int[][] values = new int[sampleDimension][];
+
+        int j = 0;
+        foreach (XElement xTile in xRoot.Element("rows")?.Elements("row")!) {
+            string[] row = xTile.Value.Split(',');
+            values[j] = new int[sampleDimension];
+            for (int k = 0; k < sampleDimension; k++) {
+                values[j][k] = int.Parse(row[k], CultureInfo.InvariantCulture);
+            }
+
+            j++;
+        }
+
+        ITopoArray<int> sample = TopoArray.create(values, false);
+        dbModel = new AdjacentModel(sample.toTiles());
+
+        updateWeights(); 
     }
 
     private (WriteableBitmap, bool) runWfcDB(int steps = 1) {
@@ -674,7 +765,7 @@ public class WFCHandler {
                     }
                 }
 
-                foreach ((double dist, List<Tuple<int, int>> keys) in distances.OrderBy(key => key.Key)) {
+                foreach ((double _, List<Tuple<int, int>> keys) in distances.OrderBy(key => key.Key)) {
                     foreach (Tuple<int, int> key in keys) {
                         distinctList[key] = tempList[key];
                     }

@@ -3,7 +3,11 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="miWFC(Ava)/ContentControls/AdvancedPatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/SimplePatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/test.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/Views/ItemWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/Views/MainWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/Views/PaintingWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
       </map>
     </option>
