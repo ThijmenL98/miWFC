@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -18,6 +19,7 @@ public partial class MainWindow : Window {
         Closing += (_, _) => {
             centralManager!.getPaintingWindow().Close();
             centralManager!.getItemWindow().Close();
+            centralManager!.getWeightMapWindow().Close();
         };
     }
 
@@ -104,6 +106,10 @@ public partial class MainWindow : Window {
                 break;
             case Key.I:
                 await centralManager.getUIManager().switchWindow(Windows.ITEMS);
+                e.Handled = true;
+                break;
+            case Key.W:
+                await centralManager.getUIManager().switchWindow(Windows.HEATMAP);
                 e.Handled = true;
                 break;
             case Key.Escape:

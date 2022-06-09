@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Managers;
@@ -13,7 +14,9 @@ public class TileViewModel : ReactiveObject {
     private double _patternWeight, _changeAmount = 1.0d;
 
     private readonly CentralManager? parentCM;
-    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked;
+    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _dynamicWeight;
+
+    private double[,] weightHeatmap = new double[0,0];
 
     /*
      * Used for input patterns
@@ -45,6 +48,15 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = patternFlipping;
 
         parentCM = cm;
+
+        int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
+        weightHeatmap = new double[xDim,yDim];
+        for (int i = 0; i < xDim; i++) {
+            for (int j = 0; j < yDim; j++) {
+                weightHeatmap[i, j] = PatternWeight;
+            }
+        }
+        DynamicWeight = false;
     }
 
     /*
@@ -119,6 +131,11 @@ public class TileViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _itemAddChecked, value);
     }
 
+    public bool DynamicWeight {
+        get => _dynamicWeight;
+        set => this.RaiseAndSetIfChanged(ref _dynamicWeight, value);
+    }
+
     /*
      * Button callbacks
      */
@@ -190,6 +207,11 @@ public class TileViewModel : ReactiveObject {
         if (isOverlapping && change != 0d) {
             parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
         }
+    }
+
+    public async void DynamicWeightClick() {
+        await parentCM!.getUIManager().switchWindow(Windows.HEATMAP);
+        parentCM!.getWeightMapWindow().updateOutput(weightHeatmap);
     }
 
     public void OnRotateClick() {

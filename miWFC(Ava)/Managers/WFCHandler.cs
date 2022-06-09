@@ -674,7 +674,7 @@ public class WFCHandler {
                     }
                 }
 
-                foreach ((double dist, List<Tuple<int, int>> keys) in distances.OrderBy(key => key.Key)) {
+                foreach ((double _, List<Tuple<int, int>> keys) in distances.OrderBy(key => key.Key)) {
                     foreach (Tuple<int, int> key in keys) {
                         distinctList[key] = tempList[key];
                     }

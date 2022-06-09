@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -211,7 +212,9 @@ public class UIManager {
                 target = mainWindow;
                 source = parentCM.getPaintingWindow().IsVisible
                     ? parentCM.getPaintingWindow()
-                    : parentCM.getItemWindow();
+                    : parentCM.getItemWindow().IsVisible
+                        ? parentCM.getItemWindow()
+                        : parentCM.getWeightMapWindow();
 
                 bool stillApply = await handlePaintingClose(checkClicked);
 
@@ -231,12 +234,19 @@ public class UIManager {
                 target = parentCM.getItemWindow();
                 source = mainWindow;
                 break;
+            case Windows.HEATMAP:
+                // Goto Items
+                target = parentCM.getWeightMapWindow();
+                source = mainWindow;
+                break;
             default:
                 throw new NotImplementedException();
         }
 
-        target.Width = source.Width;
-        target.Height = source.Height;
+        if (!window.Equals(Windows.HEATMAP) && !source.Equals(parentCM.getWeightMapWindow())) {
+            target.Width = source.Width;
+            target.Height = source.Height;
+        }
 
         source.Hide();
         target.Show();
@@ -304,5 +314,6 @@ public class UIManager {
 public enum Windows {
     MAIN,
     PAINTING,
-    ITEMS
+    ITEMS,
+    HEATMAP
 }

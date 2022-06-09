@@ -1,0 +1,186 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        d:DesignHeight="800" d:DesignWidth="970" Width="970" Height="800"
+        x:Class="miWFC.Views.WeightMapWindow" mc:Ignorable="d"
+        Icon="/Assets/icon.ico" Title="miWFC - Weight Mapping Mode"
+        xmlns:viewModels="clr-namespace:miWFC.ViewModels"
+        xmlns:avaloniaGif="clr-namespace:miWFC.AvaloniaGif">
+
+	<Window.Resources>
+		<!-- Hover resources -->
+		<Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
+		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+
+		<!-- Click resources -->
+		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
+		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+	</Window.Resources>
+
+	<Window.Styles>
+		<StyleInclude Source="/Styles/CustomNumericUD.axaml" />
+
+		<Style Selector="TextBlock">
+			<Setter Property="FontSize" Value="16" />
+		</Style>
+	</Window.Styles>
+
+	<Window.Background>
+		<ImageBrush Source="/Assets/backgroundImage4.jpg" Stretch="Fill" />
+	</Window.Background>
+
+	<Design.DataContext>
+		<viewModels:MainWindowViewModel />
+	</Design.DataContext>
+
+	<Grid>
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+				<Grid>
+					<Grid ColumnDefinitions="Auto, *" x:Name="paintingMainGrid" HorizontalAlignment="Center">
+						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, *, Auto" Margin="10">
+							<ComboBox Grid.Row="0"
+							          SelectedIndex="0" Items="{Binding PatternTiles}"
+							          x:Name="selectedTileCB" HorizontalAlignment="Center"
+							          VerticalAlignment="Center" Margin="15" Padding="10,5,0,5">
+								<ComboBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel Orientation="Horizontal" MaxWidth="400" />
+									</ItemsPanelTemplate>
+								</ComboBox.ItemsPanel>
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<Border Width="58" Padding="1" Background="#55000000" CornerRadius="9"
+										        Margin="0, 5, 0, 5">
+											<Border Padding="-4" CornerRadius="5" ClipToBounds="True" Margin="4"
+											        Background="#552FACED">
+												<Image Width="50" Height="50" Margin="4"
+												       Source="{Binding PatternImage}"
+												       RenderOptions.BitmapInterpolationMode="Default">
+													<Image.RenderTransform>
+														<TransformGroup>
+															<RotateTransform
+																Angle="{Binding Path=PatternRotation, TargetNullValue=0, FallbackValue=0}" />
+															<ScaleTransform
+																ScaleX="{Binding Path=PatternFlipping, TargetNullValue=0, FallbackValue=0}" />
+														</TransformGroup>
+													</Image.RenderTransform>
+												</Image>
+											</Border>
+										</Border>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+
+							<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
+								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+								           Margin="15, 15, 15, 7">
+									Brush Size
+								</TextBlock>
+								<ComboBox SelectedIndex="2" x:Name="BrushSizeCB" HorizontalAlignment="Center"
+								          VerticalAlignment="Center" Margin="-10, 0, -10, 15" Padding="12,3,0,4">
+									<ComboBoxItem>Tiny</ComboBoxItem>
+									<ComboBoxItem>Small</ComboBoxItem>
+									<ComboBoxItem>Medium</ComboBoxItem>
+									<ComboBoxItem>Large</ComboBoxItem>
+									<ComboBoxItem>Huge</ComboBoxItem>
+								</ComboBox>
+							</StackPanel>
+
+							<Grid Grid.Row="2" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto, *, Auto,Auto"
+							      HorizontalAlignment="Center" Margin="0, 15">
+								<NumericUpDown Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="10"
+								               Value="{Binding HeatmapMax}" />
+								<GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="10"
+								              IsEnabled="False" Background="Transparent" />
+
+								<Slider Grid.Row="2" Grid.Column="0" Value="{Binding HeatmapValue}"
+								        Minimum="{Binding HeatmapMin}" Maximum="{Binding HeatmapMax}" TickFrequency="1"
+								        IsSnapToTickEnabled="True" IsDirectionReversed="True" Margin="0, -5, 0, 0"
+								        Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+
+								<Image Grid.Row="2" Grid.Column="1" Margin="0, 0"
+								       Source="/Assets/plasma.png" Stretch="Fill" HorizontalAlignment="Stretch">
+								</Image>
+
+								<GridSplitter Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Height="10"
+								              IsEnabled="False" Background="Transparent" />
+								<NumericUpDown Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="10"
+								               Value="{Binding HeatmapMin}" />
+							</Grid>
+
+							<Grid Grid.Row="3" ColumnDefinitions="Auto, Auto" Margin="5">
+								<Button Grid.Column="0" Padding="0" Background="Transparent"
+								        Command="{Binding OnCustomizeWindowSwitch}"
+								        CommandParameter="M"  Margin="0" MaxWidth="80">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickBackKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/Back.png" />
+									</Panel>
+									<ToolTip.Tip>
+										<StackPanel>
+											<TextBlock TextWrapping="Wrap">Go back to the main screen</TextBlock>
+										</StackPanel>
+									</ToolTip.Tip>
+								</Button>
+								
+								<Button Grid.Column="1" Padding="0" Background="Transparent" 
+								        Command="{Binding OnInfoClick}"
+								        CommandParameter="H" Margin="0" MaxHeight="60" VerticalAlignment="Bottom">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickInfoKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/Info.png" />
+									</Panel>
+								</Button>
+							</Grid>
+						</Grid>
+
+						<Grid Grid.Column="1" RowDefinitions="*, Auto">
+							<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+								<Grid ColumnDefinitions="*" VerticalAlignment="Center">
+									<Border Margin="10" Background="#11000000" CornerRadius="10">
+										<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+										       x:Name="outputImage" Source="{Binding CurrentHeatmap}"
+										       PointerPressed="OutputImageOnPointerPressed"
+										       PointerMoved="OutputImageOnPointerMoved"  />
+									</Border>
+								</Grid>
+							</Grid>
+						</Grid>
+					</Grid>
+
+					<avaloniaGif:GifImage SourceUriRaw="resm:miWFC.Assets.LoadingAnim.gif"
+					                      Stretch="Uniform" MaxWidth="300" IsVisible="{Binding IsLoading}"
+					                      StretchDirection="Both" />
+				</Grid>
+			</Border>
+		</Border>
+
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="16" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="14" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="11" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="8" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="6" />
+		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="3" />
+		<Border BorderBrush="Black" BorderThickness="2" />
+	</Grid>
+</Window>

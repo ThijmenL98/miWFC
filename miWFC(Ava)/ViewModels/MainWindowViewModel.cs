@@ -31,6 +31,8 @@ public class MainWindowViewModel : ViewModelBase {
         _outputPreviewMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _currentItemImage
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
+        _currentHeatMap
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
     private bool _isPlaying,
@@ -81,7 +83,10 @@ public class MainWindowViewModel : ViewModelBase {
         _selectedTabIndex,
         _itemsToAddValue = 1,
         _itemsToAddLower = 1,
-        _itemsToAddUpper = 2;
+        _itemsToAddUpper = 2,
+        _heatmapMax = 10,
+        _heatmapMin = 1,
+        _heatmapValue = 1;
 
     private double _timeStampOffset, _timelineWidth = 600d;
 
@@ -212,6 +217,21 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _itemsToAddLower, value);
     }
 
+    public int HeatmapMax {
+        get => _heatmapMax;
+        set => this.RaiseAndSetIfChanged(ref _heatmapMax, value);
+    }
+
+    public int HeatmapMin {
+        get => _heatmapMin;
+        set => this.RaiseAndSetIfChanged(ref _heatmapMin, value);
+    }
+
+    public int HeatmapValue {
+        get => _heatmapValue;
+        set => this.RaiseAndSetIfChanged(ref _heatmapValue, value);
+    }
+
     public double TimeStampOffset {
         get => _timeStampOffset;
         set => this.RaiseAndSetIfChanged(ref _timeStampOffset, value);
@@ -250,6 +270,11 @@ public class MainWindowViewModel : ViewModelBase {
     public Bitmap CurrentItemImage {
         get => _currentItemImage;
         set => this.RaiseAndSetIfChanged(ref _currentItemImage, value);
+    }
+
+    public Bitmap CurrentHeatmap {
+        get => _currentHeatMap;
+        set => this.RaiseAndSetIfChanged(ref _currentHeatMap, value);
     }
 
     public ObservableCollection<TileViewModel> PatternTiles {

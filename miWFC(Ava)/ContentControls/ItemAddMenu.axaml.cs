@@ -144,7 +144,7 @@ public partial class ItemAddMenu : UserControl {
                     break;
 
                 case "NUDLower":
-                    centralManager!.getMainWindowVM().ItemsToAddLower = (int) this.Find<NumericUpDown>("NUDLower").Value;
+                   centralManager!.getMainWindowVM().ItemsToAddLower = (int) this.Find<NumericUpDown>("NUDLower").Value;
                     
                     if (centralManager!.getMainWindowVM().ItemsToAddLower <= 0) {
                         centralManager!.getMainWindowVM().ItemsToAddLower = 1;
