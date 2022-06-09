@@ -95,7 +95,7 @@ public class InputManager {
         try {
             int stepAmount = mainWindowVM.StepAmount;
             WriteableBitmap newOutputWb = (await parentCM.getWFCHandler()
-                .initAndRunWfcDB(true, (stepAmount == 100 && !keepOutput) ? -1 : 0, force)).Item1;
+                .initAndRunWfcDB(true, stepAmount == 100 && !keepOutput ? -1 : 0, force)).Item1;
             if (!keepOutput) {
                 mainWindowVM.OutputImage = newOutputWb;
             }

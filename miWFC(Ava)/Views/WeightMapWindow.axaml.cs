@@ -94,10 +94,45 @@ public partial class WeightMapWindow : Window {
     }
 
     private static Color interpolate(Color c1, Color c2, double percentage) {
-        Trace.WriteLine(RGBtoHSV(c1));
-        //TODO
-        return Colors.Black;
+        (double h1, double s1, double v1) = RGBtoHSV(c1);
+        (double h2, double s2, double v2) = RGBtoHSV(c2);
+
+        return HSVtoRGB(LerpAngle(h1, h2, percentage),
+            percentage * s1 + (1d - percentage) * s2,
+            percentage * v1 + (1d - percentage) * v2);
     }
+
+    private static double LerpAngle(double a, double b, double t) {
+        double delta = Repeat(b - a, 360);
+        if (delta > 180) {
+            delta -= 360;
+        }
+
+        return a + delta * Clamp01(t);
+    }
+
+    private static double Repeat(double t, double length) {
+        return Clamp(t - Math.Floor(t / length) * length, 0.0f, length);
+    }
+
+    private static double Clamp01(double value) {
+        return value switch {
+            < 0d => 0d,
+            > 1F => 1F,
+            _ => value
+        };
+    }
+
+    private static double Clamp(double value, double min, double max) {
+        if (value < min) {
+            value = min;
+        } else if (value > max) {
+            value = max;
+        }
+
+        return value;
+    }
+
 
     private static (double, double, double) RGBtoHSV(Color rgb) {
         double h = 0, s;
@@ -131,12 +166,27 @@ public partial class WeightMapWindow : Window {
             }
         }
 
-        return (h, s, (v / 255));
+        return (h, s, v / 255);
     }
 
-    private static Color HSVtoRGB(double h, double s, double v) {
-        return Colors.Black;
-        //TODO
+    private static Color HSVtoRGB(double hue, double saturation, double value) {
+        int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
+        double f = hue / 60 - Math.Floor(hue / 60);
+
+        value *= 255;
+        int v = Convert.ToInt32(value);
+        int p = Convert.ToInt32(value * (1 - saturation));
+        int q = Convert.ToInt32(value * (1 - f * saturation));
+        int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
+
+        return hi switch {
+            0 => new Color(255, (byte) v, (byte) t, (byte) p),
+            1 => Color.FromArgb(255, (byte) q, (byte) v, (byte) p),
+            2 => Color.FromArgb(255, (byte) p, (byte) v, (byte) t),
+            3 => Color.FromArgb(255, (byte) p, (byte) q, (byte) v),
+            4 => Color.FromArgb(255, (byte) t, (byte) p, (byte) v),
+            _ => Color.FromArgb(255, (byte) v, (byte) p, (byte) q)
+        };
     }
 
     public void updateOutput(double[,] currentHeatMap) {
@@ -147,9 +197,9 @@ public partial class WeightMapWindow : Window {
             AlphaFormat.Unpremul);
 
         //TODO
-        getGradientColor(0, 100, 1);
-        getGradientColor(0, 100, 50);
-        getGradientColor(0, 100, 99);
+        Trace.WriteLine(getGradientColor(0, 100, 1));
+        Trace.WriteLine(getGradientColor(0, 100, 50));
+        Trace.WriteLine(getGradientColor(0, 100, 73));
 
         centralManager!.getMainWindowVM().CurrentHeatmap = outputBitmap;
     }
