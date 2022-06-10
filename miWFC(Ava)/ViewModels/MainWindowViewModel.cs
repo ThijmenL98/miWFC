@@ -56,7 +56,8 @@ public class MainWindowViewModel : ViewModelBase {
         _inItemMenu,
         _itemsMayAppearAnywhere,
         _itemsInRange,
-        _isEditing;
+        _isEditing,
+        _hardBrushEnabled = true;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
@@ -84,9 +85,7 @@ public class MainWindowViewModel : ViewModelBase {
         _itemsToAddValue = 1,
         _itemsToAddLower = 1,
         _itemsToAddUpper = 2,
-        _heatmapMax = 10,
-        _heatmapMin = 1,
-        _heatmapValue = 1;
+        _heatmapValue = 50;
 
     private double _timeStampOffset, _timelineWidth = 600d;
 
@@ -215,16 +214,6 @@ public class MainWindowViewModel : ViewModelBase {
     public int ItemsToAddLower {
         get => _itemsToAddLower;
         set => this.RaiseAndSetIfChanged(ref _itemsToAddLower, value);
-    }
-
-    public int HeatmapMax {
-        get => _heatmapMax;
-        set => this.RaiseAndSetIfChanged(ref _heatmapMax, value);
-    }
-
-    public int HeatmapMin {
-        get => _heatmapMin;
-        set => this.RaiseAndSetIfChanged(ref _heatmapMin, value);
     }
 
     public int HeatmapValue {
@@ -374,6 +363,11 @@ public class MainWindowViewModel : ViewModelBase {
     public bool ItemsInRange {
         get => _itemsInRange;
         set => this.RaiseAndSetIfChanged(ref _itemsInRange, value);
+    }
+
+    public bool HardBrushEnabled {
+        get => _hardBrushEnabled;
+        set => this.RaiseAndSetIfChanged(ref _hardBrushEnabled, value);
     }
 
     private ItemType SelectedItemToAdd {
@@ -803,7 +797,7 @@ public class MainWindowViewModel : ViewModelBase {
         foreach (ItemViewModel ivm in ItemDataGrid) {
             List<int> allowedAdd = ivm.AllowedTiles.Select(tvm => tvm.PatternIndex).ToList();
             int toAdd = r.Next(ivm.Amount.Item1, ivm.Amount.Item2 + 1);
-            Trace.WriteLine($@"Adding {toAdd} of {ivm.Item} ({ivm.Amount.Item1},{ivm.Amount.Item2})");
+
             for (int i = 0; i < toAdd; i++) {
                 bool added = false;
                 while (!added) {

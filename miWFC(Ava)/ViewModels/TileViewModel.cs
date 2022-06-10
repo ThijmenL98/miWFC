@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Managers;
@@ -12,11 +13,12 @@ public class TileViewModel : ReactiveObject {
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
     private double _patternWeight, _changeAmount = 1.0d;
+    private string _patternWeightString;
 
     private readonly CentralManager? parentCM;
     private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _dynamicWeight;
 
-    private double[,] weightHeatmap = new double[0,0];
+    private double[,] _weightHeatmap = new double[0, 0];
 
     /*
      * Used for input patterns
@@ -34,6 +36,7 @@ public class TileViewModel : ReactiveObject {
 
         FlipDisabled = false;
         RotateDisabled = false;
+        DynamicWeight = false;
     }
 
     /*
@@ -48,14 +51,6 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = patternFlipping;
 
         parentCM = cm;
-
-        int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
-        weightHeatmap = new double[xDim,yDim];
-        for (int i = 0; i < xDim; i++) {
-            for (int j = 0; j < yDim; j++) {
-                weightHeatmap[i, j] = PatternWeight;
-            }
-        }
         DynamicWeight = false;
     }
 
@@ -69,6 +64,7 @@ public class TileViewModel : ReactiveObject {
         PatternRotation = 0;
         PatternFlipping = 1;
         parentCM = cm;
+        DynamicWeight = false;
     }
 
     public WriteableBitmap PatternImage {
@@ -78,7 +74,16 @@ public class TileViewModel : ReactiveObject {
 
     public double PatternWeight {
         get => _patternWeight;
-        set => this.RaiseAndSetIfChanged(ref _patternWeight, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _patternWeight, value);
+            PatternWeightString = DynamicWeight ? "D" :
+                _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public string PatternWeightString {
+        get => _patternWeightString;
+        set => this.RaiseAndSetIfChanged(ref _patternWeightString, value);
     }
 
     public double ChangeAmount {
@@ -133,7 +138,16 @@ public class TileViewModel : ReactiveObject {
 
     public bool DynamicWeight {
         get => _dynamicWeight;
-        set => this.RaiseAndSetIfChanged(ref _dynamicWeight, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _dynamicWeight, value);
+            PatternWeightString = DynamicWeight ? "D" :
+                _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public double[,] WeightHeatMap {
+        get => _weightHeatmap;
+        set => this.RaiseAndSetIfChanged(ref _weightHeatmap, value);
     }
 
     /*
@@ -207,11 +221,35 @@ public class TileViewModel : ReactiveObject {
         if (isOverlapping && change != 0d) {
             parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
         }
+
+        if (!DynamicWeight) {
+            int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
+            _weightHeatmap = new double[xDim, yDim];
+            for (int i = 0; i < xDim; i++) {
+                for (int j = 0; j < yDim; j++) {
+                    _weightHeatmap[i, j] = PatternWeight;
+                }
+            }
+        }
     }
 
     public async void DynamicWeightClick() {
         await parentCM!.getUIManager().switchWindow(Windows.HEATMAP);
-        parentCM!.getWeightMapWindow().updateOutput(weightHeatmap);
+
+        if (_weightHeatmap.Length == 0) {
+            int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
+            _weightHeatmap = new double[xDim, yDim];
+            for (int i = 0; i < xDim; i++) {
+                for (int j = 0; j < yDim; j++) {
+                    _weightHeatmap[i, j] = PatternWeight;
+                }
+            }
+
+            DynamicWeight = false;
+        }
+
+        parentCM!.getWeightMapWindow().setSelectedTile(RawPatternIndex);
+        parentCM!.getWeightMapWindow().updateOutput(_weightHeatmap);
     }
 
     public void OnRotateClick() {

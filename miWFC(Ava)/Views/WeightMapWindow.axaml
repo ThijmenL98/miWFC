@@ -39,8 +39,8 @@
 			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 				<Grid>
 					<Grid ColumnDefinitions="Auto, *" x:Name="paintingMainGrid" HorizontalAlignment="Center">
-						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, *, Auto" Margin="10">
-							<ComboBox Grid.Row="0"
+						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Margin="10">
+							<ComboBox Grid.Row="0" SelectionChanged="SelectedTileCB_OnSelectionChanged"
 							          SelectedIndex="0" Items="{Binding PatternTiles}"
 							          x:Name="selectedTileCB" HorizontalAlignment="Center"
 							          VerticalAlignment="Center" Margin="15" Padding="10,5,0,5">
@@ -57,16 +57,7 @@
 											        Background="#552FACED">
 												<Image Width="50" Height="50" Margin="4"
 												       Source="{Binding PatternImage}"
-												       RenderOptions.BitmapInterpolationMode="Default">
-													<Image.RenderTransform>
-														<TransformGroup>
-															<RotateTransform
-																Angle="{Binding Path=PatternRotation, TargetNullValue=0, FallbackValue=0}" />
-															<ScaleTransform
-																ScaleX="{Binding Path=PatternFlipping, TargetNullValue=0, FallbackValue=0}" />
-														</TransformGroup>
-													</Image.RenderTransform>
-												</Image>
+												       RenderOptions.BitmapInterpolationMode="Default"/>
 											</Border>
 										</Border>
 									</DataTemplate>
@@ -75,7 +66,7 @@
 
 							<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
 								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-								           Margin="15, 15, 15, 7">
+								           Margin="5">
 									Brush Size
 								</TextBlock>
 								<ComboBox SelectedIndex="2" x:Name="BrushSizeCB" HorizontalAlignment="Center"
@@ -87,30 +78,40 @@
 									<ComboBoxItem>Huge</ComboBoxItem>
 								</ComboBox>
 							</StackPanel>
+							
+							<ToggleSwitch Grid.Row="2" OffContent="Hard Brush" OnContent="Soft Brush" Margin="5, 0"
+							              IsChecked="{Binding !HardBrushEnabled}" />
 
-							<Grid Grid.Row="2" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto, *, Auto,Auto"
-							      HorizontalAlignment="Center" Margin="0, 15">
-								<NumericUpDown Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="10"
-								               Value="{Binding HeatmapMax}" />
-								<GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="10"
+							<Grid Grid.Row="3" ColumnDefinitions="Auto, Auto, Auto" RowDefinitions="Auto,Auto, *, Auto,Auto"
+							      HorizontalAlignment="Center" Margin="0, 15" VerticalAlignment="Center">
+								<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center"
+								           VerticalAlignment="Center" Width="45"
+								           FontWeight="UltraBold" FontSize="24" Margin="0" 
+								           Text="{Binding HeatmapValue}"/>
+								
+								<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"  HorizontalAlignment="Center" VerticalAlignment="Center"
+								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Plentiful"/>
+								
+								<GridSplitter Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="10"
 								              IsEnabled="False" Background="Transparent" />
 
-								<Slider Grid.Row="2" Grid.Column="0" Value="{Binding HeatmapValue}"
-								        Minimum="{Binding HeatmapMin}" Maximum="{Binding HeatmapMax}" TickFrequency="1"
-								        IsSnapToTickEnabled="True" IsDirectionReversed="True" Margin="0, -5, 0, 0"
+								<Slider Grid.Row="2" Grid.Column="1" Value="{Binding HeatmapValue}"
+								        Minimum="0" Maximum="100" TickFrequency="1"
+								        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
 								        Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 
-								<Image Grid.Row="2" Grid.Column="1" Margin="0, 0"
+								<Image Grid.Row="2" Grid.Column="2" Margin="0, 0"
 								       Source="/Assets/plasma.png" Stretch="Fill" HorizontalAlignment="Stretch">
 								</Image>
 
-								<GridSplitter Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Height="10"
+								<GridSplitter Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Height="10"
 								              IsEnabled="False" Background="Transparent" />
-								<NumericUpDown Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="10"
-								               Value="{Binding HeatmapMin}" />
+								
+								<TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"  HorizontalAlignment="Center" VerticalAlignment="Center"
+								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Rarely"/>
 							</Grid>
 
-							<Grid Grid.Row="3" ColumnDefinitions="Auto, Auto" Margin="5">
+							<Grid Grid.Row="4" ColumnDefinitions="Auto, Auto" Margin="5">
 								<Button Grid.Column="0" Padding="0" Background="Transparent"
 								        Command="{Binding OnCustomizeWindowSwitch}"
 								        CommandParameter="M"  Margin="0" MaxWidth="80">

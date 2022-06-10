@@ -87,7 +87,7 @@ public partial class PaintingWindow : Window {
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
         bool allowClick = !centralManager!.getMainWindowVM().IsPaintOverrideEnabled || forceClick;
         if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
-             || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
+                || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
             && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
             try {
                 centralManager?.getInputManager().processClickMask((int) Math.Round(posX),

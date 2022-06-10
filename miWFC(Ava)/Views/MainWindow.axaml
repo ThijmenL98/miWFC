@@ -178,21 +178,60 @@
 								<contentControls:InputControl DataContext="{Binding VM}"
 								                        Grid.Row="0" x:Name="inputControl" />
 
-								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
-									<TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 0"
-									           Text="Extracted patterns with the current settings" TextWrapping="Wrap" />
+								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
+									<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+										<TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 0, 0"
+										           Text="Extracted tiles with the current settings" TextWrapping="Wrap" />
+										
+										<TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 0, 5"
+										           Text="Click on the tile value to edit dynamic value mapping." TextWrapping="Wrap"
+										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}"/>
+										
+										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
+										        Command="{Binding OnWeightReset}"
+										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
+											<Button.Styles>
+												<Style Selector="Button:pointerover /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
+													<Setter Property="Background" Value="Transparent" />
+													<Setter Property="RenderTransform">
+														<Setter.Value>
+															<RotateTransform Angle="-90" />
+														</Setter.Value>
+													</Setter>
+												</Style>
+												<Style Selector="Button:pressed /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
+													<Setter Property="Background" Value="Transparent" />
+													<Setter Property="RenderTransform">
+														<Setter.Value>
+															<RotateTransform Angle="-90" />
+														</Setter.Value>
+													</Setter>
+												</Style>
+											</Button.Styles>
+											<Panel>
+												<Image Source="/Assets/Restart.png">
+													<Image.RenderTransform>
+														<RotateTransform Angle="-90" />
+													</Image.RenderTransform>
+												</Image>
+											</Panel>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Reset the weights to default</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
+										</Button>
+									</Grid>
 									
-									<TextBlock Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 10, 5"
-									           Text="Click on the tile value to edit dynamic value mapping." TextWrapping="Wrap"
-									           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}"/>
-
-									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
+									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15"
 									        IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}">
 										<contentControls:AdvancedPatternItemControl DataContext="{Binding VM}" />
 									</Border>
 
-									<Border Grid.Row="3" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
+									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">
 										<contentControls:SimplePatternItemControl DataContext="{Binding VM}" />
 									</Border>

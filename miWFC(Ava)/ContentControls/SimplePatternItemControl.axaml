@@ -43,18 +43,19 @@
 												</Style>
 											</Button.Styles>
 											
-											<TextBlock Text="{Binding PatternWeight, FallbackValue=2, StringFormat={}{0:0.#;;~0}}"
+											<TextBlock Text="{Binding PatternWeightString}"
 											            FontSize="30" FontWeight="UltraBold" Foreground="#F005" />
 										</Button>
 										
 										<ToolTip.Tip>
 											<StackPanel>
-												<TextBlock TextWrapping="Wrap">Set the weight of this pattern '~0' means it tries to be 0, but might be forced to place a tile. Click on me to edit dynamic value mapping.</TextBlock>
+												<TextBlock TextWrapping="Wrap">Set the weight of this tile '~0' means it tries to be 0, but might be forced to place a tile. Click on me to edit dynamic value mapping.</TextBlock>
 											</StackPanel>
 										</ToolTip.Tip>
 									</Grid>
 
-									<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *, *" Margin="-15, 0, 0, 0">
+									<Grid Grid.Row="0" Grid.Column="1" RowDefinitions="*, *, *" Margin="-15, 0, 0, 0"
+									      IsEnabled="{Binding !DynamicWeight}">
 										<RepeatButton Grid.Row="0" Padding="4" VerticalAlignment="Top" Content="▲" Command="{Binding OnIncrement}"
 										              HorizontalAlignment="Center"
 										              Background="Transparent"
@@ -111,7 +112,7 @@
 											           FontSize="12" FontWeight="UltraBold">
 												<ToolTip.Tip>
 													<StackPanel>
-														<TextBlock TextWrapping="Wrap">This value indicates the amount the actual pattern associated value will change upon clicking the up/down arrows to tweak this value</TextBlock>
+														<TextBlock TextWrapping="Wrap">This value indicates the amount the actual tile associated value will change upon clicking the up/down arrows to tweak this value</TextBlock>
 													</StackPanel>
 												</ToolTip.Tip>
 											</TextBlock>

@@ -206,6 +206,8 @@ public class UIManager {
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         Window target, source;
 
+        mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+
         switch (window) {
             case Windows.MAIN:
                 // Goto main
@@ -268,8 +270,6 @@ public class UIManager {
         }
 
         target.Position = source.Position;
-
-        mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
     }
 
     private async Task<bool> handlePaintingClose(bool checkClicked) {

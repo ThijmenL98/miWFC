@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -9,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.Managers;
+using miWFC.ViewModels;
 
 namespace miWFC.Views;
 
@@ -57,22 +61,22 @@ public partial class WeightMapWindow : Window {
         centralManager = cm;
     }
 
-    public int getSelectedPaintIndex() {
+    private int getSelectedPaintIndex() {
         return _selectedTileCB.SelectedIndex;
     }
 
-    public int getPaintBrushSize() {
-        int[] sizes = {-1, 1, 2, 3, 6, 10, 15, 25};
+    private int getPaintBrushSize() {
+        int[] sizes = {1, 3, 6, 15, 25};
         return sizes[_paintingSizeCB.SelectedIndex];
     }
 
-    public static Color getGradientColor(int min, int max, int value) {
+    private static Color getGradientColor(double value) {
         Color[] intermediatePoints = {
             Color.Parse("#eff821"), Color.Parse("#f89540"), Color.Parse("#ca4678"), Color.Parse("#7c02a7"),
             Color.Parse("#0c0786")
         };
 
-        double percentage = normalizeValue(value, min, max);
+        double percentage = 1d - normalizeValue(value, 0, 100);
 
         return percentage switch {
             0d => intermediatePoints[0],
@@ -97,30 +101,18 @@ public partial class WeightMapWindow : Window {
         (double h1, double s1, double v1) = RGBtoHSV(c1);
         (double h2, double s2, double v2) = RGBtoHSV(c2);
 
-        return HSVtoRGB(LerpAngle(h1, h2, percentage),
-            percentage * s1 + (1d - percentage) * s2,
-            percentage * v1 + (1d - percentage) * v2);
-    }
 
-    private static double LerpAngle(double a, double b, double t) {
-        double delta = Repeat(b - a, 360);
+        double delta = Clamp(h2 - h1 - Math.Floor((h2 - h1) / 360) * 360, 0.0f, 360);
         if (delta > 180) {
             delta -= 360;
         }
 
-        return a + delta * Clamp01(t);
-    }
+        double clampedPercentage = percentage < 0d ? 0d : percentage > 1d ? 1d : percentage;
+        double newH = h1 + delta * clampedPercentage;
 
-    private static double Repeat(double t, double length) {
-        return Clamp(t - Math.Floor(t / length) * length, 0.0f, length);
-    }
-
-    private static double Clamp01(double value) {
-        return value switch {
-            < 0d => 0d,
-            > 1F => 1F,
-            _ => value
-        };
+        return HSVtoRGB(newH,
+            percentage * s1 + (1d - percentage) * s2,
+            percentage * v1 + (1d - percentage) * v2);
     }
 
     private static double Clamp(double value, double min, double max) {
@@ -190,16 +182,27 @@ public partial class WeightMapWindow : Window {
     }
 
     public void updateOutput(double[,] currentHeatMap) {
-        int outWidth = centralManager!.getMainWindowVM().ImageOutWidth,
-            outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
+        int outWidth = centralManager!.getMainWindowVM().ImageOutWidth;
+        int outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
+
         WriteableBitmap outputBitmap = new(new PixelSize(outWidth, outHeight), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Unpremul);
 
-        //TODO
-        Trace.WriteLine(getGradientColor(0, 100, 1));
-        Trace.WriteLine(getGradientColor(0, 100, 50));
-        Trace.WriteLine(getGradientColor(0, 100, 73));
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, outHeight, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < outWidth; x++) {
+                    Color toSet = getGradientColor(currentHeatMap[x, (int) y]);
+                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
+                }
+            });
+        }
 
         centralManager!.getMainWindowVM().CurrentHeatmap = outputBitmap;
     }
@@ -210,9 +213,119 @@ public partial class WeightMapWindow : Window {
     }
 
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
-        //TODO
         if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
-            Trace.WriteLine("CLick");
+            (double posX, double posY) = e.GetPosition(e.Source as Image);
+            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+
+            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+
+            int a = (int) Math.Floor(Math.Round(posX) * mainWindowVM.ImageOutWidth / Math.Round(imgWidth)),
+                b = (int) Math.Floor(Math.Round(posY) * mainWindowVM.ImageOutHeight / Math.Round(imgHeight));
+            
+            Trace.WriteLine($@"{a}, {b}");
+
+            int rawBrushSize = getPaintBrushSize();
+            double brushSize = rawBrushSize switch {
+                1 => rawBrushSize,
+                _ => rawBrushSize * 3d
+            };
+
+            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem!;
+
+            double[,] maskValues = new double[outputWidth, outputHeight];
+            if (selectedTVM.WeightHeatMap.Length != 0) {
+                maskValues = selectedTVM.WeightHeatMap;
+            }
+
+            double selectedValue = mainWindowVM.HeatmapValue > 0 ? mainWindowVM.HeatmapValue : 0.00000000001d;
+
+            if (selectedTVM != null) {
+                if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+                    for (int x = 0; x < outputWidth; x++) {
+                        for (int y = 0; y < outputHeight; y++) {
+                            double dx = (double) x - a;
+                            double dy = (double) y - b;
+                            double distanceSquared = dx * dx + dy * dy;
+
+                            if (mainWindowVM.HardBrushEnabled) {
+                                if (distanceSquared <= brushSize) {
+                                    maskValues[x, y] = selectedValue;
+                                }
+                            } else {
+                                if (distanceSquared <= brushSize) {
+                                    double percentage = Math.Min(1d, 1.2d - distanceSquared / brushSize);
+                                    maskValues[x, y] = Math.Round(percentage * selectedValue
+                                        + (1d - percentage) * maskValues[x, y]);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                HashSet<double> unique = new();
+                HashSet<double> duplicates = new();
+
+                for (int i = 0; i < maskValues.GetLength(0); ++i) {
+                    for (int j = 0; j < maskValues.GetLength(1); ++j) {
+                        if (!unique.Add(maskValues[i, j])) {
+                            duplicates.Add(maskValues[i, j]);
+                        }
+                    }
+                }
+
+                selectedTVM.DynamicWeight = duplicates.Count > 1;
+                if (!selectedTVM.DynamicWeight && duplicates.Count == 1) {
+                    selectedTVM.PatternWeight = mainWindowVM.HeatmapValue;
+                }
+
+                selectedTVM.WeightHeatMap = maskValues;
+
+                updateOutput(maskValues);
+            }
+        }
+    }
+
+    public void setSelectedTile(int patternIndex) {
+        foreach (TileViewModel tvm in _selectedTileCB.Items) {
+            if (tvm.RawPatternIndex.Equals(patternIndex)) {
+                _selectedTileCB.SelectedItem = tvm;
+            }
+        }
+    }
+
+    private void SelectedTileCB_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+
+        TileViewModel? selectedTVM = (TileViewModel) (e.Source as ComboBox)?.SelectedItem ?? null;
+
+        if (selectedTVM == null) {
+            return;
+        }
+
+        MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+        int idx = getSelectedPaintIndex();
+        double[,] maskValues = new double[outputWidth, outputHeight];
+
+        if (selectedTVM.WeightHeatMap.Length != 0) {
+            maskValues = selectedTVM.WeightHeatMap;
+        }
+
+        if (selectedTVM != null) {
+            if (selectedTVM.WeightHeatMap.Length == 0) {
+                for (int x = 0; x < outputWidth; x++) {
+                    for (int y = 0; y < outputHeight; y++) {
+                        maskValues[x, y] = selectedTVM.PatternWeight;
+                    }
+                }
+            } else {
+                maskValues = selectedTVM.WeightHeatMap;
+            }
+
+            updateOutput(maskValues);
         }
     }
 }

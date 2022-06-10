@@ -6,6 +6,7 @@ using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
 using miWFC.DeBroglie.Wfc;
+using miWFC.Managers;
 
 namespace miWFC.DeBroglie; 
 
@@ -26,11 +27,13 @@ public class TilePropagator {
 
     private readonly WavePropagator wavePropagator;
 
+    private CentralManager cm;
+
     public WavePropagator getWP() {
         return wavePropagator;
     }
 
-    public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options) {
+    public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, CentralManager _cm) {
         TileModel = tileModel;
         Topology = topology;
 
@@ -45,7 +48,7 @@ public class TilePropagator {
 
         Func<double> randomDouble = options.RandomDouble;
 
-        (IIndexPicker indexPicker, IPatternPicker patternPicker) = MakePickers(options);
+        (HeapEntropyTracker indexPicker, WeightedRandomPatternPicker patternPicker) = MakePickers(options);
 
         WavePropagatorOptions wavePropagatorOptions = new() {
             BacktrackPolicy = MakeBacktrackPolicy(options),
@@ -57,12 +60,15 @@ public class TilePropagator {
             ModelConstraintAlgorithm = options.ModelConstraintAlgorithm
         };
 
+        cm = _cm;
+
         wavePropagator = new WavePropagator(
             patternModel,
             patternTopology,
             topology.Width,
             topology.Height,
-            wavePropagatorOptions);
+            wavePropagatorOptions,
+            cm);
         wavePropagator.Clear();
     }
 
@@ -300,8 +306,7 @@ public class TilePropagator {
     public Resolution step() {
         return wavePropagator.Step();
     }
-
-
+    
     public void StepConstraints() {
         wavePropagator.StepConstraints();
     }

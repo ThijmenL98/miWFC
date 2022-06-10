@@ -63,7 +63,7 @@
 			       Source="{Binding InputImage}" x:Name="inputImage" />
 		</Border>
 
-		<Grid ColumnDefinitions="Auto, Auto, *, Auto" Grid.Row="2" RowDefinitions="Auto, Auto"
+		<Grid ColumnDefinitions="Auto, *" Grid.Row="2" RowDefinitions="Auto, Auto"
 		      HorizontalAlignment="Center"
 		      VerticalAlignment="Center">
 			<Grid.Styles>
@@ -99,45 +99,6 @@
 			           VerticalAlignment="Center" />
 
 			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" Command="{Binding OnInputWrappingChanged}" />
-
-			<GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" IsEnabled="False" Background="Transparent" />
-
-			<Button Padding="0" Grid.Column="3" Grid.Row="0" Grid.RowSpan="2" Width="80" Margin="0"
-			        Command="{Binding OnWeightReset}"
-			        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
-				<Button.Styles>
-					<Style Selector="Button:pointerover /template/ ContentPresenter">
-						<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
-						<Setter Property="Background" Value="Transparent" />
-						<Setter Property="RenderTransform">
-							<Setter.Value>
-								<RotateTransform Angle="-90" />
-							</Setter.Value>
-						</Setter>
-					</Style>
-					<Style Selector="Button:pressed /template/ ContentPresenter">
-						<Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
-						<Setter Property="Background" Value="Transparent" />
-						<Setter Property="RenderTransform">
-							<Setter.Value>
-								<RotateTransform Angle="-90" />
-							</Setter.Value>
-						</Setter>
-					</Style>
-				</Button.Styles>
-				<Panel>
-					<Image Source="/Assets/Restart.png">
-						<Image.RenderTransform>
-							<RotateTransform Angle="-90" />
-						</Image.RenderTransform>
-					</Image>
-				</Panel>
-				<ToolTip.Tip>
-					<StackPanel>
-						<TextBlock TextWrapping="Wrap">Reset the weights to default</TextBlock>
-					</StackPanel>
-				</ToolTip.Tip>
-			</Button>
 		</Grid>
 
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300" />
