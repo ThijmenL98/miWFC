@@ -39,6 +39,9 @@ public class MainWindowViewModel : ViewModelBase {
         _inputWrapping,
         _instantCollapse,
         _mainInfoPopupVisible,
+        _itemsInfoPopupVisible,
+        _paintInfoPopupVisible,
+        _heatmapInfoPopupVisible,
         _isLoading,
         _advancedEnabled,
         _simpleModel,
@@ -292,6 +295,21 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _mainInfoPopupVisible, value);
     }
 
+    public bool PaintInfoPopupVisible {
+        get => _paintInfoPopupVisible;
+        set => this.RaiseAndSetIfChanged(ref _paintInfoPopupVisible, value);
+    }
+
+    public bool ItemsInfoPopupVisible {
+        get => _itemsInfoPopupVisible;
+        set => this.RaiseAndSetIfChanged(ref _itemsInfoPopupVisible, value);
+    }
+
+    public bool HeatmapInfoPopupVisible {
+        get => _heatmapInfoPopupVisible;
+        set => this.RaiseAndSetIfChanged(ref _heatmapInfoPopupVisible, value);
+    }
+    
     public bool PencilModeEnabled {
         get => _pencilModeEnabled;
         set => this.RaiseAndSetIfChanged(ref _pencilModeEnabled, value);

@@ -37,7 +37,8 @@ public class TileViewModel : ReactiveObject {
         RotateDisabled = false;
         DynamicWeight = false;
 
-        _patternWeightString = "";
+        _patternWeightString = DynamicWeight ? "D" :
+            _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
 
     /*
@@ -53,8 +54,9 @@ public class TileViewModel : ReactiveObject {
 
         parentCM = cm;
         DynamicWeight = false;
-
-        _patternWeightString = "";
+        
+        _patternWeightString = DynamicWeight ? "D" :
+            _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
 
     /*
@@ -68,8 +70,9 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = 1;
         parentCM = cm;
         DynamicWeight = false;
-
-        _patternWeightString = "";
+        
+        _patternWeightString = DynamicWeight ? "D" :
+            _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
 
     public WriteableBitmap PatternImage {

@@ -220,6 +220,7 @@ public partial class WeightMapWindow : Window {
             }
 
             selectedTVM.WeightHeatMap = maskValues;
+            selectedTVM.DynamicWeight = false;
 
             updateOutput(maskValues);
         }

@@ -142,7 +142,7 @@
 										<Border Padding="1">
 											<Grid Margin="5">
 												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicMain.png"
-												       Stretch="Uniform" MaxHeight="700" />
+												       Stretch="Uniform" Height="700" />
 												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 												        VerticalAlignment="Top"
 												        x:Name="borderPaddingToggle" Background="Transparent"

@@ -97,17 +97,32 @@ public class UIManager {
      */
 
     public void showPopUp(string param) {
-        if (param.Equals("M")) {
-            mainWindowVM.MainInfoPopupVisible = true;
+        switch (param) {
+            case "M":
+                mainWindowVM.MainInfoPopupVisible = true;
+                break;
+            case "I":
+               //TODO mainWindowVM.ItemsInfoPopupVisible = true;
+                break;
+            case "P":
+                mainWindowVM.PaintInfoPopupVisible = true;
+                break;
+            case "H":
+               //TODO mainWindowVM.HeatmapInfoPopupVisible = true;
+                break;
         }
     }
 
     public void hidePopUp() {
         mainWindowVM.MainInfoPopupVisible = false;
+        mainWindowVM.PaintInfoPopupVisible = false;
+        mainWindowVM.ItemsInfoPopupVisible = false;
+        mainWindowVM.HeatmapInfoPopupVisible = false;
     }
 
     public bool popUpOpened() {
-        return mainWindowVM.MainInfoPopupVisible;
+        return mainWindowVM.MainInfoPopupVisible || mainWindowVM.ItemsInfoPopupVisible ||
+               mainWindowVM.PaintInfoPopupVisible || mainWindowVM.HeatmapInfoPopupVisible;
     }
 
     public void resetPatterns() {
@@ -204,14 +219,14 @@ public class UIManager {
     }
 
     public async Task switchWindow(Windows window, bool checkClicked = false) {
-        Window target, source;
-
         mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+        
+        Trace.WriteLine(@$"We want to switch to {window}");
+        Window target = mainWindow, source = mainWindow;
 
         switch (window) {
             case Windows.MAIN:
                 // Goto main
-                target = mainWindow;
                 source = parentCM.getPaintingWindow().IsVisible
                     ? parentCM.getPaintingWindow()
                     : parentCM.getItemWindow().IsVisible
@@ -229,17 +244,14 @@ public class UIManager {
                 // Goto paint
                 mainWindowVM.PencilModeEnabled = true;
                 target = parentCM.getPaintingWindow();
-                source = mainWindow;
                 break;
             case Windows.ITEMS:
                 // Goto items
                 target = parentCM.getItemWindow();
-                source = mainWindow;
                 break;
             case Windows.HEATMAP:
                 // Goto Items
                 target = parentCM.getWeightMapWindow();
-                source = mainWindow;
                 break;
             default:
                 throw new NotImplementedException();
@@ -249,9 +261,6 @@ public class UIManager {
             target.Width = source.Width;
             target.Height = source.Height;
         }
-
-        source.Hide();
-        target.Show();
 
         if (!Equals(target, parentCM.getItemWindow()) && !Equals(source, parentCM.getItemWindow())) {
             ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
@@ -268,6 +277,9 @@ public class UIManager {
 
             updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
         }
+
+        source.Hide();
+        target.Show();
 
         target.Position = source.Position;
     }

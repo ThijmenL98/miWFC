@@ -108,10 +108,6 @@ public partial class MainWindow : Window {
                 await centralManager.getUIManager().switchWindow(Windows.ITEMS);
                 e.Handled = true;
                 break;
-            case Key.W:
-                await centralManager.getUIManager().switchWindow(Windows.HEATMAP);
-                e.Handled = true;
-                break;
             case Key.Escape:
                 if (centralManager.getUIManager().popUpOpened()) {
                     centralManager.getUIManager().hidePopUp();
