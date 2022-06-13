@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -61,10 +59,6 @@ public partial class WeightMapWindow : Window {
         centralManager = cm;
     }
 
-    private int getSelectedPaintIndex() {
-        return _selectedTileCB.SelectedIndex;
-    }
-
     private int getPaintBrushSize() {
         int[] sizes = {1, 3, 6, 15, 25};
         return sizes[_paintingSizeCB.SelectedIndex];
@@ -76,7 +70,11 @@ public partial class WeightMapWindow : Window {
             Color.Parse("#0c0786")
         };
 
-        double percentage = 1d - normalizeValue(value, 0, 100);
+        if (value <= 0.00000001d) {
+            value = 0;
+        }
+
+        double percentage = 1d - normalizeValue(value, 0, 250);
 
         return percentage switch {
             0d => intermediatePoints[0],
@@ -89,7 +87,7 @@ public partial class WeightMapWindow : Window {
                 normalizeValue(percentage, 0.5d, 0.75d)),
             0.75d => intermediatePoints[3],
             < 1d => interpolate(intermediatePoints[3], intermediatePoints[4], normalizeValue(percentage, 0.75d, 1d)),
-            _ => intermediatePoints[4]
+            _ => Color.Parse("#0b0781")
         };
     }
 
@@ -207,10 +205,32 @@ public partial class WeightMapWindow : Window {
         centralManager!.getMainWindowVM().CurrentHeatmap = outputBitmap;
     }
 
+    public void resetCurrentMapping() {
+        if (_selectedTileCB.SelectedItem != null) {
+            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
+
+            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+            double[,] maskValues = new double[outputWidth, outputHeight];
+
+            for (int x = 0; x < outputWidth; x++) {
+                for (int y = 0; y < outputHeight; y++) {
+                    maskValues[x, y] = selectedTVM.PatternWeight;
+                }
+            }
+
+            selectedTVM.WeightHeatMap = maskValues;
+
+            updateOutput(maskValues);
+        }
+    }
+
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
         // ReSharper disable once IntroduceOptionalParameters.Local
         OutputImageOnPointerMoved(sender, e);
     }
+
+    private int lastPosX = -1, lastPosY = -1;
 
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
@@ -222,8 +242,13 @@ public partial class WeightMapWindow : Window {
 
             int a = (int) Math.Floor(Math.Round(posX) * mainWindowVM.ImageOutWidth / Math.Round(imgWidth)),
                 b = (int) Math.Floor(Math.Round(posY) * mainWindowVM.ImageOutHeight / Math.Round(imgHeight));
-            
-            Trace.WriteLine($@"{a}, {b}");
+
+            if (lastPosX == a && lastPosY == b) {
+                return;
+            }
+
+            lastPosX = a;
+            lastPosY = b;
 
             int rawBrushSize = getPaintBrushSize();
             double brushSize = rawBrushSize switch {
@@ -231,16 +256,16 @@ public partial class WeightMapWindow : Window {
                 _ => rawBrushSize * 3d
             };
 
-            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem!;
+            if (_selectedTileCB.SelectedItem != null) {
+                TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
 
-            double[,] maskValues = new double[outputWidth, outputHeight];
-            if (selectedTVM.WeightHeatMap.Length != 0) {
-                maskValues = selectedTVM.WeightHeatMap;
-            }
+                double[,] maskValues = new double[outputWidth, outputHeight];
+                if (selectedTVM.WeightHeatMap.Length != 0) {
+                    maskValues = selectedTVM.WeightHeatMap;
+                }
 
-            double selectedValue = mainWindowVM.HeatmapValue > 0 ? mainWindowVM.HeatmapValue : 0.00000000001d;
+                double selectedValue = mainWindowVM.HeatmapValue > 0 ? mainWindowVM.HeatmapValue : 0.00000000001d;
 
-            if (selectedTVM != null) {
                 if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
                     for (int x = 0; x < outputWidth; x++) {
                         for (int y = 0; y < outputHeight; y++) {
@@ -256,7 +281,7 @@ public partial class WeightMapWindow : Window {
                                 if (distanceSquared <= brushSize) {
                                     double percentage = Math.Min(1d, 1.2d - distanceSquared / brushSize);
                                     maskValues[x, y] = Math.Round(percentage * selectedValue
-                                        + (1d - percentage) * maskValues[x, y]);
+                                                                  + (1d - percentage) * maskValues[x, y]);
                                 }
                             }
                         }
@@ -294,27 +319,25 @@ public partial class WeightMapWindow : Window {
         }
     }
 
+    // ReSharper disable once UnusedParameter.Local
+    // ReSharper disable once SuggestBaseTypeForParameter
     private void SelectedTileCB_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
         }
 
-        TileViewModel? selectedTVM = (TileViewModel) (e.Source as ComboBox)?.SelectedItem ?? null;
+        object? selectedItem = (e.Source as ComboBox)?.SelectedItem;
+        if (selectedItem != null) {
+            TileViewModel selectedTVM = (TileViewModel) selectedItem;
 
-        if (selectedTVM == null) {
-            return;
-        }
+            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+            double[,] maskValues = new double[outputWidth, outputHeight];
 
-        MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
-        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
-        int idx = getSelectedPaintIndex();
-        double[,] maskValues = new double[outputWidth, outputHeight];
+            if (selectedTVM.WeightHeatMap.Length != 0) {
+                maskValues = selectedTVM.WeightHeatMap;
+            }
 
-        if (selectedTVM.WeightHeatMap.Length != 0) {
-            maskValues = selectedTVM.WeightHeatMap;
-        }
-
-        if (selectedTVM != null) {
             if (selectedTVM.WeightHeatMap.Length == 0) {
                 for (int x = 0; x < outputWidth; x++) {
                     for (int y = 0; y < outputHeight; y++) {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -37,6 +36,8 @@ public class TileViewModel : ReactiveObject {
         FlipDisabled = false;
         RotateDisabled = false;
         DynamicWeight = false;
+
+        _patternWeightString = "";
     }
 
     /*
@@ -52,6 +53,8 @@ public class TileViewModel : ReactiveObject {
 
         parentCM = cm;
         DynamicWeight = false;
+
+        _patternWeightString = "";
     }
 
     /*
@@ -65,6 +68,8 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = 1;
         parentCM = cm;
         DynamicWeight = false;
+
+        _patternWeightString = "";
     }
 
     public WriteableBitmap PatternImage {
@@ -215,7 +220,7 @@ public class TileViewModel : ReactiveObject {
                 break;
         }
 
-        PatternWeight = Math.Min(isOverlapping ? Math.Min(1d, PatternWeight) : Math.Round(PatternWeight, 1), 100d);
+        PatternWeight = isOverlapping ? Math.Min(1d, PatternWeight) : Math.Min(Math.Round(PatternWeight, 1), 250d);
         double change = oldWeight - PatternWeight;
 
         if (isOverlapping && change != 0d) {
@@ -236,16 +241,9 @@ public class TileViewModel : ReactiveObject {
     public async void DynamicWeightClick() {
         await parentCM!.getUIManager().switchWindow(Windows.HEATMAP);
 
-        if (_weightHeatmap.Length == 0) {
-            int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
-            _weightHeatmap = new double[xDim, yDim];
-            for (int i = 0; i < xDim; i++) {
-                for (int j = 0; j < yDim; j++) {
-                    _weightHeatmap[i, j] = PatternWeight;
-                }
-            }
-
-            DynamicWeight = false;
+        int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
+        if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
+            parentCM.getWFCHandler().resetWeights();
         }
 
         parentCM!.getWeightMapWindow().setSelectedTile(RawPatternIndex);

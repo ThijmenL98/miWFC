@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        d:DesignHeight="800" d:DesignWidth="970" Width="970" Height="800"
+        d:DesignHeight="900" d:DesignWidth="1070" Width="1070" Height="900"
         x:Class="miWFC.Views.WeightMapWindow" mc:Ignorable="d"
         Icon="/Assets/icon.ico" Title="miWFC - Weight Mapping Mode"
         xmlns:viewModels="clr-namespace:miWFC.ViewModels"
@@ -12,10 +12,12 @@
 		<!-- Hover resources -->
 		<Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
+		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
 		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
+		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -39,7 +41,7 @@
 			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 				<Grid>
 					<Grid ColumnDefinitions="Auto, *" x:Name="paintingMainGrid" HorizontalAlignment="Center">
-						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, *, Auto" Margin="10">
+						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" Margin="10">
 							<ComboBox Grid.Row="0" SelectionChanged="SelectedTileCB_OnSelectionChanged"
 							          SelectedIndex="0" Items="{Binding PatternTiles}"
 							          x:Name="selectedTileCB" HorizontalAlignment="Center"
@@ -57,14 +59,14 @@
 											        Background="#552FACED">
 												<Image Width="50" Height="50" Margin="4"
 												       Source="{Binding PatternImage}"
-												       RenderOptions.BitmapInterpolationMode="Default"/>
+												       RenderOptions.BitmapInterpolationMode="Default" />
 											</Border>
 										</Border>
 									</DataTemplate>
 								</ComboBox.ItemTemplate>
 							</ComboBox>
 
-							<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
+							<StackPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="5, 0">
 								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
 								           Margin="5">
 									Brush Size
@@ -78,25 +80,48 @@
 									<ComboBoxItem>Huge</ComboBoxItem>
 								</ComboBox>
 							</StackPanel>
-							
-							<ToggleSwitch Grid.Row="2" OffContent="Hard Brush" OnContent="Soft Brush" Margin="5, 0"
+
+							<ToggleSwitch Grid.Row="2" OffContent="Hard Brush" OnContent="Soft Brush" Margin="5"
 							              IsChecked="{Binding !HardBrushEnabled}" />
 
-							<Grid Grid.Row="3" ColumnDefinitions="Auto, Auto, Auto" RowDefinitions="Auto,Auto, *, Auto,Auto"
+							<Button Padding="0" Grid.Row="3" Width="80" Margin="0" Command="{Binding OnMappingReset}"
+							        HorizontalAlignment="Center" Background="Transparent">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Restart.png" />
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Reset the mapping to default</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+
+							<Grid Grid.Row="4" ColumnDefinitions="Auto, Auto, Auto" RowDefinitions="Auto,Auto, *, Auto,Auto"
 							      HorizontalAlignment="Center" Margin="0, 15" VerticalAlignment="Center">
 								<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center"
 								           VerticalAlignment="Center" Width="45"
-								           FontWeight="UltraBold" FontSize="24" Margin="0" 
-								           Text="{Binding HeatmapValue}"/>
-								
-								<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"  HorizontalAlignment="Center" VerticalAlignment="Center"
-								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Plentiful"/>
-								
+								           FontWeight="UltraBold" FontSize="24" Margin="0"
+								           Text="{Binding HeatmapValue}" />
+
+								<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center"
+								           VerticalAlignment="Center"
+								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Plentiful" />
+
 								<GridSplitter Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="10"
 								              IsEnabled="False" Background="Transparent" />
 
 								<Slider Grid.Row="2" Grid.Column="1" Value="{Binding HeatmapValue}"
-								        Minimum="0" Maximum="100" TickFrequency="1"
+								        Minimum="0" Maximum="250" TickFrequency="1"
 								        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
 								        Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 
@@ -106,15 +131,16 @@
 
 								<GridSplitter Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Height="10"
 								              IsEnabled="False" Background="Transparent" />
-								
-								<TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"  HorizontalAlignment="Center" VerticalAlignment="Center"
-								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Rarely"/>
+
+								<TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center"
+								           VerticalAlignment="Center"
+								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Rarely" />
 							</Grid>
 
-							<Grid Grid.Row="4" ColumnDefinitions="Auto, Auto" Margin="5">
+							<Grid Grid.Row="5" ColumnDefinitions="Auto, Auto" Margin="5">
 								<Button Grid.Column="0" Padding="0" Background="Transparent"
 								        Command="{Binding OnCustomizeWindowSwitch}"
-								        CommandParameter="M"  Margin="0" MaxWidth="80">
+								        CommandParameter="M" Margin="0" MaxWidth="80">
 									<Button.Styles>
 										<Style Selector="Button:pointerover /template/ ContentPresenter">
 											<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
@@ -134,8 +160,8 @@
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
-								
-								<Button Grid.Column="1" Padding="0" Background="Transparent" 
+
+								<Button Grid.Column="1" Padding="0" Background="Transparent"
 								        Command="{Binding OnInfoClick}"
 								        CommandParameter="H" Margin="0" MaxHeight="60" VerticalAlignment="Bottom">
 									<Button.Styles>
@@ -159,10 +185,14 @@
 							<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
 								<Grid ColumnDefinitions="*" VerticalAlignment="Center">
 									<Border Margin="10" Background="#11000000" CornerRadius="10">
-										<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
-										       x:Name="outputImage" Source="{Binding CurrentHeatmap}"
-										       PointerPressed="OutputImageOnPointerPressed"
-										       PointerMoved="OutputImageOnPointerMoved"  />
+										<Grid>
+											<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
+											       x:Name="outputImage" Source="{Binding CurrentHeatmap}"
+											       PointerPressed="OutputImageOnPointerPressed"
+											       PointerMoved="OutputImageOnPointerMoved" />
+											<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default" IsHitTestVisible="False"
+											       x:Name="mapReferenceImage" Source="{Binding OutputImage}" Opacity="0.25" />
+										</Grid>
 									</Border>
 								</Grid>
 							</Grid>

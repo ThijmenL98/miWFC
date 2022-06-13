@@ -1,4 +1,4 @@
-﻿namespace miWFC.AvaloniaGif.Decoding; 
+﻿namespace miWFC.AvaloniaGif.Decoding;
 
 public class GifRepeatBehavior {
     public bool LoopForever { get; set; }

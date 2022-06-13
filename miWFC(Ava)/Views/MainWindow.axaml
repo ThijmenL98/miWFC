@@ -176,17 +176,17 @@
 
 							<Grid ColumnDefinitions="Auto, *" Grid.Column="0">
 								<contentControls:InputControl DataContext="{Binding VM}"
-								                        Grid.Row="0" x:Name="inputControl" />
+								                              Grid.Row="0" x:Name="inputControl" />
 
 								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
 									<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
 										<TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 0, 0"
 										           Text="Extracted tiles with the current settings" TextWrapping="Wrap" />
-										
+
 										<TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 0, 5"
 										           Text="Click on the tile value to edit dynamic value mapping." TextWrapping="Wrap"
-										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}"/>
-										
+										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
+
 										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
 										        Command="{Binding OnWeightReset}"
 										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
@@ -224,7 +224,7 @@
 											</ToolTip.Tip>
 										</Button>
 									</Grid>
-									
+
 									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15"
 									        IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}">
@@ -239,7 +239,7 @@
 							</Grid>
 
 							<contentControls:OutputControl DataContext="{Binding VM}"
-							                         Grid.Column="1" x:Name="outputControl" />
+							                               Grid.Column="1" x:Name="outputControl" />
 						</Grid>
 
 						<avaloniaGif:GifImage SourceUriRaw="resm:miWFC.Assets.LoadingAnim.gif"

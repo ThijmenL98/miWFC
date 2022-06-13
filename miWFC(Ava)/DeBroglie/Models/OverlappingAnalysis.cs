@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 
-namespace miWFC.DeBroglie.Models; 
+namespace miWFC.DeBroglie.Models;
 
 /// <summary>
 ///     Contains utilities relevant to <see cref="OverlappingModel" />

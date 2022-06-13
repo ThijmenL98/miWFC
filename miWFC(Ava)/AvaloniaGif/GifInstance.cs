@@ -6,7 +6,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.AvaloniaGif.Decoding;
 
-namespace miWFC.AvaloniaGif; 
+namespace miWFC.AvaloniaGif;
 
 public class GifInstance : IDisposable {
     private GifBackgroundWorker _bgWorker;

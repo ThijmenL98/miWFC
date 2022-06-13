@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace miWFC.DeBroglie.Wfc; 
+namespace miWFC.DeBroglie.Wfc;
 
 internal class Deque<T> : IEnumerable<T> {
     private T[] _data;

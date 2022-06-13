@@ -1,4 +1,4 @@
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 internal enum ExtensionType {
     GRAPHICS_CONTROL = 0xF9,

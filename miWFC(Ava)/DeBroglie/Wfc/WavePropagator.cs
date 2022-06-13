@@ -231,7 +231,7 @@ public class WavePropagator {
             if (index != -1) {
                 // Pick a tile to select at that index
                 pattern = patternPicker.GetRandomPossiblePatternAt(index, RandomDouble);
-                
+
                 RecordBacktrack(index, pattern);
 
                 // Use the pick
@@ -293,7 +293,7 @@ public class WavePropagator {
             if (Status == Resolution.UNDECIDED) {
                 StepConstraints();
             }
-            
+
 #if DEBUG
             Topology.GetCoord(index, out int x, out int y, out _);
             Trace.WriteLine(@$"Stepping {pattern} @ ({x}, {y})");
@@ -372,7 +372,7 @@ public class WavePropagator {
             }
         }
     }
-    
+
     public void AddBacktrackPoint() {
         RecordBacktrack(-1, -1);
     }
@@ -388,7 +388,7 @@ public class WavePropagator {
         DoBacktrack();
 
         Status = Resolution.UNDECIDED;
-        
+
         // Revalidate status.
         if (Status == Resolution.UNDECIDED) {
             patternModelConstraint.Propagate();

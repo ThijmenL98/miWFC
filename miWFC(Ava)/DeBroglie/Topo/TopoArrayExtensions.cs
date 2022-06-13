@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 public static class TopoArrayExtensions {
     /// <summary>

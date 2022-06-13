@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace miWFC.AvaloniaGif.Caching; 
+namespace miWFC.AvaloniaGif.Caching;
 
 /// <summary>
 ///     A concurrent in-memory cache with optional read-through behavior, an optional TTL, and the

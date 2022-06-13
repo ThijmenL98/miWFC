@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace miWFC.AvaloniaGif; 
+namespace miWFC.AvaloniaGif;
 
 [Serializable]
 internal class InvalidGifStreamException : Exception {

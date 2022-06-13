@@ -3,7 +3,7 @@
 
 using System;
 
-namespace miWFC.AvaloniaGif.Caching; 
+namespace miWFC.AvaloniaGif.Caching;
 
 /// <summary>
 ///     Basic builder methods common to all caches.

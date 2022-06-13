@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using miWFC.DeBroglie.Rot;
 
-namespace miWFC.DeBroglie.Constraints.Path; 
+namespace miWFC.DeBroglie.Constraints.Path;
 
 /// <summary>
 ///     Configures pathing where a given set of tiles form the path, and always connect if adjacent to each other.

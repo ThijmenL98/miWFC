@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using miWFC.AvaloniaGif.Decoding;
 
-namespace miWFC.AvaloniaGif; 
+namespace miWFC.AvaloniaGif;
 
 internal sealed class GifBackgroundWorker {
     private static readonly Stopwatch timer = Stopwatch.StartNew();

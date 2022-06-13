@@ -17,7 +17,7 @@ public class WeightedRandomPatternPicker {
     }
 
     public int GetRandomPossiblePatternAt(int index, Func<double> randomDouble) {
-        return RandomPickerUtils.GetRandomPossiblePattern(wave, randomDouble, index, 
+        return RandomPickerUtils.GetRandomPossiblePattern(wave, randomDouble, index,
             cm.getWFCHandler().isOverlappingModel() ? frequencies : cm.getWFCHandler().getWeightsAt(index));
     }
 }

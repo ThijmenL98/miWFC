@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Reflection;
 
-namespace miWFC.DeBroglie.Wfc; 
+namespace miWFC.DeBroglie.Wfc;
 
 /**
  * Wave is a fancy array that tracks various per-cell information.
@@ -46,6 +46,7 @@ public class Wave {
         if (!possibilities[index * patternCount + pattern]) {
             throw new TargetException();
         }
+
         possibilities[index * patternCount + pattern] = false;
         int c = --patternCounts[index];
         return c == 0;
@@ -55,6 +56,7 @@ public class Wave {
         if (possibilities[index * patternCount + pattern]) {
             throw new TargetException();
         }
+
         possibilities[index * patternCount + pattern] = true;
         patternCounts[index]++;
     }

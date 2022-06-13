@@ -1,6 +1,6 @@
 ﻿using miWFC.DeBroglie.Rot;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 /// <summary>
 ///     Summarises the type of graph

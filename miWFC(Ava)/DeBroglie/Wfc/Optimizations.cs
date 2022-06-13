@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Wfc; 
+﻿namespace miWFC.DeBroglie.Wfc;
 
 // Some compile time togglable optimizations
 // Mostly of interest when benchmarking

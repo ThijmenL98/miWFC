@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using miWFC.DeBroglie.Models;
 
-namespace miWFC.DeBroglie.Trackers; 
+namespace miWFC.DeBroglie.Trackers;
 
 /// <summary>
 ///     Tracks recently changed indices.

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -298,8 +297,8 @@ public class WFCHandler {
 
         dbModel = new OverlappingModel(patternSize);
         bool hasRotations = (category.Equals("Worlds Top-Down")
-            || category.Equals("Knots") || category.Equals("Knots") ||
-            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+                             || category.Equals("Knots") || category.Equals("Knots") ||
+                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles,
@@ -355,7 +354,7 @@ public class WFCHandler {
         List<double> weights = new();
 
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-            new XElement("");
+                new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -694,7 +693,7 @@ public class WFCHandler {
 
                 parentCM.getInputManager().restartSolution("Override click", true, true);
                 await Task.Delay(10);
-                
+
                 IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
                     .Where(tile => ((Color) tile.Value).Equals(c));
                 dbPropagator.select(a, b, 0, tilesToSelect);
@@ -824,7 +823,7 @@ public class WFCHandler {
                 await Task.Delay(1);
 
                 fsqAdj.Enqueue(new Tuple<int, int, int>(a, b, toSet));
-                
+
                 foreach ((int xLoc, int yLoc, int value) in fsqAdj.toList()) {
                     await setTile(xLoc, yLoc, value, true);
                 }
@@ -992,7 +991,7 @@ public class WFCHandler {
                     Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
                     Color c = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                         ? ((int) Math.Floor((double) x / tileSize) +
-                            (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                           (int) Math.Floor((double) y / tileSize)) % 2 == 0
                             ? Color.Parse("#11000000")
                             : Color.Parse("#00000000")
                         : Color.Parse("#00000000"));
@@ -1052,25 +1051,29 @@ public class WFCHandler {
         return new Size(dbPropagator.Topology.Width, dbPropagator.Topology.Height);
     }
 
-    public void resetWeights() {
+    public void resetWeights(bool updateStaticWeight = true, bool force = false) {
+        int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
         foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
             double oldWeight = originalWeights[tileViewModel.RawPatternIndex];
-            tileViewModel.PatternWeight = oldWeight;
-            
-            int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
-            tileViewModel.WeightHeatMap = new double[xDim, yDim];
-            
-            for (int i = 0; i < xDim; i++) {
-                for (int j = 0; j < yDim; j++) {
-                    tileViewModel.WeightHeatMap[i, j] = oldWeight;
-                }
+            if (updateStaticWeight) {
+                tileViewModel.PatternWeight = oldWeight;
             }
 
-            tileViewModel.DynamicWeight = false;
+            if (force || tileViewModel.WeightHeatMap.Length == 0 || tileViewModel.WeightHeatMap.Length != xDim * yDim) {
+                tileViewModel.WeightHeatMap = new double[xDim, yDim];
+
+                for (int i = 0; i < xDim; i++) {
+                    for (int j = 0; j < yDim; j++) {
+                        tileViewModel.WeightHeatMap[i, j] = oldWeight;
+                    }
+                }
+
+                tileViewModel.DynamicWeight = false;
+            }
         }
     }
 
-    public void propagateWeightChange(int changedIdx, double change) { 
+    public void propagateWeightChange(int changedIdx, double change) {
         double totalUnbalanced
             = Math.Round(
                 mainWindowVM.PaintTiles.Where(tileViewModel => tileViewModel.PatternIndex != changedIdx)
@@ -1109,24 +1112,23 @@ public class WFCHandler {
     }
 
     public double[] getWeightsAt(int index) {
-        double[] newWeights = new double[parentCM!.getMainWindowVM().PaintTiles.Count];
-        
-        
-        foreach (TileViewModel tvm in parentCM!.getMainWindowVM().PatternTiles.Reverse()) {
+        double[] newWeights = new double[parentCM.getMainWindowVM().PaintTiles.Count];
+
+        foreach (TileViewModel tvm in parentCM.getMainWindowVM().PatternTiles.Reverse()) {
             int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
             if (xDim * yDim != tvm.WeightHeatMap.Length) {
                 resetWeights();
             }
-                
-            double staticWeight = tvm.PatternWeight == 0 ? 0.00000000001d : tvm.PatternWeight;
-                
+
+            double staticWeight = tvm.PatternWeight == 0 ? 0.000000000000000000001d : tvm.PatternWeight;
+
             double[] tmp = new double[tvm.WeightHeatMap.GetLength(0) * tvm.WeightHeatMap.GetLength(1)];
             for (int x = 0; x < tvm.WeightHeatMap.GetLength(0); x++) {
                 for (int y = 0; y < tvm.WeightHeatMap.GetLength(1); y++) {
                     tmp[x + y * tvm.WeightHeatMap.GetLength(0)] = tvm.WeightHeatMap[x, y];
                 }
             }
-            
+
             for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
                 foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
                     if (tileViewModel.PatternIndex == i) {
@@ -1135,12 +1137,11 @@ public class WFCHandler {
                         } else {
                             newWeights[getDescrambledIndex(tileViewModel.PatternIndex)] = staticWeight;
                         }
-
                     }
                 }
             }
         }
-        
+
         return newWeights;
     }
 }

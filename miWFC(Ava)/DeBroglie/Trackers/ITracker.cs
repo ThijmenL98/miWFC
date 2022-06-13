@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Trackers; 
+﻿namespace miWFC.DeBroglie.Trackers;
 
 /// <summary>
 ///     Trackers are objects that maintain state that is a summary of the current state of the propagator.

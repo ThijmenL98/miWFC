@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using miWFC.DeBroglie.Topo;
 
-namespace miWFC.DeBroglie.Constraints.Path; 
+namespace miWFC.DeBroglie.Constraints.Path;
 
 /// <summary>
 ///     Contains utilities relating to <see cref="PathConstraint" />

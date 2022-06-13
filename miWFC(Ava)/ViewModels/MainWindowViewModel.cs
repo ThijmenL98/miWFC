@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -103,8 +102,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -114,8 +113,8 @@ public class MainWindowViewModel : ViewModelBase {
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -325,8 +324,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -401,8 +400,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-            !centralManager!.getMainWindow().getInputControl().getCategory()
-                .Contains("Side");
+                                       !centralManager!.getMainWindow().getInputControl().getCategory()
+                                           .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -468,13 +467,14 @@ public class MainWindowViewModel : ViewModelBase {
             OnAnimate();
         }
 
+        centralManager!.getWFCHandler().resetWeights(updateStaticWeight: false);
         centralManager!.getWFCHandler().updateWeights();
 
         centralManager!.getInputManager().restartSolution("Restart UI call");
     }
 
     public void OnWeightReset() {
-        centralManager!.getWFCHandler().resetWeights();
+        centralManager!.getWFCHandler().resetWeights(force: true);
     }
 
     public void OnMaskReset() {
@@ -585,7 +585,7 @@ public class MainWindowViewModel : ViewModelBase {
         ItemType itemType = centralManager!.getItemWindow().getItemAddMenu().getItemType();
         int amountUpper;
         int amountLower;
-        
+
         if (ItemsInRange) {
             amountUpper = ItemsToAddUpper;
             amountLower = ItemsToAddLower;
@@ -612,12 +612,12 @@ public class MainWindowViewModel : ViewModelBase {
             centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
             return;
         }
-        
+
         foreach (ItemViewModel ivm in ItemDataGrid) {
             List<int> mySet = new(allowedTiles.Select(model => model.PatternIndex));
             List<int> compared = new(ivm.AllowedTiles.Select(model => model.PatternIndex));
             if (ivm.ItemType.ID.Equals(itemType.ID) && mySet.All(compared.Contains)
-                && mySet.Count.Equals(compared.Count)) {
+                                                    && mySet.Count.Equals(compared.Count)) {
                 if (_isEditing) {
                     ivm.Amount = (amountLower, amountUpper);
                 } else {
@@ -629,7 +629,9 @@ public class MainWindowViewModel : ViewModelBase {
                     }
                 }
 
-                ivm.AmountStr = ivm.Amount.Item1 == ivm.Amount.Item2 ? @$"{ivm.Amount.Item2}" : @$"{ivm.Amount.Item1} - {ivm.Amount.Item2}";
+                ivm.AmountStr = ivm.Amount.Item1 == ivm.Amount.Item2
+                    ? @$"{ivm.Amount.Item2}"
+                    : @$"{ivm.Amount.Item1} - {ivm.Amount.Item2}";
                 InItemMenu = false;
                 return;
             }
@@ -717,11 +719,11 @@ public class MainWindowViewModel : ViewModelBase {
 
         ItemsMayAppearAnywhere = itemSelected.AllowedTiles.Count.Equals(PaintTiles.Count);
         ItemsInRange = itemSelected.Amount.Item1 != itemSelected.Amount.Item2;
-        
+
         ItemsToAddValue = itemSelected.Amount.Item1;
         ItemsToAddLower = itemSelected.Amount.Item1;
         ItemsToAddUpper = itemSelected.Amount.Item2;
-        
+
         centralManager!.getItemWindow().getItemAddMenu().updateIndex(itemSelected.ItemType.ID);
 
         foreach ((TileViewModel tvm, int index) in PaintTiles.Select((model, i) => (model, i))) {
@@ -849,6 +851,10 @@ public class MainWindowViewModel : ViewModelBase {
         WriteableBitmap newItemOverlay = Util.generateItemOverlay(itemGrid, ImageOutWidth, ImageOutHeight);
         Util.setLatestItemBitMap(newItemOverlay);
         ItemOverlay = newItemOverlay;
+    }
+
+    public void OnMappingReset() {
+        centralManager!.getWeightMapWindow().resetCurrentMapping();
     }
 
     public int[,] getLatestItemGrid() {

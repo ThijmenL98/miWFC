@@ -4,7 +4,7 @@ using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Trackers; 
+namespace miWFC.DeBroglie.Trackers;
 
 /// <summary>
 ///     Tracks the banned/selected status of each tile with respect to a tileset.

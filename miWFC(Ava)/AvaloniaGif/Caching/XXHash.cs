@@ -36,7 +36,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
-namespace miWFC.AvaloniaGif.Caching; 
+namespace miWFC.AvaloniaGif.Caching;
 //see details: https://github.com/Cyan4973/xxHash/blob/dev/doc/xxhash_spec.md
 
 /// <summary>
@@ -206,7 +206,7 @@ internal sealed class XxHash32 : HashAlgorithm {
     protected override byte[] HashFinal() {
         if (_TotalLength >= 16) {
             _Hash32 = RotateLeft32_1(_ACC32_1) + RotateLeft32_7(_ACC32_2) + RotateLeft32_12(_ACC32_3)
-                + RotateLeft32_18(_ACC32_4);
+                      + RotateLeft32_18(_ACC32_4);
         } else {
             _Hash32 = _Seed32 + Prime325;
         }
@@ -215,7 +215,7 @@ internal sealed class XxHash32 : HashAlgorithm {
 
         while (_RemainingLength >= 4) {
             _Hash32 = RotateLeft32_17(_Hash32 + funcGetLittleEndianUInt32(_CurrentArray, _CurrentIndex) * Prime323)
-                * Prime324;
+                      * Prime324;
 
             _CurrentIndex += 4;
             _RemainingLength -= 4;
@@ -336,9 +336,12 @@ public sealed class XxHash64 : HashAlgorithm {
             };
             funcGetFinalHashUInt64 = i =>
                 ((i & 0x00000000000000FFUL) << 56) | ((i & 0x000000000000FF00UL) << 40)
-                | ((i & 0x0000000000FF0000UL) << 24) | ((i & 0x00000000FF000000UL) << 8)
-                | ((i & 0x000000FF00000000UL) >> 8) | ((i & 0x0000FF0000000000UL) >> 24)
-                | ((i & 0x00FF000000000000UL) >> 40) | ((i & 0xFF00000000000000UL) >> 56);
+                                                   | ((i & 0x0000000000FF0000UL) << 24) |
+                                                   ((i & 0x00000000FF000000UL) << 8)
+                                                   | ((i & 0x000000FF00000000UL) >> 8) |
+                                                   ((i & 0x0000FF0000000000UL) >> 24)
+                                                   | ((i & 0x00FF000000000000UL) >> 40) |
+                                                   ((i & 0xFF00000000000000UL) >> 56);
         } else {
             funcGetLittleEndianUInt32 = (x, i) => {
                 unsafe {
@@ -351,8 +354,8 @@ public sealed class XxHash64 : HashAlgorithm {
                 unsafe {
                     fixed (byte* array = x) {
                         return array[i++] | ((ulong) array[i++] << 8) | ((ulong) array[i++] << 16)
-                            | ((ulong) array[i++] << 24) | ((ulong) array[i++] << 32) | ((ulong) array[i++] << 40)
-                            | ((ulong) array[i++] << 48) | ((ulong) array[i] << 56);
+                               | ((ulong) array[i++] << 24) | ((ulong) array[i++] << 32) | ((ulong) array[i++] << 40)
+                               | ((ulong) array[i++] << 48) | ((ulong) array[i] << 56);
                     }
                 }
             };
@@ -474,7 +477,7 @@ public sealed class XxHash64 : HashAlgorithm {
     protected override byte[] HashFinal() {
         if (_TotalLength >= 32) {
             _Hash64 = RotateLeft64_1(_ACC64_1) + RotateLeft64_7(_ACC64_2) + RotateLeft64_12(_ACC64_3)
-                + RotateLeft64_18(_ACC64_4);
+                      + RotateLeft64_18(_ACC64_4);
 
             _Hash64 = MergeRound64(_Hash64, _ACC64_1);
             _Hash64 = MergeRound64(_Hash64, _ACC64_2);

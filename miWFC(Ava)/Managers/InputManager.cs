@@ -312,7 +312,8 @@ public class InputManager {
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
             if (hasItems) {
-                parentCM.getWFCHandler().getLatestOutputBM(false).Save(settingsFileName.Replace(".png", "_worldLayer.png"));
+                parentCM.getWFCHandler().getLatestOutputBM(false)
+                    .Save(settingsFileName.Replace(".png", "_worldLayer.png"));
 
                 int[,] itemsGrid = mainWindowVM.getLatestItemGrid();
                 int[] tmp = new int[itemsGrid.GetLength(0) * itemsGrid.GetLength(1)];
@@ -398,7 +399,8 @@ public class InputManager {
             b = (int) Math.Floor(b * mainWindowVM.ImageOutHeight / (double) imgHeight);
         }
 
-        (WriteableBitmap? bitmap, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, tileIdx, false, skipUI);
+        (WriteableBitmap? bitmap, bool? showPixel)
+            = await parentCM.getWFCHandler().setTile(a, b, tileIdx, false, skipUI);
 
         if (!skipUI && !mainWindowVM.IsPaintOverrideEnabled) {
             if (showPixel != null && (bool) showPixel) {
@@ -436,7 +438,8 @@ public class InputManager {
 
             if (pencilSelected) {
                 try {
-                    (WriteableBitmap? _, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
+                    (WriteableBitmap? _, bool? showPixel)
+                        = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
                     if (showPixel != null && (bool) showPixel) {
                         mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
                         parentCM.getWFCHandler().stepBackWfc();
@@ -468,8 +471,9 @@ public class InputManager {
                 return;
             }
 
-            if (pencilSelected) { 
-                (WriteableBitmap? _, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
+            if (pencilSelected) {
+                (WriteableBitmap? _, bool? showPixel)
+                    = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
                 if (showPixel != null && (bool) showPixel) {
                     mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
                     parentCM.getWFCHandler().stepBackWfc();

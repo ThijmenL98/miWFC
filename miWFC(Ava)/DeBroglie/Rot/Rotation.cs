@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace miWFC.DeBroglie.Rot; 
+namespace miWFC.DeBroglie.Rot;
 
 /// <summary>
 ///     Represents an rotation in the x-y plane.

@@ -1,4 +1,4 @@
-﻿namespace miWFC.AvaloniaGif; 
+﻿namespace miWFC.AvaloniaGif;
 
 internal enum BgWorkerState {
     NULL,

@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Topo; 
+﻿namespace miWFC.DeBroglie.Topo;
 
 /// <summary>
 ///     A <see cref="ITopology" /> specifies a discrete area, volume or graph, and provides generic navigation methods.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace miWFC.DeBroglie.Rot; 
+namespace miWFC.DeBroglie.Rot;
 
 /// <summary>
 ///     Describes which rotations and reflections are allowed, and

@@ -5,7 +5,7 @@ using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Models; 
+namespace miWFC.DeBroglie.Models;
 
 /// <summary>
 ///     Functions as AdjacentModel, but is more generic and will function for any toplogy.

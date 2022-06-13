@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace miWFC.DeBroglie.Rot; 
+namespace miWFC.DeBroglie.Rot;
 
 /// <summary>
 ///     Describes a group of rotations and reflections.

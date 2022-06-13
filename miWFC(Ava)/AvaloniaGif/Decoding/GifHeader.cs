@@ -1,7 +1,7 @@
 // Licensed under the MIT License.
 // Copyright (C) 2018 Jumar A. Macato, All Rights Reserved.
 
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 public class GifHeader {
     public int BackgroundColorIndex;

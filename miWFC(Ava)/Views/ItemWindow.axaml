@@ -69,7 +69,7 @@
 								</Grid>
 
 								<contentControls:ItemAddMenu DataContext="{Binding VM}" x:Name="itemAddMenu"
-								                       IsVisible="{Binding InItemMenu}" />
+								                             IsVisible="{Binding InItemMenu}" />
 							</Grid>
 						</Border>
 

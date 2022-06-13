@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 /// <summary>
 ///     A grid topology is a topology with a regular repeating pattern.

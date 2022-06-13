@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Rot; 
+﻿namespace miWFC.DeBroglie.Rot;
 
 public enum TileRotationTreatment {
     MISSING,

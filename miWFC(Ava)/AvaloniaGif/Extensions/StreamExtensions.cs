@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace miWFC.AvaloniaGif.Extensions; 
+namespace miWFC.AvaloniaGif.Extensions;
 
 [DebuggerStepThrough]
 internal static class StreamExtensions {

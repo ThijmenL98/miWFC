@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using miWFC.ViewModels;
+﻿using miWFC.ViewModels;
 using miWFC.Views;
 
 namespace miWFC.Managers;
@@ -16,7 +15,8 @@ public class CentralManager {
     private readonly UIManager uiManager;
     private readonly WFCHandler wfcHandler;
 
-    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW, WeightMapWindow wMW) {
+    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,
+        WeightMapWindow wMW) {
         mainWindow = mW;
         paintingWindow = pW;
         itemWindow = iW;

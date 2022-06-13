@@ -1,26 +1,42 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Trackers; 
+namespace miWFC.DeBroglie.Trackers;
 
 internal static class RandomPickerUtils {
     public static int GetRandomPossiblePattern(Wave wave, Func<double> randomDouble, int index, double[] frequencies) {
         int patternCount = frequencies.Length;
         double s = 0.0;
+        double[] restb = new double[frequencies.Length];
+        int[] randomPatterns = new int[frequencies.Length];
         for (int pattern = 0; pattern < patternCount; pattern++) {
             if (wave.Get(index, pattern)) {
                 s += frequencies[pattern];
+                restb[pattern] = frequencies[pattern];
             }
+
+            randomPatterns[pattern] = pattern;
         }
 
-        double r = randomDouble() * s;
-        for (int pattern = 0; pattern < patternCount; pattern++) {
-            if (wave.Get(index, pattern)) {
-                r -= frequencies[pattern];
-            }
+        randomPatterns = randomPatterns.OrderBy(x => randomDouble()).ToArray();
+        for (int retry = 0; retry <= 5; retry++) {
+            double r = randomDouble() * s;
 
-            if (r <= 0) {
-                return pattern;
+            for (int p = 0; p < patternCount; p++) {
+                int pattern = randomPatterns[p];
+                if (wave.Get(index, pattern)) {
+                    r -= frequencies[pattern];
+                }
+
+                if (r <= 0) {
+                    if (frequencies[pattern] >= 0.00000000000000001d || retry == 5) {
+                        return pattern;
+                    }
+
+                    break;
+                }
             }
         }
 

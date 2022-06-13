@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Wfc; 
+﻿namespace miWFC.DeBroglie.Wfc;
 
 public enum ModelConstraintAlgorithm {
     /// <summary>

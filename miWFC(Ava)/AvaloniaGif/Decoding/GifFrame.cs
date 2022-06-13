@@ -1,6 +1,6 @@
 using System;
 
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 public class GifFrame {
     public GifRect Dimensions;

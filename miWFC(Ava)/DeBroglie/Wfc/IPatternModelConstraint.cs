@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Wfc; 
+﻿namespace miWFC.DeBroglie.Wfc;
 
 /// <summary>
 ///     Similar to IWaveConstraint, this listens to changes in the Wave and makes appropriate changes to the propagator for

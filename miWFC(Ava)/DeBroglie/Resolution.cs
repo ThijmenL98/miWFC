@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie; 
+﻿namespace miWFC.DeBroglie;
 
 /// <summary>
 ///     Indicates whether something has been fully resolved or not.

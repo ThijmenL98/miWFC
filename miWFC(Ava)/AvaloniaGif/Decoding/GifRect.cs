@@ -1,4 +1,4 @@
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 public readonly struct GifRect {
     public int X { get; }
@@ -17,9 +17,9 @@ public readonly struct GifRect {
 
     public static bool operator ==(GifRect a, GifRect b) {
         return a.X == b.X &&
-            a.Y == b.Y &&
-            a.Width == b.Width &&
-            a.Height == b.Height;
+               a.Y == b.Y &&
+               a.Width == b.Width &&
+               a.Height == b.Height;
     }
 
     public static bool operator !=(GifRect a, GifRect b) {

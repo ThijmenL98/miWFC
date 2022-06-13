@@ -1,7 +1,7 @@
 ﻿using System;
 using miWFC.DeBroglie.Rot;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 public static class TopoArrayUtils {
     public delegate bool TileRotate<T>(T tile, out T result);
@@ -54,7 +54,8 @@ public static class TopoArrayUtils {
         int s = y;
         int q2 = q;
         switch (microRotate) {
-            case 0: break;
+            case 0:
+                break;
             case 1:
                 q = s;
                 s = r;

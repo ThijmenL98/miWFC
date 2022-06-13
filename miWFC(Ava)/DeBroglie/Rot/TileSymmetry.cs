@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace miWFC.DeBroglie.Rot; 
+namespace miWFC.DeBroglie.Rot;
 
 /// <summary>
 ///     Specifies the way in which a tile can be symmetric.

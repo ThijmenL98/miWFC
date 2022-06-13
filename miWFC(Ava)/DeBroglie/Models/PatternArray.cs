@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace miWFC.DeBroglie.Models; 
+namespace miWFC.DeBroglie.Models;
 
 public struct PatternArray {
     public Tile[,,] Values;
