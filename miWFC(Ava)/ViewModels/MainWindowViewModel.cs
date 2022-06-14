@@ -528,6 +528,10 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getInputManager().loadMarker();
     }
 
+    public void OnImport() {
+        centralManager!.getInputManager().importSolution();
+    }
+
     public void OnExport() {
         if (IsPlaying) {
             OnAnimate();

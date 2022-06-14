@@ -33,7 +33,7 @@ public class WFCHandler {
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowVM;
-    private readonly CentralManager parentCM;
+    private readonly CentralManager centralManager;
 
     private bool _isChangingModels, _isChangingImages, inputHasChanged, isBrushing;
     private int amountCollapsed, actionsTaken, tileSize;
@@ -58,9 +58,9 @@ public class WFCHandler {
 #pragma warning disable CS8618
     public WFCHandler(CentralManager parent) {
 #pragma warning restore CS8618
-        parentCM = parent;
-        mainWindowVM = parentCM.getMainWindowVM();
-        mainWindow = parentCM.getMainWindow();
+        centralManager = parent;
+        mainWindowVM = centralManager.getMainWindowVM();
+        mainWindow = centralManager.getMainWindow();
 
         initialize();
     }
@@ -125,14 +125,14 @@ public class WFCHandler {
 
         if (dbPropagator is {Status: Resolution.DECIDED} && !reset) {
             updateWeights();
-            parentCM.getInputManager().restartSolution("Force Reset Decided");
+            centralManager.getInputManager().restartSolution("Force Reset Decided");
         }
 
         if (reset) {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
             mainWindowVM.resetDataGrid();
-            parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+            centralManager.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
@@ -151,7 +151,7 @@ public class WFCHandler {
 
                 mainWindowVM.PatternTiles = new ObservableCollection<TileViewModel>(toAdd!);
 
-                parentCM.getPaintingWindow().setPaintingPatterns(toAddPaint.ToArray());
+                centralManager.getPaintingWindow().setPaintingPatterns(toAddPaint.ToArray());
             }
 
             int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
@@ -181,7 +181,7 @@ public class WFCHandler {
         mainWindowVM.setLoading(false);
 
         (latestOutput, bool decided) = runWfcDB(steps);
-        parentCM.getWFCHandler().isCollapsed();
+        centralManager.getWFCHandler().isCollapsed();
         return (latestOutput, decided);
     }
 
@@ -191,8 +191,8 @@ public class WFCHandler {
         mainWindowVM.PaintTiles.Clear();
         toAddPaint = new List<TileViewModel>();
 
-        parentCM.getInputManager().resetOverwriteCache();
-        parentCM.getUIManager().resetPatterns();
+        centralManager.getInputManager().resetOverwriteCache();
+        centralManager.getUIManager().resetPatterns();
     }
 
     private void createPropagator(int outputWidth, int outputHeight, bool seamlessOutput, Random rand) {
@@ -200,7 +200,7 @@ public class WFCHandler {
         dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
             RandomDouble = rand.NextDouble,
             IndexPickerType = IndexPickerType.HEAP_MIN_ENTROPY
-        }, parentCM);
+        }, centralManager);
     }
 
     private void handleSideViewInit(int outputHeight, string inputImage) {
@@ -237,7 +237,7 @@ public class WFCHandler {
     public void updateWeights() {
         if (isOverlappingModel()) {
             // double[] userWeights = new double[tileCache.Count];
-            // foreach (TileViewModel tvm in parentCM.getMainWindowVM().PatternTiles) {
+            // foreach (TileViewModel tvm in centralManager.getMainWindowVM().PatternTiles) {
             //     userWeights[tvm.PatternIndex] = tvm.PatternWeight;
             // }
             // TODO properly get the toSet from the pattern TVM
@@ -249,7 +249,7 @@ public class WFCHandler {
             // }
         } else {
             List<double> userWeights
-                = parentCM.getMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
+                = centralManager.getMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
             foreach (((int parent, int[] symmetries), int idx) in tileSymmetries.Select((pair, idx) => (pair, idx))) {
                 double weight = userWeights[idx];
                 weight = weight == 0 ? 0.00000000001d : weight;
@@ -269,7 +269,7 @@ public class WFCHandler {
                 }
             }
 
-            foreach (TileViewModel tvm in parentCM.getMainWindowVM().PatternTiles) {
+            foreach (TileViewModel tvm in centralManager.getMainWindowVM().PatternTiles) {
                 if (tvm.WeightHeatMap.Length == 0) {
                     int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
                     tvm.WeightHeatMap = new double[outputWidth, outputHeight];
@@ -306,7 +306,7 @@ public class WFCHandler {
 
         originalWeights = patternWeights;
 
-        toAdd.AddRange(patternList.Select((t, i) => parentCM.getUIManager()
+        toAdd.AddRange(patternList.Select((t, i) => centralManager.getUIManager()
                 .addPattern(t, patternWeights[i], tileSymmetries, i))
             .Where(nextTVM => nextTVM != null)!);
 
@@ -330,7 +330,7 @@ public class WFCHandler {
                     = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
             }
 
-            toAddPaint.Add(new TileViewModel(pattern, index, c, parentCM));
+            toAddPaint.Add(new TileViewModel(pattern, index, c, centralManager));
 
             double curWeight = ((OverlappingModel) dbModel).getFrequency(t).Sum();
             total += curWeight;
@@ -407,7 +407,7 @@ public class WFCHandler {
 
                 toAddPaint.Add(
                     new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip,
-                        parentCM));
+                        centralManager));
                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
 
                 symmetries.Add(myIdx);
@@ -415,7 +415,7 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, parentCM, cardinality > 4);
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, cardinality > 4);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
@@ -469,7 +469,7 @@ public class WFCHandler {
             actionsTaken--;
         }
 
-        parentCM.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+        centralManager.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
             PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         return getLatestOutputBM();
     }
@@ -508,7 +508,7 @@ public class WFCHandler {
                 }
             });
 
-            parentCM.getInputManager().restartSolution("Paint Brush", true);
+            centralManager.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
 
             await Task.Delay(1000);
@@ -524,7 +524,7 @@ public class WFCHandler {
                             break;
                         }
 
-                        bool? success = parentCM?.getInputManager()
+                        bool? success = centralManager?.getInputManager()
                             .processClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true).Result;
 
                         if (success != null && (bool) success) {
@@ -561,14 +561,14 @@ public class WFCHandler {
                 }
             });
 
-            parentCM.getInputManager().restartSolution("Paint Brush", true);
+            centralManager.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
             await Task.Delay(1);
 
             await Task.Run(() => {
                 while (newInputDict.Count > 0) {
                     foreach ((Tuple<int, int> key, int value) in new Dictionary<Tuple<int, int>, int>(newInputDict)) {
-                        bool? success = parentCM?.getInputManager()
+                        bool? success = centralManager?.getInputManager()
                             .processClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true).Result;
 
                         if (success != null && (bool) success) {
@@ -592,7 +592,7 @@ public class WFCHandler {
         }
 
         mainWindowVM.OutputImage = getLatestOutputBM();
-        parentCM.getInputManager().placeMarker(false);
+        centralManager.getInputManager().placeMarker(false);
     }
 
     private readonly FixedSizeQueue<Tuple<int, int, int>> fsqAdj = new(10);
@@ -691,7 +691,7 @@ public class WFCHandler {
                     }
                 }
 
-                parentCM.getInputManager().restartSolution("Override click", true, true);
+                centralManager.getInputManager().restartSolution("Override click", true, true);
                 await Task.Delay(10);
 
                 IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
@@ -727,11 +727,11 @@ public class WFCHandler {
                 mainWindowVM.setLoading(false);
 
                 for (int i = 0; i < distinctList.Count; i++) {
-                    parentCM.getInputManager().advanceStep();
+                    centralManager.getInputManager().advanceStep();
                 }
 
-                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
-                parentCM.getInputManager().placeMarker(false);
+                mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+                centralManager.getInputManager().placeMarker(false);
                 return (returnTrueAlreadyCorrect ? null : getLatestOutputBM(), true);
             } else {
                 IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
@@ -819,7 +819,7 @@ public class WFCHandler {
                     }
                 }
 
-                parentCM.getInputManager().restartSolution("Override click", true, true);
+                centralManager.getInputManager().restartSolution("Override click", true, true);
                 await Task.Delay(1);
 
                 fsqAdj.Enqueue(new Tuple<int, int, int>(a, b, toSet));
@@ -840,19 +840,19 @@ public class WFCHandler {
                         mainWindowVM.setLoading(false);
                     });
                 } catch (TargetException) {
-                    mainWindowVM.OutputImage = parentCM.getInputManager().getNoResBM();
+                    mainWindowVM.OutputImage = centralManager.getInputManager().getNoResBM();
                     return (null, false);
                 }
 
-                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
-                parentCM.getInputManager().placeMarker(false);
+                mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+                centralManager.getInputManager().placeMarker(false);
 
                 status = dbPropagator.Status;
             } else {
                 try {
                     status = dbPropagator.selWith(a, b, descrambledIndex);
                 } catch (TargetException) {
-                    mainWindowVM.OutputImage = parentCM.getInputManager().getNoResBM();
+                    mainWindowVM.OutputImage = centralManager.getInputManager().getNoResBM();
                     return (null, false);
                 }
             }
@@ -912,7 +912,7 @@ public class WFCHandler {
             generateAdjacentBitmap(out outputBitmap, grid);
         }
 
-        parentCM.getUIManager().updateTimeStampPosition(percentageCollapsed);
+        centralManager.getUIManager().updateTimeStampPosition(percentageCollapsed);
 
         latestOutput = outputBitmap;
         return outputBitmap;
@@ -1021,8 +1021,8 @@ public class WFCHandler {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract, MergeIntoPattern
         bool isC = dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
 
-        parentCM.getMainWindowVM().ItemEditorEnabled
-            = parentCM.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC;
+        centralManager.getMainWindowVM().ItemEditorEnabled
+            = centralManager.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC;
 
         return isC;
     }
@@ -1112,9 +1112,9 @@ public class WFCHandler {
     }
 
     public double[] getWeightsAt(int index) {
-        double[] newWeights = new double[parentCM.getMainWindowVM().PaintTiles.Count];
+        double[] newWeights = new double[centralManager.getMainWindowVM().PaintTiles.Count];
 
-        foreach (TileViewModel tvm in parentCM.getMainWindowVM().PatternTiles.Reverse()) {
+        foreach (TileViewModel tvm in centralManager.getMainWindowVM().PatternTiles.Reverse()) {
             int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
             if (xDim * yDim != tvm.WeightHeatMap.Length) {
                 resetWeights();

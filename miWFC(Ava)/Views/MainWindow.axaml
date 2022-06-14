@@ -31,6 +31,7 @@
 		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
 		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
 		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
+		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
@@ -47,6 +48,7 @@
 		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
 		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
 		<Image Source="/Assets/ItemsEditorClick.png" x:Key="clickItemsEditorKey" x:Name="clickItemsEditor" />
+		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
 	</Window.Resources>
 
 	<Window.Styles>

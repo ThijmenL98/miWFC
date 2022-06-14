@@ -14,7 +14,7 @@ public class TileViewModel : ReactiveObject {
     private double _patternWeight, _changeAmount = 1.0d;
     private string _patternWeightString;
 
-    private readonly CentralManager? parentCM;
+    private readonly CentralManager? centralManager;
     private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _dynamicWeight;
 
     private double[,] _weightHeatmap = new double[0, 0];
@@ -31,7 +31,7 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = isF ? -1 : 1;
         RawPatternIndex = rawIndex;
 
-        parentCM = cm;
+        centralManager = cm;
 
         FlipDisabled = false;
         RotateDisabled = false;
@@ -52,7 +52,7 @@ public class TileViewModel : ReactiveObject {
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
 
-        parentCM = cm;
+        centralManager = cm;
         DynamicWeight = false;
         
         _patternWeightString = DynamicWeight ? "D" :
@@ -68,7 +68,7 @@ public class TileViewModel : ReactiveObject {
         PatternColour = c;
         PatternRotation = 0;
         PatternFlipping = 1;
-        parentCM = cm;
+        centralManager = cm;
         DynamicWeight = false;
         
         _patternWeightString = DynamicWeight ? "D" :
@@ -209,7 +209,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     private void handleWeightChange(bool increment) {
-        bool isOverlapping = parentCM != null && parentCM!.getWFCHandler().isOverlappingModel();
+        bool isOverlapping = centralManager != null && centralManager!.getWFCHandler().isOverlappingModel();
         double oldWeight = PatternWeight;
         switch (increment) {
             case false when !(PatternWeight > 0):
@@ -227,11 +227,11 @@ public class TileViewModel : ReactiveObject {
         double change = oldWeight - PatternWeight;
 
         if (isOverlapping && change != 0d) {
-            parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
+            centralManager!.getWFCHandler().propagateWeightChange(PatternIndex, change);
         }
 
         if (!DynamicWeight) {
-            int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
+            int xDim = centralManager!.getMainWindowVM().ImageOutWidth, yDim = centralManager!.getMainWindowVM().ImageOutHeight;
             _weightHeatmap = new double[xDim, yDim];
             for (int i = 0; i < xDim; i++) {
                 for (int j = 0; j < yDim; j++) {
@@ -242,15 +242,15 @@ public class TileViewModel : ReactiveObject {
     }
 
     public async void DynamicWeightClick() {
-        await parentCM!.getUIManager().switchWindow(Windows.HEATMAP);
+        await centralManager!.getUIManager().switchWindow(Windows.HEATMAP);
 
-        int xDim = parentCM!.getMainWindowVM().ImageOutWidth, yDim = parentCM!.getMainWindowVM().ImageOutHeight;
+        int xDim = centralManager!.getMainWindowVM().ImageOutWidth, yDim = centralManager!.getMainWindowVM().ImageOutHeight;
         if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
-            parentCM.getWFCHandler().resetWeights();
+            centralManager.getWFCHandler().resetWeights();
         }
 
-        parentCM!.getWeightMapWindow().setSelectedTile(RawPatternIndex);
-        parentCM!.getWeightMapWindow().updateOutput(_weightHeatmap);
+        centralManager!.getWeightMapWindow().setSelectedTile(RawPatternIndex);
+        centralManager!.getWeightMapWindow().updateOutput(_weightHeatmap);
     }
 
     public void OnRotateClick() {
@@ -262,6 +262,6 @@ public class TileViewModel : ReactiveObject {
     }
 
     public void OnCheckChange() {
-        parentCM!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
+        centralManager!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
     }
 }

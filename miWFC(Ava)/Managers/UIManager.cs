@@ -27,7 +27,7 @@ public class UIManager {
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowVM;
-    private readonly CentralManager parentCM;
+    private readonly CentralManager centralManager;
 
     private readonly List<Func<int, int, int, int, Point>> transforms = new() {
         (_, _, x, y) => new Point(x, y), // rotated 0
@@ -48,7 +48,7 @@ public class UIManager {
     private Dictionary<int, List<Bitmap>> similarityMap = new();
 
     public UIManager(CentralManager parent) {
-        parentCM = parent;
+        centralManager = parent;
         mainWindowVM = parent.getMainWindowVM();
         mainWindow = parent.getMainWindow();
     }
@@ -86,9 +86,9 @@ public class UIManager {
     }
 
     public void updateTimeStampPosition(double amountCollapsed) {
-        double tWidth = parentCM.getMainWindow().IsVisible
+        double tWidth = centralManager.getMainWindow().IsVisible
             ? mainWindow.getOutputControl().getTimelineWidth()
-            : parentCM.getPaintingWindow().getTimelineWidth();
+            : centralManager.getPaintingWindow().getTimelineWidth();
         mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
 
@@ -176,7 +176,7 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: parentCM);
+        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: centralManager);
 
         patternCount++;
 
@@ -219,7 +219,7 @@ public class UIManager {
     }
 
     public async Task switchWindow(Windows window, bool checkClicked = false) {
-        mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+        mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
         
         Trace.WriteLine(@$"We want to switch to {window}");
         Window target = mainWindow, source = mainWindow;
@@ -227,55 +227,55 @@ public class UIManager {
         switch (window) {
             case Windows.MAIN:
                 // Goto main
-                source = parentCM.getPaintingWindow().IsVisible
-                    ? parentCM.getPaintingWindow()
-                    : parentCM.getItemWindow().IsVisible
-                        ? parentCM.getItemWindow()
-                        : parentCM.getWeightMapWindow();
+                source = centralManager.getPaintingWindow().IsVisible
+                    ? centralManager.getPaintingWindow()
+                    : centralManager.getItemWindow().IsVisible
+                        ? centralManager.getItemWindow()
+                        : centralManager.getWeightMapWindow();
 
                 bool stillApply = await handlePaintingClose(checkClicked);
 
                 if (stillApply) {
-                    await parentCM.getMainWindowVM().OnApplyClick();
+                    await centralManager.getMainWindowVM().OnApplyClick();
                 }
 
                 break;
             case Windows.PAINTING:
                 // Goto paint
                 mainWindowVM.PencilModeEnabled = true;
-                target = parentCM.getPaintingWindow();
+                target = centralManager.getPaintingWindow();
                 break;
             case Windows.ITEMS:
                 // Goto items
-                target = parentCM.getItemWindow();
+                target = centralManager.getItemWindow();
                 break;
             case Windows.HEATMAP:
                 // Goto Items
-                target = parentCM.getWeightMapWindow();
+                target = centralManager.getWeightMapWindow();
                 break;
             default:
                 throw new NotImplementedException();
         }
 
-        if (!window.Equals(Windows.HEATMAP) && !source.Equals(parentCM.getWeightMapWindow())) {
+        if (!window.Equals(Windows.HEATMAP) && !source.Equals(centralManager.getWeightMapWindow())) {
             target.Width = source.Width;
             target.Height = source.Height;
         }
 
-        if (!Equals(target, parentCM.getItemWindow()) && !Equals(source, parentCM.getItemWindow())) {
+        if (!Equals(target, centralManager.getItemWindow()) && !Equals(source, centralManager.getItemWindow())) {
             ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
 
             mainWindowVM.Markers.Clear();
             foreach (MarkerViewModel mvm in mvmListCopy) {
-                double offset = (parentCM.getMainWindow().IsVisible
+                double offset = (centralManager.getMainWindow().IsVisible
                         ? mainWindow.getOutputControl().getTimelineWidth()
-                        : parentCM.getPaintingWindow().getTimelineWidth()) *
+                        : centralManager.getPaintingWindow().getTimelineWidth()) *
                     mvm.MarkerCollapsePercentage + 1;
                 mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
                     offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
             }
 
-            updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
+            updateTimeStampPosition(centralManager.getWFCHandler().getPercentageCollapsed());
         }
 
         source.Hide();
