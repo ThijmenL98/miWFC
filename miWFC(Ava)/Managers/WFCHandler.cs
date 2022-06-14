@@ -404,7 +404,7 @@ public class WFCHandler {
                 }
 
                 weights.Add(tileWeight);
-
+                
                 toAddPaint.Add(
                     new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip,
                         centralManager));

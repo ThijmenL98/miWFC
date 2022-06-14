@@ -301,8 +301,7 @@ public class InputManager {
 
     public async void importSolution() {
         OpenFileDialog ofd = new() {
-            Title = @"Select png solution (and its items layer (*_itemsLayer.png)) to import",
-            AllowMultiple = true,
+            Title = @"Select png solution to import",
             Filters = new List<FileDialogFilter> {
                 new() {
                     Extensions = new List<string> {"png"},
@@ -313,26 +312,11 @@ public class InputManager {
 
         string[]? ofdResults = await ofd.ShowAsync(new Window());
         if (ofdResults != null) {
-            string? worldFile = null, itemsFile = null;
-
-            if (ofdResults.Length == 1) {
-                worldFile = ofdResults[0];
-            } else {
-                foreach (string foundFile in ofdResults) {
-                    if (!foundFile.EndsWith("_itemsLayer.png") && worldFile == null) {
-                        worldFile = foundFile;
-                    }
-
-                    if (foundFile.EndsWith("_itemsLayer.png") && itemsFile == null) {
-                        itemsFile = foundFile;
-                    }
-                }
-            }
-
-            if (worldFile == null) {
-                centralManager.getUIManager().dispatchError(mainWindow);
+            if (ofdResults.Length == 0) {
                 return;
             }
+
+            string worldFile = ofdResults[0];
 
             MemoryStream ms = new(await File.ReadAllBytesAsync(worldFile));
             WriteableBitmap inputBitmap = WriteableBitmap.Decode(ms);
@@ -361,15 +345,17 @@ public class InputManager {
             centralManager.getInputManager().restartSolution("Imported image", true);
             (Color[][] colourArray, HashSet<Color> allowedColours) = imageToColourArray(inputBitmap);
 
-            bool allowed = allowedColours
-                .Select(foundColour => !foundColour.A.Equals(255) || centralManager.getMainWindowVM().PaintTiles
-                    .Any(tvm => tvm.PatternColour.Equals(foundColour)))
-                .Aggregate(true, (current, found) => current && found);
+            if (centralManager.getWFCHandler().isOverlappingModel()) {
+                bool allowed = allowedColours
+                    .Select(foundColour => !foundColour.A.Equals(255) || centralManager.getMainWindowVM().PaintTiles
+                        .Any(tvm => tvm.PatternColour.Equals(foundColour)))
+                    .Aggregate(true, (current, found) => current && found);
 
-            if (!allowed) {
-                centralManager.getUIManager().dispatchError(mainWindow);
-                //TODO Popup telling user input image was not correct colours
-                return;
+                if (!allowed) {
+                    centralManager.getUIManager().dispatchError(mainWindow);
+                    //TODO Popup telling user input image was not correct colours
+                    return;
+                }
             }
 
             ObservableCollection<TileViewModel> paintTiles = centralManager.getMainWindowVM().PaintTiles;
@@ -388,7 +374,7 @@ public class InputManager {
                             }
 
                             bool? success = centralManager.getInputManager()
-                                .processClick(y, x, imageWidth, imageHeight, idx).Result;
+                                .processClick(y, x, imageWidth, imageHeight, idx, true).Result;
 
                             if (success != null && !(bool) success) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
@@ -406,18 +392,91 @@ public class InputManager {
                         }
                     }
                 }
-
-                if (itemsFile != null) {
-                    //TODO Items Layer
-                }
             } else {
                 //TODO World Layer
+                for (int x = 0; x < imageWidth; x++) {
+                    for (int y = 0; y < imageHeight; y++) {
+                        await Task.Delay(400);
+                        Color[][] bitmapCa = new Color[tileSize][];
+                        for (int yy = 0; yy < tileSize; yy++) {
+                            bitmapCa[yy] = new Color[tileSize];
+                            for (int xx = 0; xx < tileSize; xx++) {
+                                Color toSet = colourArray[y * tileSize + yy][x * tileSize + xx];
+                                bitmapCa[yy][xx] = toSet;
+                            }
+                        }
 
-                if (itemsFile != null) {
-                    //TODO Items Layer
+                        int myId = -1;
+                        
+                        foreach (TileViewModel tvm in centralManager.getMainWindowVM().PaintTiles) {
+                            Color[][] myColorArrayTemp = imageToColourArray(tvm.PatternImage).Item1;
+                            int patternRotation = (tvm.PatternRotation + 360) % 360;
+                            
+                            Color[][] myColorArray = myColorArrayTemp.Clone() as Color[][] ?? Array.Empty<Color[]>();
+                            switch (patternRotation) {
+                                case 90:
+                                    break;
+                                case 0:
+                                    myColorArray = rotate(myColorArrayTemp);
+                                    break;
+                                case 270:
+                                    myColorArray = rotate(rotate(myColorArrayTemp));
+                                    break;
+                                case 180:
+                                    myColorArray = rotate(rotate(rotate(myColorArrayTemp)));
+                                    break;
+                            }
+
+                            bool currentEqual = true;
+                            for (int xx = 0; xx < tileSize; xx++) {
+                                for (int yy = 0; yy < tileSize; yy++) {
+                                    currentEqual = currentEqual && myColorArray[xx][yy].Equals(bitmapCa[yy][xx]);
+                                }
+                            }
+
+                            if (x == 0 && y == 1) {
+                                Trace.WriteLine($@"{tvm.PatternIndex} -> {tvm.PatternRotation}");
+                                Trace.WriteLine(string.Join(", ", bitmapCa.Select(a => string.Join(", ", a))));
+                                Trace.WriteLine(string.Join(", ", myColorArray.Select(a => string.Join(", ", a))));
+                            }
+
+                            if (currentEqual) {
+                                myId = tvm.PatternIndex;
+                                //break;
+                            }
+                        }
+
+                        if (myId == -1) {
+                            if (x == 2 && y == 2) {
+                                Trace.WriteLine(@$"Error ({x},{y})");
+                            }
+                        } else {
+                            bool? success = centralManager.getInputManager()
+                                .processClick(x, y, imageWidth, imageHeight, myId).Result;
+                        }
+                    }
                 }
             }
+
+            centralManager!.getInputManager().placeMarker(false);
         }
+    }
+
+    private static T[][] rotate<T>(T[][] input) {
+        int dim = input[0].Length;
+        T[][] newArray = new T[dim][];
+
+        for (int j = 0; j < dim; j++) {
+            newArray[j] = new T[dim];
+        }
+
+        for (int i = dim - 1; i >= 0; --i) {
+            for (int j = 0; j < dim; j++) {
+                newArray[j][dim - 1 - i] = input[i][j];
+            }
+        }
+
+        return newArray;
     }
 
     public async void exportSolution() {

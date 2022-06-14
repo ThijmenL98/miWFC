@@ -54,7 +54,7 @@ public class TileViewModel : ReactiveObject {
 
         centralManager = cm;
         DynamicWeight = false;
-        
+
         _patternWeightString = DynamicWeight ? "D" :
             _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
@@ -70,7 +70,7 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = 1;
         centralManager = cm;
         DynamicWeight = false;
-        
+
         _patternWeightString = DynamicWeight ? "D" :
             _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
@@ -231,7 +231,8 @@ public class TileViewModel : ReactiveObject {
         }
 
         if (!DynamicWeight) {
-            int xDim = centralManager!.getMainWindowVM().ImageOutWidth, yDim = centralManager!.getMainWindowVM().ImageOutHeight;
+            int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
+                yDim = centralManager!.getMainWindowVM().ImageOutHeight;
             _weightHeatmap = new double[xDim, yDim];
             for (int i = 0; i < xDim; i++) {
                 for (int j = 0; j < yDim; j++) {
@@ -244,7 +245,8 @@ public class TileViewModel : ReactiveObject {
     public async void DynamicWeightClick() {
         await centralManager!.getUIManager().switchWindow(Windows.HEATMAP);
 
-        int xDim = centralManager!.getMainWindowVM().ImageOutWidth, yDim = centralManager!.getMainWindowVM().ImageOutHeight;
+        int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
+            yDim = centralManager!.getMainWindowVM().ImageOutHeight;
         if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
             centralManager.getWFCHandler().resetWeights();
         }
