@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
+using miWFC.Managers;
 
 namespace miWFC.DeBroglie.Wfc;
 
@@ -10,8 +11,8 @@ public class WavePropagatorOptions {
     public IBacktrackPolicy BacktrackPolicy { get; set; }
     public IWaveConstraint[] Constraints { get; set; }
     public Func<double> RandomDouble { get; set; }
-    public IIndexPicker IndexPicker { get; set; }
-    public IPatternPicker PatternPicker { get; set; }
+    public HeapEntropyTracker IndexPicker { get; set; }
+    public WeightedRandomPatternPicker PatternPicker { get; set; }
     public bool Clear { get; set; } = true;
     public ModelConstraintAlgorithm ModelConstraintAlgorithm { get; set; }
 }
@@ -23,10 +24,12 @@ public class WavePropagatorOptions {
 public class WavePropagator {
     private readonly IWaveConstraint[] constraints;
 
-    private readonly IIndexPicker indexPicker;
+    private readonly HeapEntropyTracker indexPicker;
 
     private readonly int outWidth, outHeight;
-    private readonly IPatternPicker patternPicker;
+    private readonly WeightedRandomPatternPicker patternPicker;
+
+    private CentralManager cm;
 
     // In
 
@@ -65,7 +68,8 @@ public class WavePropagator {
         ITopology topology,
         int outputWidth,
         int outputHeight,
-        WavePropagatorOptions options) {
+        WavePropagatorOptions options,
+        CentralManager _cm) {
         PatternCount = model.PatternCount;
         Frequencies = model.Frequencies;
 
@@ -77,9 +81,11 @@ public class WavePropagator {
         constraints = options.Constraints ?? new IWaveConstraint[0];
         Topology = topology;
         RandomDouble = options.RandomDouble ?? new Random().NextDouble;
-        indexPicker = options.IndexPicker ?? new HeapEntropyTracker();
-        patternPicker = options.PatternPicker ?? new WeightedRandomPatternPicker();
+        indexPicker = options.IndexPicker;
+        patternPicker = options.PatternPicker;
         patternModelConstraint = new Ac4PatternModelConstraint(this, model);
+
+        cm = _cm;
 
         if (options.Clear) {
             Clear();
@@ -161,7 +167,7 @@ public class WavePropagator {
         trackers = new List<ITracker>();
         choiceObservers = new List<IChoiceObserver>();
         indexPicker.Init(this);
-        patternPicker.Init(this);
+        patternPicker.Init(this, cm);
         backtrackPolicy?.Init(this);
 
         patternModelConstraint.Clear();
@@ -225,7 +231,7 @@ public class WavePropagator {
             if (index != -1) {
                 // Pick a tile to select at that index
                 pattern = patternPicker.GetRandomPossiblePatternAt(index, RandomDouble);
-                
+
                 RecordBacktrack(index, pattern);
 
                 // Use the pick
@@ -287,7 +293,7 @@ public class WavePropagator {
             if (Status == Resolution.UNDECIDED) {
                 StepConstraints();
             }
-            
+
 #if DEBUG
             Topology.GetCoord(index, out int x, out int y, out _);
             Trace.WriteLine(@$"Stepping {pattern} @ ({x}, {y})");
@@ -366,7 +372,7 @@ public class WavePropagator {
             }
         }
     }
-    
+
     public void AddBacktrackPoint() {
         RecordBacktrack(-1, -1);
     }
@@ -382,7 +388,7 @@ public class WavePropagator {
         DoBacktrack();
 
         Status = Resolution.UNDECIDED;
-        
+
         // Revalidate status.
         if (Status == Resolution.UNDECIDED) {
             patternModelConstraint.Propagate();

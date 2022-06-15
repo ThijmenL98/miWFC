@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace miWFC.DeBroglie; 
+namespace miWFC.DeBroglie;
 
 /// <summary>
 ///     A wrapper around <see cref="object" /> to give some clarity to the code.

@@ -94,6 +94,7 @@ public struct TileModelMapping {
             patterns = new HashSet<int>(tileSet.Tiles.SelectMany(tile => GetPatterns(tilesToPatterns, tile)));
             tileSet.OffsetToPatterns[offset] = patterns;
         }
+
         return patterns;
     }
 }

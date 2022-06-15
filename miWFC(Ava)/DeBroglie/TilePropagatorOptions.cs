@@ -4,7 +4,7 @@ using miWFC.DeBroglie.Constraints;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie; 
+namespace miWFC.DeBroglie;
 
 public class PriorityAndWeight {
     public int Priority { get; set; }

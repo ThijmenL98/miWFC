@@ -1,4 +1,4 @@
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 public enum FrameDisposal {
     UNKNOWN = 0,

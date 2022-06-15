@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace miWFC.DeBroglie; 
+namespace miWFC.DeBroglie;
 
 internal interface IHeapNode<TKey> where TKey : IComparable<TKey> {
     int HeapIndex { get; set; }

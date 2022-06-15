@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ public class UIManager {
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowVM;
-    private readonly CentralManager parentCM;
+    private readonly CentralManager centralManager;
 
     private readonly List<Func<int, int, int, int, Point>> transforms = new() {
         (_, _, x, y) => new Point(x, y), // rotated 0
@@ -47,7 +48,7 @@ public class UIManager {
     private Dictionary<int, List<Bitmap>> similarityMap = new();
 
     public UIManager(CentralManager parent) {
-        parentCM = parent;
+        centralManager = parent;
         mainWindowVM = parent.getMainWindowVM();
         mainWindow = parent.getMainWindow();
     }
@@ -85,9 +86,9 @@ public class UIManager {
     }
 
     public void updateTimeStampPosition(double amountCollapsed) {
-        double tWidth = parentCM.getMainWindow().IsVisible
+        double tWidth = centralManager.getMainWindow().IsVisible
             ? mainWindow.getOutputControl().getTimelineWidth()
-            : parentCM.getPaintingWindow().getTimelineWidth();
+            : centralManager.getPaintingWindow().getTimelineWidth();
         mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
 
@@ -96,17 +97,32 @@ public class UIManager {
      */
 
     public void showPopUp(string param) {
-        if (param.Equals("M")) {
-            mainWindowVM.MainInfoPopupVisible = true;
+        switch (param) {
+            case "M":
+                mainWindowVM.MainInfoPopupVisible = true;
+                break;
+            case "I":
+               //TODO mainWindowVM.ItemsInfoPopupVisible = true;
+                break;
+            case "P":
+                mainWindowVM.PaintInfoPopupVisible = true;
+                break;
+            case "H":
+               //TODO mainWindowVM.HeatmapInfoPopupVisible = true;
+                break;
         }
     }
 
     public void hidePopUp() {
         mainWindowVM.MainInfoPopupVisible = false;
+        mainWindowVM.PaintInfoPopupVisible = false;
+        mainWindowVM.ItemsInfoPopupVisible = false;
+        mainWindowVM.HeatmapInfoPopupVisible = false;
     }
 
     public bool popUpOpened() {
-        return mainWindowVM.MainInfoPopupVisible;
+        return mainWindowVM.MainInfoPopupVisible || mainWindowVM.ItemsInfoPopupVisible ||
+               mainWindowVM.PaintInfoPopupVisible || mainWindowVM.HeatmapInfoPopupVisible;
     }
 
     public void resetPatterns() {
@@ -160,7 +176,7 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: parentCM, 0);
+        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: centralManager, 0);
 
         patternCount++;
 
@@ -203,63 +219,69 @@ public class UIManager {
     }
 
     public async Task switchWindow(Windows window, bool checkClicked = false) {
-        Window target, source;
+        mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+        
+        Trace.WriteLine(@$"We want to switch to {window}");
+        Window target = mainWindow, source = mainWindow;
 
         switch (window) {
             case Windows.MAIN:
                 // Goto main
-                target = mainWindow;
-                source = parentCM.getPaintingWindow().IsVisible
-                    ? parentCM.getPaintingWindow()
-                    : parentCM.getItemWindow();
+                source = centralManager.getPaintingWindow().IsVisible
+                    ? centralManager.getPaintingWindow()
+                    : centralManager.getItemWindow().IsVisible
+                        ? centralManager.getItemWindow()
+                        : centralManager.getWeightMapWindow();
 
                 bool stillApply = await handlePaintingClose(checkClicked);
 
                 if (stillApply) {
-                    await parentCM.getMainWindowVM().OnApplyClick();
+                    await centralManager.getMainWindowVM().OnApplyClick();
                 }
 
                 break;
             case Windows.PAINTING:
                 // Goto paint
                 mainWindowVM.PencilModeEnabled = true;
-                target = parentCM.getPaintingWindow();
-                source = mainWindow;
+                target = centralManager.getPaintingWindow();
                 break;
             case Windows.ITEMS:
                 // Goto items
-                target = parentCM.getItemWindow();
-                source = mainWindow;
+                target = centralManager.getItemWindow();
+                break;
+            case Windows.HEATMAP:
+                // Goto Items
+                target = centralManager.getWeightMapWindow();
                 break;
             default:
                 throw new NotImplementedException();
         }
 
-        target.Width = source.Width;
-        target.Height = source.Height;
+        if (!window.Equals(Windows.HEATMAP) && !source.Equals(centralManager.getWeightMapWindow())) {
+            target.Width = source.Width;
+            target.Height = source.Height;
+        }
 
-        source.Hide();
-        target.Show();
-
-        if (!Equals(target, parentCM.getItemWindow()) && !Equals(source, parentCM.getItemWindow())) {
+        if (!Equals(target, centralManager.getItemWindow()) && !Equals(source, centralManager.getItemWindow())) {
             ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
 
             mainWindowVM.Markers.Clear();
             foreach (MarkerViewModel mvm in mvmListCopy) {
-                double offset = (parentCM.getMainWindow().IsVisible
+                double offset = (centralManager.getMainWindow().IsVisible
                         ? mainWindow.getOutputControl().getTimelineWidth()
-                        : parentCM.getPaintingWindow().getTimelineWidth()) *
+                        : centralManager.getPaintingWindow().getTimelineWidth()) *
                     mvm.MarkerCollapsePercentage + 1;
                 mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
                     offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
             }
 
-            updateTimeStampPosition(parentCM.getWFCHandler().getPercentageCollapsed());
+            updateTimeStampPosition(centralManager.getWFCHandler().getPercentageCollapsed());
         }
 
-        target.Position = source.Position;
+        source.Hide();
+        target.Show();
 
-        mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+        target.Position = source.Position;
     }
 
     private async Task<bool> handlePaintingClose(bool checkClicked) {
@@ -304,5 +326,6 @@ public class UIManager {
 public enum Windows {
     MAIN,
     PAINTING,
-    ITEMS
+    ITEMS,
+    HEATMAP
 }

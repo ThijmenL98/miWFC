@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie; 
+﻿namespace miWFC.DeBroglie;
 
 /// <summary>
 ///     Represents an uncertain boolean.

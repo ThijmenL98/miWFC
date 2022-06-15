@@ -5,7 +5,7 @@ using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Models; 
+namespace miWFC.DeBroglie.Models;
 
 /// <summary>
 ///     AdjacentModel constrains which tiles can be placed adjacent to which other ones.

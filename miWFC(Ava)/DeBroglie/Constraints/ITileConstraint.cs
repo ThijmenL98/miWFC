@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Constraints; 
+﻿namespace miWFC.DeBroglie.Constraints;
 
 /// <summary>
 ///     Interface for specifying non-local constraints to be respected during generation.

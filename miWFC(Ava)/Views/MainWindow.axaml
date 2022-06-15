@@ -31,6 +31,7 @@
 		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
 		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
 		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
+		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
@@ -47,6 +48,7 @@
 		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
 		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
 		<Image Source="/Assets/ItemsEditorClick.png" x:Key="clickItemsEditorKey" x:Name="clickItemsEditor" />
+		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -142,7 +144,7 @@
 										<Border Padding="1">
 											<Grid Margin="5">
 												<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicMain.png"
-												       Stretch="Uniform" MaxHeight="700" />
+												       Stretch="Uniform" Height="700" />
 												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 												        VerticalAlignment="Top"
 												        x:Name="borderPaddingToggle" Background="Transparent"
@@ -176,11 +178,54 @@
 
 							<Grid ColumnDefinitions="Auto, *" Grid.Column="0">
 								<contentControls:InputControl DataContext="{Binding VM}"
-								                        Grid.Row="0" x:Name="inputControl" />
+								                              Grid.Row="0" x:Name="inputControl" />
 
 								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
-									<TextBlock Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 10, 5"
-									           Text="Extracted patterns with the current settings" TextWrapping="Wrap" />
+									<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
+										<TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 0, 0"
+										           Text="Extracted tiles with the current settings" TextWrapping="Wrap" />
+
+										<TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 0, 5"
+										           Text="Click on the tile value to edit dynamic value mapping." TextWrapping="Wrap"
+										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
+
+										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
+										        Command="{Binding OnWeightReset}"
+										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
+											<Button.Styles>
+												<Style Selector="Button:pointerover /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
+													<Setter Property="Background" Value="Transparent" />
+													<Setter Property="RenderTransform">
+														<Setter.Value>
+															<RotateTransform Angle="-90" />
+														</Setter.Value>
+													</Setter>
+												</Style>
+												<Style Selector="Button:pressed /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
+													<Setter Property="Background" Value="Transparent" />
+													<Setter Property="RenderTransform">
+														<Setter.Value>
+															<RotateTransform Angle="-90" />
+														</Setter.Value>
+													</Setter>
+												</Style>
+											</Button.Styles>
+											<Panel>
+												<Image Source="/Assets/Restart.png">
+													<Image.RenderTransform>
+														<RotateTransform Angle="-90" />
+													</Image.RenderTransform>
+												</Image>
+											</Panel>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Reset the weights to default</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
+										</Button>
+									</Grid>
 
 									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15"
@@ -196,7 +241,7 @@
 							</Grid>
 
 							<contentControls:OutputControl DataContext="{Binding VM}"
-							                         Grid.Column="1" x:Name="outputControl" />
+							                               Grid.Column="1" x:Name="outputControl" />
 						</Grid>
 
 						<avaloniaGif:GifImage SourceUriRaw="resm:miWFC.Assets.LoadingAnim.gif"

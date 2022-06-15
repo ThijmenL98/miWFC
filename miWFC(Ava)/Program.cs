@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 
-namespace miWFC; 
+namespace miWFC;
 
 internal static class Program {
     // Initialization code. Don't use any Avalonia, third-party APIs or any

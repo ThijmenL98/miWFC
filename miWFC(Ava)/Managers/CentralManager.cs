@@ -9,15 +9,18 @@ public class CentralManager {
     private readonly MainWindow mainWindow;
     private readonly PaintingWindow paintingWindow;
     private readonly ItemWindow itemWindow;
+    private readonly WeightMapWindow weightMapWindow;
 
     private readonly MainWindowViewModel mainWindowViewModel;
     private readonly UIManager uiManager;
     private readonly WFCHandler wfcHandler;
 
-    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW) {
+    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,
+        WeightMapWindow wMW) {
         mainWindow = mW;
         paintingWindow = pW;
         itemWindow = iW;
+        weightMapWindow = wMW;
 
         mainWindowViewModel = mWVM;
 
@@ -52,5 +55,9 @@ public class CentralManager {
 
     public MainWindowViewModel getMainWindowVM() {
         return mainWindowViewModel;
+    }
+
+    public WeightMapWindow getWeightMapWindow() {
+        return weightMapWindow;
     }
 }

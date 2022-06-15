@@ -9,7 +9,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Visuals.Media.Imaging;
 
-namespace miWFC.AvaloniaGif; 
+namespace miWFC.AvaloniaGif;
 
 public class GifImage : Control {
     public static readonly StyledProperty<string> sourceUriRawProperty

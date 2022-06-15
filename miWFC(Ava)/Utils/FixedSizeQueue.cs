@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace miWFC.Utils; 
+namespace miWFC.Utils;
 
 public class FixedSizeQueue<T> {
     private readonly ConcurrentQueue<T> q = new();
@@ -13,10 +13,9 @@ public class FixedSizeQueue<T> {
     }
 
     private int Limit { get; }
-    public void Enqueue(T obj)
-    {
-        lock (lockObject)
-        {
+
+    public void Enqueue(T obj) {
+        lock (lockObject) {
             q.Enqueue(obj);
             while (q.Count > Limit && q.TryDequeue(out T? _)) { }
         }
@@ -30,7 +29,7 @@ public class FixedSizeQueue<T> {
 
     public List<T> toList() {
         lock (lockObject) {
-            List<T> listQueue = new (q.ToArray());
+            List<T> listQueue = new(q.ToArray());
             listQueue.Reverse();
             return listQueue;
         }

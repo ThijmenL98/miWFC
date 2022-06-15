@@ -1,4 +1,4 @@
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 internal enum BlockTypes {
     EMPTY = 0,

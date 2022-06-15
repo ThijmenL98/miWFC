@@ -17,7 +17,7 @@ using System.Text;
 using miWFC.AvaloniaGif.Caching;
 using static miWFC.AvaloniaGif.Extensions.StreamExtensions;
 
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 public sealed class GifDecoder : IDisposable {
     private static readonly ReadOnlyMemory<byte> g87AMagic
@@ -413,7 +413,7 @@ public sealed class GifDecoder : IDisposable {
 
         if (!(tempBuf.Slice(0, 6).SequenceEqual(g87AMagic.Span) | tempBuf.Slice(0, 6).SequenceEqual(g89AMagic.Span))) {
             throw new InvalidGifStreamException("Unsupported GIF Version: " +
-                Encoding.ASCII.GetString(tempBuf.Slice(0, 6).ToArray()));
+                                                Encoding.ASCII.GetString(tempBuf.Slice(0, 6).ToArray()));
         }
 
         ProcessScreenDescriptor(tmpB);

@@ -2,7 +2,7 @@
 using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 
-namespace miWFC.DeBroglie.Models; 
+namespace miWFC.DeBroglie.Models;
 
 /// <summary>
 ///     Base class for the models used in generation.

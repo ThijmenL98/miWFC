@@ -1,7 +1,7 @@
 ﻿using miWFC.DeBroglie.Constraints;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Models; 
+namespace miWFC.DeBroglie.Models;
 
 internal class TileConstraintAdaptor : IWaveConstraint {
     private readonly TilePropagator propagator;

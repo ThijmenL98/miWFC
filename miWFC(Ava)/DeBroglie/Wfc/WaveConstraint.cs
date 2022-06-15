@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Wfc; 
+﻿namespace miWFC.DeBroglie.Wfc;
 
 /// <summary>
 ///     A variant of ITileConstraint that works on patterns instead of tiles.

@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Topo; 
+﻿namespace miWFC.DeBroglie.Topo;
 
 /// <summary>
 ///     A read-only array coupled with a specific <see cref="Topology" />

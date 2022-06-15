@@ -4,9 +4,9 @@ using System.Linq;
 using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Trackers; 
+namespace miWFC.DeBroglie.Trackers;
 
-internal class HeapEntropyTracker : ITracker, IIndexPicker {
+public class HeapEntropyTracker : ITracker, IIndexPicker {
     private const double Threshold = 1e-17;
 
     // Track some useful per-cell values

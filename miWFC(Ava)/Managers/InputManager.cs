@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using miWFC.DeBroglie.Topo;
 using miWFC.ViewModels;
 using miWFC.Views;
 using static miWFC.Utils.Util;
@@ -26,7 +28,7 @@ public class InputManager {
 
     private readonly Bitmap noResultFoundBM;
 
-    private readonly CentralManager parentCM;
+    private readonly CentralManager centralManager;
     private readonly Stack<int> savePoints;
 
     private int lastPaintedAmountCollapsed;
@@ -36,9 +38,9 @@ public class InputManager {
     private DispatcherTimer timer = new();
 
     public InputManager(CentralManager parent) {
-        parentCM = parent;
-        mainWindowVM = parentCM.getMainWindowVM();
-        mainWindow = parentCM.getMainWindow();
+        centralManager = parent;
+        mainWindowVM = centralManager.getMainWindowVM();
+        mainWindow = centralManager.getMainWindow();
 
         maskColours = new Color[0, 0];
 
@@ -56,7 +58,7 @@ public class InputManager {
         mainWindow.getInputControl().setPatternSizes(patternSizeDataSource, i);
 
         restartSolution("Constructor");
-        parentCM.getUIManager().updateInstantCollapse(1);
+        centralManager.getUIManager().updateInstantCollapse(1);
 
         lastPaintedAmountCollapsed = 0;
     }
@@ -66,7 +68,7 @@ public class InputManager {
      */
 
     public async void restartSolution(string source, bool force = false, bool keepOutput = false) {
-        if (parentCM.getWFCHandler().isChangingModels() || parentCM.getWFCHandler().isChangingImages()) {
+        if (centralManager.getWFCHandler().isChangingModels() || centralManager.getWFCHandler().isChangingImages()) {
             return;
         }
 
@@ -86,7 +88,7 @@ public class InputManager {
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
-        if (!getModelImages(parentCM.getWFCHandler().isOverlappingModel() ? "overlapping" : "simpletiled",
+        if (!getModelImages(centralManager.getWFCHandler().isOverlappingModel() ? "overlapping" : "simpletiled",
                     mainWindow.getInputControl().getCategory())
                 .Contains(mainWindow.getInputControl().getInputImage())) {
             return;
@@ -94,8 +96,8 @@ public class InputManager {
 
         try {
             int stepAmount = mainWindowVM.StepAmount;
-            WriteableBitmap newOutputWb = (await parentCM.getWFCHandler()
-                .initAndRunWfcDB(true, (stepAmount == 100 && !keepOutput) ? -1 : 0, force)).Item1;
+            WriteableBitmap newOutputWb = (await centralManager.getWFCHandler()
+                .initAndRunWfcDB(true, stepAmount == 100 && !keepOutput ? -1 : 0, force)).Item1;
             if (!keepOutput) {
                 mainWindowVM.OutputImage = newOutputWb;
             }
@@ -108,23 +110,23 @@ public class InputManager {
     }
 
     public async void advanceStep() {
-        if (parentCM.getWFCHandler().getAmountCollapsed()
+        if (centralManager.getWFCHandler().getAmountCollapsed()
             .Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
-            parentCM.getUIManager().dispatchError(mainWindow);
+            centralManager.getUIManager().dispatchError(mainWindow);
             return;
         }
 
         try {
-            (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
+            (double currentWidth, double currentHeight) = centralManager.getWFCHandler().getPropagatorSize();
 
             bool weightReset = false;
             if (!mainWindowVM.IsRunning) {
-                parentCM.getWFCHandler().updateWeights();
+                centralManager.getWFCHandler().updateWeights();
                 restartSolution("Advance step");
                 weightReset = true;
             }
 
-            (WriteableBitmap result2, bool _) = await parentCM.getWFCHandler()
+            (WriteableBitmap result2, bool _) = await centralManager.getWFCHandler()
                 .initAndRunWfcDB(
                     mainWindowVM.ImageOutWidth != (int) currentWidth ||
                     mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
@@ -137,7 +139,7 @@ public class InputManager {
 
     public void revertStep() {
         try {
-            int prevAmountCollapsed = parentCM.getWFCHandler().getAmountCollapsed();
+            int prevAmountCollapsed = centralManager.getWFCHandler().getAmountCollapsed();
             if (prevAmountCollapsed == 0) {
                 return;
             }
@@ -145,22 +147,24 @@ public class InputManager {
             if (mainWindowVM.Markers.Count > 0) {
                 MarkerViewModel curMarker = mainWindowVM.Markers[savePoints.Count - 1];
                 bool canReturn
-                    = Math.Abs(parentCM.getWFCHandler().getPercentageCollapsed() - curMarker.MarkerCollapsePercentage) >
+                    = Math.Abs(centralManager.getWFCHandler().getPercentageCollapsed() -
+                               curMarker.MarkerCollapsePercentage) >
                     0.00001d || curMarker.Revertible;
                 if (!canReturn) {
-                    parentCM.getUIManager().dispatchError(mainWindow);
+                    centralManager.getUIManager().dispatchError(mainWindow);
                     return;
                 }
             }
 
-            int loggedAT = parentCM.getWFCHandler().getActionsTaken();
+            int loggedAT = centralManager.getWFCHandler().getActionsTaken();
 
             Bitmap? avaloniaBitmap = null;
-            int curStep = parentCM.getWFCHandler().getAmountCollapsed();
+            int curStep = centralManager.getWFCHandler().getAmountCollapsed();
 
-            while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed - mainWindowVM.StepAmount) {
+            while (centralManager.getWFCHandler().getAmountCollapsed() >
+                   prevAmountCollapsed - mainWindowVM.StepAmount) {
                 for (int i = 0; i < mainWindowVM.StepAmount; i++) {
-                    curStep = parentCM.getWFCHandler().getAmountCollapsed();
+                    curStep = centralManager.getWFCHandler().getAmountCollapsed();
 
                     if (savePoints.Count != 0 && curStep <= savePoints.Peek()) {
                         foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
@@ -175,7 +179,7 @@ public class InputManager {
                         }
                     }
 
-                    avaloniaBitmap = parentCM.getWFCHandler().stepBackWfc();
+                    avaloniaBitmap = centralManager.getWFCHandler().stepBackWfc();
                 }
             }
 
@@ -183,7 +187,7 @@ public class InputManager {
 
             mainWindowVM.OutputImage = avaloniaBitmap!;
 
-            parentCM.getWFCHandler().setActionsTaken(loggedAT - 1);
+            centralManager.getWFCHandler().setActionsTaken(loggedAT - 1);
 
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
                 savePoints.Pop();
@@ -213,25 +217,26 @@ public class InputManager {
     }
 
     public void placeMarker(bool revertible = true) {
-        if (parentCM.getWFCHandler().isCollapsed()) {
+        if (centralManager.getWFCHandler().isCollapsed()) {
             return;
         }
 
-        int curStep = parentCM.getWFCHandler().getAmountCollapsed();
+        int curStep = centralManager.getWFCHandler().getAmountCollapsed();
         if (curStep == 0) {
             return;
         }
 
         if (mainWindowVM.Markers.Count > 0 && mainWindowVM.Markers[^1].MarkerCollapsePercentage
-                .Equals(parentCM.getWFCHandler().getPercentageCollapsed())) {
+                .Equals(centralManager.getWFCHandler().getPercentageCollapsed())) {
             return;
         }
 
         mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
             (mainWindow.IsVisible
                 ? mainWindow.getOutputControl().getTimelineWidth()
-                : parentCM.getPaintingWindow().getTimelineWidth()) * parentCM.getWFCHandler().getPercentageCollapsed() +
-            1, parentCM.getWFCHandler().getPercentageCollapsed(),
+                : centralManager.getPaintingWindow().getTimelineWidth()) *
+            centralManager.getWFCHandler().getPercentageCollapsed() +
+            1, centralManager.getWFCHandler().getPercentageCollapsed(),
             revertible));
 
         while (true) {
@@ -258,12 +263,12 @@ public class InputManager {
 
         if (savePoints.Count != 0) {
             if (!mainWindowVM.Markers[savePoints.Count - 1].Revertible) {
-                parentCM.getUIManager().dispatchError(mainWindow);
+                centralManager.getUIManager().dispatchError(mainWindow);
                 return;
             }
         }
 
-        if (parentCM.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
+        if (centralManager.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
             prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
             savePoints.Pop();
 
@@ -277,15 +282,15 @@ public class InputManager {
         }
 
         if (lastPaintedAmountCollapsed != 0 &&
-            prevAmountCollapsed == parentCM.getWFCHandler().getAmountCollapsed()) {
-            parentCM.getUIManager().dispatchError(mainWindow);
+            prevAmountCollapsed == centralManager.getWFCHandler().getAmountCollapsed()) {
+            centralManager.getUIManager().dispatchError(mainWindow);
             return;
         }
 
         try {
             if (doBacktrack) {
-                while (parentCM.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
-                    mainWindowVM.OutputImage = parentCM.getWFCHandler().stepBackWfc();
+                while (centralManager.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
+                    mainWindowVM.OutputImage = centralManager.getWFCHandler().stepBackWfc();
                 }
             }
         } catch (Exception exception) {
@@ -294,25 +299,205 @@ public class InputManager {
         }
     }
 
-    public async void exportSolution() {
-        bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down") &&
-                        parentCM.getWFCHandler().isCollapsed();
+    public async void importSolution() {
+        OpenFileDialog ofd = new() {
+            Title = @"Select png solution to import",
+            Filters = new List<FileDialogFilter> {
+                new() {
+                    Extensions = new List<string> {"png"},
+                    Name = "PNG Image (*.png)"
+                }
+            }
+        };
 
+        string[]? ofdResults = await ofd.ShowAsync(new Window());
+        if (ofdResults != null) {
+            if (ofdResults.Length == 0) {
+                return;
+            }
+
+            string worldFile = ofdResults[0];
+
+            MemoryStream ms = new(await File.ReadAllBytesAsync(worldFile));
+            WriteableBitmap inputBitmap = WriteableBitmap.Decode(ms);
+
+            int inputImageWidth = (int) inputBitmap.Size.Width, inputImageHeight = (int) inputBitmap.Size.Height;
+
+            int tileSize = centralManager.getWFCHandler().isOverlappingModel()
+                ? 1
+                : centralManager.getWFCHandler().getTileSize();
+            int maxImageSize = 128 * tileSize;
+
+            if (inputImageWidth > maxImageSize || inputImageWidth < 10 || inputImageHeight > maxImageSize ||
+                inputImageHeight < 10) {
+                centralManager.getUIManager().dispatchError(mainWindow);
+                //TODO Popup telling user input image was not allowed size
+                return;
+            }
+
+            int imageWidth = inputImageWidth / tileSize;
+            int imageHeight = inputImageHeight / tileSize;
+
+            mainWindowVM.ImageOutWidth = imageWidth;
+            mainWindowVM.ImageOutHeight = imageHeight;
+            mainWindowVM.StepAmount = 1;
+
+            centralManager.getInputManager().restartSolution("Imported image", true);
+            (Color[][] colourArray, HashSet<Color> allowedColours) = imageToColourArray(inputBitmap);
+
+            if (centralManager.getWFCHandler().isOverlappingModel()) {
+                bool allowed = allowedColours
+                    .Select(foundColour => !foundColour.A.Equals(255) || centralManager.getMainWindowVM().PaintTiles
+                        .Any(tvm => tvm.PatternColour.Equals(foundColour)))
+                    .Aggregate(true, (current, found) => current && found);
+
+                if (!allowed) {
+                    centralManager.getUIManager().dispatchError(mainWindow);
+                    //TODO Popup telling user input image was not correct colours
+                    return;
+                }
+            }
+
+            ObservableCollection<TileViewModel> paintTiles = centralManager.getMainWindowVM().PaintTiles;
+
+            if (centralManager.getWFCHandler().isOverlappingModel()) {
+                for (int x = 0; x < imageWidth; x++) {
+                    for (int y = 0; y < imageHeight; y++) {
+                        Color toPaint = colourArray[x][y];
+                        Color foundAtPos = centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x];
+
+                        if (!toPaint.Equals(foundAtPos) && toPaint.A.Equals(255) && foundAtPos.A.Equals(0)) {
+                            int idx = -1;
+                            foreach (TileViewModel tvm in paintTiles.Where(tvm => tvm.PatternColour.Equals(toPaint))) {
+                                idx = tvm.PatternIndex;
+                                break;
+                            }
+
+                            bool? success = centralManager.getInputManager()
+                                .processClick(y, x, imageWidth, imageHeight, idx, true).Result;
+
+                            if (success != null && !(bool) success) {
+                                centralManager.getUIManager().dispatchError(mainWindow);
+                                //TODO Popup telling user input image was not following patterns?
+                                centralManager.getInputManager().restartSolution("Imported image failure", true);
+                                return;
+                            }
+                        } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
+                                   !toPaint.Equals(foundAtPos)) {
+                            Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
+                            centralManager.getUIManager().dispatchError(mainWindow);
+                            //TODO Popup telling user input image had unknown error?
+                            centralManager.getInputManager().restartSolution("Imported image failure", true);
+                            return;
+                        }
+                    }
+                }
+            } else {
+                //TODO World Layer
+                for (int x = 0; x < imageWidth; x++) {
+                    for (int y = 0; y < imageHeight; y++) {
+                        await Task.Delay(400);
+                        Color[][] bitmapCa = new Color[tileSize][];
+                        for (int yy = 0; yy < tileSize; yy++) {
+                            bitmapCa[yy] = new Color[tileSize];
+                            for (int xx = 0; xx < tileSize; xx++) {
+                                Color toSet = colourArray[y * tileSize + yy][x * tileSize + xx];
+                                bitmapCa[yy][xx] = toSet;
+                            }
+                        }
+
+                        int myId = -1;
+                        
+                        foreach (TileViewModel tvm in centralManager.getMainWindowVM().PaintTiles) {
+                            Color[][] myColorArrayTemp = imageToColourArray(tvm.PatternImage).Item1;
+                            int patternRotation = (tvm.PatternRotation + 360) % 360;
+                            
+                            Color[][] myColorArray = myColorArrayTemp.Clone() as Color[][] ?? Array.Empty<Color[]>();
+                            switch (patternRotation) {
+                                case 90:
+                                    break;
+                                case 0:
+                                    myColorArray = rotate(myColorArrayTemp);
+                                    break;
+                                case 270:
+                                    myColorArray = rotate(rotate(myColorArrayTemp));
+                                    break;
+                                case 180:
+                                    myColorArray = rotate(rotate(rotate(myColorArrayTemp)));
+                                    break;
+                            }
+
+                            bool currentEqual = true;
+                            for (int xx = 0; xx < tileSize; xx++) {
+                                for (int yy = 0; yy < tileSize; yy++) {
+                                    currentEqual = currentEqual && myColorArray[xx][yy].Equals(bitmapCa[yy][xx]);
+                                }
+                            }
+
+                            if (x == 0 && y == 1) {
+                                Trace.WriteLine($@"{tvm.PatternIndex} -> {tvm.PatternRotation}");
+                                Trace.WriteLine(string.Join(", ", bitmapCa.Select(a => string.Join(", ", a))));
+                                Trace.WriteLine(string.Join(", ", myColorArray.Select(a => string.Join(", ", a))));
+                            }
+
+                            if (currentEqual) {
+                                myId = tvm.PatternIndex;
+                                //break;
+                            }
+                        }
+
+                        if (myId == -1) {
+                            if (x == 2 && y == 2) {
+                                Trace.WriteLine(@$"Error ({x},{y})");
+                            }
+                        } else {
+                            bool? success = centralManager.getInputManager()
+                                .processClick(x, y, imageWidth, imageHeight, myId).Result;
+                        }
+                    }
+                }
+            }
+
+            centralManager!.getInputManager().placeMarker(false);
+        }
+    }
+
+    private static T[][] rotate<T>(T[][] input) {
+        int dim = input[0].Length;
+        T[][] newArray = new T[dim][];
+
+        for (int j = 0; j < dim; j++) {
+            newArray[j] = new T[dim];
+        }
+
+        for (int i = dim - 1; i >= 0; --i) {
+            for (int j = 0; j < dim; j++) {
+                newArray[j][dim - 1 - i] = input[i][j];
+            }
+        }
+
+        return newArray;
+    }
+
+    public async void exportSolution() {
         SaveFileDialog sfd = new() {
             Title = @"Select export location & file name",
             DefaultExtension = "png",
             Filters = new List<FileDialogFilter> {
                 new() {
                     Extensions = new List<string> {"png"},
-                    Name = "PNG Image"
+                    Name = "PNG Image (*.png)"
                 }
             }
         };
 
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
+            bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down") &&
+                            centralManager.getWFCHandler().isCollapsed();
             if (hasItems) {
-                parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName.Replace(".png", "_worldLayer.png"));
+                centralManager.getWFCHandler().getLatestOutputBM(false)
+                    .Save(settingsFileName.Replace(".png", "_worldLayer.png"));
 
                 int[,] itemsGrid = mainWindowVM.getLatestItemGrid();
                 int[] tmp = new int[itemsGrid.GetLength(0) * itemsGrid.GetLength(1)];
@@ -321,33 +506,35 @@ public class InputManager {
 
                 if (list.Distinct().Count() > 1 || (!list.Distinct().Contains(-1) && list.Distinct().Any())) {
                     generateRawItemImage(itemsGrid).Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
-                    combineBitmaps(parentCM.getWFCHandler().getLatestOutput(),
-                            parentCM.getWFCHandler().isOverlappingModel() ? 1 : parentCM.getWFCHandler().getTileSize(),
+                    combineBitmaps(centralManager.getWFCHandler().getLatestOutput(),
+                            centralManager.getWFCHandler().isOverlappingModel()
+                                ? 1
+                                : centralManager.getWFCHandler().getTileSize(),
                             getLatestItemBitMap(), getDimension(), mainWindowVM.ImageOutWidth,
                             mainWindowVM.ImageOutHeight)
-                        .Save(settingsFileName);
+                        .Save(settingsFileName.Replace(".png", ".jpg"));
                 }
             } else {
-                parentCM.getWFCHandler().getLatestOutput().Save(settingsFileName);
+                centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
             }
         }
     }
 
     public void animate() {
-        if (parentCM.getWFCHandler().isCollapsed()) {
+        if (centralManager.getWFCHandler().isCollapsed()) {
             mainWindowVM.IsPlaying = false;
-            parentCM.getUIManager().dispatchError(mainWindow);
+            centralManager.getUIManager().dispatchError(mainWindow);
             return;
         }
 
-        (double currentWidth, double currentHeight) = parentCM.getWFCHandler().getPropagatorSize();
+        (double currentWidth, double currentHeight) = centralManager.getWFCHandler().getPropagatorSize();
         if (mainWindowVM.ImageOutWidth != (int) currentWidth ||
             mainWindowVM.ImageOutHeight != (int) currentHeight) {
             restartSolution("Animate");
         }
 
         if (!mainWindowVM.IsRunning && mainWindowVM.IsPlaying) {
-            parentCM.getWFCHandler().updateWeights();
+            centralManager.getWFCHandler().updateWeights();
             restartSolution("Animate");
         }
 
@@ -374,7 +561,7 @@ public class InputManager {
                 timer.Stop();
                 timer.Interval = TimeSpan.FromMilliseconds(mainWindowVM.AnimSpeed);
                 try {
-                    (WriteableBitmap result2, bool finished) = parentCM.getWFCHandler()
+                    (WriteableBitmap result2, bool finished) = centralManager.getWFCHandler()
                         .initAndRunWfcDB(false, mainWindowVM.StepAmount).Result;
                     mainWindowVM.OutputImage = result2;
 
@@ -398,14 +585,15 @@ public class InputManager {
             b = (int) Math.Floor(b * mainWindowVM.ImageOutHeight / (double) imgHeight);
         }
 
-        (WriteableBitmap? bitmap, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, tileIdx, false, skipUI);
+        (WriteableBitmap? bitmap, bool? showPixel)
+            = await centralManager.getWFCHandler().setTile(a, b, tileIdx, false, skipUI);
 
-        if (!skipUI) {
+        if (!skipUI && !mainWindowVM.IsPaintOverrideEnabled) {
             if (showPixel != null && (bool) showPixel) {
                 mainWindowVM.OutputImage = bitmap!;
                 processHoverAvailability(a, b, imgWidth, imgHeight, tileIdx, true, true);
             } else {
-                mainWindowVM.OutputImage = parentCM.getWFCHandler().getLatestOutputBM();
+                mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
             }
         }
 
@@ -426,20 +614,21 @@ public class InputManager {
         lastProcessedX = a;
         lastProcessedY = b;
 
-        if (parentCM.getWFCHandler().isOverlappingModel()) {
+        if (centralManager.getWFCHandler().isOverlappingModel()) {
             List<Color> availableAtLoc;
             try {
-                availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<Color>(a, b);
+                availableAtLoc = centralManager.getWFCHandler().getAvailablePatternsAtLocation<Color>(a, b);
             } catch (Exception) {
                 return;
             }
 
             if (pencilSelected) {
                 try {
-                    (WriteableBitmap? _, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
+                    (WriteableBitmap? _, bool? showPixel)
+                        = await centralManager.getWFCHandler().setTile(a, b, selectedValue, true);
                     if (showPixel != null && (bool) showPixel) {
-                        mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
-                        parentCM.getWFCHandler().stepBackWfc();
+                        mainWindowVM.OutputPreviewMask = centralManager.getWFCHandler().getLatestOutputBM(false);
+                        centralManager.getWFCHandler().stepBackWfc();
                     } else {
                         mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                             PixelFormat.Bgra8888, AlphaFormat.Unpremul);
@@ -453,9 +642,9 @@ public class InputManager {
             }
 
             mainWindowVM.HelperTiles.Clear();
-            int selectedIndex = parentCM.getPaintingWindow().getSelectedPaintIndex();
+            int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
             foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
-                if (availableAtLoc.Contains(parentCM.getWFCHandler().getColorFromIndex(tvm.PatternIndex))) {
+                if (availableAtLoc.Contains(centralManager.getWFCHandler().getColorFromIndex(tvm.PatternIndex))) {
                     tvm.Highlighted = tvm.PatternIndex == selectedIndex;
                     mainWindowVM.HelperTiles.Add(tvm);
                 }
@@ -463,16 +652,17 @@ public class InputManager {
         } else {
             List<int> availableAtLoc;
             try {
-                availableAtLoc = parentCM.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);
+                availableAtLoc = centralManager.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);
             } catch (Exception) {
                 return;
             }
 
             if (pencilSelected) {
-                (WriteableBitmap? _, bool? showPixel) = await parentCM.getWFCHandler().setTile(a, b, selectedValue, true);
+                (WriteableBitmap? _, bool? showPixel)
+                    = await centralManager.getWFCHandler().setTile(a, b, selectedValue, true);
                 if (showPixel != null && (bool) showPixel) {
-                    mainWindowVM.OutputPreviewMask = parentCM.getWFCHandler().getLatestOutputBM(false);
-                    parentCM.getWFCHandler().stepBackWfc();
+                    mainWindowVM.OutputPreviewMask = centralManager.getWFCHandler().getLatestOutputBM(false);
+                    centralManager.getWFCHandler().stepBackWfc();
                 } else {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Unpremul);
@@ -482,10 +672,10 @@ public class InputManager {
             }
 
             mainWindowVM.HelperTiles.Clear();
-            int selectedIndex = parentCM.getPaintingWindow().getSelectedPaintIndex();
+            int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
 
             foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
-                if (availableAtLoc.Contains(parentCM.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))) {
+                if (availableAtLoc.Contains(centralManager.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))) {
                     tvm.Highlighted = tvm.PatternIndex == selectedIndex;
                     mainWindowVM.HelperTiles.Add(tvm);
                 }
@@ -494,7 +684,7 @@ public class InputManager {
     }
 
     private void updateHoverBrushMask(int a, int b) {
-        int rawBrushSize = parentCM.getPaintingWindow().getPaintBrushSize();
+        int rawBrushSize = centralManager.getPaintingWindow().getPaintBrushSize();
         bool add = mainWindowVM.PaintKeepModeEnabled;
 
         double brushSize = rawBrushSize switch {
@@ -530,7 +720,7 @@ public class InputManager {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
-        int rawBrushSize = parentCM.getPaintingWindow().getPaintBrushSize();
+        int rawBrushSize = centralManager.getPaintingWindow().getPaintBrushSize();
         double brushSize = rawBrushSize switch {
             1 => rawBrushSize,
             2 => rawBrushSize * 2d,

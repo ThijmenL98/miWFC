@@ -179,7 +179,7 @@ public static class Util {
         int tileSizeT, int imgInWidth, int imgInHeight) {
         int xDimension = imgInWidth * tileSizeB * tileSizeT;
         int yDimension = imgInHeight * tileSizeB * tileSizeT;
-        
+
         WriteableBitmap outputBitmap
             = new(new PixelSize(imgInWidth * tileSizeB * tileSizeT, imgInHeight * tileSizeB * tileSizeT), Vector.One,
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);

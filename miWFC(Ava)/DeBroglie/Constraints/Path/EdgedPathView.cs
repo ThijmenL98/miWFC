@@ -5,7 +5,7 @@ using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
 
-namespace miWFC.DeBroglie.Constraints.Path; 
+namespace miWFC.DeBroglie.Constraints.Path;
 
 internal class EdgedPathView : IPathView {
     private static readonly int[] empty = { };

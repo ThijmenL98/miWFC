@@ -6,8 +6,9 @@ using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
 using miWFC.DeBroglie.Wfc;
+using miWFC.Managers;
 
-namespace miWFC.DeBroglie; 
+namespace miWFC.DeBroglie;
 
 // Implemenation wise, this wraps a WavePropagator to do the majority of the work.
 // The only thing this class handles is conversion of tile objects into sets of patterns
@@ -26,11 +27,13 @@ public class TilePropagator {
 
     private readonly WavePropagator wavePropagator;
 
+    private CentralManager cm;
+
     public WavePropagator getWP() {
         return wavePropagator;
     }
 
-    public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options) {
+    public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, CentralManager _cm) {
         TileModel = tileModel;
         Topology = topology;
 
@@ -40,12 +43,12 @@ public class TilePropagator {
 
         IWaveConstraint[] waveConstraints =
             (options.Constraints?.Select(x => new TileConstraintAdaptor(x, this)).ToArray()
-                ?? Enumerable.Empty<IWaveConstraint>())
+             ?? Enumerable.Empty<IWaveConstraint>())
             .ToArray();
 
         Func<double> randomDouble = options.RandomDouble;
 
-        (IIndexPicker indexPicker, IPatternPicker patternPicker) = MakePickers(options);
+        (HeapEntropyTracker indexPicker, WeightedRandomPatternPicker patternPicker) = MakePickers(options);
 
         WavePropagatorOptions wavePropagatorOptions = new() {
             BacktrackPolicy = MakeBacktrackPolicy(options),
@@ -57,12 +60,15 @@ public class TilePropagator {
             ModelConstraintAlgorithm = options.ModelConstraintAlgorithm
         };
 
+        cm = _cm;
+
         wavePropagator = new WavePropagator(
             patternModel,
             patternTopology,
             topology.Width,
             topology.Height,
-            wavePropagatorOptions);
+            wavePropagatorOptions,
+            cm);
         wavePropagator.Clear();
     }
 
@@ -300,7 +306,6 @@ public class TilePropagator {
     public Resolution step() {
         return wavePropagator.Step();
     }
-
 
     public void StepConstraints() {
         wavePropagator.StepConstraints();

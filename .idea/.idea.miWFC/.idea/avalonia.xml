@@ -3,12 +3,22 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+<<<<<<< HEAD
         <entry key="miWFC(Ava)/ContentControls/AdvancedPatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/SimplePatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/test.axaml" value="miWFC(Ava)/miWFC.csproj" />
+=======
+        <entry key="miWFC(Ava)/App.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/AdvancedPatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/InputControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/ItemAddMenu.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/OutputControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/SimplePatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+>>>>>>> development
         <entry key="miWFC(Ava)/Views/ItemWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/Views/MainWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/Views/PaintingWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/Views/WeightMapWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
       </map>
     </option>
   </component>

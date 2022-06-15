@@ -130,8 +130,9 @@ public partial class ItemAddMenu : UserControl {
         if (source != null) {
             switch (source.Name!) {
                 case "NUDUpper":
-                    centralManager!.getMainWindowVM().ItemsToAddUpper = (int) this.Find<NumericUpDown>("NUDUpper").Value;
-                    
+                    centralManager!.getMainWindowVM().ItemsToAddUpper
+                        = (int) this.Find<NumericUpDown>("NUDUpper").Value;
+
                     while (centralManager!.getMainWindowVM().ItemsToAddUpper
                            <= centralManager!.getMainWindowVM().ItemsToAddLower) {
                         centralManager!.getMainWindowVM().ItemsToAddLower--;
@@ -144,12 +145,13 @@ public partial class ItemAddMenu : UserControl {
                     break;
 
                 case "NUDLower":
-                    centralManager!.getMainWindowVM().ItemsToAddLower = (int) this.Find<NumericUpDown>("NUDLower").Value;
-                    
+                    centralManager!.getMainWindowVM().ItemsToAddLower
+                        = (int) this.Find<NumericUpDown>("NUDLower").Value;
+
                     if (centralManager!.getMainWindowVM().ItemsToAddLower <= 0) {
                         centralManager!.getMainWindowVM().ItemsToAddLower = 1;
                     }
-                    
+
                     if (centralManager!.getMainWindowVM().ItemsToAddUpper
                         <= centralManager!.getMainWindowVM().ItemsToAddLower) {
                         centralManager!.getMainWindowVM().ItemsToAddUpper++;

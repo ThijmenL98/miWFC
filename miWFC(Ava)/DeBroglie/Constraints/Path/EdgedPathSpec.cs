@@ -2,7 +2,7 @@
 using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 
-namespace miWFC.DeBroglie.Constraints.Path; 
+namespace miWFC.DeBroglie.Constraints.Path;
 
 /// <summary>
 ///     Configures pathing where a given set of tiles form the path, and connect adjacently if both have appropriate

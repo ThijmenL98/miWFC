@@ -27,13 +27,17 @@ public class App : Application {
             ItemWindow iW = new() {
                 DataContext = mWVM
             };
+            WeightMapWindow wMW = new() {
+                DataContext = mWVM
+            };
             desktop.MainWindow = mW;
 
-            CentralManager cm = new(mWVM, mW, pW, iW);
+            CentralManager cm = new(mWVM, mW, pW, iW, wMW);
 
             mW.setCentralManager(cm);
             pW.setCentralManager(cm);
             iW.setCentralManager(cm);
+            wMW.setCentralManager(cm);
             mWVM.setCentralManager(cm);
         }
 

@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using miWFC.ViewModels;
 
-namespace miWFC; 
+namespace miWFC;
 
 public class ViewLocator : IDataTemplate {
     public IControl Build(object data) {

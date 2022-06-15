@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace miWFC.AvaloniaGif.Decoding; 
+namespace miWFC.AvaloniaGif.Decoding;
 
 [Serializable]
 public class LzwDecompressionException : Exception {

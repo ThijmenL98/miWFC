@@ -79,7 +79,7 @@ public class OverlappingModel : TileModel {
             OverlappingAnalysis.GetPatterns(s, NX, NY, NZ, periodicX, periodicY, periodicZ, patternIndices,
                 patternArrays, frequencies);
         }
-        
+
         originalFrequencies = new List<double>(frequencies);
 
         sampleTopologyDirections = topology.Directions;

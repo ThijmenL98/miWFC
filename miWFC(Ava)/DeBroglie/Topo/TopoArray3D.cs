@@ -1,4 +1,4 @@
-﻿namespace miWFC.DeBroglie.Topo; 
+﻿namespace miWFC.DeBroglie.Topo;
 
 internal class TopoArray3D<T> : ITopoArray<T> {
     private readonly T[,,] values;

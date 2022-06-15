@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 internal class RaggedTopoArray2D<T> : ITopoArray<T> {
     private readonly T[][] values;

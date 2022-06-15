@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 /// <summary>
 ///     Utility class containing methods for construction <see cref="ITopoArray{T}" /> objects.

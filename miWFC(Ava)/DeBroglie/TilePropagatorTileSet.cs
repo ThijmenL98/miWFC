@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace miWFC.DeBroglie; 
+namespace miWFC.DeBroglie;
 
 /// <summary>
 ///     A set of tiles, specific to a particular TilePropagator.

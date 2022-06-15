@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace miWFC.DeBroglie.Topo; 
+namespace miWFC.DeBroglie.Topo;
 
 public static class TopologyExtensions {
     public static GridTopology AsGridTopology(this ITopology topology) {

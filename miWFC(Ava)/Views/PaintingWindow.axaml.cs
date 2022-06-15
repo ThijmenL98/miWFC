@@ -34,13 +34,54 @@ public partial class PaintingWindow : Window {
      * Event Handlers
      */
 
-    private void keyDownHandler(object? sender, KeyEventArgs e) {
+    private async void keyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
         }
 
         // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (e.Key) {
+            case Key.P:
+                centralManager.getMainWindowVM().OnPencilModeClick();
+                e.Handled = true;
+                break;
+            case Key.B:
+                if ((e.KeyModifiers & KeyModifiers.Control) != 0) { 
+                    centralManager.getMainWindowVM().OnPaintEraseModeClick();
+                } else {
+                    centralManager.getMainWindowVM().OnPaintKeepModeClick();
+                }
+                e.Handled = true;
+                break;
+            case Key.R:
+                centralManager.getMainWindowVM().OnMaskReset();
+                e.Handled = true;
+                break;
+            case Key.A:
+                await centralManager.getMainWindowVM().OnApplyClick();
+                e.Handled = true;
+                break;
+            case Key.Back:
+            case Key.Escape:
+                if (centralManager.getUIManager().popUpOpened()) {
+                    centralManager.getUIManager().hidePopUp();
+                } else {
+                    Color[,] mask = centralManager!.getInputManager().getMaskColours();
+                    centralManager?.getUIManager()
+                        .switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+                }
+
+                e.Handled = true;
+                break;
+            case Key.S:
+            case Key.M:
+                centralManager.getInputManager().placeMarker();
+                e.Handled = true;
+                break;
+            case Key.L:
+                centralManager.getInputManager().loadMarker();
+                e.Handled = true;
+                break;
             default:
                 base.OnKeyDown(e);
                 break;

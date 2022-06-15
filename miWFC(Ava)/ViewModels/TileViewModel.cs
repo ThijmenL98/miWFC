@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Managers;
@@ -11,9 +12,13 @@ public class TileViewModel : ReactiveObject {
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
     private double _patternWeight, _changeAmount = 1.0d;
+    private string _patternWeightString;
 
-    private readonly CentralManager? parentCM;
-    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _mayRotate, _mayFlip, _mayTransform;
+    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _dynamicWeight, _mayRotate, _mayFlip, _mayTransform;
+    
+    private readonly CentralManager? centralManager;
+
+    private double[,] _weightHeatmap = new double[0, 0];
 
     /*
      * Used for input patterns
@@ -27,7 +32,7 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = card > 4 ? -1 : 1;
         RawPatternIndex = rawIndex;
 
-        parentCM = cm;
+        centralManager = cm;
 
         MayFlip = card > 4;
         MayRotate = card > 1;
@@ -35,6 +40,10 @@ public class TileViewModel : ReactiveObject {
 
         FlipDisabled = false;
         RotateDisabled = false;
+        DynamicWeight = false;
+
+        _patternWeightString = DynamicWeight ? "D" :
+            _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
 
     /*
@@ -47,8 +56,12 @@ public class TileViewModel : ReactiveObject {
         PatternWeight = weight;
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
-        
-        parentCM = cm;
+
+        centralManager = cm;
+        DynamicWeight = false;
+
+        _patternWeightString = DynamicWeight ? "D" :
+            _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
 
     /*
@@ -60,7 +73,11 @@ public class TileViewModel : ReactiveObject {
         PatternColour = c;
         PatternRotation = 0;
         PatternFlipping = 1;
-        parentCM = cm;
+        centralManager = cm;
+        DynamicWeight = false;
+
+        _patternWeightString = DynamicWeight ? "D" :
+            _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
     }
 
     public WriteableBitmap PatternImage {
@@ -70,7 +87,16 @@ public class TileViewModel : ReactiveObject {
 
     public double PatternWeight {
         get => _patternWeight;
-        set => this.RaiseAndSetIfChanged(ref _patternWeight, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _patternWeight, value);
+            PatternWeightString = DynamicWeight ? "D" :
+                _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public string PatternWeightString {
+        get => _patternWeightString;
+        set => this.RaiseAndSetIfChanged(ref _patternWeightString, value);
     }
 
     public double ChangeAmount {
@@ -144,6 +170,20 @@ public class TileViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _mayTransform, value);
     }
 
+    public bool DynamicWeight {
+        get => _dynamicWeight;
+        set {
+            this.RaiseAndSetIfChanged(ref _dynamicWeight, value);
+            PatternWeightString = DynamicWeight ? "D" :
+                _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    public double[,] WeightHeatMap {
+        get => _weightHeatmap;
+        set => this.RaiseAndSetIfChanged(ref _weightHeatmap, value);
+    }
+
     /*
      * Button callbacks
      */
@@ -195,7 +235,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     private void handleWeightChange(bool increment) {
-        bool isOverlapping = parentCM != null && parentCM!.getWFCHandler().isOverlappingModel();
+        bool isOverlapping = centralManager != null && centralManager!.getWFCHandler().isOverlappingModel();
         double oldWeight = PatternWeight;
         switch (increment) {
             case false when !(PatternWeight > 0):
@@ -209,27 +249,51 @@ public class TileViewModel : ReactiveObject {
                 break;
         }
 
-        PatternWeight = Math.Min(isOverlapping ? Math.Min(1d, PatternWeight) : Math.Round(PatternWeight, 1), 100d);
+        PatternWeight = isOverlapping ? Math.Min(1d, PatternWeight) : Math.Min(Math.Round(PatternWeight, 1), 250d);
         double change = oldWeight - PatternWeight;
 
         if (isOverlapping && change != 0d) {
-            parentCM!.getWFCHandler().propagateWeightChange(PatternIndex, change);
+            centralManager!.getWFCHandler().propagateWeightChange(PatternIndex, change);
         }
+
+        if (!DynamicWeight) {
+            int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
+                yDim = centralManager!.getMainWindowVM().ImageOutHeight;
+            _weightHeatmap = new double[xDim, yDim];
+            for (int i = 0; i < xDim; i++) {
+                for (int j = 0; j < yDim; j++) {
+                    _weightHeatmap[i, j] = PatternWeight;
+                }
+            }
+        }
+    }
+
+    public async void DynamicWeightClick() {
+        await centralManager!.getUIManager().switchWindow(Windows.HEATMAP);
+
+        int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
+            yDim = centralManager!.getMainWindowVM().ImageOutHeight;
+        if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
+            centralManager.getWFCHandler().resetWeights();
+        }
+
+        centralManager!.getWeightMapWindow().setSelectedTile(RawPatternIndex);
+        centralManager!.getWeightMapWindow().updateOutput(_weightHeatmap);
     }
 
     public void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
-        parentCM!.getWFCHandler().updateTransformations();
-        parentCM!.getInputManager().restartSolution("Rotate toggle", true);
+        centralManager!.getWFCHandler().updateTransformations();
+        centralManager!.getInputManager().restartSolution("Rotate toggle", true);
     }
 
     public void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
-        parentCM!.getWFCHandler().updateTransformations();
-        parentCM!.getInputManager().restartSolution("Flip toggle", true);
+        centralManager!.getWFCHandler().updateTransformations();
+        centralManager!.getInputManager().restartSolution("Flip toggle", true);
     }
 
     public void OnCheckChange() {
-        parentCM!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
+        centralManager!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
     }
 }

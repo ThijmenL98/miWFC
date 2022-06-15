@@ -18,7 +18,7 @@ public class ItemViewModel : ReactiveObject {
     private string _amountStr;
 
 #pragma warning disable CS8618
-    public ItemViewModel(ItemType itemType, (int,int) amount, ObservableCollection<TileViewModel> allowedTiles,
+    public ItemViewModel(ItemType itemType, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
         WriteableBitmap itemIcon) {
 #pragma warning restore CS8618
         ItemType = itemType;

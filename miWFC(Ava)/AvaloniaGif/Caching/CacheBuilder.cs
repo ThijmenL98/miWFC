@@ -3,7 +3,7 @@
 
 using System;
 
-namespace miWFC.AvaloniaGif.Caching; 
+namespace miWFC.AvaloniaGif.Caching;
 
 /// <summary>
 ///     Builder for a key-value cache.

@@ -1,7 +1,7 @@
 ﻿using System;
 using miWFC.DeBroglie.Wfc;
 
-namespace miWFC.DeBroglie.Trackers; 
+namespace miWFC.DeBroglie.Trackers;
 
 /// <summary>
 ///     Class implementing the heuristic choice of pattern at a given index
