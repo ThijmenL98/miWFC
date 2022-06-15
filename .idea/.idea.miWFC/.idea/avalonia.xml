@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="miWFC(Ava)/Views/ItemWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/Views/MainWindow.axaml" value="miWFC(Ava)/miWFC.csproj" />
       </map>
     </option>

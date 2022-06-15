@@ -331,12 +331,12 @@ public class InputManager {
             int maxImageSize = 128 * tileSize;
 
             if (inputImageWidth > maxImageSize || inputImageWidth < 10 || inputImageHeight > maxImageSize ||
-                inputImageHeight < 10) {
+                inputImageHeight < 10 || inputImageWidth % tileSize == 0 || inputImageHeight % tileSize == 0) {
                 centralManager.getUIManager().dispatchError(mainWindow);
                 //TODO Popup telling user input image was not allowed size
                 return;
             }
-
+            
             int imageWidth = inputImageWidth / tileSize;
             int imageHeight = inputImageHeight / tileSize;
 
@@ -401,28 +401,36 @@ public class InputManager {
                 IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - imageWidth * imageHeight));
                 byte[] inputB = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
 
-                for (int x = 0; x < imageWidth; x++) {
-                    for (int y = 0; y < imageHeight; y++) {
-                        int toSel = inputB[x * imageWidth + y] - 2;
-                        int foundAtPos = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[x, y];
+                try {
+                    for (int x = 0; x < imageWidth; x++) {
+                        for (int y = 0; y < imageHeight; y++) {
+                            int toSel = inputB[x * imageWidth + y] - 2;
+                            int foundAtPos = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[x, y];
 
-                        if (toSel != foundAtPos && foundAtPos == -1 && toSel != -1) {
-                            bool? success = centralManager.getInputManager()
-                                .processClick(x, y, imageWidth, imageHeight, toSel).Result;
-                            
-                            if (success != null && !(bool) success) {
+                            if (toSel != foundAtPos && foundAtPos == -1 && toSel != -1) {
+                                bool? success = centralManager.getInputManager()
+                                    .processClick(x, y, imageWidth, imageHeight, toSel).Result;
+
+                                if (success != null && !(bool) success) {
+                                    centralManager.getUIManager().dispatchError(mainWindow);
+                                    //TODO Popup telling user input image was not following patterns?
+                                    centralManager.getInputManager().restartSolution("Imported image failure", true);
+                                    return;
+                                }
+                            } else if (foundAtPos != -1 && toSel != foundAtPos) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
-                                //TODO Popup telling user input image was not following patterns?
+                                //TODO Popup telling user input image is illegal?
                                 centralManager.getInputManager().restartSolution("Imported image failure", true);
                                 return;
                             }
-                        } else if (foundAtPos!=-1 && toSel != foundAtPos) {
-                            centralManager.getUIManager().dispatchError(mainWindow);
-                            //TODO Popup telling user input image is illegal?
-                            centralManager.getInputManager().restartSolution("Imported image failure", true);
-                            return;
                         }
                     }
+                } catch (AggregateException e) {
+                    //TODO pre processing?
+                    centralManager.getUIManager().dispatchError(mainWindow);
+                    //TODO Popup telling user input image is mismatching?
+                    centralManager.getInputManager().restartSolution("Imported image failure", true);
+                    return;
                 }
             }
 
@@ -445,11 +453,18 @@ public class InputManager {
 
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
-            bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down") &&
-                            centralManager.getWFCHandler().isCollapsed();
+            bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
+                            && centralManager.getWFCHandler().isCollapsed()
+                            && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
+
             if (hasItems) {
                 centralManager.getWFCHandler().getLatestOutputBM(false)
                     .Save(settingsFileName.Replace(".png", "_worldLayer.png"));
+
+                if (!centralManager.getWFCHandler().isOverlappingModel()) {
+                    AppendAdjacentData(settingsFileName.Replace(".png", "_worldLayer.png"),
+                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d());
+                }
 
                 int[,] itemsGrid = mainWindowVM.getLatestItemGrid();
                 int[] tmp = new int[itemsGrid.GetLength(0) * itemsGrid.GetLength(1)];
@@ -468,32 +483,13 @@ public class InputManager {
                 }
             } else {
                 centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
-                byte[] data = await File.ReadAllBytesAsync(settingsFileName);
-                data = Append(data, (byte) 3);
 
                 if (!centralManager.getWFCHandler().isOverlappingModel()) {
-                    int[,] output = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d();
-
-                    int[] output1D = new int[output.Length];
-                    Buffer.BlockCopy(output, 0, output1D, 0, output.Length * 4);
-
-                    data = output1D.Aggregate(data, (current, val) => Append(current, (byte) (val + 2)));
-
-                    await File.WriteAllBytesAsync(settingsFileName, data);
+                    AppendAdjacentData(settingsFileName,
+                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d());
                 }
             }
         }
-    }
-
-    public static T[] Append<T>(T[] array, T item) {
-        if (array == null) {
-            return new T[] {item};
-        }
-
-        T[] result = new T[array.Length + 1];
-        array.CopyTo(result, 0);
-        result[array.Length] = item;
-        return result;
     }
 
     public void animate() {

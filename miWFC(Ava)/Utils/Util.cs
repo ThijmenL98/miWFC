@@ -373,20 +373,21 @@ public static class Util {
         return segment;
     }
 
-    public static T[][] rotate2DArray<T>(T[][] input) {
-        int dim = input[0].Length;
-        T[][] newArray = new T[dim][];
+    private static T[] Append<T>(T[] array, T item) {
+        T[] result = new T[array.Length + 1];
+        array.CopyTo(result, 0);
+        result[array.Length] = item;
+        return result;
+    }
 
-        for (int j = 0; j < dim; j++) {
-            newArray[j] = new T[dim];
-        }
+    public static async void AppendAdjacentData(string fileName, int[,] appendData) {
+        byte[] data = await File.ReadAllBytesAsync(fileName);
 
-        for (int i = dim - 1; i >= 0; --i) {
-            for (int j = 0; j < dim; j++) {
-                newArray[j][dim - 1 - i] = input[i][j];
-            }
-        }
+        int[] output1D = new int[appendData.Length];
+        Buffer.BlockCopy(appendData, 0, output1D, 0, appendData.Length * 4);
 
-        return newArray;
+        data = output1D.Aggregate(data, (current, val) => Append(current, (byte) (val + 2)));
+
+        await File.WriteAllBytesAsync(fileName, data);
     }
 }

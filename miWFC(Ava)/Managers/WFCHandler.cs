@@ -405,10 +405,6 @@ public class WFCHandler {
 
                 weights.Add(tileWeight);
 
-                if (cardinality == 8) {
-                    Trace.WriteLine($@"{xTile.Attribute("name")} - {rotation} deg - {shouldFlip == 1} flip");
-                }
-
                 toAddPaint.Add(
                     new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip,
                         centralManager));
@@ -422,10 +418,6 @@ public class WFCHandler {
             TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
-
-            if (cardinality == 8) {
-                Trace.WriteLine($@"{xTile.Attribute("name")} - {0} deg - {tvm.PatternFlipping == 1} flip");
-            }
         }
 
         const int sampleDimension = 50;
