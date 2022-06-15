@@ -176,6 +176,13 @@ public class WFCHandler {
             });
 
             inputHasChanged = false;
+
+            // for (int x = 0; x < outputWidth; x++) {
+            //     for (int y = 0; y < outputHeight; y++) {
+            //         dbPropagator.getWP().InternalBan(x * outputWidth + y, 9);
+            //         dbPropagator.getWP().InternalBan(x * outputWidth + y, 4);
+            //     }
+            // }
         }
 
         mainWindowVM.setLoading(false);
@@ -385,7 +392,7 @@ public class WFCHandler {
             double tileWeight
                 = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
             weights.Add(tileWeight);
-
+            
             for (int t = 1; t < cardinality; t++) {
                 int myIdx = tileCache.Count;
                 Color[] curCard = t <= 3
