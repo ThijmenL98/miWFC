@@ -372,4 +372,21 @@ public static class Util {
         };
         return segment;
     }
+
+    public static T[][] rotate2DArray<T>(T[][] input) {
+        int dim = input[0].Length;
+        T[][] newArray = new T[dim][];
+
+        for (int j = 0; j < dim; j++) {
+            newArray[j] = new T[dim];
+        }
+
+        for (int i = dim - 1; i >= 0; --i) {
+            for (int j = 0; j < dim; j++) {
+                newArray[j][dim - 1 - i] = input[i][j];
+            }
+        }
+
+        return newArray;
+    }
 }

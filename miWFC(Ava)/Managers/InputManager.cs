@@ -12,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using JetBrains.Annotations;
 using miWFC.DeBroglie.Topo;
 using miWFC.ViewModels;
 using miWFC.Views;
@@ -68,6 +69,7 @@ public class InputManager {
      */
 
     public async void restartSolution(string source, bool force = false, bool keepOutput = false) {
+        Trace.WriteLine(@$"Restarting -> {source}");
         if (centralManager.getWFCHandler().isChangingModels() || centralManager.getWFCHandler().isChangingImages()) {
             return;
         }
@@ -216,13 +218,13 @@ public class InputManager {
         return savePoints;
     }
 
-    public void placeMarker(bool revertible = true) {
-        if (centralManager.getWFCHandler().isCollapsed()) {
+    public void placeMarker(bool revertible = true, bool force = false) {
+        if (centralManager.getWFCHandler().isCollapsed() && !force) {
             return;
         }
 
         int curStep = centralManager.getWFCHandler().getAmountCollapsed();
-        if (curStep == 0) {
+        if (curStep == 0 && !force) {
             return;
         }
 
@@ -386,7 +388,7 @@ public class InputManager {
                                    !toPaint.Equals(foundAtPos)) {
                             Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
                             centralManager.getUIManager().dispatchError(mainWindow);
-                            //TODO Popup telling user input image had unknown error?
+                            //TODO Popup telling user input image is illegal?
                             centralManager.getInputManager().restartSolution("Imported image failure", true);
                             return;
                         }
@@ -394,89 +396,39 @@ public class InputManager {
                 }
             } else {
                 //TODO World Layer
+
+                byte[] input = await File.ReadAllBytesAsync(worldFile);
+                IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - imageWidth * imageHeight));
+                byte[] inputB = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
+
                 for (int x = 0; x < imageWidth; x++) {
                     for (int y = 0; y < imageHeight; y++) {
-                        await Task.Delay(400);
-                        Color[][] bitmapCa = new Color[tileSize][];
-                        for (int yy = 0; yy < tileSize; yy++) {
-                            bitmapCa[yy] = new Color[tileSize];
-                            for (int xx = 0; xx < tileSize; xx++) {
-                                Color toSet = colourArray[y * tileSize + yy][x * tileSize + xx];
-                                bitmapCa[yy][xx] = toSet;
-                            }
-                        }
+                        int toSel = inputB[x * imageWidth + y] - 2;
+                        int foundAtPos = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[x, y];
 
-                        int myId = -1;
-                        
-                        foreach (TileViewModel tvm in centralManager.getMainWindowVM().PaintTiles) {
-                            Color[][] myColorArrayTemp = imageToColourArray(tvm.PatternImage).Item1;
-                            int patternRotation = (tvm.PatternRotation + 360) % 360;
-                            
-                            Color[][] myColorArray = myColorArrayTemp.Clone() as Color[][] ?? Array.Empty<Color[]>();
-                            switch (patternRotation) {
-                                case 90:
-                                    break;
-                                case 0:
-                                    myColorArray = rotate(myColorArrayTemp);
-                                    break;
-                                case 270:
-                                    myColorArray = rotate(rotate(myColorArrayTemp));
-                                    break;
-                                case 180:
-                                    myColorArray = rotate(rotate(rotate(myColorArrayTemp)));
-                                    break;
-                            }
-
-                            bool currentEqual = true;
-                            for (int xx = 0; xx < tileSize; xx++) {
-                                for (int yy = 0; yy < tileSize; yy++) {
-                                    currentEqual = currentEqual && myColorArray[xx][yy].Equals(bitmapCa[yy][xx]);
-                                }
-                            }
-
-                            if (x == 0 && y == 1) {
-                                Trace.WriteLine($@"{tvm.PatternIndex} -> {tvm.PatternRotation}");
-                                Trace.WriteLine(string.Join(", ", bitmapCa.Select(a => string.Join(", ", a))));
-                                Trace.WriteLine(string.Join(", ", myColorArray.Select(a => string.Join(", ", a))));
-                            }
-
-                            if (currentEqual) {
-                                myId = tvm.PatternIndex;
-                                //break;
-                            }
-                        }
-
-                        if (myId == -1) {
-                            if (x == 2 && y == 2) {
-                                Trace.WriteLine(@$"Error ({x},{y})");
-                            }
-                        } else {
+                        if (toSel != foundAtPos && foundAtPos == -1 && toSel != -1) {
                             bool? success = centralManager.getInputManager()
-                                .processClick(x, y, imageWidth, imageHeight, myId).Result;
+                                .processClick(x, y, imageWidth, imageHeight, toSel).Result;
+                            
+                            if (success != null && !(bool) success) {
+                                centralManager.getUIManager().dispatchError(mainWindow);
+                                //TODO Popup telling user input image was not following patterns?
+                                centralManager.getInputManager().restartSolution("Imported image failure", true);
+                                return;
+                            }
+                        } else if (foundAtPos!=-1 && toSel != foundAtPos) {
+                            centralManager.getUIManager().dispatchError(mainWindow);
+                            //TODO Popup telling user input image is illegal?
+                            centralManager.getInputManager().restartSolution("Imported image failure", true);
+                            return;
                         }
                     }
                 }
             }
 
-            centralManager!.getInputManager().placeMarker(false);
+            centralManager.getWFCHandler().getLatestOutputBM();
+            centralManager.getInputManager().placeMarker(false, true);
         }
-    }
-
-    private static T[][] rotate<T>(T[][] input) {
-        int dim = input[0].Length;
-        T[][] newArray = new T[dim][];
-
-        for (int j = 0; j < dim; j++) {
-            newArray[j] = new T[dim];
-        }
-
-        for (int i = dim - 1; i >= 0; --i) {
-            for (int j = 0; j < dim; j++) {
-                newArray[j][dim - 1 - i] = input[i][j];
-            }
-        }
-
-        return newArray;
     }
 
     public async void exportSolution() {
@@ -516,8 +468,32 @@ public class InputManager {
                 }
             } else {
                 centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
+                byte[] data = await File.ReadAllBytesAsync(settingsFileName);
+                data = Append(data, (byte) 3);
+
+                if (!centralManager.getWFCHandler().isOverlappingModel()) {
+                    int[,] output = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d();
+
+                    int[] output1D = new int[output.Length];
+                    Buffer.BlockCopy(output, 0, output1D, 0, output.Length * 4);
+
+                    data = output1D.Aggregate(data, (current, val) => Append(current, (byte) (val + 2)));
+
+                    await File.WriteAllBytesAsync(settingsFileName, data);
+                }
             }
         }
+    }
+
+    public static T[] Append<T>(T[] array, T item) {
+        if (array == null) {
+            return new T[] {item};
+        }
+
+        T[] result = new T[array.Length + 1];
+        array.CopyTo(result, 0);
+        result[array.Length] = item;
+        return result;
     }
 
     public void animate() {

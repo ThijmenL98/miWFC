@@ -176,15 +176,8 @@ public class WFCHandler {
             });
 
             inputHasChanged = false;
-
-            // for (int x = 0; x < outputWidth; x++) {
-            //     for (int y = 0; y < outputHeight; y++) {
-            //         dbPropagator.getWP().InternalBan(x * outputWidth + y, 9);
-            //         dbPropagator.getWP().InternalBan(x * outputWidth + y, 4);
-            //     }
-            // }
         }
-
+        
         mainWindowVM.setLoading(false);
 
         (latestOutput, bool decided) = runWfcDB(steps);
@@ -392,7 +385,7 @@ public class WFCHandler {
             double tileWeight
                 = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
             weights.Add(tileWeight);
-            
+
             for (int t = 1; t < cardinality; t++) {
                 int myIdx = tileCache.Count;
                 Color[] curCard = t <= 3
@@ -411,7 +404,11 @@ public class WFCHandler {
                 }
 
                 weights.Add(tileWeight);
-                
+
+                if (cardinality == 8) {
+                    Trace.WriteLine($@"{xTile.Attribute("name")} - {rotation} deg - {shouldFlip == 1} flip");
+                }
+
                 toAddPaint.Add(
                     new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip,
                         centralManager));
@@ -425,6 +422,10 @@ public class WFCHandler {
             TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
+
+            if (cardinality == 8) {
+                Trace.WriteLine($@"{xTile.Attribute("name")} - {0} deg - {tvm.PatternFlipping == 1} flip");
+            }
         }
 
         const int sampleDimension = 50;
@@ -454,99 +455,12 @@ public class WFCHandler {
         return toAdd;
     }
 
-    public void updateTransformations() {
-        string inputImage = mainWindow.getInputControl().getInputImage();
-
-        dbModel = new AdjacentModel();
-
-        xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
-                new XElement("");
-
-        tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
-
-        Dictionary<int, Tuple<Color[], Tile>> tempCache = new();
-        tileSymmetries = new Dictionary<int, int[]>();
-
-        foreach (TileViewModel tvm in mainWindowVM.PatternTiles) {
-            //TODO
-        }
-
-        foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
-            MemoryStream ms = new(File.ReadAllBytes(
-                $"{AppContext.BaseDirectory}/samples/{inputImage}/{xTile.Attribute("name")?.Value}.png"));
-            WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
-
-            Color[] cur = extractColours(writeableBitmap);
-            int val = tempCache.Count;
-            Tile curTile = new(val);
-            tempCache.Add(val, new Tuple<Color[], Tile>(cur, curTile));
-
-            int cardinality = char.Parse(xTile.Attribute("symmetry")?.Value ?? "X") switch {
-                'L' => 1,
-                'T' => 1,
-                'I' => 1,
-                '\\' => 1,
-                'F' => 1,
-                _ => 1
-            };
-            
-            List<int> symmetries = new();
-
-            double tileWeight
-                = double.Parse(xTile.Attribute("weight")?.Value ?? "1.0", CultureInfo.InvariantCulture);
-
-            for (int t = 1; t < cardinality; t++) {
-                int myIdx = tempCache.Count;
-                Color[] curCard = t <= 3
-                    ? rotate(tempCache[val + t - 1].Item1.ToArray(), tileSize)
-                    : reflect(tempCache[val + t - 4].Item1.ToArray(), tileSize);
-
-                int rotation, shouldFlip = 1;
-                if (t <= 3) {
-                    rotation = -90 * t;
-                } else {
-                    rotation = -90 * (t - 4);
-                    shouldFlip = -1;
-                    if (t == 4) {
-                        shouldFlip = 1;
-                    }
-                }
-                
-                toAddPaint.Add(
-                    new TileViewModel(writeableBitmap, tileWeight, tempCache.Count - 1, rotation, shouldFlip,
-                        centralManager));
-                tempCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
-                symmetries.Add(myIdx);
-            }
-
-            tileSymmetries.Add(val, symmetries.ToArray());
-
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tempCache.Count - 1, val, centralManager, cardinality);
-            toAddPaint.Add(tvm);
-        }
-
-        const int sampleDimension = 50;
-        int[][] values = new int[sampleDimension][];
-
-        int j = 0;
-        foreach (XElement xTile in xRoot.Element("rows")?.Elements("row")!) {
-            string[] row = xTile.Value.Split(',');
-            values[j] = new int[sampleDimension];
-            for (int k = 0; k < sampleDimension; k++) {
-                values[j][k] = int.Parse(row[k], CultureInfo.InvariantCulture);
-            }
-
-            j++;
-        }
-
-        ITopoArray<int> sample = TopoArray.create(values, false);
-        dbModel = new AdjacentModel(sample.toTiles());
-
-        updateWeights(); 
-    }
-
     private (WriteableBitmap, bool) runWfcDB(int steps = 1) {
         Resolution dbStatus = Resolution.UNDECIDED;
+
+        if (!isOverlappingModel() && !mainWindowVM.IsRunning) {
+            centralManager.getWFCHandler().updateTransformations();
+        }
 
         if (steps == -1) {
             dbStatus = dbPropagator.run();
@@ -978,6 +892,47 @@ public class WFCHandler {
     }
 #pragma warning restore CS0162
 
+    public void updateTransformations() {
+        foreach (TileViewModel tvm in mainWindowVM.PatternTiles) {
+            if (tvm.RotateDisabled || tvm.FlipDisabled) {
+                int toContinueTo = tvm.RawPatternIndex;
+                bool found = false;
+                int amountToBan = -1;
+                int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+
+                foreach (TileViewModel tvmPatt in mainWindowVM.PaintTiles.Reverse()) {
+                    found = found || toContinueTo == tvmPatt.RawPatternIndex;
+
+                    if (found && amountToBan != 0) {
+                        if (amountToBan == -1) {
+                            amountToBan = tvmPatt.PatternIndex - tvmPatt.RawPatternIndex + 1;
+                        }
+
+                        if ((tvmPatt.PatternRotation != 0 && tvm.RotateDisabled)
+                            || (tvmPatt.PatternFlipping == 1 && tvm.FlipDisabled)) {
+                            int curPattIdx = getDescrambledIndex(tvmPatt.PatternIndex);
+
+                            for (int x = 0; x < outputWidth; x++) {
+                                for (int y = 0; y < outputHeight; y++) {
+                                    try {
+                                        dbPropagator.getWP().InternalBan(x * outputWidth + y, curPattIdx);
+                                    } catch (TargetException e) {
+                                        // Accidental double call to this function, pattern is already banned
+                                        Trace.WriteLine("Returning, banning already done");
+                                        return;
+                                    }
+                                }
+                            }
+                            Trace.WriteLine($@"Banning {curPattIdx}");
+                        }
+
+                        amountToBan--;
+                    }
+                }
+            }
+        }
+    }
+
     public int getDescrambledIndex(int raw) {
         return dbPropagator.getTMM().GetPatterns(tileCache[raw].Item2, 0).First();
     }
@@ -1152,9 +1107,12 @@ public class WFCHandler {
     public void resetWeights(bool updateStaticWeight = true, bool force = false) {
         int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
         foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
+            
             double oldWeight = originalWeights[tileViewModel.RawPatternIndex];
             if (updateStaticWeight) {
                 tileViewModel.PatternWeight = oldWeight;
+                tileViewModel.RotateDisabled = false;
+                tileViewModel.FlipDisabled = false;
             }
 
             if (force || tileViewModel.WeightHeatMap.Length == 0 || tileViewModel.WeightHeatMap.Length != xDim * yDim) {

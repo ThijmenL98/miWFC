@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -29,7 +30,7 @@ public class TileViewModel : ReactiveObject {
         PatternWeight = weight;
         PatternIndex = index;
         PatternRotation = 0;
-        PatternFlipping = card > 4 ? -1 : 1;
+        PatternFlipping = -1;
         RawPatternIndex = rawIndex;
 
         centralManager = cm;
@@ -53,6 +54,7 @@ public class TileViewModel : ReactiveObject {
         CentralManager cm) {
         PatternImage = image;
         PatternIndex = index;
+        RawPatternIndex = -1;
         PatternWeight = weight;
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
@@ -283,14 +285,15 @@ public class TileViewModel : ReactiveObject {
 
     public void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
-        centralManager!.getWFCHandler().updateTransformations();
         centralManager!.getInputManager().restartSolution("Rotate toggle", true);
+        centralManager!.getWFCHandler().updateTransformations();
+        Trace.WriteLine("We have banned rotations");
     }
 
     public void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
-        centralManager!.getWFCHandler().updateTransformations();
         centralManager!.getInputManager().restartSolution("Flip toggle", true);
+        centralManager!.getWFCHandler().updateTransformations();
     }
 
     public void OnCheckChange() {
