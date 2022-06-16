@@ -19,7 +19,7 @@ namespace miWFC.ContentControls;
 public partial class ItemAddMenu : UserControl {
     private CentralManager? centralManager;
 
-    private readonly ComboBox _itemsCB;
+    private readonly ComboBox _itemsCB, _depsCB;
 
     private readonly Dictionary<int, WriteableBitmap> imageCache;
 
@@ -33,10 +33,13 @@ public partial class ItemAddMenu : UserControl {
         imageCache = new Dictionary<int, WriteableBitmap>();
 
         _itemsCB = this.Find<ComboBox>("itemTypesCB");
+        _depsCB = this.Find<ComboBox>("itemDependenciesCB");
 
         _itemsCB.Items = ItemType.ItemTypes;
+        _depsCB.Items = ItemType.ItemTypes;
 
         _itemsCB.SelectedIndex = 0;
+        _depsCB.SelectedIndex = 1;
 
         checkBoxes = Array.Empty<bool>();
     }
@@ -55,8 +58,16 @@ public partial class ItemAddMenu : UserControl {
         checkBoxes = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
     }
 
-    public void updateIndex(int idx = 0) {
+    public void updateSelectedItemIndex(int idx = 0) {
         _itemsCB.SelectedIndex = idx;
+    }
+
+    public void updateDependencyIndex(int idx = 0) {
+        _depsCB.SelectedIndex = idx;
+
+        if (_itemsCB.SelectedIndex.Equals(idx)) {
+            _depsCB.SelectedIndex = idx == 0 ? 1 : 0;
+        }
     }
 
     public WriteableBitmap getItemImage(ItemType itemType, int index = -1) {
@@ -101,11 +112,25 @@ public partial class ItemAddMenu : UserControl {
             ItemType selection = ItemType.getItemTypeByID(index);
             centralManager!.getMainWindowVM().CurrentItemImage = getItemImage(selection);
             centralManager!.getMainWindowVM().ItemDescription = selection.Description;
+
+            if (_depsCB.SelectedIndex.Equals(index)) {
+                _depsCB.SelectedIndex = index == 0 ? 1 : 0;
+            }
         }
     }
 
-    public ItemType getItemType() {
+    // ReSharper disable twice UnusedParameter.Local
+    private void OnDependencyChanged(object? sender, SelectionChangedEventArgs e) {
+        updateDependencyIndex(_depsCB.SelectedIndex);
+        // TODO
+    }
+
+    public ItemType getSelectedItemType() {
         return ItemType.getItemTypeByID(_itemsCB.SelectedIndex);
+    }
+
+    public ItemType getDependencyItemType() {
+        return ItemType.getItemTypeByID(_depsCB.SelectedIndex);
     }
 
     public void forwardCheckChange(int i, bool allowed) {
@@ -158,6 +183,47 @@ public partial class ItemAddMenu : UserControl {
                         if (centralManager!.getMainWindowVM().ItemsToAddLower <= 0) {
                             centralManager!.getMainWindowVM().ItemsToAddLower = 1;
                             centralManager!.getMainWindowVM().ItemsToAddUpper++;
+                        }
+                    }
+
+                    break;
+            }
+        }
+    }
+
+    private void DependencyDistance_OnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e) {
+        NumericUpDown? source = e.Source as NumericUpDown;
+        if (source != null) {
+            switch (source.Name!) {
+                case "NUDMaxDist":
+                    centralManager!.getMainWindowVM().DepMaxDistance
+                        = (int) this.Find<NumericUpDown>("NUDMaxDist").Value;
+
+                    while (centralManager!.getMainWindowVM().DepMaxDistance
+                           <= centralManager!.getMainWindowVM().DepMinDistance) {
+                        centralManager!.getMainWindowVM().DepMinDistance--;
+                        if (centralManager!.getMainWindowVM().DepMinDistance <= 0) {
+                            centralManager!.getMainWindowVM().DepMinDistance = 1;
+                            centralManager!.getMainWindowVM().DepMaxDistance++;
+                        }
+                    }
+
+                    break;
+
+                case "NUDMinDist":
+                    centralManager!.getMainWindowVM().DepMinDistance
+                        = (int) this.Find<NumericUpDown>("NUDMinDist").Value;
+
+                    if (centralManager!.getMainWindowVM().DepMinDistance <= 0) {
+                        centralManager!.getMainWindowVM().DepMinDistance = 1;
+                    }
+
+                    if (centralManager!.getMainWindowVM().DepMaxDistance
+                        <= centralManager!.getMainWindowVM().DepMinDistance) {
+                        centralManager!.getMainWindowVM().DepMaxDistance++;
+                        if (centralManager!.getMainWindowVM().DepMinDistance <= 0) {
+                            centralManager!.getMainWindowVM().DepMinDistance = 1;
+                            centralManager!.getMainWindowVM().DepMaxDistance++;
                         }
                     }
 

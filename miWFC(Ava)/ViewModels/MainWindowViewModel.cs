@@ -57,6 +57,7 @@ public class MainWindowViewModel : ViewModelBase {
         _isRunning,
         _inItemMenu,
         _itemsMayAppearAnywhere,
+        _itemIsDependent,
         _itemsInRange,
         _isEditing,
         _hardBrushEnabled = true;
@@ -86,6 +87,8 @@ public class MainWindowViewModel : ViewModelBase {
         _selectedTabIndex,
         _itemsToAddValue = 1,
         _itemsToAddLower = 1,
+        _depMaxDistance = 2,
+        _depMinDistance = 1,
         _itemsToAddUpper = 2,
         _heatmapValue = 50;
 
@@ -95,7 +98,7 @@ public class MainWindowViewModel : ViewModelBase {
     private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
 
 #pragma warning disable CS8618
-    private ItemType _selectedItemToAdd;
+    private ItemType _selectedItemToAdd, _selectedItemDependency;
 #pragma warning restore CS8618
 
     public bool SimpleModelSelected {
@@ -216,6 +219,16 @@ public class MainWindowViewModel : ViewModelBase {
     public int ItemsToAddLower {
         get => _itemsToAddLower;
         set => this.RaiseAndSetIfChanged(ref _itemsToAddLower, value);
+    }
+
+    public int DepMaxDistance {
+        get => _depMaxDistance;
+        set => this.RaiseAndSetIfChanged(ref _depMaxDistance, value);
+    }
+
+    public int DepMinDistance {
+        get => _depMinDistance;
+        set => this.RaiseAndSetIfChanged(ref _depMinDistance, value);
     }
 
     public int HeatmapValue {
@@ -377,6 +390,11 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _itemsMayAppearAnywhere, value);
     }
 
+    public bool ItemIsDependent {
+        get => _itemIsDependent;
+        set => this.RaiseAndSetIfChanged(ref _itemIsDependent, value);
+    }
+
     public bool ItemsInRange {
         get => _itemsInRange;
         set => this.RaiseAndSetIfChanged(ref _itemsInRange, value);
@@ -390,6 +408,11 @@ public class MainWindowViewModel : ViewModelBase {
     private ItemType SelectedItemToAdd {
         get => _selectedItemToAdd;
         set => this.RaiseAndSetIfChanged(ref _selectedItemToAdd, value);
+    }
+
+    private ItemType SelectedItemDependency {
+        get => _selectedItemDependency;
+        set => this.RaiseAndSetIfChanged(ref _selectedItemDependency, value);
     }
 
     public ObservableCollection<ItemViewModel> ItemDataGrid {
@@ -604,7 +627,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnItemMenuApply() {
-        ItemType itemType = centralManager!.getItemWindow().getItemAddMenu().getItemType();
+        ItemType itemType = centralManager!.getItemWindow().getItemAddMenu().getSelectedItemType();
         int amountUpper;
         int amountLower;
 
@@ -635,11 +658,34 @@ public class MainWindowViewModel : ViewModelBase {
             return;
         }
 
+        bool isDependent = ItemIsDependent;
+        Tuple<ItemType?, WriteableBitmap?, (int, int)>? depItem = null;
+        if (isDependent) {
+            ItemType depItemType = centralManager!.getItemWindow().getItemAddMenu().getDependencyItemType();
+            (int, int) range = (DepMinDistance, DepMaxDistance);
+            WriteableBitmap depItemBitmap = centralManager!.getItemWindow().getItemAddMenu().getItemImage(depItemType);
+            depItem = new Tuple<ItemType?, WriteableBitmap?, (int, int)>(depItemType, depItemBitmap, range);
+        }
+
+        // Check current new item allowed tiles
+        List<int> mySet = new(allowedTiles.Select(model => model.PatternIndex));
+        // Check if an identical item exists in a different quantity, if so, append to it instead
         foreach (ItemViewModel ivm in ItemDataGrid) {
-            List<int> mySet = new(allowedTiles.Select(model => model.PatternIndex));
-            List<int> compared = new(ivm.AllowedTiles.Select(model => model.PatternIndex));
-            if (ivm.ItemType.ID.Equals(itemType.ID) && mySet.All(compared.Contains)
-                                                    && mySet.Count.Equals(compared.Count)) {
+            // Check compared item allowed tiles
+            List<int> comparedTiles = new(ivm.AllowedTiles.Select(model => model.PatternIndex));
+            // Check compared item dependency
+            Tuple<ItemType?, (int, int)> comparedDepItem = ivm.DependentItem;
+                
+            // If ID's are equal 
+            if (ivm.ItemType.ID.Equals(itemType.ID) 
+                // and they have identical allowed tiles
+                && mySet.All(comparedTiles.Contains) && mySet.Count.Equals(comparedTiles.Count)
+                // and they have an identical dependent item
+                && depItem != null && comparedDepItem.Item1 != null && depItem.Item1 != null && comparedDepItem.Item1.Equals(depItem.Item1)
+                // and they have an identical distance
+                && comparedDepItem.Item2.Equals(depItem.Item3)) {
+                
+                // Then increment the amount of appearing
                 if (_isEditing) {
                     ivm.Amount = (amountLower, amountUpper);
                 } else {
@@ -661,11 +707,14 @@ public class MainWindowViewModel : ViewModelBase {
 
         ItemDataGrid.Add(new ItemViewModel(itemType, (amountLower, amountUpper),
             new ObservableCollection<TileViewModel>(allowedTiles),
-            centralManager!.getItemWindow().getItemAddMenu().getItemImage(itemType)));
+            centralManager!.getItemWindow().getItemAddMenu().getItemImage(itemType), depItem));
 
         InItemMenu = false;
         ItemsMayAppearAnywhere = false;
         ItemsToAddValue = 1;
+        ItemIsDependent = false;
+        DepMinDistance = 1;
+        DepMaxDistance = 2;
 
         foreach (TileViewModel tvm in PaintTiles) {
             tvm.ItemAddChecked = false;
@@ -682,6 +731,9 @@ public class MainWindowViewModel : ViewModelBase {
         _isEditing = false;
         ItemsMayAppearAnywhere = false;
         ItemsToAddValue = 1;
+        ItemIsDependent = false;
+        DepMinDistance = 1;
+        DepMaxDistance = 2;
 
         foreach (TileViewModel tvm in PaintTiles) {
             tvm.ItemAddChecked = false;
@@ -723,7 +775,8 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnAddItemEntry() {
-        centralManager!.getItemWindow().getItemAddMenu().updateIndex();
+        centralManager!.getItemWindow().getItemAddMenu().updateSelectedItemIndex();
+        centralManager!.getItemWindow().getItemAddMenu().updateDependencyIndex();
         centralManager!.getMainWindowVM().ItemDescription = ItemType.ItemTypes[0].Description;
         InItemMenu = true;
     }
@@ -746,7 +799,8 @@ public class MainWindowViewModel : ViewModelBase {
         ItemsToAddLower = itemSelected.Amount.Item1;
         ItemsToAddUpper = itemSelected.Amount.Item2;
 
-        centralManager!.getItemWindow().getItemAddMenu().updateIndex(itemSelected.ItemType.ID);
+        centralManager!.getItemWindow().getItemAddMenu().updateSelectedItemIndex(itemSelected.ItemType.ID);
+        centralManager!.getItemWindow().getItemAddMenu().updateDependencyIndex();
 
         foreach ((TileViewModel tvm, int index) in PaintTiles.Select((model, i) => (model, i))) {
             if (itemSelected.AllowedTiles.Select(at => at.PatternIndex).Contains(index)) {
@@ -825,6 +879,7 @@ public class MainWindowViewModel : ViewModelBase {
             for (int i = 0; i < toAdd; i++) {
                 bool added = false;
                 while (!added) {
+                    //TODO add dependent item
                     if (allowedAdd.Select(x => spacesLeft[x]).Sum() == 0) {
                         centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
                         return;

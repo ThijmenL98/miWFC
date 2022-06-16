@@ -1,12 +1,13 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             MinWidth="600" MaxWidth="766"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             Width="750" d:DesignHeight="766" d:DesignWidth="750" MinHeight="766"
              x:Class="miWFC.ContentControls.ItemAddMenu">
 
 	<Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10">
 		<Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
 			<Grid Grid.Row="0" RowDefinitions="Auto, *" ColumnDefinitions="Auto, Auto, *" Margin="5">
-				<ComboBox Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Stretch" MinWidth="200"
+				<ComboBox Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Stretch" Width="300"
 				          MinHeight="40" SelectedItem="{Binding SelectedItemToAdd}" x:Name="itemTypesCB"
 				          SelectionChanged="OnItemChanged">
 					<ComboBox.ItemTemplate>
@@ -61,7 +62,7 @@
 			<Separator Grid.Row="1" Background="#44000000" Height="4" CornerRadius="2" Margin="5" />
 
 			<Grid Grid.Row="2" RowDefinitions="Auto, Auto, *" ColumnDefinitions="*, Auto" Margin="5">
-				<Grid Grid.Row="0" RowDefinitions="Auto, Auto, Auto">
+				<Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto, Auto, Auto">
 					<TextBlock Grid.Row="0" Text="Where to appear:" VerticalAlignment="Center" Margin="5" />
 
 					<RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemsMayAppearAnywhere}"
@@ -123,13 +124,54 @@
 
 				<Separator Grid.Column="0" Grid.Row="1" Margin="5" Background="#44000000" Height="4" CornerRadius="2" />
 
+				<Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto, Auto, Auto, Auto, Auto">
+					<TextBlock Grid.Row="0" Text="(Optional) Select linked item:" VerticalAlignment="Center" Margin="5" />
+
+					<RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemIsDependent}"
+					             Content="None" />
+					<Grid Grid.Row="2" Margin="25, 0, 5, 0" Grid.ColumnDefinitions="Auto, *">
+						<RadioButton Grid.Column="0" IsChecked="{Binding ItemIsDependent}"
+						             Content="Select:" />
+						
+						<ComboBox Grid.Column="1" Margin="25, 5" HorizontalAlignment="Stretch" MinWidth="200" MaxWidth="300"
+						          MinHeight="40" SelectedItem="{Binding SelectedItemDependency}" x:Name="itemDependenciesCB"
+						          SelectionChanged="OnDependencyChanged">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
+									      VerticalAlignment="Stretch" Margin="0, -3, -8, -3">
+										<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+										<TextBlock Text="{Binding DisplayName}" HorizontalAlignment="Stretch"
+										           VerticalAlignment="Stretch" />
+									</Grid>
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+						</ComboBox>
+					</Grid>
+
+					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" IsVisible="{Binding ItemIsDependent}">
+						<Image Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left" Margin="15" />
+
+						<Grid Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *"
+						      VerticalAlignment="Center" Margin="15">
+							<TextBlock Grid.Column="0" Grid.Row="0" Text="Max distance:" Margin="15, 35" />
+							<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding DepMaxDistance}"
+							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMaxDist" />
+
+							<TextBlock Grid.Column="0" Grid.Row="1" Text="Min distance:" Margin="15, 35" />
+							<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" Value="{Binding DepMinDistance}"
+							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMinDist" />
+						</Grid>
+					</Grid>
+
+					<Separator Grid.Column="0" Grid.Row="4" Margin="5" Background="#44000000" Height="4" CornerRadius="2" />
+				</Grid>
+
 				<Grid Grid.Column="0" Grid.Row="2" RowDefinitions="*, Auto"
 				      ColumnDefinitions="*, Auto, Auto, Auto, Auto, Auto"
 				      ColumnSpan="2">
 					<GridSplitter Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"
 					              IsEnabled="False" Background="Transparent" />
-
-					<!-- TODO Dependency Donut -->
 
 					<GridSplitter Grid.Row="1" Grid.Column="1" Width="20"
 					              IsEnabled="False" Background="Transparent"

@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         d:DesignHeight="900" d:DesignWidth="1070" Width="1070" Height="900"
+        MinWidth="900" MinHeight="730"
         x:Class="miWFC.Views.WeightMapWindow" mc:Ignorable="d"
         Icon="/Assets/icon.ico" Title="miWFC - Weight Mapping Mode"
         xmlns:viewModels="clr-namespace:miWFC.ViewModels"
@@ -181,8 +182,8 @@
 							</Grid>
 						</Grid>
 
-						<Grid Grid.Column="1" RowDefinitions="*, Auto">
-							<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
+						<Grid Grid.Column="1">
+							<Grid RowDefinitions="*" HorizontalAlignment="Center">
 								<Grid ColumnDefinitions="*" VerticalAlignment="Center">
 									<Border Margin="10" Background="#11000000" CornerRadius="10">
 										<Grid>

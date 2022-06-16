@@ -42,7 +42,7 @@ public class WFCHandler {
     private WriteableBitmap? currentBitmap;
     private TileModel dbModel;
 
-    private TilePropagator dbPropagator;
+    public TilePropagator dbPropagator;
 
     private WriteableBitmap latestOutput;
     private Dictionary<int, Tuple<Color[], Tile>> tileCache;
@@ -181,7 +181,7 @@ public class WFCHandler {
         mainWindowVM.setLoading(false);
 
         (latestOutput, bool decided) = runWfcDB(steps);
-        centralManager.getWFCHandler().isCollapsed();
+        isCollapsed();
         return (latestOutput, decided);
     }
 
@@ -451,7 +451,7 @@ public class WFCHandler {
         Resolution dbStatus = Resolution.UNDECIDED;
 
         if (!isOverlappingModel() && !mainWindowVM.IsRunning) {
-            centralManager.getWFCHandler().updateTransformations();
+            updateTransformations();
         }
 
         if (steps == -1) {
@@ -734,7 +734,7 @@ public class WFCHandler {
                     centralManager.getInputManager().advanceStep();
                 }
 
-                mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+                mainWindowVM.OutputImage = getLatestOutputBM();
                 centralManager.getInputManager().placeMarker(false);
                 return (returnTrueAlreadyCorrect ? null : getLatestOutputBM(), true);
             } else {
@@ -848,7 +848,7 @@ public class WFCHandler {
                     return (null, false);
                 }
 
-                mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+                mainWindowVM.OutputImage = getLatestOutputBM();
                 centralManager.getInputManager().placeMarker(false);
 
                 status = dbPropagator.Status;
@@ -1064,7 +1064,8 @@ public class WFCHandler {
 
     public bool isCollapsed() {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract, MergeIntoPattern
-        bool isC = dbPropagator != null && dbPropagator.Status == Resolution.DECIDED;
+        bool isC = (dbPropagator != null && dbPropagator.Status == Resolution.DECIDED) ||
+                   Math.Abs(getPercentageCollapsed() - 1d) < 0.0001d;
 
         centralManager.getMainWindowVM().ItemEditorEnabled
             = centralManager.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC;

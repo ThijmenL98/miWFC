@@ -13,6 +13,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using JetBrains.Annotations;
+using miWFC.DeBroglie;
 using miWFC.DeBroglie.Topo;
 using miWFC.ViewModels;
 using miWFC.Views;
@@ -218,12 +219,12 @@ public class InputManager {
         return savePoints;
     }
 
-    public void placeMarker(bool revertible = true, bool force = false) {
+    public void placeMarker(bool revertible = true, bool force = false, int curStepOverwrite = -1) {
         if (centralManager.getWFCHandler().isCollapsed() && !force) {
             return;
         }
 
-        int curStep = centralManager.getWFCHandler().getAmountCollapsed();
+        int curStep = curStepOverwrite != -1 ? curStepOverwrite : centralManager.getWFCHandler().getAmountCollapsed();
         if (curStep == 0 && !force) {
             return;
         }
@@ -263,14 +264,19 @@ public class InputManager {
     public void loadMarker(bool doBacktrack = true) {
         int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
 
+        bool skipPop = false;
         if (savePoints.Count != 0) {
             if (!mainWindowVM.Markers[savePoints.Count - 1].Revertible) {
-                centralManager.getUIManager().dispatchError(mainWindow);
-                return;
+                if (centralManager.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed) {
+                    centralManager.getUIManager().dispatchError(mainWindow);
+                    return;
+                }
+
+                skipPop = true;
             }
         }
 
-        if (centralManager.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
+        if (!skipPop && centralManager.getWFCHandler().getAmountCollapsed() == prevAmountCollapsed &&
             prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
             savePoints.Pop();
 
@@ -331,12 +337,12 @@ public class InputManager {
             int maxImageSize = 128 * tileSize;
 
             if (inputImageWidth > maxImageSize || inputImageWidth < 10 || inputImageHeight > maxImageSize ||
-                inputImageHeight < 10 || inputImageWidth % tileSize == 0 || inputImageHeight % tileSize == 0) {
+                inputImageHeight < 10 || inputImageWidth % tileSize != 0 || inputImageHeight % tileSize != 0) {
                 centralManager.getUIManager().dispatchError(mainWindow);
                 //TODO Popup telling user input image was not allowed size
                 return;
             }
-            
+
             int imageWidth = inputImageWidth / tileSize;
             int imageHeight = inputImageHeight / tileSize;
 
@@ -344,7 +350,7 @@ public class InputManager {
             mainWindowVM.ImageOutHeight = imageHeight;
             mainWindowVM.StepAmount = 1;
 
-            centralManager.getInputManager().restartSolution("Imported image", true);
+            restartSolution("Imported image", true);
             (Color[][] colourArray, HashSet<Color> allowedColours) = imageToColourArray(inputBitmap);
 
             if (centralManager.getWFCHandler().isOverlappingModel()) {
@@ -375,13 +381,12 @@ public class InputManager {
                                 break;
                             }
 
-                            bool? success = centralManager.getInputManager()
-                                .processClick(y, x, imageWidth, imageHeight, idx, true).Result;
+                            bool? success = processClick(y, x, imageWidth, imageHeight, idx, true).Result;
 
                             if (success != null && !(bool) success) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image was not following patterns?
-                                centralManager.getInputManager().restartSolution("Imported image failure", true);
+                                restartSolution("Imported image failure", true);
                                 return;
                             }
                         } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
@@ -389,14 +394,12 @@ public class InputManager {
                             Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
                             centralManager.getUIManager().dispatchError(mainWindow);
                             //TODO Popup telling user input image is illegal?
-                            centralManager.getInputManager().restartSolution("Imported image failure", true);
+                            restartSolution("Imported image failure", true);
                             return;
                         }
                     }
                 }
             } else {
-                //TODO World Layer
-
                 byte[] input = await File.ReadAllBytesAsync(worldFile);
                 IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - imageWidth * imageHeight));
                 byte[] inputB = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
@@ -408,19 +411,18 @@ public class InputManager {
                             int foundAtPos = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[x, y];
 
                             if (toSel != foundAtPos && foundAtPos == -1 && toSel != -1) {
-                                bool? success = centralManager.getInputManager()
-                                    .processClick(x, y, imageWidth, imageHeight, toSel).Result;
+                                bool? success = processClick(x, y, imageWidth, imageHeight, toSel).Result;
 
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
                                     //TODO Popup telling user input image was not following patterns?
-                                    centralManager.getInputManager().restartSolution("Imported image failure", true);
+                                    restartSolution("Imported image failure", true);
                                     return;
                                 }
                             } else if (foundAtPos != -1 && toSel != foundAtPos) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image is illegal?
-                                centralManager.getInputManager().restartSolution("Imported image failure", true);
+                                restartSolution("Imported image failure", true);
                                 return;
                             }
                         }
@@ -429,13 +431,13 @@ public class InputManager {
                     //TODO pre processing?
                     centralManager.getUIManager().dispatchError(mainWindow);
                     //TODO Popup telling user input image is mismatching?
-                    centralManager.getInputManager().restartSolution("Imported image failure", true);
+                    restartSolution("Imported image failure", true);
                     return;
                 }
             }
 
             centralManager.getWFCHandler().getLatestOutputBM();
-            centralManager.getInputManager().placeMarker(false, true);
+            placeMarker(false, true);
         }
     }
 

@@ -6,7 +6,7 @@
         xmlns:viewModels="clr-namespace:miWFC.ViewModels"
         xmlns:contentControls="clr-namespace:miWFC.ContentControls"
         xmlns:avaloniaGif="clr-namespace:miWFC.AvaloniaGif"
-        d:DesignHeight="800" d:DesignWidth="1476" MinWidth="1256" MinHeight="600"
+        d:DesignHeight="800" d:DesignWidth="1360" MinWidth="1360" MinHeight="800"
         Icon="/Assets/icon.ico" Title="miWFC - Item Mode">
 
 	<Window.Resources>
@@ -47,58 +47,52 @@
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
 			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 				<Grid>
-					<Grid ColumnDefinitions="Auto, *">
-						<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
-							<Grid>
-								<Grid x:Name="itemImageGrid" IsVisible="{Binding !InItemMenu}">
-									<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
-										<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
-											<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
-											       x:Name="outputImage" Source="{Binding OutputImage}"
-											       IsHitTestVisible="False" />
-										</Grid>
+					<Grid ColumnDefinitions="*, Auto">
+						<Grid RowDefinitions="*" HorizontalAlignment="Left" x:Name="itemImageGrid">
+							<Grid ColumnDefinitions="*" VerticalAlignment="Center">
+								<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
+									<Grid>
+										<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+										       x:Name="outputImage" Source="{Binding OutputImage}"
+										       IsHitTestVisible="False" IsVisible="{Binding !InItemMenu}" />
+										<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+										       x:Name="itemOverlayImage" Source="{Binding ItemOverlay}"
+										       IsHitTestVisible="False" IsVisible="{Binding !InItemMenu}" />
 									</Grid>
-
-									<Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center">
-										<Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
-											<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
-											       x:Name="itemOverlayImage" Source="{Binding ItemOverlay}"
-											       IsHitTestVisible="False" />
-										</Grid>
-									</Grid>
-								</Grid>
-
-								<contentControls:ItemAddMenu DataContext="{Binding VM}" x:Name="itemAddMenu"
-								                             IsVisible="{Binding InItemMenu}" />
+								</Border>
 							</Grid>
-						</Border>
 
-						<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
-						        CommandParameter="I"
-						        Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
-							<Button.Styles>
-								<Style Selector="Button:pointerover /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-								<Style Selector="Button:pressed /template/ ContentPresenter">
-									<Setter Property="Content" Value="{DynamicResource clickInfoKey}" />
-									<Setter Property="Background" Value="Transparent" />
-								</Style>
-							</Button.Styles>
-							<Panel>
-								<Image Source="/Assets/Info.png" />
-							</Panel>
-						</Button>
+							<Button Padding="0" Background="Transparent" Command="{Binding OnInfoClick}"
+							        CommandParameter="I"
+							        Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickInfoKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Info.png" />
+								</Panel>
+							</Button>
+						</Grid>
 
-						<Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="10">
+						<contentControls:ItemAddMenu Grid.Column="0" DataContext="{Binding VM}" x:Name="itemAddMenu"
+						                             IsVisible="{Binding InItemMenu}" Margin="10" />
+
+						<Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="10" HorizontalAlignment="Stretch">
 							<Grid.Resources>
 								<DataTemplate x:Key="ConstraintsDataTemplate">
-									<Grid ColumnDefinitions="Auto, *">
+									<Grid ColumnDefinitions="Auto, Auto, *" RowDefinitions="Auto, Auto">
 										<!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
-										<TextBlock Grid.Column="0" Text="{Binding Constraints}"
+										<TextBlock Grid.Row="0" Grid.Column="0" Text="Appears on:"
 										           VerticalAlignment="Center" Margin="5" />
-										<ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Left">
+										<ScrollViewer Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" HorizontalScrollBarVisibility="Visible"
+										              HorizontalAlignment="Left">
 											<ItemsControl Items="{Binding AllowedTiles}" x:Name="itemMenuItemsControl">
 												<ItemsControl.ItemsPanel>
 													<ItemsPanelTemplate>
@@ -134,6 +128,16 @@
 												</ItemsControl.ItemTemplate>
 											</ItemsControl>
 										</ScrollViewer>
+
+										<TextBlock Grid.Row="1" Grid.Column="0" Text="Linked item:"
+										           VerticalAlignment="Center" Margin="5" IsVisible="{Binding HasDependentItem}"/>
+
+										<Image Grid.Row="1" Grid.Column="1" Width="51" Height="51" Margin="0"
+										       Source="{Binding DepItemIcon}" IsVisible="{Binding HasDependentItem}"
+										       RenderOptions.BitmapInterpolationMode="Default" />
+
+										<TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding DepItemString}"
+										           VerticalAlignment="Center" Margin="5" IsVisible="{Binding HasDependentItem}"/>
 									</Grid>
 								</DataTemplate>
 
@@ -147,22 +151,23 @@
 									</Grid>
 								</DataTemplate>
 							</Grid.Resources>
-							<Border Background="#22000000" Grid.Row="0" CornerRadius="10" ClipToBounds="True">
+							<Border Background="#22000000" Grid.Row="0" CornerRadius="10" ClipToBounds="True"
+							        VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 								<DataGrid Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
-								          GridLinesVisibility="All"
+								          GridLinesVisibility="All" HorizontalAlignment="Stretch"
 								          Items="{Binding ItemDataGrid}" x:Name="itemsDataGrid">
 									<DataGrid.Columns>
 										<DataGridTemplateColumn Header="Item"
 										                        CellTemplate="{StaticResource ItemNameDataTemplate}"
 										                        MaxWidth="200" />
 										<DataGridTextColumn Header="#" Binding="{Binding AmountStr}" />
-										<DataGridTemplateColumn Header="Constraints" Width="*"
+										<DataGridTemplateColumn Header="Constraints" MaxWidth="500"
 										                        CellTemplate="{StaticResource ConstraintsDataTemplate}" />
 									</DataGrid.Columns>
 								</DataGrid>
 							</Border>
 
-							<Grid Grid.Row="1">
+							<Grid Grid.Row="1" VerticalAlignment="Bottom">
 								<Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto, *, Auto">
 									<Button Padding="0" Background="Transparent" Grid.Row="0" Grid.Column="0"
 									        Command="{Binding OnAddItemEntry}"

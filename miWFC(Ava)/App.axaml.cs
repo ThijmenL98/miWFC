@@ -39,6 +39,8 @@ public class App : Application {
             iW.setCentralManager(cm);
             wMW.setCentralManager(cm);
             mWVM.setCentralManager(cm);
+
+            desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
         }
 
         base.OnFrameworkInitializationCompleted();

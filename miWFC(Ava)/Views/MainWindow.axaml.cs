@@ -20,6 +20,7 @@ public partial class MainWindow : Window {
             centralManager!.getPaintingWindow().Close();
             centralManager!.getItemWindow().Close();
             centralManager!.getWeightMapWindow().Close();
+            Environment.Exit(0);
         };
     }
 
