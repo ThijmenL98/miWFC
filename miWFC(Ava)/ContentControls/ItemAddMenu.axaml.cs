@@ -17,13 +17,12 @@ using miWFC.ViewModels;
 namespace miWFC.ContentControls;
 
 public partial class ItemAddMenu : UserControl {
-    private CentralManager? centralManager;
+    private const int Dimension = 17;
 
     private readonly ComboBox _itemsCB, _depsCB;
 
     private readonly Dictionary<int, WriteableBitmap> imageCache;
-
-    private const int Dimension = 17;
+    private CentralManager? centralManager;
 
     private bool[] checkBoxes;
 
@@ -35,8 +34,8 @@ public partial class ItemAddMenu : UserControl {
         _itemsCB = this.Find<ComboBox>("itemTypesCB");
         _depsCB = this.Find<ComboBox>("itemDependenciesCB");
 
-        _itemsCB.Items = ItemType.ItemTypes;
-        _depsCB.Items = ItemType.ItemTypes;
+        _itemsCB.Items = ItemType.itemTypes;
+        _depsCB.Items = ItemType.itemTypes;
 
         _itemsCB.SelectedIndex = 0;
         _depsCB.SelectedIndex = 1;
@@ -99,9 +98,7 @@ public partial class ItemAddMenu : UserControl {
         imageCache[itemType.ID] = outputBitmap;
 
         return outputBitmap;
-    }
-
-    // ReSharper disable twice UnusedParameter.Local
+    } // ReSharper disable twice UnusedParameter.Local
     private void OnItemChanged(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
@@ -137,7 +134,7 @@ public partial class ItemAddMenu : UserControl {
         checkBoxes[i] = allowed;
     }
 
-    public bool[] getAllowedTiles() {
+    public IEnumerable<bool> getAllowedTiles() {
         return checkBoxes;
     }
 
@@ -151,8 +148,11 @@ public partial class ItemAddMenu : UserControl {
     }
 
     private void AmountRange_OnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e) {
-        NumericUpDown? source = e.Source as NumericUpDown;
-        if (source != null) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (e.Source is NumericUpDown source) {
             switch (source.Name!) {
                 case "NUDUpper":
                     centralManager!.getMainWindowVM().ItemsToAddUpper
@@ -192,8 +192,11 @@ public partial class ItemAddMenu : UserControl {
     }
 
     private void DependencyDistance_OnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e) {
-        NumericUpDown? source = e.Source as NumericUpDown;
-        if (source != null) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (e.Source is NumericUpDown source) {
             switch (source.Name!) {
                 case "NUDMaxDist":
                     centralManager!.getMainWindowVM().DepMaxDistance

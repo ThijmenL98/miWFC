@@ -14,10 +14,10 @@ namespace miWFC.DeBroglie.Models;
 ///     A directly below B.
 /// </summary>
 public class AdjacentModel : TileModel {
-    private DirectionSet directions;
     private readonly List<double> frequencies;
     private readonly List<HashSet<int>[]> propagator;
     private readonly Dictionary<Tile, int> tilesToPatterns;
+    private DirectionSet directions;
 
 
     /// <summary>

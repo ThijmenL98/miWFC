@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -13,12 +14,19 @@ using miWFC.Managers;
 using miWFC.Utils;
 using ReactiveUI;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedMember.Global
 
 namespace miWFC.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase {
+    private string _categoryDescription = "",
+        _selectedInputImage = "",
+        _stepAmountString = "Steps to take: 1",
+        _itemDescription = "Placeholder";
+
     private Bitmap _inputImage
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _outputImage
@@ -59,25 +67,19 @@ public class MainWindowViewModel : ViewModelBase {
         _itemsMayAppearAnywhere,
         _itemIsDependent,
         _itemsInRange,
-        _isEditing,
         _hardBrushEnabled = true;
+
+    private ObservableCollection<ItemViewModel> _itemDataGrid = new();
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
     private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new(), _helperTiles = new();
 
-    private ObservableCollection<ItemViewModel> _itemDataGrid = new();
-
     private HoverableTextViewModel _selectedCategory = new();
 
-    private Random r = new();
-
-    private int[,] latestItemGrid = {{-1}};
-
-    private string _categoryDescription = "",
-        _selectedInputImage = "",
-        _stepAmountString = "Steps to take: 1",
-        _itemDescription = "Placeholder";
+#pragma warning disable CS8618
+    private ItemType _selectedItemToAdd, _selectedItemDependency;
+#pragma warning restore CS8618
 
     private int _stepAmount = 1,
         _animSpeed = 100,
@@ -90,16 +92,17 @@ public class MainWindowViewModel : ViewModelBase {
         _depMaxDistance = 2,
         _depMinDistance = 1,
         _itemsToAddUpper = 2,
-        _heatmapValue = 50;
+        _heatmapValue = 50,
+        _editingEntry = -2;
 
     private double _timeStampOffset, _timelineWidth = 600d;
 
     private CentralManager? centralManager;
     private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
 
-#pragma warning disable CS8618
-    private ItemType _selectedItemToAdd, _selectedItemDependency;
-#pragma warning restore CS8618
+    private Tuple<int, int>[,] latestItemGrid = new Tuple<int, int>[0, 0];
+
+    private Random r = new();
 
     public bool SimpleModelSelected {
         get => _simpleModel;
@@ -118,9 +121,12 @@ public class MainWindowViewModel : ViewModelBase {
         // ReSharper disable once UnusedMember.Local
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
-            OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+            if (centralManager != null) {
+                OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
+                                               !centralManager!.getMainWindow().getInputControl().getCategory()
+                                                   .Contains("Side");
+            }
+
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
         }
     }
@@ -322,7 +328,7 @@ public class MainWindowViewModel : ViewModelBase {
         get => _heatmapInfoPopupVisible;
         set => this.RaiseAndSetIfChanged(ref _heatmapInfoPopupVisible, value);
     }
-    
+
     public bool PencilModeEnabled {
         get => _pencilModeEnabled;
         set => this.RaiseAndSetIfChanged(ref _pencilModeEnabled, value);
@@ -508,7 +514,7 @@ public class MainWindowViewModel : ViewModelBase {
             OnAnimate();
         }
 
-        centralManager!.getWFCHandler().resetWeights(updateStaticWeight: false);
+        centralManager!.getWFCHandler().resetWeights(false);
         centralManager!.getWFCHandler().updateWeights();
 
         centralManager!.getInputManager().restartSolution("Restart UI call");
@@ -643,7 +649,7 @@ public class MainWindowViewModel : ViewModelBase {
         List<TileViewModel> allowedTiles = new();
 
         if (!anywhere) {
-            bool[] allowedCheck = centralManager!.getItemWindow().getItemAddMenu().getAllowedTiles();
+            IEnumerable<bool> allowedCheck = centralManager!.getItemWindow().getItemAddMenu().getAllowedTiles();
             foreach ((bool allowed, int idx) in allowedCheck.Select((b, i) => (b, i))) {
                 if (allowed) {
                     allowedTiles.Add(PaintTiles[idx]);
@@ -667,42 +673,8 @@ public class MainWindowViewModel : ViewModelBase {
             depItem = new Tuple<ItemType?, WriteableBitmap?, (int, int)>(depItemType, depItemBitmap, range);
         }
 
-        // Check current new item allowed tiles
-        List<int> mySet = new(allowedTiles.Select(model => model.PatternIndex));
-        // Check if an identical item exists in a different quantity, if so, append to it instead
-        foreach (ItemViewModel ivm in ItemDataGrid) {
-            // Check compared item allowed tiles
-            List<int> comparedTiles = new(ivm.AllowedTiles.Select(model => model.PatternIndex));
-            // Check compared item dependency
-            Tuple<ItemType?, (int, int)> comparedDepItem = ivm.DependentItem;
-                
-            // If ID's are equal 
-            if (ivm.ItemType.ID.Equals(itemType.ID) 
-                // and they have identical allowed tiles
-                && mySet.All(comparedTiles.Contains) && mySet.Count.Equals(comparedTiles.Count)
-                // and they have an identical dependent item
-                && depItem != null && comparedDepItem.Item1 != null && depItem.Item1 != null && comparedDepItem.Item1.Equals(depItem.Item1)
-                // and they have an identical distance
-                && comparedDepItem.Item2.Equals(depItem.Item3)) {
-                
-                // Then increment the amount of appearing
-                if (_isEditing) {
-                    ivm.Amount = (amountLower, amountUpper);
-                } else {
-                    if ((amountLower == amountUpper && ivm.Amount.Item1 == ivm.Amount.Item2)
-                        || (amountLower != amountUpper && ivm.Amount.Item1 != ivm.Amount.Item2)) {
-                        ivm.Amount = (ivm.Amount.Item1 + amountLower, ivm.Amount.Item2 + amountUpper);
-                    } else {
-                        ivm.Amount = (amountLower, amountUpper);
-                    }
-                }
-
-                ivm.AmountStr = ivm.Amount.Item1 == ivm.Amount.Item2
-                    ? @$"{ivm.Amount.Item2}"
-                    : @$"{ivm.Amount.Item1} - {ivm.Amount.Item2}";
-                InItemMenu = false;
-                return;
-            }
+        if (_editingEntry != -2) {
+            OnRemoveItemEntryI(_editingEntry);
         }
 
         ItemDataGrid.Add(new ItemViewModel(itemType, (amountLower, amountUpper),
@@ -714,6 +686,7 @@ public class MainWindowViewModel : ViewModelBase {
         ItemsToAddValue = 1;
         ItemIsDependent = false;
         DepMinDistance = 1;
+        _editingEntry = -2;
         DepMaxDistance = 2;
 
         foreach (TileViewModel tvm in PaintTiles) {
@@ -728,7 +701,7 @@ public class MainWindowViewModel : ViewModelBase {
 
     public void OnExitItemAddition() {
         InItemMenu = false;
-        _isEditing = false;
+        _editingEntry = -2;
         ItemsMayAppearAnywhere = false;
         ItemsToAddValue = 1;
         ItemIsDependent = false;
@@ -777,7 +750,7 @@ public class MainWindowViewModel : ViewModelBase {
     public void OnAddItemEntry() {
         centralManager!.getItemWindow().getItemAddMenu().updateSelectedItemIndex();
         centralManager!.getItemWindow().getItemAddMenu().updateDependencyIndex();
-        centralManager!.getMainWindowVM().ItemDescription = ItemType.ItemTypes[0].Description;
+        centralManager!.getMainWindowVM().ItemDescription = ItemType.itemTypes[0].Description;
         InItemMenu = true;
     }
 
@@ -800,7 +773,19 @@ public class MainWindowViewModel : ViewModelBase {
         ItemsToAddUpper = itemSelected.Amount.Item2;
 
         centralManager!.getItemWindow().getItemAddMenu().updateSelectedItemIndex(itemSelected.ItemType.ID);
-        centralManager!.getItemWindow().getItemAddMenu().updateDependencyIndex();
+
+        ItemIsDependent = itemSelected.HasDependentItem;
+        if (ItemIsDependent) {
+            DepMinDistance = itemSelected.DependentItem.Item2.Item1;
+            DepMaxDistance = itemSelected.DependentItem.Item2.Item2;
+            centralManager!.getItemWindow().getItemAddMenu()
+                .updateDependencyIndex(itemSelected.DependentItem.Item1!.ID);
+        } else {
+            DepMinDistance = 1;
+            DepMaxDistance = 2;
+            centralManager!.getItemWindow().getItemAddMenu().updateDependencyIndex();
+        }
+
 
         foreach ((TileViewModel tvm, int index) in PaintTiles.Select((model, i) => (model, i))) {
             if (itemSelected.AllowedTiles.Select(at => at.PatternIndex).Contains(index)) {
@@ -809,13 +794,18 @@ public class MainWindowViewModel : ViewModelBase {
             }
         }
 
-        _isEditing = true;
+        _editingEntry = selectedIndex;
     }
 
     public void OnRemoveItemEntry() {
+        OnRemoveItemEntryI(-2);
+    }
+
+    public void OnRemoveItemEntryI(int selectedIndex) {
+        Trace.WriteLine("Trying to delete");
         DataGrid dg = centralManager!.getItemWindow().getDataGrid();
-        int selectedIndex = dg.SelectedIndex;
-        if (selectedIndex.Equals(-1)) {
+        selectedIndex = selectedIndex == -2 ? dg.SelectedIndex : selectedIndex;
+        if (selectedIndex < 0) {
             centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
             return;
         }
@@ -826,15 +816,18 @@ public class MainWindowViewModel : ViewModelBase {
 
     public void OnApplyItemsClick() {
         if (ItemDataGrid.Count < 1) {
-            centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+            WriteableBitmap newItemOverlayEmpty
+                = Util.generateItemOverlay(new Tuple<int, int>[0, 0], ImageOutWidth, ImageOutHeight);
+            Util.setLatestItemBitMap(newItemOverlayEmpty);
+            ItemOverlay = newItemOverlayEmpty;
             return;
         }
 
-        int[,] itemGrid = new int[ImageOutWidth, ImageOutHeight];
+        Tuple<int, int>[,] itemGrid = new Tuple<int, int>[ImageOutWidth, ImageOutHeight];
 
         for (int x = 0; x < ImageOutWidth; x++) {
             for (int y = 0; y < ImageOutHeight; y++) {
-                itemGrid[x, y] = -1;
+                itemGrid[x, y] = new Tuple<int, int>(-1, -1);
             }
         }
 
@@ -872,14 +865,22 @@ public class MainWindowViewModel : ViewModelBase {
             }
         }
 
+        int depItemCount = 1;
+
         foreach (ItemViewModel ivm in ItemDataGrid) {
             List<int> allowedAdd = ivm.AllowedTiles.Select(tvm => tvm.PatternIndex).ToList();
             int toAdd = r.Next(ivm.Amount.Item1, ivm.Amount.Item2 + 1);
 
             for (int i = 0; i < toAdd; i++) {
                 bool added = false;
+                int retry = 0;
                 while (!added) {
-                    //TODO add dependent item
+                    retry++;
+                    if (retry == 50) {
+                        centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
+                        return;
+                    }
+
                     if (allowedAdd.Select(x => spacesLeft[x]).Sum() == 0) {
                         centralManager?.getUIManager().dispatchError(centralManager!.getItemWindow());
                         return;
@@ -901,23 +902,86 @@ public class MainWindowViewModel : ViewModelBase {
                     }
 
                     if (allowedAtLoc) {
-                        if (itemGrid[xLoc, yLoc] == -1) {
-                            itemGrid[xLoc, yLoc] = ivm.ItemType.ID;
-                            if (centralManager!.getWFCHandler().isOverlappingModel()) {
-                                Color addedLoc = distinctColourCount[xLoc, yLoc];
-                                foreach (TileViewModel tvm in PaintTiles) {
-                                    if (tvm.PatternColour.Equals(addedLoc)) {
-                                        int cIdx = tvm.PatternIndex;
-                                        spacesLeft[cIdx]--;
-                                    }
+                        if (itemGrid[xLoc, yLoc].Item1 == -1) {
+                            bool canContinueDependent = !ivm.HasDependentItem;
+                            if (ivm.HasDependentItem) {
+                                Tuple<ItemType, (int, int)> depItem = ivm.DependentItem!;
+                                List<Tuple<int, int>> possibleCoordinates = new();
+                                (int minDist, int maxDist) = depItem.Item2;
 
-                                    break;
+                                for (int xx = Math.Max(0, xLoc - maxDist);
+                                     xx < Math.Min(ImageOutWidth - 1, xLoc + maxDist);
+                                     xx++) {
+                                    for (int yy = Math.Max(0, yLoc - maxDist);
+                                         yy < Math.Min(ImageOutHeight - 1, yLoc + maxDist);
+                                         yy++) {
+                                        double depDist
+                                            = Math.Sqrt((xx - xLoc) * (xx - xLoc) + (yy - yLoc) * (yy - yLoc));
+                                        if (depDist <= maxDist && depDist >= minDist) {
+                                            if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                                                Color colorAtPos = distinctColourCount[xx, yy];
+                                                if (PaintTiles.Where(tvm => tvm.PatternColour.Equals(colorAtPos))
+                                                        .Any(tvm => allowedAdd.Contains(tvm.PatternIndex)) &&
+                                                    itemGrid[xx, yy].Item1 == -1) {
+                                                    possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
+                                                }
+                                            } else {
+                                                int valAtPos = distinctIndexCount[xx, yy];
+                                                if (allowedAdd.Contains(valAtPos) && itemGrid[xx, yy].Item1 == -1) {
+                                                    possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
-                            } else {
-                                spacesLeft[distinctIndexCount[xLoc, yLoc]]--;
+
+                                canContinueDependent = possibleCoordinates.Count > 0;
+
+                                if (canContinueDependent) {
+                                    Tuple<int, int> depCoords = possibleCoordinates[r.Next(possibleCoordinates.Count)];
+                                    itemGrid[depCoords.Item1, depCoords.Item2]
+                                        = new Tuple<int, int>(depItem.Item1!.ID, depItemCount);
+
+                                    if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                                        Color addedLoc = distinctColourCount[depCoords.Item1, depCoords.Item2];
+                                        foreach (TileViewModel tvm in PaintTiles) {
+                                            if (tvm.PatternColour.Equals(addedLoc)) {
+                                                int cIdx = tvm.PatternIndex;
+                                                spacesLeft[cIdx]--;
+                                            }
+
+                                            break;
+                                        }
+                                    } else {
+                                        spacesLeft[distinctIndexCount[depCoords.Item1, depCoords.Item2]]--;
+                                    }
+                                }
                             }
 
-                            added = true;
+                            if (canContinueDependent) {
+                                itemGrid[xLoc, yLoc] = new Tuple<int, int>(ivm.ItemType.ID,
+                                    ivm.HasDependentItem ? depItemCount : -1);
+
+                                if (ivm.HasDependentItem) {
+                                    depItemCount++;
+                                }
+
+                                if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                                    Color addedLoc = distinctColourCount[xLoc, yLoc];
+                                    foreach (TileViewModel tvm in PaintTiles) {
+                                        if (tvm.PatternColour.Equals(addedLoc)) {
+                                            int cIdx = tvm.PatternIndex;
+                                            spacesLeft[cIdx]--;
+                                        }
+
+                                        break;
+                                    }
+                                } else {
+                                    spacesLeft[distinctIndexCount[xLoc, yLoc]]--;
+                                }
+
+                                added = true;
+                            }
                         }
                     }
                 }
@@ -934,7 +998,7 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWeightMapWindow().resetCurrentMapping();
     }
 
-    public int[,] getLatestItemGrid() {
+    public Tuple<int, int>[,] getLatestItemGrid() {
         return latestItemGrid;
     }
 }

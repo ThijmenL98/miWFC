@@ -3,10 +3,8 @@
 namespace miWFC.ViewModels;
 
 public class HoverableTextViewModel : ReactiveObject {
-    private readonly string _toolTipText = "";
     private readonly string _displayText = "";
-
-    // ReSharper disable twice UnusedMember.Local
+    private readonly string _toolTipText = ""; // ReSharper disable twice UnusedMember.Local
     public string DisplayText {
         get => _displayText;
         init => this.RaiseAndSetIfChanged(ref _displayText, value);

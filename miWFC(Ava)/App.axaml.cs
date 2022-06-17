@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using miWFC.Managers;
@@ -40,7 +41,7 @@ public class App : Application {
             wMW.setCentralManager(cm);
             mWVM.setCentralManager(cm);
 
-            desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+            desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
         }
 
         base.OnFrameworkInitializationCompleted();

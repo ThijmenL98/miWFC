@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Avalonia.Media.Imaging;
 using miWFC.Utils;
 using ReactiveUI;
@@ -11,16 +10,16 @@ using ReactiveUI;
 namespace miWFC.ViewModels;
 
 public class ItemViewModel : ReactiveObject {
-    private readonly ItemType _itemType;
-    private (int, int) _amount;
     private readonly ObservableCollection<TileViewModel> _allowedTiles;
-    private readonly WriteableBitmap _itemIcon;
     private readonly WriteableBitmap? _depItemIcon;
-    private readonly Tuple<ItemType?, (int, int)> _dependentItem;
     private readonly bool _hasDependentItem;
+    private readonly WriteableBitmap _itemIcon;
 
     private readonly string _itemName, _depItemString;
+    private readonly ItemType _itemType;
+    private (int, int) _amount;
     private string _amountStr;
+    private Tuple<ItemType?, (int, int)> _dependentItem;
 
 #pragma warning disable CS8618
     public ItemViewModel(ItemType itemType, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
@@ -37,7 +36,7 @@ public class ItemViewModel : ReactiveObject {
             DependentItem = new Tuple<ItemType?, (int, int)>(dependentItem.Item1, dependentItem.Item3);
             DepItemIcon = dependentItem.Item2;
             HasDependentItem = true;
-            DepItemString = $@"Appear distance Min: {dependentItem.Item3.Item1} - Max: {dependentItem.Item3.Item2}";
+            DepItemString = $@"Appearing distance: {dependentItem.Item3.Item1} to {dependentItem.Item3.Item2}";
         } else {
             DependentItem = new Tuple<ItemType?, (int, int)>(null, (0, 0));
             DepItemIcon = null;
@@ -70,6 +69,7 @@ public class ItemViewModel : ReactiveObject {
 
     public (int, int) Amount {
         get => _amount;
+        // ReSharper disable once PropertyCanBeMadeInitOnly.Global
         set => this.RaiseAndSetIfChanged(ref _amount, value);
     }
 
@@ -90,7 +90,8 @@ public class ItemViewModel : ReactiveObject {
 
     public Tuple<ItemType?, (int, int)> DependentItem {
         get => _dependentItem;
-        private init => this.RaiseAndSetIfChanged(ref _dependentItem, value);
+        // ReSharper disable once PropertyCanBeMadeInitOnly.Global
+        set => this.RaiseAndSetIfChanged(ref _dependentItem, value);
     }
 
     public bool HasDependentItem {

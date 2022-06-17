@@ -12,11 +12,11 @@ internal sealed class GifBackgroundWorker {
     private static readonly Stopwatch timer = Stopwatch.StartNew();
     private readonly Queue<BgWorkerCommand> _cmdQueue;
     private readonly List<ulong> _colorTableIDList;
+    private readonly GifDecoder _gifDecoder;
     private readonly object _lockObj;
 
     private Task _bgThread;
     private int _currentIndex;
-    private readonly GifDecoder _gifDecoder;
     private int _iterationCount;
 
     private GifRepeatBehavior _repeatBehavior;

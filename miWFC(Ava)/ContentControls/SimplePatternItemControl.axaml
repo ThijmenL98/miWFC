@@ -163,7 +163,8 @@
 										</RepeatButton>
 									</Grid>
 
-									<StackPanel Grid.Row="0" Grid.Column="2" IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
+									<StackPanel Grid.Row="0" Grid.Column="2"
+									            IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
 									            HorizontalAlignment="Center" VerticalAlignment="Center" Width="30">
 										<Button MaxHeight="32" Padding="0" IsVisible="{Binding MayRotate}"
 										        Background="Transparent" Margin="1" Command="{Binding OnRotateClick}">

@@ -21,17 +21,9 @@ namespace miWFC.DeBroglie;
 public class TilePropagator {
     public readonly TileModelMapping tileModelMapping;
 
-    public TileModelMapping getTMM() {
-        return tileModelMapping;
-    }
-
     private readonly WavePropagator wavePropagator;
 
-    private CentralManager cm;
-
-    public WavePropagator getWP() {
-        return wavePropagator;
-    }
+    private readonly CentralManager cm;
 
     public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, CentralManager _cm) {
         TileModel = tileModel;
@@ -123,6 +115,14 @@ public class TilePropagator {
     ///     It is reset when <see cref="Clear" /> is called.
     /// </summary>
     public int BackjumpCount => wavePropagator.BackjumpCount;
+
+    public TileModelMapping getTMM() {
+        return tileModelMapping;
+    }
+
+    public WavePropagator getWP() {
+        return wavePropagator;
+    }
 
     private static IBacktrackPolicy MakeBacktrackPolicy(TilePropagatorOptions options) {
         switch (options.BacktrackType) {
@@ -237,7 +237,7 @@ public class TilePropagator {
     ///     Then it propagates that information to other nearby tiles.
     /// </summary>
     /// <returns>The current <see cref="Status" /></returns>
-    public Resolution @select(int x, int y, int z, Tile tile) {
+    public Resolution select(int x, int y, int z, Tile tile) {
         TileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
         ISet<int> patterns = tileModelMapping.GetPatterns(tile, o);
         for (int p = 0; p < wavePropagator.PatternCount; p++) {
@@ -263,8 +263,8 @@ public class TilePropagator {
     ///     Then it propagates that information to other nearby tiles.
     /// </summary>
     /// <returns>The current <see cref="Status" /></returns>
-    public Resolution @select(int x, int y, int z, IEnumerable<Tile> tiles) {
-        return @select(x, y, z, CreateTileSet(tiles));
+    public Resolution select(int x, int y, int z, IEnumerable<Tile> tiles) {
+        return select(x, y, z, CreateTileSet(tiles));
     }
 
     /// <summary>
@@ -273,7 +273,7 @@ public class TilePropagator {
     ///     Then it propagates that information to other nearby tiles.
     /// </summary>
     /// <returns>The current <see cref="Status" /></returns>
-    public Resolution @select(int x, int y, int z, TilePropagatorTileSet tiles) {
+    public Resolution select(int x, int y, int z, TilePropagatorTileSet tiles) {
         TileCoordToPatternCoord(x, y, z, out int px, out int py, out int pz, out int o);
         ISet<int> patterns = tileModelMapping.GetPatterns(tiles, o);
         for (int p = 0; p < wavePropagator.PatternCount; p++) {

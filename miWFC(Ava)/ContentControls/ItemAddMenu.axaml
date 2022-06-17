@@ -32,15 +32,15 @@
 					</Grid>
 
 					<NumericUpDown Grid.Row="1" MaxHeight="10" Value="{Binding ItemsToAddValue}" IsVisible="{Binding !ItemsInRange}"
-					               HorizontalAlignment="Center" />
+					               HorizontalAlignment="Center" Minimum="1" />
 
 					<Grid Grid.Row="1" IsVisible="{Binding ItemsInRange}" ColumnDefinitions="Auto, Auto, Auto"
 					      HorizontalAlignment="Center">
-						<NumericUpDown Grid.Column="0" MaxHeight="10" Value="{Binding ItemsToAddLower}"
+						<NumericUpDown Grid.Column="0" MaxHeight="10" Value="{Binding ItemsToAddLower}" Minimum="1"
 						               HorizontalAlignment="Center" ValueChanged="AmountRange_OnValueChanged" x:Name="NUDLower" />
 						<TextBlock Grid.Column="1" Text="to" HorizontalAlignment="Center"
 						           VerticalAlignment="Center" Margin="5" />
-						<NumericUpDown Grid.Column="2" MaxHeight="10" Value="{Binding ItemsToAddUpper}"
+						<NumericUpDown Grid.Column="2" MaxHeight="10" Value="{Binding ItemsToAddUpper}" Minimum="1"
 						               HorizontalAlignment="Center" ValueChanged="AmountRange_OnValueChanged" x:Name="NUDUpper" />
 					</Grid>
 				</Grid>
@@ -132,10 +132,10 @@
 					<Grid Grid.Row="2" Margin="25, 0, 5, 0" Grid.ColumnDefinitions="Auto, *">
 						<RadioButton Grid.Column="0" IsChecked="{Binding ItemIsDependent}"
 						             Content="Select:" />
-						
+
 						<ComboBox Grid.Column="1" Margin="25, 5" HorizontalAlignment="Stretch" MinWidth="200" MaxWidth="300"
 						          MinHeight="40" SelectedItem="{Binding SelectedItemDependency}" x:Name="itemDependenciesCB"
-						          SelectionChanged="OnDependencyChanged">
+						          SelectionChanged="OnDependencyChanged" IsEnabled="{Binding ItemIsDependent}">
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
 									<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
@@ -156,11 +156,11 @@
 						      VerticalAlignment="Center" Margin="15">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="Max distance:" Margin="15, 35" />
 							<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding DepMaxDistance}"
-							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMaxDist" />
+							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMaxDist" Minimum="1" />
 
 							<TextBlock Grid.Column="0" Grid.Row="1" Text="Min distance:" Margin="15, 35" />
 							<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" Value="{Binding DepMinDistance}"
-							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMinDist" />
+							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMinDist" Minimum="1" />
 						</Grid>
 					</Grid>
 

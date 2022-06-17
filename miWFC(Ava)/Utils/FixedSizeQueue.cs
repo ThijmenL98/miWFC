@@ -5,8 +5,8 @@ using System.Linq;
 namespace miWFC.Utils;
 
 public class FixedSizeQueue<T> {
-    private readonly ConcurrentQueue<T> q = new();
     private readonly object lockObject = new();
+    private readonly ConcurrentQueue<T> q = new();
 
     public FixedSizeQueue(int length) {
         Limit = length;
@@ -21,7 +21,7 @@ public class FixedSizeQueue<T> {
         }
     }
 
-    public override string? ToString() {
+    public override string ToString() {
         lock (lockObject) {
             return new List<T>(q.ToArray()).Aggregate("", (current, entry) => current + entry);
         }

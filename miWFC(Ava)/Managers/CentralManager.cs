@@ -5,14 +5,14 @@ namespace miWFC.Managers;
 
 public class CentralManager {
     private readonly InputManager inputManager;
+    private readonly ItemWindow itemWindow;
 
     private readonly MainWindow mainWindow;
-    private readonly PaintingWindow paintingWindow;
-    private readonly ItemWindow itemWindow;
-    private readonly WeightMapWindow weightMapWindow;
 
     private readonly MainWindowViewModel mainWindowViewModel;
+    private readonly PaintingWindow paintingWindow;
     private readonly UIManager uiManager;
+    private readonly WeightMapWindow weightMapWindow;
     private readonly WFCHandler wfcHandler;
 
     public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,

@@ -4,12 +4,12 @@ namespace miWFC.ViewModels;
 
 public class MarkerViewModel : ReactiveObject {
     private readonly int _index;
-    private readonly double _widthOffset, _collapsePercentage;
     private readonly bool _revertible;
-    // ReSharper disable trice UnusedMember.Local
+    private readonly double _widthOffset, _collapsePercentage; // ReSharper disable trice UnusedMember.Local
 
     public int MarkerIndex {
         get => _index;
+        // ReSharper disable once MemberCanBePrivate.Global
         init => this.RaiseAndSetIfChanged(ref _index, value);
     }
 
@@ -20,6 +20,7 @@ public class MarkerViewModel : ReactiveObject {
 
     public double MarkerCollapsePercentage {
         get => _collapsePercentage;
+        // ReSharper disable once MemberCanBePrivate.Global
         init => this.RaiseAndSetIfChanged(ref _collapsePercentage, value);
     }
 

@@ -260,8 +260,8 @@ internal class CacheEntry<TK, TV> {
     public volatile CacheValue<TV> Value;
 
     public CacheEntry(DateTime? expirationTime, LinkedListNode<TK> node) {
-        this.ExpirationTime = expirationTime;
-        this.Node = node;
+        ExpirationTime = expirationTime;
+        Node = node;
         EntryLock = new object();
     }
 

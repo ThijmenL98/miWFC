@@ -13,10 +13,10 @@ namespace miWFC.DeBroglie.Models;
 /// </summary>
 public class OverlappingModel : TileModel {
     private readonly List<double> frequencies;
-    private List<double> originalFrequencies;
     private readonly List<PatternArray> patternArrays;
 
     private readonly Dictionary<PatternArray, int> patternIndices;
+    private List<double> originalFrequencies;
 
     private IReadOnlyDictionary<int, Tile> patternsToTiles;
     private List<int[][]> propagator;

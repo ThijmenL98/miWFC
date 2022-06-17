@@ -138,7 +138,7 @@ internal sealed class XxHash32 : HashAlgorithm {
     /// </summary>
     /// <returns></returns>
     public new static XxHash32 Create() {
-        return new();
+        return new XxHash32();
     }
 
     /// <summary>
@@ -411,7 +411,7 @@ public sealed class XxHash64 : HashAlgorithm {
     /// </summary>
     /// <returns></returns>
     public new static XxHash64 Create() {
-        return new();
+        return new XxHash64();
     }
 
     /// <summary>

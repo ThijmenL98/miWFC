@@ -11,8 +11,8 @@ public class RotationGroup : IEnumerable<Rotation> {
     private readonly List<Rotation> rotations;
 
     public RotationGroup(int rotationalSymmetry, bool reflectionalSymmetry) {
-        this.RotationalSymmetry = rotationalSymmetry;
-        this.ReflectionalSymmetry = reflectionalSymmetry;
+        RotationalSymmetry = rotationalSymmetry;
+        ReflectionalSymmetry = reflectionalSymmetry;
         SmallestAngle = 360 / rotationalSymmetry;
         rotations = new List<Rotation>();
         for (int refl = 0; refl < (reflectionalSymmetry ? 2 : 1); refl++) {

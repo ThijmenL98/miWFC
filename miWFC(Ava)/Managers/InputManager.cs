@@ -12,8 +12,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
-using JetBrains.Annotations;
-using miWFC.DeBroglie;
 using miWFC.DeBroglie.Topo;
 using miWFC.ViewModels;
 using miWFC.Views;
@@ -25,15 +23,16 @@ using static miWFC.Utils.Util;
 namespace miWFC.Managers;
 
 public class InputManager {
+    private readonly CentralManager centralManager;
     private readonly MainWindow mainWindow;
     private readonly MainWindowViewModel mainWindowVM;
 
     private readonly Bitmap noResultFoundBM;
-
-    private readonly CentralManager centralManager;
     private readonly Stack<int> savePoints;
 
     private int lastPaintedAmountCollapsed;
+
+    private int lastProcessedX = -1, lastProcessedY = -1;
 
     private Color[,] maskColours;
 
@@ -174,10 +173,10 @@ public class InputManager {
                             if (marker.MarkerIndex.Equals(savePoints.Count - 1)) {
                                 if (!marker.Revertible) {
                                     goto exitOuterLoop;
-                                } else {
-                                    mainWindowVM.Markers.Remove(marker);
-                                    savePoints.Pop();
                                 }
+
+                                mainWindowVM.Markers.Remove(marker);
+                                savePoints.Pop();
                             }
                         }
                     }
@@ -427,7 +426,7 @@ public class InputManager {
                             }
                         }
                     }
-                } catch (AggregateException e) {
+                } catch (AggregateException) {
                     //TODO pre processing?
                     centralManager.getUIManager().dispatchError(mainWindow);
                     //TODO Popup telling user input image is mismatching?
@@ -468,12 +467,16 @@ public class InputManager {
                         centralManager.getWFCHandler().getPropagatorOutputA().toArray2d());
                 }
 
-                int[,] itemsGrid = mainWindowVM.getLatestItemGrid();
-                int[] tmp = new int[itemsGrid.GetLength(0) * itemsGrid.GetLength(1)];
-                Buffer.BlockCopy(itemsGrid, 0, tmp, 0, tmp.Length * sizeof(int));
-                List<int> list = new(tmp);
+                Tuple<int, int>[,] itemsGrid = mainWindowVM.getLatestItemGrid();
+                List<Tuple<int, int>> list = new();
+                for (int i = 0; i < itemsGrid.GetLength(0); i++) {
+                    for (int j = 0; j < itemsGrid.GetLength(1); j++) {
+                        list.Add(itemsGrid[i, j]);
+                    }
+                }
 
-                if (list.Distinct().Count() > 1 || (!list.Distinct().Contains(-1) && list.Distinct().Any())) {
+                if (list.Distinct().Count() > 1 ||
+                    (!list.Distinct().Select(x => x.Item1).Contains(-1) && list.Distinct().Any())) {
                     generateRawItemImage(itemsGrid).Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
                     combineBitmaps(centralManager.getWFCHandler().getLatestOutput(),
                             centralManager.getWFCHandler().isOverlappingModel()
@@ -573,8 +576,6 @@ public class InputManager {
 
         return showPixel;
     }
-
-    private int lastProcessedX = -1, lastProcessedY = -1;
 
     public async void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, int selectedValue,
         bool pencilSelected, bool force = false) {

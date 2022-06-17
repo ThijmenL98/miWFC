@@ -13,6 +13,8 @@ namespace miWFC.Views;
 
 public partial class PaintingWindow : Window {
     private readonly ComboBox _paintingPatternsCB, _paintingSizeCB;
+
+    private bool canUsePencil = true;
     private CentralManager? centralManager;
 
     public PaintingWindow() {
@@ -46,11 +48,12 @@ public partial class PaintingWindow : Window {
                 e.Handled = true;
                 break;
             case Key.B:
-                if ((e.KeyModifiers & KeyModifiers.Control) != 0) { 
+                if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
                     centralManager.getMainWindowVM().OnPaintEraseModeClick();
                 } else {
                     centralManager.getMainWindowVM().OnPaintKeepModeClick();
                 }
+
                 e.Handled = true;
                 break;
             case Key.R:
@@ -99,8 +102,6 @@ public partial class PaintingWindow : Window {
     public void setCentralManager(CentralManager cm) {
         centralManager = cm;
     }
-
-    private bool canUsePencil = true;
 
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
         if (centralManager!.getMainWindowVM().PencilModeEnabled ||
@@ -162,9 +163,7 @@ public partial class PaintingWindow : Window {
             _paintingPatternsCB.SelectedIndex, centralManager!.getMainWindowVM().PencilModeEnabled);
 
         e.Handled = true;
-    }
-
-    // ReSharper disable twice UnusedParameter.Local
+    } // ReSharper disable twice UnusedParameter.Local
     private void OnPointerMoved(object sender, PointerEventArgs e) {
         centralManager?.getInputManager().resetHoverAvailability();
     }

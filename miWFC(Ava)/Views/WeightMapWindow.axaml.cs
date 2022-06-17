@@ -122,7 +122,7 @@ public partial class WeightMapWindow : Window {
 
         return value;
     }
-    
+
     private static (double, double, double) RGBtoHSV(Color rgb) {
         double h = 0, s;
 

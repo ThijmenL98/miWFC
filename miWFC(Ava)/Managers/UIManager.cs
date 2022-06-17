@@ -24,10 +24,10 @@ using miWFC.Views;
 namespace miWFC.Managers;
 
 public class UIManager {
+    private readonly CentralManager centralManager;
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowVM;
-    private readonly CentralManager centralManager;
 
     private readonly List<Func<int, int, int, int, Point>> transforms = new() {
         (_, _, x, y) => new Point(x, y), // rotated 0
@@ -102,13 +102,13 @@ public class UIManager {
                 mainWindowVM.MainInfoPopupVisible = true;
                 break;
             case "I":
-               //TODO mainWindowVM.ItemsInfoPopupVisible = true;
+                //TODO mainWindowVM.ItemsInfoPopupVisible = true;
                 break;
             case "P":
                 mainWindowVM.PaintInfoPopupVisible = true;
                 break;
             case "H":
-               //TODO mainWindowVM.HeatmapInfoPopupVisible = true;
+                //TODO mainWindowVM.HeatmapInfoPopupVisible = true;
                 break;
         }
     }
@@ -176,7 +176,7 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, cm: centralManager, 0);
+        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, centralManager, 0);
 
         patternCount++;
 
@@ -220,7 +220,7 @@ public class UIManager {
 
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
-        
+
         Trace.WriteLine(@$"We want to switch to {window}");
         Window target = mainWindow, source = mainWindow;
 

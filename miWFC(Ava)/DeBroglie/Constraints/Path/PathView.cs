@@ -11,12 +11,12 @@ internal class PathView : IPathView {
     private readonly ISet<Tile> endPointTiles;
     private readonly TilePropagatorTileSet endPointTileSet;
 
+    private readonly bool hasEndPoints;
+
     private readonly TilePropagator propagator;
     private readonly SelectedTracker selectedTracker;
     private readonly ISet<Tile> tiles;
     private readonly TilePropagatorTileSet tileSet;
-
-    private readonly bool hasEndPoints;
 
     public PathView(PathSpec spec, TilePropagator propagator) {
         if (spec.TileRotation != null) {
@@ -95,7 +95,7 @@ internal class PathView : IPathView {
 
     public void SelectPath(int index) {
         propagator.Topology.GetCoord(index, out int x, out int y, out int z);
-        propagator.@select(x, y, z, tileSet);
+        propagator.select(x, y, z, tileSet);
     }
 
     public void BanPath(int index) {

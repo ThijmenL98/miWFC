@@ -143,16 +143,16 @@ public static class PathConstraintUtils {
                         if (frameIndex == 0) {
                             // Root frame
                             return frame.RelevantChildSubtreeCount;
-                        } else {
-                            // Set childRelevantSubtree with the return value from this recursed call
-                            bool isRelevant = relevant == null || relevant[u];
-                            bool descendantOrSelfIsRelevant = frame.RelevantChildSubtreeCount > 0 || isRelevant;
-                            childRelevantSubtree = descendantOrSelfIsRelevant;
-                            // Pop the frame
-                            stack.RemoveAt(frameIndex);
-                            // Resume the caller (which will be in state 2)
-                            break;
                         }
+
+                        // Set childRelevantSubtree with the return value from this recursed call
+                        bool isRelevant = relevant == null || relevant[u];
+                        bool descendantOrSelfIsRelevant = frame.RelevantChildSubtreeCount > 0 || isRelevant;
+                        childRelevantSubtree = descendantOrSelfIsRelevant;
+                        // Pop the frame
+                        stack.RemoveAt(frameIndex);
+                        // Resume the caller (which will be in state 2)
+                        break;
                 }
             }
         }

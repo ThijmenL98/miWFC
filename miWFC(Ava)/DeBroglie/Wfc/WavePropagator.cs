@@ -22,25 +22,31 @@ public class WavePropagatorOptions {
 ///     according to the model constraints.
 /// </summary>
 public class WavePropagator {
+    private readonly IBacktrackPolicy backtrackPolicy;
     private readonly IWaveConstraint[] constraints;
 
     private readonly HeapEntropyTracker indexPicker;
 
     private readonly int outWidth, outHeight;
+
+    // Basic parameters
+
+    // From model
+
+    private readonly IPatternModelConstraint patternModelConstraint;
     private readonly WeightedRandomPatternPicker patternPicker;
 
-    private CentralManager cm;
+    public string _contradictionReason;
+    public object _contradictionSource;
 
     // In
 
     // Used for backtracking
     private Deque<IndexPatternItem> backtrackItems;
     private Deque<int> backtrackItemsLengths;
-    private readonly IBacktrackPolicy backtrackPolicy;
     private List<IChoiceObserver> choiceObservers;
 
-    public string _contradictionReason;
-    public object _contradictionSource;
+    private readonly CentralManager cm;
 
     // We evaluate constraints at the last possible minute, instead of eagerly like the model,
     // As they can potentially be expensive.
@@ -48,12 +54,6 @@ public class WavePropagator {
 
     // Used for MaxBacktrackDepth
     private int droppedBacktrackItemsCount;
-
-    // Basic parameters
-
-    // From model
-
-    private readonly IPatternModelConstraint patternModelConstraint;
 
     private Deque<IndexPatternItem> prevChoices;
 

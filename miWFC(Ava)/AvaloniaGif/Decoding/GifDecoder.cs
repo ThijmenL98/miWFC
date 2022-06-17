@@ -81,7 +81,6 @@ public sealed class GifDecoder : IDisposable {
     private GifRect _gifDimensions;
 
     private ulong _globalColorTable;
-    internal volatile bool HasNewFrame;
     private byte[] _indexBuf;
     private byte[] _pixelStack;
 
@@ -89,6 +88,7 @@ public sealed class GifDecoder : IDisposable {
     private byte[] _prevFrameIndexBuf;
     private byte[] _suffixBuf;
     public List<GifFrame> Frames = new();
+    internal volatile bool HasNewFrame;
 
     public GifDecoder(Stream fileStream) {
         _fileStream = fileStream;

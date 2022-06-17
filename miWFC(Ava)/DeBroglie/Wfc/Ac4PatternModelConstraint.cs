@@ -15,9 +15,22 @@ namespace miWFC.DeBroglie.Wfc;
 internal class Ac4PatternModelConstraint : IPatternModelConstraint {
     private readonly int directionsCount;
 
+    private readonly int indexCount;
+
+    private readonly int patternCount;
+
     // Useful values
     private readonly WavePropagator propagator;
+
+    // From model
+    private readonly int[][][] propagatorArray;
+
+    // Re-organized propagatorArray
+    private readonly BitArray[][] propagatorArrayDense;
     private readonly ITopology topology;
+
+    // List of locations that still need to be checked against for fulfilling the model's conditions
+    private readonly Stack<IndexPatternItem> toPropagate;
 
     /**
      * compatible[index, pattern, direction] contains the number of patterns present in the wave
@@ -26,19 +39,6 @@ internal class Ac4PatternModelConstraint : IPatternModelConstraint {
      * If possibilites[index][pattern] is set to false, then compatible[index, pattern, direction] has every direction negative or null
      */
     private int[,,] compatible;
-
-    private readonly int indexCount;
-
-    private readonly int patternCount;
-
-    // From model
-    private readonly int[][][] propagatorArray;
-
-    // Re-organized propagatorArray
-    private readonly BitArray[][] propagatorArrayDense;
-
-    // List of locations that still need to be checked against for fulfilling the model's conditions
-    private readonly Stack<IndexPatternItem> toPropagate;
 
     public Ac4PatternModelConstraint(WavePropagator propagator, PatternModel model) {
         toPropagate = new Stack<IndexPatternItem>();

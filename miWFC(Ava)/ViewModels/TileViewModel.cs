@@ -6,18 +6,29 @@ using Avalonia.Media.Imaging;
 using miWFC.Managers;
 using ReactiveUI;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+
 namespace miWFC.ViewModels;
 
 public class TileViewModel : ReactiveObject {
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
+
+    private readonly CentralManager? centralManager;
+
+    private bool _flipDisabled,
+        _rotateDisabled,
+        _highlighted,
+        _itemAddChecked,
+        _dynamicWeight,
+        _mayRotate,
+        _mayFlip,
+        _mayTransform;
+
     private double _patternWeight, _changeAmount = 1.0d;
     private string _patternWeightString;
-
-    private bool _flipDisabled, _rotateDisabled, _highlighted, _itemAddChecked, _dynamicWeight, _mayRotate, _mayFlip, _mayTransform;
-    
-    private readonly CentralManager? centralManager;
 
     private double[,] _weightHeatmap = new double[0, 0];
 

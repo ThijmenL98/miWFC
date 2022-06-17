@@ -130,14 +130,14 @@
 										</ScrollViewer>
 
 										<TextBlock Grid.Row="1" Grid.Column="0" Text="Linked item:"
-										           VerticalAlignment="Center" Margin="5" IsVisible="{Binding HasDependentItem}"/>
+										           VerticalAlignment="Center" Margin="5" IsVisible="{Binding HasDependentItem}" />
 
 										<Image Grid.Row="1" Grid.Column="1" Width="51" Height="51" Margin="0"
 										       Source="{Binding DepItemIcon}" IsVisible="{Binding HasDependentItem}"
 										       RenderOptions.BitmapInterpolationMode="Default" />
 
 										<TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding DepItemString}"
-										           VerticalAlignment="Center" Margin="5" IsVisible="{Binding HasDependentItem}"/>
+										           VerticalAlignment="Center" Margin="5" IsVisible="{Binding HasDependentItem}" />
 									</Grid>
 								</DataTemplate>
 

@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
 using miWFC.DeBroglie.Wfc;
 using miWFC.Managers;
 
 namespace miWFC.DeBroglie.Trackers;
 
 public class WeightedRandomPatternPicker {
+    private CentralManager cm;
     private double[] frequencies;
     private Wave wave;
-    private CentralManager cm;
 
     public void Init(WavePropagator wavePropagator, CentralManager _cm) {
         wave = wavePropagator.Wave;

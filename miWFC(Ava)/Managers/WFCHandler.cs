@@ -30,21 +30,27 @@ namespace miWFC.Managers;
 
 public class WFCHandler {
     private static HashSet<Color>? currentColors;
+    private readonly CentralManager centralManager;
+
+    private readonly FixedSizeQueue<Tuple<int, int, int>> fsqAdj = new(10);
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowVM;
-    private readonly CentralManager centralManager;
 
     private bool _isChangingModels, _isChangingImages, inputHasChanged, isBrushing;
     private int amountCollapsed, actionsTaken, tileSize;
-    private double percentageCollapsed;
 
     private WriteableBitmap? currentBitmap;
     private TileModel dbModel;
 
-    public TilePropagator dbPropagator;
+    private TilePropagator dbPropagator;
 
     private WriteableBitmap latestOutput;
+
+    private List<double> originalWeights;
+
+    private Dictionary<int, double> origTileWeights = new();
+    private double percentageCollapsed;
     private Dictionary<int, Tuple<Color[], Tile>> tileCache;
     private ITopoArray<Tile> tiles;
 
@@ -52,8 +58,6 @@ public class WFCHandler {
 
     private List<TileViewModel> toAddPaint;
     private XElement xRoot;
-
-    private List<double> originalWeights;
 
 #pragma warning disable CS8618
     public WFCHandler(CentralManager parent) {
@@ -116,7 +120,7 @@ public class WFCHandler {
      */
 
     public async Task<(WriteableBitmap, bool)> initAndRunWfcDB(bool reset, int steps, bool force = false) {
-        if (isChangingModels() || !mainWindow.IsActive && !force) {
+        if (isChangingModels() || (!mainWindow.IsActive && !force)) {
             return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
                 true);
         }
@@ -177,7 +181,7 @@ public class WFCHandler {
 
             inputHasChanged = false;
         }
-        
+
         mainWindowVM.setLoading(false);
 
         (latestOutput, bool decided) = runWfcDB(steps);
@@ -207,7 +211,7 @@ public class WFCHandler {
         switch (inputImage.ToLower()) {
             case "flowers": {
                 // Set the bottom last 2 rows to be the ground tile
-                dbPropagator.@select(0, outputHeight - 1, 0,
+                dbPropagator.select(0, outputHeight - 1, 0,
                     new Tile(currentColors!.ElementAt(currentColors!.Count - 1)));
                 dbPropagator.select(0, outputHeight - 2, 0,
                     new Tile(currentColors.ElementAt(currentColors.Count - 1)));
@@ -284,8 +288,6 @@ public class WFCHandler {
             }
         }
     }
-
-    private Dictionary<int, double> origTileWeights = new();
 
     private List<TileViewModel> initializeOverlappingModel(string category, string inputImage, int patternSize,
         bool inputPaddingEnabled) {
@@ -538,6 +540,7 @@ public class WFCHandler {
 
                     if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
+                        // ReSharper disable once StringLiteralTypo
                         Trace.WriteLine("\nAYOAYOAYO\n");
 #endif
                         break;
@@ -582,6 +585,7 @@ public class WFCHandler {
 
                     if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
+                        // ReSharper disable once StringLiteralTypo
                         Trace.WriteLine("\nAYOAYOAYO\n");
 #endif
                         break;
@@ -598,8 +602,6 @@ public class WFCHandler {
         mainWindowVM.OutputImage = getLatestOutputBM();
         centralManager.getInputManager().placeMarker(false);
     }
-
-    private readonly FixedSizeQueue<Tuple<int, int, int>> fsqAdj = new(10);
 
     [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     [SuppressMessage("ReSharper", "HeuristicUnreachableCode")]
@@ -908,13 +910,14 @@ public class WFCHandler {
                                 for (int y = 0; y < outputHeight; y++) {
                                     try {
                                         dbPropagator.getWP().InternalBan(x * outputWidth + y, curPattIdx);
-                                    } catch (TargetException e) {
+                                    } catch (TargetException) {
                                         // Accidental double call to this function, pattern is already banned
                                         Trace.WriteLine("Returning, banning already done");
                                         return;
                                     }
                                 }
                             }
+
                             Trace.WriteLine($@"Banning {curPattIdx}");
                         }
 
@@ -1100,7 +1103,6 @@ public class WFCHandler {
     public void resetWeights(bool updateStaticWeight = true, bool force = false) {
         int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
         foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
-            
             double oldWeight = originalWeights[tileViewModel.RawPatternIndex];
             if (updateStaticWeight) {
                 tileViewModel.PatternWeight = oldWeight;

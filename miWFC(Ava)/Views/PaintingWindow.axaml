@@ -96,7 +96,7 @@
 							</Border>
 						</Border>
 					</Popup>
-					
+
 					<Grid ColumnDefinitions="Auto, *, Auto" x:Name="paintingMainGrid">
 						<Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, *" Margin="10"
 						      VerticalAlignment="Top">

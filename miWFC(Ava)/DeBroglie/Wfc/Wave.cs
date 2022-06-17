@@ -21,7 +21,7 @@ public class Wave {
     public Wave(int patternCount, int indices) {
         this.patternCount = patternCount;
 
-        this.Indicies = indices;
+        Indicies = indices;
 
         possibilities = new BitArray(indices * patternCount, true);
 

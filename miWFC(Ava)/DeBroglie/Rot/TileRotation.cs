@@ -23,7 +23,7 @@ public class TileRotation {
         this.rotations = rotations;
         this.treatments = treatments;
         this.defaultTreatment = defaultTreatment;
-        this.RotationGroup = rotationGroup;
+        RotationGroup = rotationGroup;
     }
 
     /// <summary>

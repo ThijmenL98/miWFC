@@ -52,7 +52,7 @@ public partial class InputControl : UserControl {
         inImgCBChangeHandler(o, e, -1);
     }
 
-    public void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e, int newTab) {
+    private void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e, int newTab) {
         if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
             return;
         }
@@ -79,6 +79,7 @@ public partial class InputControl : UserControl {
         }
     }
 
+    // ReSharper disable once UnusedMember.Local
     private void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;

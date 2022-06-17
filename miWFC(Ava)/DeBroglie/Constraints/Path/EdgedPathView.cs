@@ -140,14 +140,14 @@ internal class EdgedPathView : IPathView {
         (int index, Direction? dir) = Unpack(node, GetNodesPerIndex());
         topology.GetCoord(index, out int x, out int y, out int z);
         if (dir == null) {
-            propagator.@select(x, y, z, pathTileSet);
+            propagator.select(x, y, z, pathTileSet);
         } else {
             if (MustBePath[node]) {
                 return;
             }
 
             if (TileSetByExit.TryGetValue((Direction) dir, out TilePropagatorTileSet? exitTiles)) {
-                propagator.@select(x, y, z, exitTiles);
+                propagator.select(x, y, z, exitTiles);
             }
         }
     }

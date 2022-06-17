@@ -127,8 +127,7 @@
 								        Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 
 								<Image Grid.Row="2" Grid.Column="2" Margin="0, 0"
-								       Source="/Assets/plasma.png" Stretch="Fill" HorizontalAlignment="Stretch">
-								</Image>
+								       Source="/Assets/plasma.png" Stretch="Fill" HorizontalAlignment="Stretch" />
 
 								<GridSplitter Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Height="10"
 								              IsEnabled="False" Background="Transparent" />
