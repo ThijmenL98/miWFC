@@ -14,11 +14,15 @@
 		<Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
+		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
+		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
 		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
 		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
+		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
+		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -137,10 +141,57 @@
 								           FontWeight="UltraBold" FontSize="20" Margin="0" Text="Rarely" />
 							</Grid>
 
-							<Grid Grid.Row="5" ColumnDefinitions="Auto, Auto" Margin="5">
-								<Button Grid.Column="0" Padding="0" Background="Transparent"
+							<Grid Grid.Row="5" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" Margin="5">
+								
+								<Button Grid.Row="0" Grid.Column="0" Padding="0" Background="Transparent"
+								        Command="{Binding OnImportWeightMap}"
+								        CommandParameter="M" Margin="5" MaxWidth="70">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverImportKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickImportKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/Import.png" />
+									</Panel>
+									<ToolTip.Tip>
+										<StackPanel>
+											<TextBlock TextWrapping="Wrap">Import an existing weight mapping</TextBlock>
+										</StackPanel>
+									</ToolTip.Tip>
+								</Button>
+								
+								<Button Grid.Row="0" Grid.Column="1" Padding="0" Background="Transparent"
+								        Command="{Binding OnExportWeightMap}"
+								        CommandParameter="M" Margin="5" MaxWidth="70">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverExportKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickExportKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/Export.png" />
+									</Panel>
+									<ToolTip.Tip>
+										<StackPanel>
+											<TextBlock TextWrapping="Wrap">Export the current weight mapping for later use</TextBlock>
+										</StackPanel>
+									</ToolTip.Tip>
+								</Button>
+								
+								<Button Grid.Row="1" Grid.Column="0" Padding="0" Background="Transparent"
 								        Command="{Binding OnCustomizeWindowSwitch}"
-								        CommandParameter="M" Margin="0" MaxWidth="80">
+								        CommandParameter="M" Margin="5" MaxWidth="70">
 									<Button.Styles>
 										<Style Selector="Button:pointerover /template/ ContentPresenter">
 											<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
@@ -161,9 +212,9 @@
 									</ToolTip.Tip>
 								</Button>
 
-								<Button Grid.Column="1" Padding="0" Background="Transparent"
+								<Button Grid.Row="1" Grid.Column="1" Padding="0" Background="Transparent"
 								        Command="{Binding OnInfoClick}"
-								        CommandParameter="H" Margin="0" MaxHeight="60" VerticalAlignment="Bottom">
+								        CommandParameter="H" Margin="5" MaxWidth="70">
 									<Button.Styles>
 										<Style Selector="Button:pointerover /template/ ContentPresenter">
 											<Setter Property="Content" Value="{DynamicResource hoverInfoKey}" />

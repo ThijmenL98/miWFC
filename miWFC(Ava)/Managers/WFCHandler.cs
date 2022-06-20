@@ -239,37 +239,16 @@ public class WFCHandler {
     }
 
     public void updateWeights() {
-        if (isOverlappingModel()) {
-            // double[] userWeights = new double[tileCache.Count];
-            // foreach (TileViewModel tvm in centralManager.getMainWindowVM().PatternTiles) {
-            //     userWeights[tvm.PatternIndex] = tvm.PatternWeight;
-            // }
-            // TODO properly get the toSet from the pattern TVM
-            // foreach ((double weight, int idx) in userWeights.ToList().Select((w, i) => (w, i))) {
-            //     Tile toSet = tiles.toArray2d().Cast<Tile>().ToArray()[idx];
-            //     Trace.WriteLine($@"Pre: {((OverlappingModel) dbModel).getFrequency(toSet)} -> {weight}");
-            //     ((OverlappingModel) dbModel).setFrequency(toSet, weight);
-            //     Trace.WriteLine($@"Post: {((OverlappingModel) dbModel).getFrequency(toSet)}");
-            // }
-        } else {
+        if (!isOverlappingModel()) {
             List<double> userWeights
                 = centralManager.getMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
             foreach (((int parent, int[] symmetries), int idx) in tileSymmetries.Select((pair, idx) => (pair, idx))) {
                 double weight = userWeights[idx];
                 weight = weight == 0 ? 0.00000000001d : weight;
                 ((AdjacentModel) dbModel).setFrequency(tileCache[parent].Item2, weight);
-                if (weight == 0) {
-#if DEBUG
-                    Trace.WriteLine("Zero weight found");
-#endif
-                    dbPropagator.updateZeroWeight(parent);
-                }
 
                 foreach (int symmetryIdx in symmetries) {
                     ((AdjacentModel) dbModel).setFrequency(tileCache[symmetryIdx].Item2, weight);
-                    if (weight == 0) {
-                        dbPropagator.updateZeroWeight(symmetryIdx);
-                    }
                 }
             }
 
@@ -417,12 +396,12 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, cardinality);
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, card: cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
 
-        const int sampleDimension = 50;
+        int sampleDimension = (xRoot.Element("rows")?.Elements("row")!).Count();
         int[][] values = new int[sampleDimension][];
 
         int j = 0;
@@ -912,13 +891,10 @@ public class WFCHandler {
                                         dbPropagator.getWP().InternalBan(x * outputWidth + y, curPattIdx);
                                     } catch (TargetException) {
                                         // Accidental double call to this function, pattern is already banned
-                                        Trace.WriteLine("Returning, banning already done");
                                         return;
                                     }
                                 }
                             }
-
-                            Trace.WriteLine($@"Banning {curPattIdx}");
                         }
 
                         amountToBan--;
@@ -1101,6 +1077,14 @@ public class WFCHandler {
     }
 
     public void resetWeights(bool updateStaticWeight = true, bool force = false) {
+        if (force && isOverlappingModel()) {
+            foreach ((int index, double weightAvg) in origTileWeights) {
+                double percentage = weightAvg / origTileWeights.Values.Sum();
+                toAddPaint[index].PatternWeight = percentage;
+                propagateWeightChange(index, 0d, false);
+            }
+        }
+
         int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
         foreach (TileViewModel tileViewModel in mainWindowVM.PatternTiles) {
             double oldWeight = originalWeights[tileViewModel.RawPatternIndex];
@@ -1110,7 +1094,8 @@ public class WFCHandler {
                 tileViewModel.FlipDisabled = false;
             }
 
-            if (force || tileViewModel.WeightHeatMap.Length == 0 || tileViewModel.WeightHeatMap.Length != xDim * yDim) {
+            if (force || tileViewModel.WeightHeatMap.Length == 0 ||
+                tileViewModel.WeightHeatMap.Length != xDim * yDim) {
                 tileViewModel.WeightHeatMap = new double[xDim, yDim];
 
                 for (int i = 0; i < xDim; i++) {
@@ -1124,7 +1109,7 @@ public class WFCHandler {
         }
     }
 
-    public void propagateWeightChange(int changedIdx, double change) {
+    public void propagateWeightChange(int changedIdx, double change, bool rebalance = true) {
         double totalUnbalanced
             = Math.Round(
                 mainWindowVM.PaintTiles.Where(tileViewModel => tileViewModel.PatternIndex != changedIdx)
@@ -1135,21 +1120,23 @@ public class WFCHandler {
             tiles.toArray2d().Cast<Tile>().Distinct().ToList()[changedIdx],
             mainWindowVM.PaintTiles[changedIdx].PatternWeight / origWeight);
 
-        foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
-            if (tileViewModel.PatternIndex != changedIdx) {
-                origWeight = origTileWeights[tileViewModel.PatternIndex];
-                double ratio = tileViewModel.PatternWeight / totalUnbalanced;
-                ratio = ratio switch {
-                    double.NaN when totalUnbalanced == 0d => 1d / (mainWindowVM.PaintTiles.Count - 1d),
-                    double.NaN => 0d,
-                    _ => ratio
-                };
-                tileViewModel.PatternWeight += ratio * change;
-                tileViewModel.PatternWeight = Math.Max(0d, Math.Min(1d, tileViewModel.PatternWeight));
+        if (rebalance) {
+            foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
+                if (tileViewModel.PatternIndex != changedIdx) {
+                    origWeight = origTileWeights[tileViewModel.PatternIndex];
+                    double ratio = tileViewModel.PatternWeight / totalUnbalanced;
+                    ratio = ratio switch {
+                        double.NaN when totalUnbalanced == 0d => 1d / (mainWindowVM.PaintTiles.Count - 1d),
+                        double.NaN => 0d,
+                        _ => ratio
+                    };
+                    tileViewModel.PatternWeight += ratio * change;
+                    tileViewModel.PatternWeight = Math.Max(0d, Math.Min(1d, tileViewModel.PatternWeight));
 
-                ((OverlappingModel) dbModel).MultiplyFrequency(
-                    tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex],
-                    4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight / origWeight);
+                    ((OverlappingModel) dbModel).MultiplyFrequency(
+                        tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex],
+                        4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight / origWeight);
+                }
             }
         }
     }

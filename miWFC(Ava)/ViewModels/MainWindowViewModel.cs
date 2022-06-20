@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -996,6 +998,88 @@ public class MainWindowViewModel : ViewModelBase {
 
     public void OnMappingReset() {
         centralManager!.getWeightMapWindow().resetCurrentMapping();
+    }
+
+    public async void OnImportWeightMap() {
+        OpenFileDialog ofd = new() {
+            Title = @"Select export location & file name",
+            Filters = new List<FileDialogFilter> {
+                new() {
+                    Extensions = new List<string> {"wMap"},
+                    Name = "Weight Mapping (*.wMap)"
+                }
+            }
+        };
+
+        string[]? ofdResults = await ofd.ShowAsync(new Window());
+        if (ofdResults != null) {
+            if (ofdResults.Length == 0) {
+                return;
+            }
+
+            string mapFile = ofdResults[0];
+
+            MemoryStream ms = new(await File.ReadAllBytesAsync(mapFile));
+            WriteableBitmap inputBitmap = WriteableBitmap.Decode(ms);
+
+            int inputImageWidth = (int) inputBitmap.Size.Width, inputImageHeight = (int) inputBitmap.Size.Height;
+            double[,] mapValues = new double[inputImageWidth, inputImageHeight];
+
+            using ILockedFramebuffer? frameBuffer = inputBitmap.Lock();
+
+            unsafe {
+                uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+                int stride = frameBuffer.RowBytes;
+
+                Parallel.For(0L, ImageOutHeight, y => {
+                    uint* dest = backBuffer + (int) y * stride / 4;
+                    for (int x = 0; x < ImageOutWidth; x++) {
+                        int greyValue = (byte) ((dest[x] >> 16) & 0xFF);
+                        mapValues[x, y] = greyValue;
+                    }
+                });
+            }
+
+            centralManager!.getWeightMapWindow().updateOutput(mapValues);
+            centralManager!.getWeightMapWindow().setCurrentMapping(mapValues);
+        }
+    }
+
+    public async void OnExportWeightMap() {
+        SaveFileDialog sfd = new() {
+            Title = @"Select export location & file name",
+            DefaultExtension = "wMap",
+            Filters = new List<FileDialogFilter> {
+                new() {
+                    Extensions = new List<string> {"wMap"},
+                    Name = "Weight Mapping (*.wMap)"
+                }
+            }
+        };
+
+        string? settingsFileName = await sfd.ShowAsync(new Window());
+        if (settingsFileName != null) {
+            WriteableBitmap toExport = new(new PixelSize(ImageOutWidth, ImageOutHeight), new Vector(96, 96),
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+                AlphaFormat.Unpremul);
+
+            using ILockedFramebuffer? frameBuffer = toExport.Lock();
+
+            unsafe {
+                uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+                int stride = frameBuffer.RowBytes;
+
+                Parallel.For(0L, ImageOutHeight, y => {
+                    uint* dest = backBuffer + (int) y * stride / 4;
+                    for (int x = 0; x < ImageOutWidth; x++) {
+                        int greyValue = (int) centralManager!.getWeightMapWindow().getGradientValue(x, (int) y);
+                        dest[x] = (uint) ((255 << 24) + (greyValue << 16) + (greyValue << 8) + greyValue);
+                    }
+                });
+            }
+
+            toExport.Save(settingsFileName);
+        }
     }
 
     public Tuple<int, int>[,] getLatestItemGrid() {

@@ -18,6 +18,10 @@ public partial class WeightMapWindow : Window {
     private readonly ComboBox _selectedTileCB, _paintingSizeCB;
     private CentralManager? centralManager;
 
+    private int lastPosX = -1, lastPosY = -1;
+
+    private double[,] currentHeatMap = new double[0,0];
+
     public WeightMapWindow() {
         InitializeComponent();
 
@@ -89,6 +93,13 @@ public partial class WeightMapWindow : Window {
             < 1d => interpolate(intermediatePoints[3], intermediatePoints[4], normalizeValue(percentage, 0.75d, 1d)),
             _ => Color.Parse("#0b0781")
         };
+    }
+
+    public double getGradientValue(int x, int y) {
+        if (currentHeatMap.GetLength(0) <= x || currentHeatMap.GetLength(1) <= y) {
+            return 0d;
+        }
+        return currentHeatMap[x, y];
     }
 
     private static double normalizeValue(double value, double fromOld, double toOld) {
@@ -177,8 +188,9 @@ public partial class WeightMapWindow : Window {
             _ => Color.FromArgb(255, (byte) v, (byte) p, (byte) q)
         };
     }
-
-    public void updateOutput(double[,] currentHeatMap) {
+    
+    public void updateOutput(double[,] newCurrentHeatMap) {
+        currentHeatMap = newCurrentHeatMap;
         int outWidth = centralManager!.getMainWindowVM().ImageOutWidth;
         int outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
 
@@ -225,12 +237,30 @@ public partial class WeightMapWindow : Window {
         }
     }
 
+    public void setCurrentMapping(double[,] maskValues) {
+        if (_selectedTileCB.SelectedItem != null) {
+            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
+            selectedTVM.WeightHeatMap = maskValues;
+            
+            HashSet<double> unique = new();
+            HashSet<double> duplicates = new();
+
+            for (int i = 0; i < maskValues.GetLength(0); ++i) {
+                for (int j = 0; j < maskValues.GetLength(1); ++j) {
+                    if (!unique.Add(maskValues[i, j])) {
+                        duplicates.Add(maskValues[i, j]);
+                    }
+                }
+            }
+
+            selectedTVM.DynamicWeight = duplicates.Count > 1;
+        }
+    }
+
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
         // ReSharper disable once IntroduceOptionalParameters.Local
         OutputImageOnPointerMoved(sender, e);
     }
-
-    private int lastPosX = -1, lastPosY = -1;
 
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {

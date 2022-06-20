@@ -41,7 +41,7 @@ public class TileViewModel : ReactiveObject {
         PatternWeight = weight;
         PatternIndex = index;
         PatternRotation = 0;
-        PatternFlipping = -1;
+        PatternFlipping = card > 4 ? -1 : 1;
         RawPatternIndex = rawIndex;
 
         centralManager = cm;

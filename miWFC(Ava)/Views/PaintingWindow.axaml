@@ -125,31 +125,6 @@
 								</ToolTip.Tip>
 							</Button>
 
-							<!-- <Button Padding="0" Background="Transparent" Grid.Row="0" -->
-							<!--         Command="{Binding OnEraseModeClick}" Grid.Column="1" -->
-							<!--         HorizontalAlignment="Center" Margin="10" MaxWidth="110" -->
-							<!--         IsEnabled="{Binding InstantCollapse}"> -->
-							<!-- 	<Button.Styles> -->
-							<!-- 		<Style Selector="Button:pointerover /template/ ContentPresenter"> -->
-							<!-- 			<Setter Property="Content" Value="{DynamicResource hoverEraseKey}" /> -->
-							<!-- 			<Setter Property="Background" Value="Transparent" /> -->
-							<!-- 		</Style> -->
-							<!-- 		<Style Selector="Button:pressed /template/ ContentPresenter"> -->
-							<!-- 			<Setter Property="Content" Value="{DynamicResource clickEraseKey}" /> -->
-							<!-- 			<Setter Property="Background" Value="Transparent" /> -->
-							<!-- 		</Style> -->
-							<!-- 	</Button.Styles> -->
-							<!-- 	<Panel> -->
-							<!-- 		<Image IsVisible="{Binding !EraseModeEnabled}" Source="/Assets/Erase.png" /> -->
-							<!-- 		<Image IsVisible="{Binding EraseModeEnabled}" Source="/Assets/EraseSelected.png" /> -->
-							<!-- 	</Panel> -->
-							<!-- 	<ToolTip.Tip> -->
-							<!-- 	    <StackPanel> -->
-							<!-- 	        <TextBlock>Remove a single pixel from the solution</TextBlock> -->
-							<!-- 	    </StackPanel> -->
-							<!-- 	</ToolTip.Tip> -->
-							<!-- </Button> -->
-
 							<Button Padding="0" Background="Transparent" Grid.Row="1"
 							        Command="{Binding OnPaintKeepModeClick}" Grid.Column="0"
 							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">

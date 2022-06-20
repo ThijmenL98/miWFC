@@ -568,11 +568,4 @@ public class TilePropagator {
     public ITopoArray<ISet<T>> ToValueSets<T>() {
         return TopoArray.CreateByIndex(GetPossibleValues<T>, Topology);
     }
-
-    public void updateZeroWeight(int pattern) {
-        // TODO test why it's not working
-        for (int index = 0; index < tileModelMapping.PatternTopology.IndexCount; index++) {
-            wavePropagator.InternalBan(index, pattern);
-        }
-    }
 }

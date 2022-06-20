@@ -118,7 +118,7 @@
 
 		<Grid Grid.Row="3" RowDefinitions="*" HorizontalAlignment="Center">
 			<Grid ColumnDefinitions="*" VerticalAlignment="Center">
-				<Border Background="#22000000" BoxShadow="0 0 15 0.25 Black" MaxWidth="675" Margin="10">
+				<Border Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10">
 					<Grid>
 						<Image RenderOptions.BitmapInterpolationMode="Default"
 						       x:Name="outputImage" Source="{Binding OutputImage}" />
