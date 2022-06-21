@@ -1045,6 +1045,12 @@ public class MainWindowViewModel : ViewModelBase {
         }
     }
 
+    public void setWeights(double[] weights) {
+        for (int i = 0; i < PaintTiles.Count; i++) {
+            PaintTiles[i].PatternWeight = weights[i];
+        }
+    }
+
     public async void OnExportWeightMap() {
         SaveFileDialog sfd = new() {
             Title = @"Select export location & file name",

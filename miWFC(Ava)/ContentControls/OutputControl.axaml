@@ -120,9 +120,9 @@
 			<Grid ColumnDefinitions="*" VerticalAlignment="Center">
 				<Border Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10">
 					<Grid>
-						<Image RenderOptions.BitmapInterpolationMode="Default"
+						<Image RenderOptions.BitmapInterpolationMode="Default" MaxWidth="738"
 						       x:Name="outputImage" Source="{Binding OutputImage}" />
-						<Image RenderOptions.BitmapInterpolationMode="Default"
+						<Image RenderOptions.BitmapInterpolationMode="Default" MaxWidth="738"
 						       x:Name="itemOverlayImage" Source="{Binding ItemOverlay}" />
 					</Grid>
 				</Border>

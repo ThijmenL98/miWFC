@@ -1109,7 +1109,7 @@ public class WFCHandler {
         }
     }
 
-    public void propagateWeightChange(int changedIdx, double change, bool rebalance = true) {
+    public void propagateWeightChange(int changedIdx, double change, bool rebalance = true, bool force = false) {
         double totalUnbalanced
             = Math.Round(
                 mainWindowVM.PaintTiles.Where(tileViewModel => tileViewModel.PatternIndex != changedIdx)
@@ -1120,6 +1120,10 @@ public class WFCHandler {
             tiles.toArray2d().Cast<Tile>().Distinct().ToList()[changedIdx],
             mainWindowVM.PaintTiles[changedIdx].PatternWeight / origWeight);
 
+        if (force) {
+            mainWindowVM.PaintTiles[changedIdx].PatternWeight = change;
+        }
+        
         if (rebalance) {
             foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
                 if (tileViewModel.PatternIndex != changedIdx) {

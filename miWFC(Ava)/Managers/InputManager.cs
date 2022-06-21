@@ -368,40 +368,65 @@ public class InputManager {
             ObservableCollection<TileViewModel> paintTiles = centralManager.getMainWindowVM().PaintTiles;
 
             if (centralManager.getWFCHandler().isOverlappingModel()) {
-                for (int x = 0; x < imageWidth; x++) {
-                    for (int y = 0; y < imageHeight; y++) {
-                        Color toPaint = colourArray[x][y];
-                        Color foundAtPos = centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x];
+                byte[] input = await File.ReadAllBytesAsync(worldFile);
+                // The image was appended the collapse data and the weights.
+                IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - paintTiles.Count));
+                byte[] inputW = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
 
-                        if (!toPaint.Equals(foundAtPos) && toPaint.A.Equals(255) && foundAtPos.A.Equals(0)) {
-                            int idx = -1;
-                            foreach (TileViewModel tvm in paintTiles.Where(tvm => tvm.PatternColour.Equals(toPaint))) {
-                                idx = tvm.PatternIndex;
-                                break;
-                            }
+                for (int i = 0; i < mainWindowVM.PaintTiles.Count; i++) {
+                    centralManager.getWFCHandler().propagateWeightChange(i, RemapFromByte(inputW[i]), false, true);
+                }
+                
+                restartSolution("Import weights update", true);
+                
+                for (int retry = 0; retry < 3; retry++) {
+                    bool noTransparentEncounter = true;
+                    for (int x = 0; x < imageWidth; x++) {
+                        for (int y = 0; y < imageHeight; y++) {
+                            Color toPaint = colourArray[x][y];
+                            Color foundAtPos = centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x];
 
-                            bool? success = processClick(y, x, imageWidth, imageHeight, idx, true).Result;
+                            if (!toPaint.Equals(foundAtPos) && toPaint.A.Equals(255) && foundAtPos.A.Equals(0)) {
+                                int idx = -1;
+                                foreach (TileViewModel tvm in
+                                         paintTiles.Where(tvm => tvm.PatternColour.Equals(toPaint))) {
+                                    idx = tvm.PatternIndex;
+                                    break;
+                                }
 
-                            if (success != null && !(bool) success) {
+                                bool? success = processClick(y, x, imageWidth, imageHeight, idx, true).Result;
+
+                                if (success != null && !(bool) success) {
+                                    centralManager.getUIManager().dispatchError(mainWindow);
+                                    //TODO Popup telling user input image was not following patterns?
+                                    restartSolution("Imported image failure (pattern)", true);
+                                    return;
+                                }
+                            } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
+                                       !toPaint.Equals(foundAtPos) && retry == 0) {
+                                Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
                                 centralManager.getUIManager().dispatchError(mainWindow);
-                                //TODO Popup telling user input image was not following patterns?
-                                restartSolution("Imported image failure", true);
+                                //TODO Popup telling user input image is illegal?
+                                restartSolution("Imported image failure (illegal)", true);
                                 return;
                             }
-                        } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
-                                   !toPaint.Equals(foundAtPos)) {
-                            Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
-                            centralManager.getUIManager().dispatchError(mainWindow);
-                            //TODO Popup telling user input image is illegal?
-                            restartSolution("Imported image failure", true);
-                            return;
+
+                            noTransparentEncounter = noTransparentEncounter &&
+                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
                         }
+                    }
+
+                    if (noTransparentEncounter) {
+                        break;
                     }
                 }
             } else {
                 byte[] input = await File.ReadAllBytesAsync(worldFile);
-                IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - imageWidth * imageHeight));
-                byte[] inputB = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
+                // The image was appended the collapse data and the weights.
+                IEnumerable<byte> trimmedInputB
+                    = input.Skip(Math.Max(0, input.Length - imageWidth * imageHeight - paintTiles.Count));
+                byte[] inputBUntrimmed = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
+                Split(inputBUntrimmed, imageWidth * imageHeight, out byte[] inputB, out byte[] inputW);
 
                 try {
                     for (int x = 0; x < imageWidth; x++) {
@@ -415,22 +440,25 @@ public class InputManager {
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
                                     //TODO Popup telling user input image was not following patterns?
-                                    restartSolution("Imported image failure", true);
+                                    restartSolution("Imported image failure (pattern)", true);
                                     return;
                                 }
                             } else if (foundAtPos != -1 && toSel != foundAtPos) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image is illegal?
-                                restartSolution("Imported image failure", true);
+                                restartSolution("Imported image failure (illegal)", true);
                                 return;
                             }
                         }
                     }
-                } catch (AggregateException) {
+
+                    centralManager.getMainWindowVM().setWeights(inputW.Select(x => (double) x).ToArray());
+                } catch (AggregateException e) {
                     //TODO pre processing?
                     centralManager.getUIManager().dispatchError(mainWindow);
+                    Trace.WriteLine(e);
                     //TODO Popup telling user input image is mismatching?
-                    restartSolution("Imported image failure", true);
+                    restartSolution("Imported image failure (mismatch)", true);
                     return;
                 }
             }
@@ -463,8 +491,8 @@ public class InputManager {
                     .Save(settingsFileName.Replace(".png", "_worldLayer.png"));
 
                 if (!centralManager.getWFCHandler().isOverlappingModel()) {
-                    AppendAdjacentData(settingsFileName.Replace(".png", "_worldLayer.png"),
-                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d());
+                    await AppendPictureData(settingsFileName.Replace(".png", "_worldLayer.png"),
+                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d(), false);
                 }
 
                 Tuple<int, int>[,] itemsGrid = mainWindowVM.getLatestItemGrid();
@@ -490,8 +518,16 @@ public class InputManager {
                 centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
 
                 if (!centralManager.getWFCHandler().isOverlappingModel()) {
-                    AppendAdjacentData(settingsFileName,
-                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d());
+                    await AppendPictureData(settingsFileName,
+                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d(), true);
+
+                    await AppendPictureData(settingsFileName,
+                        centralManager.getMainWindowVM().PaintTiles.Select(x => (int) x.PatternWeight).ToArray(),
+                        false);
+                } else {
+                    await AppendPictureData(settingsFileName,
+                        centralManager.getMainWindowVM().PaintTiles.Select(x => (int) RemapToByte(x.PatternWeight))
+                            .ToArray(), false);
                 }
             }
         }

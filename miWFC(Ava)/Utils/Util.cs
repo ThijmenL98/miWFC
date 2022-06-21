@@ -379,14 +379,35 @@ public static class Util {
         return result;
     }
 
-    public static async void AppendAdjacentData(string fileName, int[,] appendData) {
-        byte[] data = await File.ReadAllBytesAsync(fileName);
-
+    public static async Task AppendPictureData(string fileName, int[,] appendData, bool mapData) {
         int[] output1D = new int[appendData.Length];
         Buffer.BlockCopy(appendData, 0, output1D, 0, appendData.Length * 4);
+        await AppendPictureData(fileName, output1D, mapData);
+    }
 
-        data = output1D.Aggregate(data, (current, val) => Append(current, (byte) (val + 2)));
-
+    public static async Task AppendPictureData(string fileName, IEnumerable<int> appendData, bool mapData) {
+        byte[] data = await File.ReadAllBytesAsync(fileName);
+        data = appendData.Aggregate(data, (current, val) => Append(current, (byte) (val + (mapData ? 2 : 0))));
         await File.WriteAllBytesAsync(fileName, data);
+    }
+
+    public static void Split<T>(T[] source, int index, out T[] first, out T[] last) {
+        int len2 = source.Length - index;
+        first = new T[index];
+        last = new T[len2];
+        Array.Copy(source, 0, first, 0, index);
+        Array.Copy(source, index, last, 0, len2);
+    }
+    
+    public static double RemapToByte(double value) {
+        return Remap(value, 0d, 1d, 0d, 255d);
+    }
+    
+    public static double RemapFromByte(double value) {
+        return Remap(value, 0d, 255d, 0d, 1d);
+    }
+    
+    private static double Remap(this double value, double from1, double to1, double from2, double to2) {
+        return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
     }
 }
