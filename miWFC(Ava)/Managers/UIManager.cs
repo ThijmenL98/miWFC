@@ -101,14 +101,11 @@ public class UIManager {
             case "M":
                 mainWindowVM.MainInfoPopupVisible = true;
                 break;
-            case "I":
-                //TODO mainWindowVM.ItemsInfoPopupVisible = true;
-                break;
             case "P":
                 mainWindowVM.PaintInfoPopupVisible = true;
                 break;
             case "H":
-                //TODO mainWindowVM.HeatmapInfoPopupVisible = true;
+                mainWindowVM.HeatmapInfoPopupVisible = true;
                 break;
         }
     }
@@ -116,13 +113,11 @@ public class UIManager {
     public void hidePopUp() {
         mainWindowVM.MainInfoPopupVisible = false;
         mainWindowVM.PaintInfoPopupVisible = false;
-        mainWindowVM.ItemsInfoPopupVisible = false;
         mainWindowVM.HeatmapInfoPopupVisible = false;
     }
 
     public bool popUpOpened() {
-        return mainWindowVM.MainInfoPopupVisible || mainWindowVM.ItemsInfoPopupVisible ||
-               mainWindowVM.PaintInfoPopupVisible || mainWindowVM.HeatmapInfoPopupVisible;
+        return mainWindowVM.MainInfoPopupVisible || mainWindowVM.PaintInfoPopupVisible || mainWindowVM.HeatmapInfoPopupVisible;
     }
 
     public void resetPatterns() {
@@ -229,9 +224,7 @@ public class UIManager {
                 // Goto main
                 source = centralManager.getPaintingWindow().IsVisible
                     ? centralManager.getPaintingWindow()
-                    : centralManager.getItemWindow().IsVisible
-                        ? centralManager.getItemWindow()
-                        : centralManager.getWeightMapWindow();
+                    : centralManager.getWeightMapWindow();
 
                 bool stillApply = await handlePaintingClose(checkClicked);
 
@@ -244,10 +237,6 @@ public class UIManager {
                 // Goto paint
                 mainWindowVM.PencilModeEnabled = true;
                 target = centralManager.getPaintingWindow();
-                break;
-            case Windows.ITEMS:
-                // Goto items
-                target = centralManager.getItemWindow();
                 break;
             case Windows.HEATMAP:
                 // Goto Items
@@ -262,21 +251,20 @@ public class UIManager {
             target.Height = source.Height;
         }
 
-        if (!Equals(target, centralManager.getItemWindow()) && !Equals(source, centralManager.getItemWindow())) {
-            ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
+        ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
 
-            mainWindowVM.Markers.Clear();
-            foreach (MarkerViewModel mvm in mvmListCopy) {
-                double offset = (centralManager.getMainWindow().IsVisible
-                        ? mainWindow.getOutputControl().getTimelineWidth()
-                        : centralManager.getPaintingWindow().getTimelineWidth()) *
-                    mvm.MarkerCollapsePercentage + 1;
-                mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
-                    offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
-            }
-
-            updateTimeStampPosition(centralManager.getWFCHandler().getPercentageCollapsed());
+        mainWindowVM.Markers.Clear();
+        foreach (MarkerViewModel mvm in mvmListCopy) {
+            double offset = (centralManager.getMainWindow().IsVisible
+                    ? mainWindow.getOutputControl().getTimelineWidth()
+                    : centralManager.getPaintingWindow().getTimelineWidth()) *
+                mvm.MarkerCollapsePercentage + 1;
+            mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
+                offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
         }
+
+        updateTimeStampPosition(centralManager.getWFCHandler().getPercentageCollapsed());
+
 
         source.Hide();
         target.Show();
@@ -326,6 +314,5 @@ public class UIManager {
 public enum Windows {
     MAIN,
     PAINTING,
-    ITEMS,
     HEATMAP
 }

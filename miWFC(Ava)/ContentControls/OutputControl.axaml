@@ -44,7 +44,7 @@
 				</Panel>
 				<ToolTip.Tip>
 					<StackPanel>
-						<TextBlock TextWrapping="Wrap">Import previously created output, potentially including items. Partially complete output is allowed</TextBlock>
+						<TextBlock TextWrapping="Wrap">Import previously created output. Partially complete output is allowed</TextBlock>
 					</StackPanel>
 				</ToolTip.Tip>
 			</Button>
@@ -122,8 +122,6 @@
 					<Grid>
 						<Image RenderOptions.BitmapInterpolationMode="Default" MaxWidth="738"
 						       x:Name="outputImage" Source="{Binding OutputImage}" />
-						<Image RenderOptions.BitmapInterpolationMode="Default" MaxWidth="738"
-						       x:Name="itemOverlayImage" Source="{Binding ItemOverlay}" />
 					</Grid>
 				</Border>
 			</Grid>
@@ -410,37 +408,6 @@
 						</StackPanel>
 					</ToolTip.Tip>
 				</Button>
-
-				<Border Padding="0" Background="Transparent" Grid.Row="2"
-				        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
-					<Button Padding="0" Background="Transparent" Command="{Binding OnCustomizeWindowSwitch}"
-					        CommandParameter="I" IsEnabled="{Binding ItemEditorEnabled}"
-					        Margin="0">
-						<Button.Styles>
-							<Style Selector="Button:disabled /template/ ContentPresenter">
-								<Setter Property="Opacity" Value="160" />
-								<Setter Property="Background" Value="Transparent" />
-							</Style>
-							<Style Selector="Button:pointerover /template/ ContentPresenter">
-								<Setter Property="Content" Value="{DynamicResource hoverItemsEditorKey}" />
-								<Setter Property="Background" Value="Transparent" />
-							</Style>
-							<Style Selector="Button:pressed /template/ ContentPresenter">
-								<Setter Property="Content" Value="{DynamicResource clickItemsEditorKey}" />
-								<Setter Property="Background" Value="Transparent" />
-							</Style>
-						</Button.Styles>
-						<Panel>
-							<Image Source="/Assets/ItemsEditor.png" />
-						</Panel>
-					</Button>
-					<ToolTip.Tip>
-						<StackPanel>
-							<TextBlock TextWrapping="Wrap">Switch to the items customization editor</TextBlock>
-							<TextBlock TextWrapping="Wrap">Only available for the "Worlds Top-Down" category and if the output is fully generated</TextBlock>
-						</StackPanel>
-					</ToolTip.Tip>
-				</Border>
 
 				<GridSplitter Grid.Row="3" IsEnabled="False" Background="Transparent" />
 			</Grid>

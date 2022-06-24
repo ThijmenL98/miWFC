@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using miWFC.DeBroglie.Wfc;
 
@@ -11,7 +12,7 @@ internal static class RandomPickerUtils {
         double[] restb = new double[frequencies.Length];
         int[] randomPatterns = new int[frequencies.Length];
         for (int pattern = 0; pattern < patternCount; pattern++) {
-            if (wave.Get(index, pattern)) {
+            if (wave.Get(index, pattern) && frequencies[pattern] > 0d) {
                 s += frequencies[pattern];
                 restb[pattern] = frequencies[pattern];
             }

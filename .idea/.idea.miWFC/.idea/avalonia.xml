@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="miWFC(Ava)/App.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/AdvancedPatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/InputControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/ItemAddMenu.axaml" value="miWFC(Ava)/miWFC.csproj" />

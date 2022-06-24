@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
@@ -313,8 +314,7 @@ public class OverlappingModel : TileModel {
             ITopoArray<bool> patternMask = TopoArray.CreateByPoint(getPatternTopologyMask, patternTopology);
             patternTopology = patternTopology.WithMask(patternMask);
         }
-
-
+        
         return new TileModelMapping {
             PatternModel = patternModel,
             PatternsToTilesByOffset = patternsToTilesByOffset,
@@ -338,6 +338,15 @@ public class OverlappingModel : TileModel {
                 }
             }
         }
+    }
+
+    public void togglePattern(int pattern, bool enable) {
+        if (enable) {
+            frequencies[pattern] = originalFrequencies[pattern];
+        } else {
+            frequencies[pattern] = 0d;
+        }
+        Trace.WriteLine(string.Join(", ", frequencies));
     }
 
     public List<double> getFrequency(Tile tile) {

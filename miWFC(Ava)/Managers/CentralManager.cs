@@ -5,7 +5,6 @@ namespace miWFC.Managers;
 
 public class CentralManager {
     private readonly InputManager inputManager;
-    private readonly ItemWindow itemWindow;
 
     private readonly MainWindow mainWindow;
 
@@ -15,11 +14,10 @@ public class CentralManager {
     private readonly WeightMapWindow weightMapWindow;
     private readonly WFCHandler wfcHandler;
 
-    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,
+    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW,
         WeightMapWindow wMW) {
         mainWindow = mW;
         paintingWindow = pW;
-        itemWindow = iW;
         weightMapWindow = wMW;
 
         mainWindowViewModel = mWVM;
@@ -47,10 +45,6 @@ public class CentralManager {
 
     public PaintingWindow getPaintingWindow() {
         return paintingWindow;
-    }
-
-    public ItemWindow getItemWindow() {
-        return itemWindow;
     }
 
     public MainWindowViewModel getMainWindowVM() {

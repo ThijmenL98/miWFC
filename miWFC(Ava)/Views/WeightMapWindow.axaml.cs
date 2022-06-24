@@ -53,6 +53,26 @@ public partial class WeightMapWindow : Window {
 
         // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (e.Key) {
+            case Key.E:
+                centralManager.getMainWindowVM().OnExportWeightMap();
+                e.Handled = true;
+                break;
+            case Key.I:
+                centralManager.getMainWindowVM().OnImportWeightMap();
+                e.Handled = true;
+                break;
+            case Key.R:
+                centralManager.getMainWindowVM().OnMappingReset();
+                e.Handled = true;
+                break;
+            case Key.Back:
+            case Key.Escape:
+                if (centralManager.getUIManager().popUpOpened()) {
+                    centralManager.getUIManager().hidePopUp();
+                }
+
+                e.Handled = true;
+                break;
             default:
                 base.OnKeyDown(e);
                 break;

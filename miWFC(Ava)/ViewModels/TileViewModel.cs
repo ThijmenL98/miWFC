@@ -21,7 +21,6 @@ public class TileViewModel : ReactiveObject {
     private bool _flipDisabled,
         _rotateDisabled,
         _highlighted,
-        _itemAddChecked,
         _dynamicWeight,
         _mayRotate,
         _mayFlip,
@@ -157,11 +156,6 @@ public class TileViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _highlighted, value);
     }
 
-    public bool ItemAddChecked {
-        get => _itemAddChecked;
-        set => this.RaiseAndSetIfChanged(ref _itemAddChecked, value);
-    }
-
     public bool MayRotate {
         get => _mayRotate;
         set {
@@ -269,7 +263,7 @@ public class TileViewModel : ReactiveObject {
             centralManager!.getWFCHandler().propagateWeightChange(PatternIndex, change);
         }
 
-        if (!DynamicWeight) {
+        if (!DynamicWeight && !isOverlapping) {
             int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
                 yDim = centralManager!.getMainWindowVM().ImageOutHeight;
             _weightHeatmap = new double[xDim, yDim];
@@ -305,9 +299,5 @@ public class TileViewModel : ReactiveObject {
         FlipDisabled = !FlipDisabled;
         centralManager!.getInputManager().restartSolution("Flip toggle", true);
         centralManager!.getWFCHandler().updateTransformations();
-    }
-
-    public void OnCheckChange() {
-        centralManager!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
     }
 }

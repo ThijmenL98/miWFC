@@ -29,7 +29,6 @@
 		<Image Source="/Assets/ModeHover.png" x:Key="hoverModeKey" x:Name="hoverMode" />
 		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
 		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
-		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
 		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
 		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
 
@@ -46,7 +45,6 @@
 		<Image Source="/Assets/ModeClick.png" x:Key="clickModeKey" x:Name="clickMode" />
 		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
 		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
-		<Image Source="/Assets/ItemsEditorClick.png" x:Key="clickItemsEditorKey" x:Name="clickItemsEditor" />
 		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
 		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
 	</Window.Resources>
@@ -190,8 +188,8 @@
 										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
 
 										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
-										        Command="{Binding OnWeightReset}"
-										        IsVisible="{Binding AdvancedEnabled}" Background="Transparent">
+										        Command="{Binding OnWeightReset}" Background="Transparent"
+										        IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" >
 											<Button.Styles>
 												<Style Selector="Button:pointerover /template/ ContentPresenter">
 													<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -227,11 +225,11 @@
 										</Button>
 									</Grid>
 
-									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
-									        CornerRadius="15"
-									        IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}">
-										<contentControls:AdvancedPatternItemControl DataContext="{Binding VM}" />
-									</Border>
+									<!-- <Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10" -->
+									<!--         CornerRadius="15" -->
+									<!--         IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}"> -->
+									<!-- 	<contentControls:AdvancedPatternItemControl DataContext="{Binding VM}" /> -->
+									<!-- </Border> -->
 
 									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">

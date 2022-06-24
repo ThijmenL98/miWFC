@@ -376,9 +376,9 @@ public class InputManager {
                 for (int i = 0; i < mainWindowVM.PaintTiles.Count; i++) {
                     centralManager.getWFCHandler().propagateWeightChange(i, RemapFromByte(inputW[i]), false, true);
                 }
-                
+
                 restartSolution("Import weights update", true);
-                
+
                 for (int retry = 0; retry < 3; retry++) {
                     bool noTransparentEncounter = true;
                     for (int x = 0; x < imageWidth; x++) {
@@ -412,7 +412,8 @@ public class InputManager {
                             }
 
                             noTransparentEncounter = noTransparentEncounter &&
-                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
+                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[
+                                                         y, x].A.Equals(255);
                         }
                     }
 
@@ -482,53 +483,19 @@ public class InputManager {
 
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
-            bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
-                            && centralManager.getWFCHandler().isCollapsed()
-                            && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
+            centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
 
-            if (hasItems) {
-                centralManager.getWFCHandler().getLatestOutputBM(false)
-                    .Save(settingsFileName.Replace(".png", "_worldLayer.png"));
+            if (!centralManager.getWFCHandler().isOverlappingModel()) {
+                await AppendPictureData(settingsFileName,
+                    centralManager.getWFCHandler().getPropagatorOutputA().toArray2d(), true);
 
-                if (!centralManager.getWFCHandler().isOverlappingModel()) {
-                    await AppendPictureData(settingsFileName.Replace(".png", "_worldLayer.png"),
-                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d(), false);
-                }
-
-                Tuple<int, int>[,] itemsGrid = mainWindowVM.getLatestItemGrid();
-                List<Tuple<int, int>> list = new();
-                for (int i = 0; i < itemsGrid.GetLength(0); i++) {
-                    for (int j = 0; j < itemsGrid.GetLength(1); j++) {
-                        list.Add(itemsGrid[i, j]);
-                    }
-                }
-
-                if (list.Distinct().Count() > 1 ||
-                    (!list.Distinct().Select(x => x.Item1).Contains(-1) && list.Distinct().Any())) {
-                    generateRawItemImage(itemsGrid).Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
-                    combineBitmaps(centralManager.getWFCHandler().getLatestOutput(),
-                            centralManager.getWFCHandler().isOverlappingModel()
-                                ? 1
-                                : centralManager.getWFCHandler().getTileSize(),
-                            getLatestItemBitMap(), getDimension(), mainWindowVM.ImageOutWidth,
-                            mainWindowVM.ImageOutHeight)
-                        .Save(settingsFileName.Replace(".png", ".jpg"));
-                }
+                await AppendPictureData(settingsFileName,
+                    centralManager.getMainWindowVM().PaintTiles.Select(x => (int) x.PatternWeight).ToArray(),
+                    false);
             } else {
-                centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
-
-                if (!centralManager.getWFCHandler().isOverlappingModel()) {
-                    await AppendPictureData(settingsFileName,
-                        centralManager.getWFCHandler().getPropagatorOutputA().toArray2d(), true);
-
-                    await AppendPictureData(settingsFileName,
-                        centralManager.getMainWindowVM().PaintTiles.Select(x => (int) x.PatternWeight).ToArray(),
-                        false);
-                } else {
-                    await AppendPictureData(settingsFileName,
-                        centralManager.getMainWindowVM().PaintTiles.Select(x => (int) RemapToByte(x.PatternWeight))
-                            .ToArray(), false);
-                }
+                await AppendPictureData(settingsFileName,
+                    centralManager.getMainWindowVM().PaintTiles.Select(x => (int) RemapToByte(x.PatternWeight))
+                        .ToArray(), false);
             }
         }
     }

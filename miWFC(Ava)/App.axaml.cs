@@ -25,19 +25,15 @@ public class App : Application {
             PaintingWindow pW = new() {
                 DataContext = mWVM
             };
-            ItemWindow iW = new() {
-                DataContext = mWVM
-            };
             WeightMapWindow wMW = new() {
                 DataContext = mWVM
             };
             desktop.MainWindow = mW;
 
-            CentralManager cm = new(mWVM, mW, pW, iW, wMW);
+            CentralManager cm = new(mWVM, mW, pW, wMW);
 
             mW.setCentralManager(cm);
             pW.setCentralManager(cm);
-            iW.setCentralManager(cm);
             wMW.setCentralManager(cm);
             mWVM.setCentralManager(cm);
 

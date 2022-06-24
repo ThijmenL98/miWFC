@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -135,9 +136,7 @@ public class WFCHandler {
         if (reset) {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
-            mainWindowVM.resetDataGrid();
-            centralManager.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
             if (inputHasChanged) {
@@ -163,7 +162,6 @@ public class WFCHandler {
 
             int curSeed = Environment.TickCount;
             Random rand = new(curSeed);
-            mainWindowVM.setR(rand);
 
             await Task.Run(() => {
                 createPropagator(outputWidth, outputHeight, seamlessOutput, rand);
@@ -396,7 +394,8 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, card: cardinality);
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager,
+                card: cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
@@ -454,8 +453,6 @@ public class WFCHandler {
             actionsTaken--;
         }
 
-        centralManager.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         return getLatestOutputBM();
     }
 
@@ -1046,9 +1043,6 @@ public class WFCHandler {
         bool isC = (dbPropagator != null && dbPropagator.Status == Resolution.DECIDED) ||
                    Math.Abs(getPercentageCollapsed() - 1d) < 0.0001d;
 
-        centralManager.getMainWindowVM().ItemEditorEnabled
-            = centralManager.getMainWindow().getInputControl().getCategory().Equals("Worlds Top-Down") && isC;
-
         return isC;
     }
 
@@ -1109,7 +1103,7 @@ public class WFCHandler {
         }
     }
 
-    public void propagateWeightChange(int changedIdx, double change, bool rebalance = true, bool force = false) {
+    public void propagateWeightChange(int changedIdx, double change, bool reBalance = true, bool force = false) {
         double totalUnbalanced
             = Math.Round(
                 mainWindowVM.PaintTiles.Where(tileViewModel => tileViewModel.PatternIndex != changedIdx)
@@ -1123,8 +1117,8 @@ public class WFCHandler {
         if (force) {
             mainWindowVM.PaintTiles[changedIdx].PatternWeight = change;
         }
-        
-        if (rebalance) {
+
+        if (reBalance) {
             foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
                 if (tileViewModel.PatternIndex != changedIdx) {
                     origWeight = origTileWeights[tileViewModel.PatternIndex];
@@ -1140,6 +1134,22 @@ public class WFCHandler {
                     ((OverlappingModel) dbModel).MultiplyFrequency(
                         tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex],
                         4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight / origWeight);
+                }
+            }
+        }
+    }
+
+    public void togglePattern(int pattern, bool enable) {
+        // ((OverlappingModel) dbModel).togglePattern(pattern, enable);
+        if (!enable) {
+            int outputWidth = mainWindowVM.ImageOutWidth - mainWindowVM.PatternSize + 1, outputHeight = mainWindowVM.ImageOutHeight - mainWindowVM.PatternSize + 1;
+            for (int x = 0; x < outputWidth; x++) {
+                for (int y = 0; y < outputHeight; y++) {
+                    try {
+                        dbPropagator.getWP().InternalBan(x * outputWidth + y, pattern);
+                    } catch (TargetException) { } catch (Exception e) {
+                        Trace.WriteLine(e);
+                    }
                 }
             }
         }
