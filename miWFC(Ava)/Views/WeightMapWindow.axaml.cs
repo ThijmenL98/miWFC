@@ -215,8 +215,7 @@ public partial class WeightMapWindow : Window {
         int outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
 
         WriteableBitmap outputBitmap = new(new PixelSize(outWidth, outHeight), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
+            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
         using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
 
