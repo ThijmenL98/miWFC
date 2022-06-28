@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -490,19 +489,19 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager.getMainWindow().getInputControl().inImgCBChangeHandler(null, null);
     }
 
-    public void OnPaddingToggle() {
+    public async void OnPaddingToggle() {
         if (IsPlaying) {
             OnAnimate();
         }
 
         SeamlessOutput = !SeamlessOutput;
-        centralManager!.getInputManager().restartSolution("Padding Toggle Change");
+        await centralManager!.getInputManager().restartSolution("Padding Toggle Change");
     }
 
-    public void OnInputWrappingChanged() {
+    public async void OnInputWrappingChanged() {
         InputWrapping = !InputWrapping;
         centralManager!.getWFCHandler().setInputChanged("Input Wrapping Change");
-        centralManager!.getInputManager().restartSolution("Input Wrapping Change");
+        await centralManager!.getInputManager().restartSolution("Input Wrapping Change");
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
@@ -511,7 +510,7 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getInputManager().animate();
     }
 
-    public void OnRestart() {
+    public async void OnRestart() {
         if (IsPlaying) {
             OnAnimate();
         }
@@ -519,7 +518,7 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().resetWeights(false);
         centralManager!.getWFCHandler().updateWeights();
 
-        centralManager!.getInputManager().restartSolution("Restart UI call");
+        await centralManager!.getInputManager().restartSolution("Restart UI call");
     }
 
     public void OnWeightReset() {

@@ -52,7 +52,7 @@ public partial class InputControl : UserControl {
         inImgCBChangeHandler(o, e, -1);
     }
 
-    private void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e, int newTab) {
+    private async void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e, int newTab) {
         if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
             return;
         }
@@ -71,7 +71,7 @@ public partial class InputControl : UserControl {
 
         centralManager.getWFCHandler().setImageChanging(false);
         if (newTab > 1 || newTab == -1) {
-            centralManager.getInputManager().restartSolution("Image CB Handler", true);
+            await centralManager.getInputManager().restartSolution("Image CB Handler", true);
         }
 
         if (e != null) {
@@ -80,7 +80,7 @@ public partial class InputControl : UserControl {
     }
 
     // ReSharper disable once UnusedMember.Local
-    private void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {
+    private async void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
         }
@@ -88,7 +88,7 @@ public partial class InputControl : UserControl {
         centralManager.getWFCHandler().setInputChanged("Pattern Size CB");
         e.Handled = true;
         if (centralManager.getMainWindowVM().SelectedTabIndex > 1) {
-            centralManager.getInputManager().restartSolution("Pattern CB Handler");
+            await centralManager.getInputManager().restartSolution("Pattern CB Handler");
         }
     }
 

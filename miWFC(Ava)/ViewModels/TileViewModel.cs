@@ -49,7 +49,7 @@ public class TileViewModel : ReactiveObject {
         RawPatternIndex = rawIndex;
 
         cardin = card;
-        
+
         centralManager = cm;
 
         MayFlip = card > 4;
@@ -334,15 +334,15 @@ public class TileViewModel : ReactiveObject {
         centralManager!.getWeightMapWindow().updateOutput(_weightHeatmap);
     }
 
-    public void OnRotateClick() {
+    public async void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
-        centralManager!.getInputManager().restartSolution("Rotate toggle", true);
+        await centralManager!.getInputManager().restartSolution("Rotate toggle", true);
         centralManager!.getWFCHandler().updateTransformations();
     }
 
-    public void OnFlipClick() {
+    public async void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
-        centralManager!.getInputManager().restartSolution("Flip toggle", true);
+        await centralManager!.getInputManager().restartSolution("Flip toggle", true);
         centralManager!.getWFCHandler().updateTransformations();
     }
 
@@ -355,27 +355,27 @@ public class TileViewModel : ReactiveObject {
         centralManager!.getWFCHandler().setPatternDisabled(PatternDisabled, RawPatternIndex);
     }
 
-    public void OnRotateUserRepresentation() {
+    public async void OnRotateUserRepresentation() {
         UserRotation += 90;
-        
+
         if (cardin == 2) {
             UserRotation %= 180;
         } else {
             UserRotation %= 360;
         }
 
-        centralManager!.getInputManager().restartSolution("User rotate change", true);
+        await centralManager!.getInputManager().restartSolution("User rotate change", true);
         centralManager!.getWFCHandler().updateTransformations();
     }
 
-    public void OnFlipUserRepresentation() {
+    public async void OnFlipUserRepresentation() {
         if (UserFlipping == 1) {
             UserFlipping = -1;
         } else {
             UserFlipping = 1;
         }
 
-        centralManager!.getInputManager().restartSolution("User flip change", true);
+        await centralManager!.getInputManager().restartSolution("User flip change", true);
         centralManager!.getWFCHandler().updateTransformations();
     }
 }

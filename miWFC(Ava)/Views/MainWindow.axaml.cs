@@ -101,7 +101,7 @@ public partial class MainWindow : Window {
                 e.Handled = true;
                 break;
             case Key.R:
-                centralManager.getInputManager().restartSolution("Keydown Restart");
+                await centralManager.getInputManager().restartSolution("Keydown Restart");
                 e.Handled = true;
                 break;
             case Key.P:
@@ -131,12 +131,12 @@ public partial class MainWindow : Window {
         }
     } // ReSharper disable twice UnusedParameter.Local
 
-    private void WindowBase_OnActivated(object? sender, EventArgs e) {
+    private async void WindowBase_OnActivated(object? sender, EventArgs e) {
         if (triggered) {
             return;
         }
 
-        centralManager!.getInputManager().restartSolution("Window activation", true);
+        await centralManager!.getInputManager().restartSolution("Window activation", true);
         triggered = true;
     }
 

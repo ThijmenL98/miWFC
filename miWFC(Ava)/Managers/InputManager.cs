@@ -57,8 +57,9 @@ public class InputManager {
 
         (int[] patternSizeDataSource, int i) = getImagePatternDimensions(inputImageDataSource[0]);
         mainWindow.getInputControl().setPatternSizes(patternSizeDataSource, i);
-
+#pragma warning disable CS4014
         restartSolution("Constructor");
+#pragma warning restore CS4014
         centralManager.getUIManager().updateInstantCollapse(1);
 
         lastPaintedAmountCollapsed = 0;
@@ -68,7 +69,7 @@ public class InputManager {
      * Functionality
      */
 
-    public async void restartSolution(string source, bool force = false, bool keepOutput = false) {
+    public async Task restartSolution(string source, bool force = false, bool keepOutput = false) {
         Trace.WriteLine(@$"Restarting -> {source}");
         if (centralManager.getWFCHandler().isChangingModels() || centralManager.getWFCHandler().isChangingImages()) {
             return;
@@ -124,7 +125,7 @@ public class InputManager {
             bool weightReset = false;
             if (!mainWindowVM.IsRunning) {
                 centralManager.getWFCHandler().updateWeights();
-                restartSolution("Advance step");
+                await restartSolution("Advance step");
                 weightReset = true;
             }
 
@@ -349,7 +350,7 @@ public class InputManager {
             mainWindowVM.ImageOutHeight = imageHeight;
             mainWindowVM.StepAmount = 1;
 
-            restartSolution("Imported image", true);
+            await restartSolution("Imported image", true);
             (Color[][] colourArray, HashSet<Color> allowedColours) = imageToColourArray(inputBitmap);
 
             if (centralManager.getWFCHandler().isOverlappingModel()) {
@@ -368,12 +369,7 @@ public class InputManager {
             ObservableCollection<TileViewModel> paintTiles = centralManager.getMainWindowVM().PaintTiles;
 
             if (centralManager.getWFCHandler().isOverlappingModel()) {
-                byte[] input = await File.ReadAllBytesAsync(worldFile);
-                // The image was appended the collapse data and the weights.
-                IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - paintTiles.Count));
-                byte[] inputW = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
-                
-                restartSolution("Import weights update", true);
+                await restartSolution("Import weights update", true);
                 
                 for (int retry = 0; retry < 3; retry++) {
                     bool noTransparentEncounter = true;
@@ -395,14 +391,14 @@ public class InputManager {
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
                                     //TODO Popup telling user input image was not following patterns?
-                                    restartSolution("Imported image failure (pattern)", true);
+                                    await restartSolution("Imported image failure (pattern)", true);
                                     return;
                                 }
                             } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
                                        !toPaint.Equals(foundAtPos) && retry == 0) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image is illegal?
-                                restartSolution("Imported image failure (illegal)", true);
+                                await restartSolution("Imported image failure (illegal)", true);
                                 return;
                             }
 
@@ -430,18 +426,18 @@ public class InputManager {
                             int foundAtPos = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[x, y];
 
                             if (toSel != foundAtPos && foundAtPos == -1 && toSel != -1) {
-                                bool? success = processClick(x, y, imageWidth, imageHeight, toSel).Result;
+                                bool? success = processClick(x, y, imageWidth, imageHeight, toSel, true).Result;
 
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
                                     //TODO Popup telling user input image was not following patterns?
-                                    restartSolution("Imported image failure (pattern)", true);
+                                    await restartSolution("Imported image failure (pattern)", true);
                                     return;
                                 }
                             } else if (foundAtPos != -1 && toSel != foundAtPos) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image is illegal?
-                                restartSolution("Imported image failure (illegal)", true);
+                                await restartSolution("Imported image failure (illegal)", true);
                                 return;
                             }
                         }
@@ -453,12 +449,12 @@ public class InputManager {
                     centralManager.getUIManager().dispatchError(mainWindow);
                     Trace.WriteLine(e);
                     //TODO Popup telling user input image is mismatching?
-                    restartSolution("Imported image failure (mismatch)", true);
+                    await restartSolution("Imported image failure (mismatch)", true);
                     return;
                 }
             }
 
-            centralManager.getWFCHandler().getLatestOutputBM();
+            mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
             placeMarker(false, true);
         }
     }
@@ -528,7 +524,7 @@ public class InputManager {
         }
     }
 
-    public void animate() {
+    public async void animate() {
         if (centralManager.getWFCHandler().isCollapsed()) {
             mainWindowVM.IsPlaying = false;
             centralManager.getUIManager().dispatchError(mainWindow);
@@ -538,12 +534,12 @@ public class InputManager {
         (double currentWidth, double currentHeight) = centralManager.getWFCHandler().getPropagatorSize();
         if (mainWindowVM.ImageOutWidth != (int) currentWidth ||
             mainWindowVM.ImageOutHeight != (int) currentHeight) {
-            restartSolution("Animate");
+            await restartSolution("Animate");
         }
 
         if (!mainWindowVM.IsRunning && mainWindowVM.IsPlaying) {
             centralManager.getWFCHandler().updateWeights();
-            restartSolution("Animate");
+            await restartSolution("Animate");
         }
 
         bool startAnimation = mainWindowVM.IsPlaying;
