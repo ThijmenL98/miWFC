@@ -20,6 +20,7 @@
 		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
+		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
@@ -32,6 +33,7 @@
 		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
 		<Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
 		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
+		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
 	</Window.Resources>
 
 	<Window.Styles>

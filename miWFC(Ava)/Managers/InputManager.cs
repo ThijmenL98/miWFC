@@ -306,7 +306,7 @@ public class InputManager {
         }
     }
 
-    public async void importSolution() {
+ public async void importSolution() {
         OpenFileDialog ofd = new() {
             Title = @"Select png solution to import",
             Filters = new List<FileDialogFilter> {
@@ -372,13 +372,9 @@ public class InputManager {
                 // The image was appended the collapse data and the weights.
                 IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - paintTiles.Count));
                 byte[] inputW = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
-
-                for (int i = 0; i < mainWindowVM.PaintTiles.Count; i++) {
-                    centralManager.getWFCHandler().propagateWeightChange(i, RemapFromByte(inputW[i]), false, true);
-                }
-
+                
                 restartSolution("Import weights update", true);
-
+                
                 for (int retry = 0; retry < 3; retry++) {
                     bool noTransparentEncounter = true;
                     for (int x = 0; x < imageWidth; x++) {
@@ -404,7 +400,6 @@ public class InputManager {
                                 }
                             } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
                                        !toPaint.Equals(foundAtPos) && retry == 0) {
-                                Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image is illegal?
                                 restartSolution("Imported image failure (illegal)", true);
@@ -412,8 +407,7 @@ public class InputManager {
                             }
 
                             noTransparentEncounter = noTransparentEncounter &&
-                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[
-                                                         y, x].A.Equals(255);
+                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
                         }
                     }
 
@@ -468,6 +462,7 @@ public class InputManager {
             placeMarker(false, true);
         }
     }
+
 
     public async void exportSolution() {
         SaveFileDialog sfd = new() {

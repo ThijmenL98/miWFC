@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
 using miWFC.Managers;
@@ -416,6 +417,7 @@ public class WavePropagator {
             // Also add the possibility back
             // as it is removed in InternalBan
             Wave.AddPossibility(index, pattern);
+
             // Update trackers
             foreach (ITracker tracker in trackers) {
                 tracker.UndoBan(index, pattern);
@@ -443,13 +445,23 @@ public class WavePropagator {
     }
 
     /**
-         * Rpeatedly step until the status is Decided or Contradiction
-         */
+     * Repeatedly step until the status is Decided or Contradiction
+     */
     public Resolution Run() {
+        Stopwatch sw = new();
+        sw.Restart();
+
+        int averageSize = (int) ((outWidth + outHeight) / 2d);
+        int allowedTime = (int) (1.4d * (averageSize * averageSize) - 12.1d * averageSize + 98.3d);
+
         while (true) {
             Step();
             if (Status != Resolution.UNDECIDED) {
                 return Status;
+            }
+
+            if (sw.ElapsedMilliseconds > allowedTime) {
+                return Resolution.TIMEOUT;
             }
         }
     }

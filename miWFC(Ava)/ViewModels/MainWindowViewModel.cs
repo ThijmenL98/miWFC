@@ -535,7 +535,7 @@ public class MainWindowViewModel : ViewModelBase {
         IsLoading = value || centralManager!.getWFCHandler().IsBrushing();
         centralManager?.getMainWindow().InvalidateVisual();
     }
-
+    
     public void OnMappingReset() {
         centralManager!.getWeightMapWindow().resetCurrentMapping();
     }

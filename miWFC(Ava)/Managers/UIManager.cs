@@ -216,7 +216,9 @@ public class UIManager {
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
 
+#if DEBUG
         Trace.WriteLine(@$"We want to switch to {window}");
+#endif
         Window target = mainWindow, source = mainWindow;
 
         switch (window) {
