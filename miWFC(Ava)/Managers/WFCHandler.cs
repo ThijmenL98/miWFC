@@ -127,12 +127,12 @@ public class WFCHandler {
             return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
                 true);
         }
-
+        
         mainWindowVM.setLoading(true);
 
         if (dbPropagator is {Status: Resolution.DECIDED} && !reset) {
             updateWeights();
-            centralManager.getInputManager().restartSolution("Force Reset Decided");
+            await centralManager.getInputManager().restartSolution("Force Reset Decided");
         }
 
         if (reset) {
@@ -465,6 +465,10 @@ public class WFCHandler {
             for (int i = 0; i < steps; i++) {
                 for (int retry = 0; retry < 10; retry++) {
                     dbStatus = dbPropagator.step();
+
+                    if (dbStatus.Equals(Resolution.DECIDED) || dbStatus.Equals(Resolution.UNDECIDED)) {
+                        retry = 10;
+                    }
                 }
 
                 actionsTaken++;
@@ -519,7 +523,7 @@ public class WFCHandler {
                 }
             });
 
-            centralManager.getInputManager().restartSolution("Paint Brush", true);
+            await centralManager.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
 
             await Task.Delay(1000);
@@ -573,7 +577,7 @@ public class WFCHandler {
                 }
             });
 
-            centralManager.getInputManager().restartSolution("Paint Brush", true);
+            await centralManager.getInputManager().restartSolution("Paint Brush", true);
             int oldInputDictSize = newInputDict.Count;
             await Task.Delay(1);
 
@@ -702,7 +706,7 @@ public class WFCHandler {
                     }
                 }
 
-                centralManager.getInputManager().restartSolution("Override click", true, true);
+                await centralManager.getInputManager().restartSolution("Override click", true, true);
                 await Task.Delay(10);
 
                 IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
@@ -830,7 +834,7 @@ public class WFCHandler {
                     }
                 }
 
-                centralManager.getInputManager().restartSolution("Override click", true, true);
+                await centralManager.getInputManager().restartSolution("Override click", true, true);
                 await Task.Delay(1);
 
                 fsqAdj.Enqueue(new Tuple<int, int, int>(a, b, toSet));
@@ -961,7 +965,7 @@ public class WFCHandler {
 
                         break;
                 }
-                
+
                 foreach (TileViewModel tvmPatt in mainWindowVM.PaintTiles.Reverse()) {
                     if (toBan.Contains(tvmPatt.PatternIndex)) {
                         int curPattIdx = getDescrambledIndex(tvmPatt.PatternIndex);
@@ -1265,7 +1269,7 @@ public class WFCHandler {
         return newWeights;
     }
 
-    public void setPatternDisabled(bool disabled, int patternIndex) {
+    public async void setPatternDisabled(bool disabled, int patternIndex) {
         List<Color> colorsL = new();
         PatternArray patternArray = originalPatterns[patternIndex];
 
@@ -1287,7 +1291,7 @@ public class WFCHandler {
         }
 
         if (centralManager.getMainWindowVM().IsRunning) {
-            centralManager.getInputManager().restartSolution("patterns");
+            await centralManager.getInputManager().restartSolution("patterns");
         }
     }
 }
