@@ -26,7 +26,6 @@
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 		<Image Source="/Assets/PauseHover.png" x:Key="hoverPauseKey" x:Name="hoverPause" />
 		<Image Source="/Assets/CustomizeHover.png" x:Key="hoverCustomizeKey" x:Name="hoverCustomize" />
-		<Image Source="/Assets/ModeHover.png" x:Key="hoverModeKey" x:Name="hoverMode" />
 		<Image Source="/Assets/RotateHover.png" x:Key="hoverRotateKey" x:Name="hoverRotate" />
 		<Image Source="/Assets/FlipHover.png" x:Key="hoverFlipKey" x:Name="hoverFlip" />
 		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
@@ -43,7 +42,6 @@
 		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
 		<Image Source="/Assets/PauseClick.png" x:Key="clickPauseKey" x:Name="clickPause" />
 		<Image Source="/Assets/CustomizeClick.png" x:Key="clickCustomizeKey" x:Name="clickCustomize" />
-		<Image Source="/Assets/ModeClick.png" x:Key="clickModeKey" x:Name="clickMode" />
 		<Image Source="/Assets/RotateClick.png" x:Key="clickRotateKey" x:Name="clickRotate" />
 		<Image Source="/Assets/FlipClick.png" x:Key="clickFlipKey" x:Name="clickFlip" />
 		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
