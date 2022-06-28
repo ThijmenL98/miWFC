@@ -475,7 +475,6 @@ public class WFCHandler {
             }
         }
 
-
         return (getLatestOutputBM(), dbStatus == Resolution.DECIDED);
     }
 
