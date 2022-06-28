@@ -32,6 +32,7 @@
 		<Image Source="/Assets/ItemsEditorHover.png" x:Key="hoverItemsEditorKey" x:Name="hoverItemsEditor" />
 		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
 		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
+		<Image Source="/Assets/RotateSingleHover.png" x:Key="hoverRotationSingleKey" x:Name="hoverRotationSingle" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
@@ -49,6 +50,7 @@
 		<Image Source="/Assets/ItemsEditorClick.png" x:Key="clickItemsEditorKey" x:Name="clickItemsEditor" />
 		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
 		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
+		<Image Source="/Assets/RotateSingleClick.png" x:Key="clickRotationSingleKey" x:Name="clickRotationSingle" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -189,9 +191,13 @@
 										           Text="Click on the tile value to edit dynamic value mapping." TextWrapping="Wrap"
 										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
 
+										<TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 0, 5"
+										           Text="Click on the pattern to disable it." TextWrapping="Wrap"
+										           IsVisible="{ReflectionBinding OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
+
 										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
 										        Command="{Binding OnWeightReset}"
-										        IsVisible="{Binding AdvancedEnabled}" Background="Transparent">
+										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
 											<Button.Styles>
 												<Style Selector="Button:pointerover /template/ ContentPresenter">
 													<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -226,12 +232,6 @@
 											</ToolTip.Tip>
 										</Button>
 									</Grid>
-
-									<Border Grid.Row="1" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
-									        CornerRadius="15"
-									        IsVisible="{ReflectionBinding OverlappingAdvancedEnabledIW, TargetNullValue=False, FallbackValue=False}">
-										<contentControls:AdvancedPatternItemControl DataContext="{Binding VM}" />
-									</Border>
 
 									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">

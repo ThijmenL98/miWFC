@@ -15,20 +15,29 @@
 
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<Border Padding="1" Margin="7, 7, 7,7">
+					<Border Padding="1" Margin="7, 7, 7,7" >
 						<Grid>
 							<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-							<Border Padding="5"
-							        CornerRadius="10"
+							<Border Padding="5, 5, -5, -1" Width="190" Background="#11000000"
+							        CornerRadius="10" HorizontalAlignment="Left"
 							        IsVisible="{ReflectionBinding #advancedPatternItemControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
 								<!-- ReSharper disable Xaml.BindingWithContextNotResolved -->
-								<Grid RowDefinitions="*, *" ColumnDefinitions="*, *, Auto">
+								<Grid RowDefinitions="*, *" ColumnDefinitions="Auto, Auto, Auto">
 									<Border Width="50" Height="50" Grid.Row="0"
 									        BoxShadow="0 0 15 0.25 Black"
 									        Background="Gray" Margin="10, 5, 15, 5">
 										<Image Width="50" Height="50"
 										       Source="{Binding PatternImage}"
-										       RenderOptions.BitmapInterpolationMode="Default" />
+										       RenderOptions.BitmapInterpolationMode="Default">
+											<Image.RenderTransform>
+												<TransformGroup>
+													<RotateTransform
+														Angle="{Binding Path=FinalRotation, TargetNullValue=0, FallbackValue=0}" />
+													<ScaleTransform
+														ScaleX="{Binding Path=FinalFlipping, TargetNullValue=1, FallbackValue=1}" />
+												</TransformGroup>
+											</Image.RenderTransform>
+										</Image>
 									</Border>
 									<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
 									<Grid Grid.Column="0" Grid.Row="1" RowDefinitions="*, *"
@@ -163,37 +172,91 @@
 										</RepeatButton>
 									</Grid>
 
-									<StackPanel Grid.Row="0" Grid.Column="2"
+									<Grid Grid.Row="0" Grid.Column="2" ColumnDefinitions="*, *" RowDefinitions="*, *"
+									      Margin="0, 10, -5, 0"
 									            IsEnabled="{Binding !#advancedPatternItemControl.DataContext.IsRunning}"
-									            HorizontalAlignment="Center" VerticalAlignment="Center" Width="30">
-										<Button MaxHeight="32" Padding="0" IsVisible="{Binding MayRotate}"
+									            HorizontalAlignment="Center" VerticalAlignment="Center" >
+										<Button Grid.Row="0" Grid.Column="0" MaxHeight="32" Padding="0" IsVisible="{Binding MayRotate}"
 										        Background="Transparent" Margin="1" Command="{Binding OnRotateClick}">
+												<Button.Styles>
+													<Style Selector="Button:disabled /template/ ContentPresenter">
+														<Setter Property="Opacity" Value="160" />
+														<Setter Property="Background" Value="Transparent" />
+													</Style>
+													<Style Selector="Button:pointerover /template/ ContentPresenter">
+														<Setter Property="Content" Value="{DynamicResource hoverRotateKey}" />
+														<Setter Property="Background" Value="Transparent" />
+													</Style>
+													<Style Selector="Button:pressed /template/ ContentPresenter">
+														<Setter Property="Content" Value="{DynamicResource clickRotateKey}" />
+														<Setter Property="Background" Value="Transparent" />
+													</Style>
+												</Button.Styles>
+												<Panel>
+													<Image Source="/Assets/RotateEnabled.png" IsVisible="{Binding !RotateDisabled}" />
+													<Image Source="/Assets/RotateDisabled.png" IsVisible="{Binding RotateDisabled}" />
+												</Panel>
+												<ToolTip.Tip>
+													<StackPanel>
+														<TextBlock TextWrapping="Wrap">Toggle whether this tile may rotate. Disabled means the tile is invariant to rotations.</TextBlock>
+													</StackPanel>
+												</ToolTip.Tip>
+											</Button>
+											<Button Grid.Row="1" Grid.Column="0" MaxHeight="32" Padding="0" IsVisible="{Binding MayFlip}"
+											        Background="Transparent" Margin="1" Command="{Binding OnFlipClick}">
+												<Button.Styles>
+													<Style Selector="Button:disabled /template/ ContentPresenter">
+														<Setter Property="Opacity" Value="160" />
+														<Setter Property="Background" Value="Transparent" />
+													</Style>
+													<Style Selector="Button:pointerover /template/ ContentPresenter">
+														<Setter Property="Content" Value="{DynamicResource hoverFlipKey}" />
+														<Setter Property="Background" Value="Transparent" />
+													</Style>
+													<Style Selector="Button:pressed /template/ ContentPresenter">
+														<Setter Property="Content" Value="{DynamicResource clickFlipKey}" />
+														<Setter Property="Background" Value="Transparent" />
+													</Style>
+												</Button.Styles>
+												<Panel>
+													<Image Source="/Assets/FlipEnabled.png" IsVisible="{Binding !FlipDisabled}" />
+													<Image Source="/Assets/FlipDisabled.png" IsVisible="{Binding FlipDisabled}" />
+												</Panel>
+												<ToolTip.Tip>
+													<StackPanel>
+														<TextBlock TextWrapping="Wrap">Toggle whether this tile may flip. Disabled means the tile is invariant to flipping.</TextBlock>
+													</StackPanel>
+												</ToolTip.Tip>
+											</Button>
+										<Button Grid.Row="0" Grid.Column="1" MaxHeight="32" Padding="0" IsEnabled="{Binding RotateDisabled}"
+										        IsVisible="{Binding MayRotate}" Margin="1"
+										        Background="Transparent" Command="{Binding OnRotateUserRepresentation}">
 											<Button.Styles>
 												<Style Selector="Button:disabled /template/ ContentPresenter">
 													<Setter Property="Opacity" Value="160" />
 													<Setter Property="Background" Value="Transparent" />
 												</Style>
 												<Style Selector="Button:pointerover /template/ ContentPresenter">
-													<Setter Property="Content" Value="{DynamicResource hoverRotateKey}" />
+													<Setter Property="Content" Value="{DynamicResource hoverRotationSingleKey}" />
 													<Setter Property="Background" Value="Transparent" />
 												</Style>
 												<Style Selector="Button:pressed /template/ ContentPresenter">
-													<Setter Property="Content" Value="{DynamicResource clickRotateKey}" />
+													<Setter Property="Content" Value="{DynamicResource clickRotationSingleKey}" />
 													<Setter Property="Background" Value="Transparent" />
 												</Style>
 											</Button.Styles>
 											<Panel>
-												<Image Source="/Assets/RotateEnabled.png" IsVisible="{Binding !RotateDisabled}" />
-												<Image Source="/Assets/RotateDisabled.png" IsVisible="{Binding RotateDisabled}" />
+												<Image Source="/Assets/RotateSingle.png" />
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Toggle whether this tile may rotate. Disabled means the tile is invariant to rotations.</TextBlock>
+													<TextBlock TextWrapping="Wrap">Rotate the output rotation when rotations aren't allowed</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>
-										<Button MaxHeight="32" Padding="0" IsVisible="{Binding MayFlip}"
-										        Background="Transparent" Margin="1" Command="{Binding OnFlipClick}">
+										<Button Grid.Row="1" Grid.Column="1" MaxHeight="32" Padding="0" IsEnabled="{Binding FlipDisabled}"
+										        IsVisible="{Binding MayFlip}" Margin="1"
+										        Background="Transparent" Command="{Binding OnFlipUserRepresentation}">
 											<Button.Styles>
 												<Style Selector="Button:disabled /template/ ContentPresenter">
 													<Setter Property="Opacity" Value="160" />
@@ -209,16 +272,15 @@
 												</Style>
 											</Button.Styles>
 											<Panel>
-												<Image Source="/Assets/FlipEnabled.png" IsVisible="{Binding !FlipDisabled}" />
-												<Image Source="/Assets/FlipDisabled.png" IsVisible="{Binding FlipDisabled}" />
+												<Image Source="/Assets/Flip.png" />
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Toggle whether this tile may flip. Disabled means the tile is invariant to flipping.</TextBlock>
+													<TextBlock TextWrapping="Wrap">Flip the output flipping when flipping isn't allowed</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>
-									</StackPanel>
+									</Grid>
 								</Grid>
 							</Border>
 
@@ -227,9 +289,17 @@
 							        BoxShadow="0 0 15 0.25 Black"
 							        IsVisible="{ReflectionBinding !#advancedPatternItemControl.DataContext.SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}"
 							        Background="Gray">
-								<Image Width="50" Height="50"
-								       Source="{Binding PatternImage}"
-								       RenderOptions.BitmapInterpolationMode="Default" />
+								<Grid>
+									<Image Width="50" Height="50"
+									       Source="{Binding PatternImage}"
+									       RenderOptions.BitmapInterpolationMode="Default" />
+									<Button Width="50" Height="50" Command="{Binding TogglePatternAppearance}" Background="Transparent"
+									        IsVisible="{ReflectionBinding #advancedPatternItemControl.DataContext.OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
+									</Button>
+									<Image Width="40" Height="40" IsVisible="{Binding PatternDisabled}"
+									       HorizontalAlignment="Center" VerticalAlignment="Center"
+									       Source="/Assets/Cross.png" IsHitTestVisible="False" Opacity="0.9" />
+								</Grid>
 							</Border>
 						</Grid>
 					</Border>

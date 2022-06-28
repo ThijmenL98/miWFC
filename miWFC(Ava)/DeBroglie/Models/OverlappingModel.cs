@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Avalonia.Media;
 using miWFC.DeBroglie.Rot;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Wfc;
@@ -12,21 +14,20 @@ namespace miWFC.DeBroglie.Models;
 ///     sample.
 /// </summary>
 public class OverlappingModel : TileModel {
-    private readonly List<double> frequencies;
-    private readonly List<PatternArray> patternArrays;
+    public List<double> frequencies;
+    public List<PatternArray> patternArrays;
 
-    private readonly Dictionary<PatternArray, int> patternIndices;
-    private List<double> originalFrequencies;
+    private Dictionary<PatternArray, int> patternIndices;
+    public List<double> originalFrequencies;
 
     private IReadOnlyDictionary<int, Tile> patternsToTiles;
     private List<int[][]> propagator;
     private DirectionSet sampleTopologyDirections;
     private ILookup<Tile, int> tilesToPatterns;
 
-
     public OverlappingModel(ITopoArray<Tile> sample, int n, int rotationalSymmetry, bool reflectionalSymmetry)
         : this(n) {
-        addSample(sample, new TileRotation(rotationalSymmetry, reflectionalSymmetry));
+        addSample(sample, new List<Color[]>(), new TileRotation(rotationalSymmetry, reflectionalSymmetry));
     }
 
     /// <summary>
@@ -63,8 +64,8 @@ public class OverlappingModel : TileModel {
         return new OverlappingModel(topArray, n, symmetries > 1 ? symmetries / 2 : 1, symmetries > 1);
     }
 
-    public Tuple<List<PatternArray>, List<double>>
-        addSample(ITopoArray<Tile> sample, TileRotation tileRotation = null) {
+    public Tuple<List<PatternArray>, List<double>> addSample(ITopoArray<Tile> sample,
+        List<Color[]> disabledPatterns, TileRotation tileRotation = null) {
         if (sample.Topology.Depth == 1) {
             NZ = 1;
         }
@@ -76,10 +77,11 @@ public class OverlappingModel : TileModel {
         bool periodicZ = topology.PeriodicZ;
 
         foreach (ITopoArray<Tile> s in OverlappingAnalysis.GetRotatedSamples(sample, tileRotation)) {
+            
             OverlappingAnalysis.GetPatterns(s, NX, NY, NZ, periodicX, periodicY, periodicZ, patternIndices,
-                patternArrays, frequencies);
+                patternArrays, frequencies, disabledPatterns);
         }
-
+        
         originalFrequencies = new List<double>(frequencies);
 
         sampleTopologyDirections = topology.Directions;

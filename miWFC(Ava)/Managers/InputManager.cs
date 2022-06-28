@@ -372,10 +372,6 @@ public class InputManager {
                 // The image was appended the collapse data and the weights.
                 IEnumerable<byte> trimmedInputB = input.Skip(Math.Max(0, input.Length - paintTiles.Count));
                 byte[] inputW = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
-
-                for (int i = 0; i < mainWindowVM.PaintTiles.Count; i++) {
-                    centralManager.getWFCHandler().propagateWeightChange(i, RemapFromByte(inputW[i]), false, true);
-                }
                 
                 restartSolution("Import weights update", true);
                 
@@ -404,7 +400,6 @@ public class InputManager {
                                 }
                             } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
                                        !toPaint.Equals(foundAtPos) && retry == 0) {
-                                Trace.WriteLine($@"OUT Error mate -> {toPaint} @ {foundAtPos}");
                                 centralManager.getUIManager().dispatchError(mainWindow);
                                 //TODO Popup telling user input image is illegal?
                                 restartSolution("Imported image failure (illegal)", true);

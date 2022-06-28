@@ -92,6 +92,10 @@ public partial class MainWindow : Window {
                 centralManager.getInputManager().exportSolution();
                 e.Handled = true;
                 break;
+            case Key.I:
+                centralManager.getInputManager().importSolution();
+                e.Handled = true;
+                break;
             case Key.L:
                 centralManager.getInputManager().loadMarker();
                 e.Handled = true;
@@ -102,10 +106,6 @@ public partial class MainWindow : Window {
                 break;
             case Key.P:
                 await centralManager.getUIManager().switchWindow(Windows.PAINTING);
-                e.Handled = true;
-                break;
-            case Key.I:
-                await centralManager.getUIManager().switchWindow(Windows.ITEMS);
                 e.Handled = true;
                 break;
             case Key.Escape:

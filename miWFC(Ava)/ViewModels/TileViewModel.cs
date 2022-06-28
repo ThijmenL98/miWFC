@@ -15,6 +15,7 @@ public class TileViewModel : ReactiveObject {
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
+    private int _userRotation, _finalRotation, _userFlipping = 1, _finalFlipping = 1;
 
     private readonly CentralManager? centralManager;
 
@@ -25,12 +26,15 @@ public class TileViewModel : ReactiveObject {
         _dynamicWeight,
         _mayRotate,
         _mayFlip,
-        _mayTransform;
+        _mayTransform,
+        _patternDisabled;
 
     private double _patternWeight, _changeAmount = 1.0d;
     private string _patternWeightString;
 
     private double[,] _weightHeatmap = new double[0, 0];
+
+    private readonly int cardin = -1;
 
     /*
      * Used for input patterns
@@ -44,6 +48,8 @@ public class TileViewModel : ReactiveObject {
         PatternFlipping = card > 4 ? -1 : 1;
         RawPatternIndex = rawIndex;
 
+        cardin = card;
+        
         centralManager = cm;
 
         MayFlip = card > 4;
@@ -132,19 +138,55 @@ public class TileViewModel : ReactiveObject {
         private init => this.RaiseAndSetIfChanged(ref _patternColour, value);
     }
 
+    public int FinalRotation {
+        get => _finalRotation;
+        set => this.RaiseAndSetIfChanged(ref _finalRotation, value);
+    }
+
+    public int FinalFlipping {
+        get => _finalFlipping;
+        set => this.RaiseAndSetIfChanged(ref _finalFlipping, value);
+    }
+
+    public int UserRotation {
+        get => _userRotation;
+        set {
+            this.RaiseAndSetIfChanged(ref _userRotation, value);
+            FinalRotation = _userRotation + _patternRotation;
+        }
+    }
+
+    public int UserFlipping {
+        get => _userFlipping;
+        set {
+            this.RaiseAndSetIfChanged(ref _userFlipping, value);
+            FinalFlipping = _userFlipping * _patternFlipping;
+        }
+    }
+
     public int PatternRotation {
         get => _patternRotation + 90;
-        private init => this.RaiseAndSetIfChanged(ref _patternRotation, value);
+        private init {
+            this.RaiseAndSetIfChanged(ref _patternRotation, value);
+            FinalRotation = _userRotation + _patternRotation;
+        }
     }
 
     public int PatternFlipping {
         get => _patternFlipping;
-        private init => this.RaiseAndSetIfChanged(ref _patternFlipping, value);
+        private init {
+            this.RaiseAndSetIfChanged(ref _patternFlipping, value);
+            FinalFlipping = _userFlipping * _patternFlipping;
+        }
     }
 
     public bool RotateDisabled {
         get => _rotateDisabled;
-        set => this.RaiseAndSetIfChanged(ref _rotateDisabled, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _rotateDisabled, value);
+            UserRotation = 0;
+            FinalRotation = _userRotation + _patternRotation;
+        }
     }
 
     public bool FlipDisabled {
@@ -181,6 +223,11 @@ public class TileViewModel : ReactiveObject {
     public bool MayTransform {
         get => _mayTransform;
         set => this.RaiseAndSetIfChanged(ref _mayTransform, value);
+    }
+
+    public bool PatternDisabled {
+        get => _patternDisabled;
+        set => this.RaiseAndSetIfChanged(ref _patternDisabled, value);
     }
 
     public bool DynamicWeight {
@@ -248,26 +295,19 @@ public class TileViewModel : ReactiveObject {
     }
 
     private void handleWeightChange(bool increment) {
-        bool isOverlapping = centralManager != null && centralManager!.getWFCHandler().isOverlappingModel();
-        double oldWeight = PatternWeight;
         switch (increment) {
             case false when !(PatternWeight > 0):
                 return;
             case true:
-                PatternWeight += isOverlapping ? ChangeAmount / 100d : ChangeAmount;
+                PatternWeight += ChangeAmount;
                 break;
             default:
-                PatternWeight -= isOverlapping ? ChangeAmount / 100d : ChangeAmount;
+                PatternWeight -= ChangeAmount;
                 PatternWeight = Math.Max(0, PatternWeight);
                 break;
         }
 
-        PatternWeight = isOverlapping ? Math.Min(1d, PatternWeight) : Math.Min(Math.Round(PatternWeight, 1), 250d);
-        double change = oldWeight - PatternWeight;
-
-        if (isOverlapping && change != 0d) {
-            centralManager!.getWFCHandler().propagateWeightChange(PatternIndex, change);
-        }
+        PatternWeight = Math.Min(Math.Round(PatternWeight, 1), 250d);
 
         if (!DynamicWeight) {
             int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
@@ -298,7 +338,6 @@ public class TileViewModel : ReactiveObject {
         RotateDisabled = !RotateDisabled;
         centralManager!.getInputManager().restartSolution("Rotate toggle", true);
         centralManager!.getWFCHandler().updateTransformations();
-        Trace.WriteLine("We have banned rotations");
     }
 
     public void OnFlipClick() {
@@ -309,5 +348,34 @@ public class TileViewModel : ReactiveObject {
 
     public void OnCheckChange() {
         centralManager!.getItemWindow().getItemAddMenu().forwardCheckChange(PatternIndex, ItemAddChecked);
+    }
+
+    public void TogglePatternAppearance() {
+        PatternDisabled = !PatternDisabled;
+        centralManager!.getWFCHandler().setPatternDisabled(PatternDisabled, RawPatternIndex);
+    }
+
+    public void OnRotateUserRepresentation() {
+        UserRotation += 90;
+        
+        if (cardin == 2) {
+            UserRotation %= 180;
+        } else {
+            UserRotation %= 360;
+        }
+
+        centralManager!.getInputManager().restartSolution("User rotate change", true);
+        centralManager!.getWFCHandler().updateTransformations();
+    }
+
+    public void OnFlipUserRepresentation() {
+        if (UserFlipping == 1) {
+            UserFlipping = -1;
+        } else {
+            UserFlipping = 1;
+        }
+
+        centralManager!.getInputManager().restartSolution("User flip change", true);
+        centralManager!.getWFCHandler().updateTransformations();
     }
 }

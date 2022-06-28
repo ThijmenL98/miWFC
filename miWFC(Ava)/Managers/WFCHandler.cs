@@ -48,6 +48,9 @@ public class WFCHandler {
     private WriteableBitmap latestOutput;
 
     private List<double> originalWeights;
+    private List<PatternArray> originalPatterns;
+
+    private readonly List<Color[]> disabledPatterns = new();
 
     private Dictionary<int, double> origTileWeights = new();
     private double percentageCollapsed;
@@ -140,22 +143,33 @@ public class WFCHandler {
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
-            if (inputHasChanged) {
-                initializeLocalValues();
+            switch (inputHasChanged) {
+                case true: {
+                    initializeLocalValues();
 
-                List<TileViewModel>? toAdd = null;
-                int overlappingDimension = mainWindow.getInputControl().getPatternSize();
+                    List<TileViewModel>? toAdd = null;
+                    int overlappingDimension = mainWindow.getInputControl().getPatternSize();
 
-                await Task.Run(() => {
-                    toAdd = isOverlappingModel()
-                        ? initializeOverlappingModel(category, inputImage, overlappingDimension,
-                            inputWrappingEnabled)
-                        : initializeAdjacentModel(inputImage);
-                });
+                    await Task.Run(() => {
+                        toAdd = isOverlappingModel()
+                            ? initializeOverlappingModel(category, inputImage, overlappingDimension,
+                                inputWrappingEnabled)
+                            : initializeAdjacentModel(inputImage);
+                    });
 
-                mainWindowVM.PatternTiles = new ObservableCollection<TileViewModel>(toAdd!);
+                    mainWindowVM.PatternTiles = new ObservableCollection<TileViewModel>(toAdd!);
 
-                centralManager.getPaintingWindow().setPaintingPatterns(toAddPaint.ToArray());
+                    centralManager.getPaintingWindow().setPaintingPatterns(toAddPaint.ToArray());
+                    break;
+                }
+                case false when isOverlappingModel(): {
+                    int overlappingDimension = mainWindow.getInputControl().getPatternSize();
+                    await Task.Run(() => {
+                        dbModel = new OverlappingModel(overlappingDimension);
+                        setOverlappingSample(category, inputImage);
+                    });
+                    break;
+                }
             }
 
             int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
@@ -213,8 +227,6 @@ public class WFCHandler {
                 // Set the bottom last 2 rows to be the ground tile
                 dbPropagator.select(0, outputHeight - 1, 0,
                     new Tile(currentColors!.ElementAt(currentColors!.Count - 1)));
-                dbPropagator.select(0, outputHeight - 2, 0,
-                    new Tile(currentColors.ElementAt(currentColors.Count - 1)));
 
                 // And ban it elsewhere
                 for (int y = 0; y < outputHeight - 2; y++) {
@@ -277,13 +289,8 @@ public class WFCHandler {
         tiles = dbSample.toTiles();
 
         dbModel = new OverlappingModel(patternSize);
-        bool hasRotations = (category.Equals("Worlds Top-Down")
-                             || category.Equals("Knots") || category.Equals("Knots") ||
-                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
-        (List<PatternArray>? patternList, List<double>? patternWeights)
-            = ((OverlappingModel) dbModel).addSample(tiles,
-                new TileRotation(hasRotations ? 4 : 1, false));
+        (List<PatternArray> patternList, List<double> patternWeights) = setOverlappingSample(category, inputImage);
 
         originalWeights = patternWeights;
 
@@ -325,8 +332,22 @@ public class WFCHandler {
             toAddPaint[index].PatternWeight = percentage;
         }
 
+        originalPatterns = ((OverlappingModel) dbModel).patternArrays;
 
         return toAdd;
+    }
+
+    private (List<PatternArray> patternList, List<double> patternWeights) setOverlappingSample(string category,
+        string inputImage) {
+        bool hasRotations = (category.Equals("Worlds Top-Down")
+                             || category.Equals("Knots") || category.Equals("Knots") ||
+                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+
+        (List<PatternArray>? patternList, List<double>? patternWeights)
+            = ((OverlappingModel) dbModel).addSample(tiles, disabledPatterns,
+                new TileRotation(hasRotations ? 4 : 1, true));
+
+        return (patternList, patternWeights);
     }
 
     private List<TileViewModel> initializeAdjacentModel(string inputImage) {
@@ -396,7 +417,8 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager, card: cardinality);
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager,
+                card: cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
@@ -436,13 +458,22 @@ public class WFCHandler {
         }
 
         if (steps == -1) {
-            dbStatus = dbPropagator.run();
+            for (int retry = 0; retry < 10; retry++) {
+                dbStatus = dbPropagator.run();
+                if (dbStatus.Equals(Resolution.TIMEOUT)) {
+                    throw new TimeoutException();
+                }
+            }
         } else {
             for (int i = 0; i < steps; i++) {
-                dbStatus = dbPropagator.step();
+                for (int retry = 0; retry < 10; retry++) {
+                    dbStatus = dbPropagator.step();
+                }
+
                 actionsTaken++;
             }
         }
+
 
         return (getLatestOutputBM(), dbStatus == Resolution.DECIDED);
     }
@@ -868,36 +899,92 @@ public class WFCHandler {
     public void updateTransformations() {
         foreach (TileViewModel tvm in mainWindowVM.PatternTiles) {
             if (tvm.RotateDisabled || tvm.FlipDisabled) {
-                int toContinueTo = tvm.RawPatternIndex;
-                bool found = false;
-                int amountToBan = -1;
                 int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+                int patternCardinality = tvm.PatternIndex - tvm.RawPatternIndex + 1;
+                int rotRaw = (int) (tvm.UserRotation / 90d);
+                List<int> toBan = new();
 
-                foreach (TileViewModel tvmPatt in mainWindowVM.PaintTiles.Reverse()) {
-                    found = found || toContinueTo == tvmPatt.RawPatternIndex;
+                switch (patternCardinality) {
+                    case 4: {
+                        List<int> idsToSkip = new();
 
-                    if (found && amountToBan != 0) {
-                        if (amountToBan == -1) {
-                            amountToBan = tvmPatt.PatternIndex - tvmPatt.RawPatternIndex + 1;
+                        rotRaw = rotRaw switch {
+                            1 => 3,
+                            3 => 1,
+                            _ => rotRaw
+                        };
+                        idsToSkip.Add(tvm.RawPatternIndex + rotRaw);
+
+                        for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
+                            if (!idsToSkip.Contains(i)) {
+                                toBan.Add(i);
+                            }
                         }
 
-                        if ((tvmPatt.PatternRotation != 0 && tvm.RotateDisabled)
-                            || (tvmPatt.PatternFlipping == 1 && tvm.FlipDisabled)) {
-                            int curPattIdx = getDescrambledIndex(tvmPatt.PatternIndex);
+                        break;
+                    }
+                    case 8:
+                        switch (tvm.RotateDisabled) {
+                            case true when tvm.FlipDisabled: {
+                                // Only 1 pattern should be skipped
+                                for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
+                                    toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
+                                        where tvmPatt.PatternIndex.Equals(i)
+                                        let myRot = (int) (((tvmPatt.PatternRotation + 360d) % 360d) / 90d)
+                                        where !myRot.Equals(rotRaw) || tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
+                                        select tvmPatt.PatternIndex);
+                                }
 
-                            for (int x = 0; x < outputWidth; x++) {
-                                for (int y = 0; y < outputHeight; y++) {
+                                break;
+                            }
+                            case true: {
+                                for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
+                                    toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
+                                        where tvmPatt.PatternIndex.Equals(i)
+                                        let myRot = (int) (((tvmPatt.PatternRotation + 360d) % 360d) / 90d)
+                                        where !myRot.Equals(rotRaw)
+                                        select tvmPatt.PatternIndex);
+                                }
+
+                                // 2 patterns should be skipped
+                                break;
+                            }
+                            default: {
+                                if (tvm.FlipDisabled) {
+                                    // 4 patterns should be skipped
+                                    for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
+                                        toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
+                                            where tvmPatt.PatternIndex.Equals(i) &&
+                                                  tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
+                                            select tvmPatt.PatternIndex);
+                                    }
+                                }
+
+                                break;
+                            }
+                        }
+
+                        break;
+                }
+                
+                foreach (TileViewModel tvmPatt in mainWindowVM.PaintTiles.Reverse()) {
+                    if (toBan.Contains(tvmPatt.PatternIndex)) {
+                        int curPattIdx = getDescrambledIndex(tvmPatt.PatternIndex);
+
+                        bool stopLoop = false;
+                        for (int x = 0; x < outputWidth; x++) {
+                            for (int y = 0; y < outputHeight; y++) {
+                                if (!stopLoop) {
                                     try {
                                         dbPropagator.getWP().InternalBan(x * outputWidth + y, curPattIdx);
                                     } catch (TargetException) {
                                         // Accidental double call to this function, pattern is already banned
-                                        return;
+                                        // Caused by a force updating of the transformation on button click AND solution restart
+                                        stopLoop = true;
                                     }
                                 }
                             }
                         }
-
-                        amountToBan--;
                     }
                 }
             }
@@ -1081,7 +1168,6 @@ public class WFCHandler {
             foreach ((int index, double weightAvg) in origTileWeights) {
                 double percentage = weightAvg / origTileWeights.Values.Sum();
                 toAddPaint[index].PatternWeight = percentage;
-                propagateWeightChange(index, 0d, false);
             }
         }
 
@@ -1105,42 +1191,6 @@ public class WFCHandler {
                 }
 
                 tileViewModel.DynamicWeight = false;
-            }
-        }
-    }
-
-    public void propagateWeightChange(int changedIdx, double change, bool rebalance = true, bool force = false) {
-        double totalUnbalanced
-            = Math.Round(
-                mainWindowVM.PaintTiles.Where(tileViewModel => tileViewModel.PatternIndex != changedIdx)
-                    .Sum(tileViewModel => tileViewModel.PatternWeight), 5);
-
-        double origWeight = origTileWeights[changedIdx];
-        ((OverlappingModel) dbModel).MultiplyFrequency(
-            tiles.toArray2d().Cast<Tile>().Distinct().ToList()[changedIdx],
-            mainWindowVM.PaintTiles[changedIdx].PatternWeight / origWeight);
-
-        if (force) {
-            mainWindowVM.PaintTiles[changedIdx].PatternWeight = change;
-        }
-        
-        if (rebalance) {
-            foreach (TileViewModel tileViewModel in mainWindowVM.PaintTiles) {
-                if (tileViewModel.PatternIndex != changedIdx) {
-                    origWeight = origTileWeights[tileViewModel.PatternIndex];
-                    double ratio = tileViewModel.PatternWeight / totalUnbalanced;
-                    ratio = ratio switch {
-                        double.NaN when totalUnbalanced == 0d => 1d / (mainWindowVM.PaintTiles.Count - 1d),
-                        double.NaN => 0d,
-                        _ => ratio
-                    };
-                    tileViewModel.PatternWeight += ratio * change;
-                    tileViewModel.PatternWeight = Math.Max(0d, Math.Min(1d, tileViewModel.PatternWeight));
-
-                    ((OverlappingModel) dbModel).MultiplyFrequency(
-                        tiles.toArray2d().Cast<Tile>().Distinct().ToList()[tileViewModel.PatternIndex],
-                        4d * mainWindowVM.PaintTiles[tileViewModel.PatternIndex].PatternWeight / origWeight);
-                }
             }
         }
     }
@@ -1185,5 +1235,31 @@ public class WFCHandler {
         }
 
         return newWeights;
+    }
+
+    public void setPatternDisabled(bool disabled, int patternIndex) {
+        List<Color> colorsL = new();
+        PatternArray patternArray = originalPatterns[patternIndex];
+
+        for (int xx = 0; xx < patternArray.Values.GetLength(0); xx++) {
+            for (int yy = 0; yy < patternArray.Values.GetLength(1); yy++) {
+                colorsL.Add((Color) patternArray.Values[xx, yy, 0].Value);
+            }
+        }
+
+        if (disabled) {
+            disabledPatterns.Add(colorsL.ToArray());
+        } else {
+            for (int i = 0; i < disabledPatterns.Count; i++) {
+                bool areEqual = disabledPatterns[i].SequenceEqual(colorsL.ToArray());
+                if (areEqual) {
+                    disabledPatterns.RemoveAt(i);
+                }
+            }
+        }
+
+        if (centralManager.getMainWindowVM().IsRunning) {
+            centralManager.getInputManager().restartSolution("patterns");
+        }
     }
 }

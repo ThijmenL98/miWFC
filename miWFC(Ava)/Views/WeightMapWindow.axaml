@@ -16,6 +16,7 @@
 		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
 		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
 		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
+		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
@@ -23,6 +24,7 @@
 		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
 		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
 		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
+		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -45,6 +47,49 @@
 		<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
 			<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
 				<Grid>
+					<Popup IsOpen="{Binding HeatmapInfoPopupVisible}" HorizontalAlignment="Center"
+					       VerticalAlignment="Top" PlacementMode="Pointer" x:Name="infoPopup"
+					       PlacementTarget="{Binding ElementName=patternGrid}">
+						<Border BorderBrush="Black" BorderThickness="2" CornerRadius="19">
+							<Border.Background>
+								<ImageBrush Source="/Assets/backgroundImage2.png" Stretch="Fill" />
+							</Border.Background>
+							<Border BorderBrush="#99000000" BorderThickness="5" CornerRadius="15">
+								<Border Padding="1">
+									<Grid Margin="5">
+										<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicWeights.png"
+										       Stretch="Uniform" Height="515" />
+										<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
+										        VerticalAlignment="Top"
+										        x:Name="borderPaddingToggle" Background="Transparent"
+										        Command="{Binding OnCloseClick}">
+											<Button.Styles>
+												<Style Selector="Button:pointerover /template/ ContentPresenter">
+													<Setter Property="Content"
+													        Value="{DynamicResource hoverCloseKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="Button:pressed /template/ ContentPresenter">
+													<Setter Property="Content"
+													        Value="{DynamicResource clickCloseKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+											</Button.Styles>
+											<Panel>
+												<Image Source="/Assets/Close.png" />
+											</Panel>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Close this popup</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
+										</Button>
+									</Grid>
+								</Border>
+							</Border>
+						</Border>
+					</Popup>
+					
 					<Grid ColumnDefinitions="Auto, *" x:Name="paintingMainGrid" HorizontalAlignment="Center">
 						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" Margin="10">
 							<ComboBox Grid.Row="0" SelectionChanged="SelectedTileCB_OnSelectionChanged"

@@ -804,7 +804,6 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnRemoveItemEntryI(int selectedIndex) {
-        Trace.WriteLine("Trying to delete");
         DataGrid dg = centralManager!.getItemWindow().getDataGrid();
         selectedIndex = selectedIndex == -2 ? dg.SelectedIndex : selectedIndex;
         if (selectedIndex < 0) {
