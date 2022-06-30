@@ -209,7 +209,7 @@ public class WFCHandler {
         mainWindowVM.PaintTiles.Clear();
         toAddPaint = new List<TileViewModel>();
 
-        centralManager.getInputManager().resetOverwriteCache();
+        centralManager.getInputManager().resetMask();
         centralManager.getUIManager().resetPatterns();
     }
 
@@ -1265,5 +1265,9 @@ public class WFCHandler {
         if (centralManager.getMainWindowVM().IsRunning) {
             await centralManager.getInputManager().restartSolution("patterns");
         }
+    }
+
+    public Dictionary<int, Tuple<Color[], Tile>> getTileCache() {
+        return tileCache;
     }
 }

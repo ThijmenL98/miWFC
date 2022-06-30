@@ -4,6 +4,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using miWFC.ContentControls;
 using miWFC.Managers;
+using miWFC.Utils;
 
 namespace miWFC.Views;
 
@@ -138,6 +139,9 @@ public partial class MainWindow : Window {
 
         await centralManager!.getInputManager().restartSolution("Window activation", true);
         triggered = true;
+
+        centralManager!.getInputManager().resetMask();
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager));
     }
 
     public bool isWindowTriggered() {

@@ -114,8 +114,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
         }
     }
 
@@ -126,8 +126,8 @@ public class MainWindowViewModel : ViewModelBase {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             if (centralManager != null) {
                 OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                               !centralManager!.getMainWindow().getInputControl().getCategory()
-                                                   .Contains("Side");
+                    !centralManager!.getMainWindow().getInputControl().getCategory()
+                        .Contains("Side");
             }
 
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
@@ -139,7 +139,7 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _categoryDescription, value);
     }
 
-    private string InputImageSelection {
+    public string InputImageSelection {
         get => _selectedInputImage;
         // ReSharper disable once UnusedMember.Local
         set => this.RaiseAndSetIfChanged(ref _selectedInputImage, value);
@@ -369,8 +369,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.getMainWindow().getInputControl().getCategory()
-                                               .Contains("Side");
+                !centralManager!.getMainWindow().getInputControl().getCategory()
+                    .Contains("Side");
         }
     }
 
@@ -455,8 +455,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                       !centralManager!.getMainWindow().getInputControl().getCategory()
-                                           .Contains("Side");
+            !centralManager!.getMainWindow().getInputControl().getCategory()
+                .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -533,12 +533,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     public void OnMaskReset() {
-        centralManager!.getInputManager().resetOverwriteCache();
-        centralManager!.getInputManager().updateMask();
-    }
-
-    public void OnTemplateMaskReset() {
-        //TODO Reset the template mask
+        centralManager!.getInputManager().resetMask();
         centralManager!.getInputManager().updateMask();
     }
 
@@ -600,9 +595,8 @@ public class MainWindowViewModel : ViewModelBase {
         TemplatePlaceModeEnabled = false;
         PaintModeEnabled = false;
 
-        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().resetMask();
         centralManager!.getInputManager().updateMask();
-        //TODO reset template add mask
     }
 
     public void OnPaintModeClick() {
@@ -611,7 +605,8 @@ public class MainWindowViewModel : ViewModelBase {
         TemplatePlaceModeEnabled = false;
         PencilModeEnabled = false;
 
-        //TODO reset template add mask
+        centralManager!.getInputManager().resetMask();
+        centralManager!.getInputManager().updateMask();
     }
 
     public void OnTemplateAddModeClick() {
@@ -620,7 +615,7 @@ public class MainWindowViewModel : ViewModelBase {
         TemplatePlaceModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().resetMask();
         centralManager!.getInputManager().updateMask();
     }
 
@@ -630,9 +625,8 @@ public class MainWindowViewModel : ViewModelBase {
         PaintModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().resetMask();
         centralManager!.getInputManager().updateMask();
-        //TODO reset template add mask
     }
 
     public async Task OnApplyClick() {
@@ -646,11 +640,135 @@ public class MainWindowViewModel : ViewModelBase {
             setLoading(true);
             centralManager!.getMainWindowVM().StepAmount = 1;
 
-            centralManager.getInputManager().resetOverwriteCache();
+            centralManager.getInputManager().resetMask();
             centralManager.getInputManager().updateMask();
             await centralManager.getWFCHandler().handlePaintBrush(mask);
         } else if (TemplateAddModeEnabled) {
-            //TODO
+            Color[,] mask = centralManager!.getInputManager().getMaskColours();
+
+            int minX = int.MaxValue, maxX = int.MinValue;
+            int minY = int.MaxValue, maxY = int.MinValue;
+
+            bool nonEmpty = false;
+
+            if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                ITopoArray<Color> oOutput = centralManager!.getWFCHandler().getPropagatorOutputO();
+                for (int a = 0; a < mask.GetLength(0); a++) {
+                    for (int b = 0; b < mask.GetLength(1); b++) {
+                        if (mask[a, b] == Colors.Gold) {
+                            if (oOutput.get(a, b).A != 255) {
+                                centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
+                                return;
+                            }
+
+                            nonEmpty = true;
+
+                            if (a < minX) {
+                                minX = a;
+                            }
+
+                            if (a > maxX) {
+                                maxX = a;
+                            }
+
+                            if (b < minY) {
+                                minY = b;
+                            }
+
+                            if (b > maxY) {
+                                maxY = b;
+                            }
+                        }
+                    }
+                }
+
+                if (!nonEmpty) {
+                    centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
+                    return;
+                }
+
+                int patternWidth = maxX - minX + 1;
+                int patternHeight = maxY - minY + 1;
+                Color[,] offsetMask = new Color[patternWidth, patternHeight];
+
+                for (int a = minX; a <= maxX; a++) {
+                    for (int b = minY; b <= maxY; b++) {
+                        if (mask[a, b] == Colors.Gold) { 
+                            offsetMask[a - minX, b - minY] = oOutput.get(a, b);
+                        } else {
+                            offsetMask[a - minX, b - minY] = Colors.Transparent;
+                        }
+                    }
+                }
+
+                TemplateViewModel tvm = new(Util.ColourArrayToImage(offsetMask), offsetMask);
+                bool saved = await tvm.Save(InputImageSelection);
+                if (saved) {
+                    Templates.Add(tvm);
+                }
+            } else {
+                ITopoArray<int> aOutput = centralManager!.getWFCHandler().getPropagatorOutputA();
+                for (int a = 0; a < mask.GetLength(0); a++) {
+                    for (int b = 0; b < mask.GetLength(1); b++) {
+                        if (mask[a, b] == Colors.Gold) {
+                            if (aOutput.get(a, b) < 0) {
+                                centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
+                                return;
+                            }
+
+                            nonEmpty = true;
+
+                            if (a < minX) {
+                                minX = a;
+                            }
+
+                            if (a > maxX) {
+                                maxX = a;
+                            }
+
+                            if (b < minY) {
+                                minY = b;
+                            }
+
+                            if (b > maxY) {
+                                maxY = b;
+                            }
+                        }
+                    }
+                }
+
+                if (!nonEmpty) {
+                    centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
+                    return;
+                }
+
+                int patternWidth = maxX - minX + 1;
+                int patternHeight = maxY - minY + 1;
+                int[,] offsetMask = new int[patternWidth, patternHeight];
+
+                for (int a = minX; a <= maxX; a++) {
+                    for (int b = minY; b <= maxY; b++) {
+                        if (mask[a, b] == Colors.Gold) {
+                            offsetMask[a - minX, b - minY] = aOutput.get(a, b);
+                        } else {
+                            offsetMask[a - minX, b - minY] = -1;
+                        }
+                    }
+                }
+
+                TemplateViewModel tvm
+                    = new(
+                        Util.ValueArrayToImage(offsetMask, centralManager!.getWFCHandler().getTileSize(),
+                            centralManager!.getWFCHandler().getTileCache()), offsetMask);
+                bool saved = await tvm.Save(InputImageSelection);
+                if (saved) {
+                    Templates.Add(tvm);
+                }
+            }
+
+            centralManager.getPaintingWindow().setTemplates(Templates);
+            centralManager.getInputManager().resetMask();
+            centralManager.getInputManager().updateMask();
         }
     }
 
@@ -754,7 +872,7 @@ public class MainWindowViewModel : ViewModelBase {
                 Color[,] mask = centralManager!.getInputManager().getMaskColours();
                 await centralManager!.getUIManager().switchWindow(Windows.MAIN,
                     !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
-                centralManager!.getInputManager().resetOverwriteCache();
+                centralManager!.getInputManager().resetMask();
                 break;
             case "I":
                 if (!centralManager!.getWFCHandler().isCollapsed()) {
@@ -1109,6 +1227,17 @@ public class MainWindowViewModel : ViewModelBase {
 
             toExport.Save(settingsFileName);
         }
+    }
+
+    public void OnTemplateDeleteClick() {
+        int templateIndex = centralManager!.getPaintingWindow().getSelectedTemplateIndex();
+        if (templateIndex == -1) {
+            return;
+        }
+        TemplateViewModel tvm = Templates[templateIndex];
+        tvm.DeleteFile(InputImageSelection);
+        Templates.Remove(tvm);
+        centralManager!.getMainWindow().getInputControl().reInitializeTemplates();
     }
 
     public Tuple<int, int>[,] getLatestItemGrid() {

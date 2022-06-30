@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +13,9 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using miWFC.DeBroglie;
+using miWFC.Managers;
+using miWFC.ViewModels;
 
 namespace miWFC.Utils;
 
@@ -69,7 +74,15 @@ public static class Util {
         MemoryStream ms = new(File.ReadAllBytes($"{AppContext.BaseDirectory}/samples/{name}.png"));
         WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
         return writeableBitmap;
-    } // ReSharper disable PossibleMultipleEnumeration
+    }
+
+    public static WriteableBitmap getImageFromPath(string path) {
+        MemoryStream ms = new(File.ReadAllBytes(path));
+        WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
+        return writeableBitmap;
+    }
+
+    // ReSharper disable PossibleMultipleEnumeration
     public static (int[], int) getImagePatternDimensions(string imageName) {
         if (xDoc.Root == null) {
             return (Array.Empty<int>(), -1);
@@ -139,6 +152,67 @@ public static class Util {
         }
 
         return (result, new HashSet<Color>(currentColors.Values.Distinct()));
+    }
+
+    public static WriteableBitmap ColourArrayToImage(Color[,] colours) {
+        int width = colours.GetLength(0);
+        int height = colours.GetLength(1);
+
+        WriteableBitmap outputBitmap = new(new PixelSize(width, height), new Vector(96, 96),
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, height, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < width; x++) {
+                    Color toSet = colours[x, (int) y];
+                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
+                }
+            });
+        }
+
+        return outputBitmap;
+    }
+
+    public static WriteableBitmap ValueArrayToImage(int[,] values, int tileSize,
+        Dictionary<int, Tuple<Color[], Tile>> tiles) {
+        int width = values.GetLength(0) * tileSize;
+        int height = values.GetLength(1) * tileSize;
+
+        Trace.WriteLine(width);
+
+        WriteableBitmap outputBitmap = new(new PixelSize(width, height), new Vector(96, 96),
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, height, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < width; x++) {
+                    int value = values[(int) Math.Floor((double) x / tileSize),
+                        (int) Math.Floor((double) y / tileSize)];
+
+                    bool isCollapsed = value >= 0;
+                    Color[]? outputPattern = isCollapsed ? tiles.ElementAt(value).Value.Item1 : null;
+                    Color toSet = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Color.Parse("#00000000");
+
+                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
+                }
+            });
+        }
+
+        return outputBitmap;
     }
 
     public static string[] getCategories(string modelType) {
@@ -398,16 +472,85 @@ public static class Util {
         Array.Copy(source, 0, first, 0, index);
         Array.Copy(source, index, last, 0, len2);
     }
-    
+
     public static double RemapToByte(double value) {
         return Remap(value, 0d, 1d, 0d, 255d);
     }
-    
+
     public static double RemapFromByte(double value) {
         return Remap(value, 0d, 255d, 0d, 1d);
     }
-    
+
     private static double Remap(this double value, double from1, double to1, double from2, double to2) {
         return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
+    }
+
+    private static T[,] To2D<T>(IReadOnlyList<T[]> source) {
+        try {
+            int firstDim = source.Count;
+            int secondDim = source.GroupBy(row => row.Length).Single().Key;
+
+            var result = new T[firstDim, secondDim];
+            for (int i = 0; i < firstDim; ++i) {
+                for (int j = 0; j < secondDim; ++j) {
+                    result[i, j] = source[i][j];
+                }
+            }
+
+            return result;
+        } catch (InvalidOperationException) {
+            throw new InvalidOperationException("The given jagged array is not rectangular.");
+        }
+    }
+
+    public static ObservableCollection<TemplateViewModel> GetTemplates(CentralManager centralManager) {
+        string inputImage = centralManager.getMainWindowVM().InputImageSelection;
+        bool isOverlapping = centralManager!.getWFCHandler().isOverlappingModel();
+
+        string baseDir = $"{AppContext.BaseDirectory}/Assets/Templates/";
+        if (!Directory.Exists(baseDir)) {
+            Directory.CreateDirectory(baseDir);
+        }
+
+        ObservableCollection<TemplateViewModel> templateList = new();
+
+        string[] fileEntries = Directory.GetFiles(baseDir);
+        foreach (string file in fileEntries) {
+            if (Path.GetFileName(file).StartsWith(inputImage) && Path.GetExtension(file).Equals(".wfcPatt")) {
+                WriteableBitmap tvmBitmap = getImageFromPath(file);
+                if (isOverlapping) {
+                    Color[][] tvmColourArray = imageToColourArray(tvmBitmap).Item1;
+                    templateList.Add(new TemplateViewModel(tvmBitmap, To2D(tvmColourArray),
+                        Path.GetFileName(file).Replace("_", "").Replace(inputImage, "").Replace(".wfcPatt", "")));
+                } else {
+                    int inputImageWidth = (int) tvmBitmap.Size.Width, inputImageHeight = (int) tvmBitmap.Size.Height;
+                    int tileSize = centralManager.getWFCHandler().getTileSize();
+                    int imageWidth = inputImageWidth / tileSize;
+                    int imageHeight = inputImageHeight / tileSize;
+                    
+                    byte[] input = File.ReadAllBytes(file);
+                    
+                    IEnumerable<byte> trimmedInputB
+                        = input.Skip(Math.Max(0,
+                            input.Length - imageWidth * imageHeight));
+                    byte[] inputBUntrimmed = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
+                    Split(inputBUntrimmed, imageWidth * imageHeight, out byte[] inputB, out byte[] _);
+
+                    int[,] values = new int[imageWidth, imageHeight];
+                    
+                    for (int x = 0; x < imageWidth; x++) {
+                        for (int y = 0; y < imageHeight; y++) {
+                            Trace.WriteLine(x * imageWidth + y);
+                            values[x, y] = inputB[x * imageHeight + y] - 2;
+                        }
+                    }
+
+                    templateList.Add(new TemplateViewModel(tvmBitmap, values,
+                        Path.GetFileName(file).Replace("_", "").Replace(inputImage, "").Replace(".wfcPatt", "")));
+                }
+            }
+        }
+
+        return templateList;
     }
 }

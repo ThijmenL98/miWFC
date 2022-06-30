@@ -45,6 +45,7 @@ public partial class InputControl : UserControl {
         string[] inputImageDataSource
             = Util.getModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
         setInputImages(inputImageDataSource);
+
         e.Handled = true;
     }
 
@@ -74,9 +75,17 @@ public partial class InputControl : UserControl {
             await centralManager.getInputManager().restartSolution("Image CB Handler", true);
         }
 
+        centralManager!.getInputManager().resetMask();
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager));
+
         if (e != null) {
             e.Handled = true;
         }
+    }
+
+    public void reInitializeTemplates() {
+        centralManager!.getInputManager().resetMask();
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager));
     }
 
     // ReSharper disable once UnusedMember.Local

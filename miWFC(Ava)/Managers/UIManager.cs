@@ -102,7 +102,7 @@ public class UIManager {
                 mainWindowVM.MainInfoPopupVisible = true;
                 break;
             case "I":
-                //TODO mainWindowVM.ItemsInfoPopupVisible = true;
+                // TODO mainWindowVM.ItemsInfoPopupVisible = true;
                 break;
             case "P":
                 mainWindowVM.PaintInfoPopupVisible = true;

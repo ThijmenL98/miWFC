@@ -460,9 +460,9 @@ public class WavePropagator {
                 return Status;
             }
 
-            if (sw.ElapsedMilliseconds > allowedTime) {
-                return Resolution.TIMEOUT;
-            }
+            // if (sw.ElapsedMilliseconds > allowedTime) {
+            //     return Resolution.TIMEOUT;
+            // }
         }
     }
 

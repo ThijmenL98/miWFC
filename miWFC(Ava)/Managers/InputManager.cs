@@ -151,7 +151,7 @@ public class InputManager {
                 MarkerViewModel curMarker = mainWindowVM.Markers[savePoints.Count - 1];
                 bool canReturn
                     = Math.Abs(centralManager.getWFCHandler().getPercentageCollapsed() -
-                               curMarker.MarkerCollapsePercentage) >
+                        curMarker.MarkerCollapsePercentage) >
                     0.00001d || curMarker.Revertible;
                 if (!canReturn) {
                     centralManager.getUIManager().dispatchError(mainWindow);
@@ -207,7 +207,7 @@ public class InputManager {
         }
     }
 
-    public void resetOverwriteCache() {
+    public void resetMask() {
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
     }
 
@@ -339,7 +339,7 @@ public class InputManager {
             if (inputImageWidth > maxImageSize || inputImageWidth < 10 || inputImageHeight > maxImageSize ||
                 inputImageHeight < 10 || inputImageWidth % tileSize != 0 || inputImageHeight % tileSize != 0) {
                 centralManager.getUIManager().dispatchError(mainWindow);
-                //TODO Popup telling user input image was not allowed size
+                // TODO Popup telling user input image was not allowed size
                 return;
             }
 
@@ -361,7 +361,7 @@ public class InputManager {
 
                 if (!allowed) {
                     centralManager.getUIManager().dispatchError(mainWindow);
-                    //TODO Popup telling user input image was not correct colours
+                    // TODO Popup telling user input image was not correct colours
                     return;
                 }
             }
@@ -370,7 +370,7 @@ public class InputManager {
 
             if (centralManager.getWFCHandler().isOverlappingModel()) {
                 await restartSolution("Import weights update", true);
-                
+
                 for (int retry = 0; retry < 3; retry++) {
                     bool noTransparentEncounter = true;
                     for (int x = 0; x < imageWidth; x++) {
@@ -390,20 +390,20 @@ public class InputManager {
 
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
-                                    //TODO Popup telling user input image was not following patterns?
+                                    // TODO Popup telling user input image was not following patterns?
                                     await restartSolution("Imported image failure (pattern)", true);
                                     return;
                                 }
                             } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
                                        !toPaint.Equals(foundAtPos) && retry == 0) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
-                                //TODO Popup telling user input image is illegal?
+                                // TODO Popup telling user input image is illegal?
                                 await restartSolution("Imported image failure (illegal)", true);
                                 return;
                             }
 
                             noTransparentEncounter = noTransparentEncounter &&
-                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
+                                centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
                         }
                     }
 
@@ -422,7 +422,7 @@ public class InputManager {
                 try {
                     for (int x = 0; x < imageWidth; x++) {
                         for (int y = 0; y < imageHeight; y++) {
-                            int toSel = inputB[x * imageWidth + y] - 2;
+                            int toSel = inputB[x * imageHeight + y] - 2;
                             int foundAtPos = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[x, y];
 
                             if (toSel != foundAtPos && foundAtPos == -1 && toSel != -1) {
@@ -430,13 +430,13 @@ public class InputManager {
 
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
-                                    //TODO Popup telling user input image was not following patterns?
+                                    // TODO Popup telling user input image was not following patterns?
                                     await restartSolution("Imported image failure (pattern)", true);
                                     return;
                                 }
                             } else if (foundAtPos != -1 && toSel != foundAtPos) {
                                 centralManager.getUIManager().dispatchError(mainWindow);
-                                //TODO Popup telling user input image is illegal?
+                                // TODO Popup telling user input image is illegal?
                                 await restartSolution("Imported image failure (illegal)", true);
                                 return;
                             }
@@ -445,10 +445,10 @@ public class InputManager {
 
                     centralManager.getMainWindowVM().setWeights(inputW.Select(x => (double) x).ToArray());
                 } catch (AggregateException e) {
-                    //TODO pre processing?
+                    // TODO pre processing?
                     centralManager.getUIManager().dispatchError(mainWindow);
                     Trace.WriteLine(e);
-                    //TODO Popup telling user input image is mismatching?
+                    // TODO Popup telling user input image is mismatching?
                     await restartSolution("Imported image failure (mismatch)", true);
                     return;
                 }
@@ -474,8 +474,8 @@ public class InputManager {
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
             bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
-                            && centralManager.getWFCHandler().isCollapsed()
-                            && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
+                && centralManager.getWFCHandler().isCollapsed()
+                && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
 
             if (hasItems) {
                 centralManager.getWFCHandler().getLatestOutputBM(false)
@@ -641,14 +641,20 @@ public class InputManager {
                 }
             } else if (mainWindowVM.PaintModeEnabled) {
                 updateHoverBrushMask(a, b);
+            } else if (mainWindowVM.TemplateAddModeEnabled) {
+                updateHoverBrushMask(a, b, -1);
+            } else if (mainWindowVM.TemplatePlaceModeEnabled) {
+                // TODO template hover
             }
 
             mainWindowVM.HelperTiles.Clear();
-            int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
-            foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
-                if (availableAtLoc.Contains(centralManager.getWFCHandler().getColorFromIndex(tvm.PatternIndex))) {
-                    tvm.Highlighted = tvm.PatternIndex == selectedIndex;
-                    mainWindowVM.HelperTiles.Add(tvm);
+            if (!mainWindowVM.TemplateAddModeEnabled && !mainWindowVM.TemplatePlaceModeEnabled) {
+                int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
+                foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
+                    if (availableAtLoc.Contains(centralManager.getWFCHandler().getColorFromIndex(tvm.PatternIndex))) {
+                        tvm.Highlighted = tvm.PatternIndex == selectedIndex;
+                        mainWindowVM.HelperTiles.Add(tvm);
+                    }
                 }
             }
         } else {
@@ -671,22 +677,28 @@ public class InputManager {
                 }
             } else if (mainWindowVM.PaintModeEnabled) {
                 updateHoverBrushMask(a, b);
+            } else if (mainWindowVM.TemplateAddModeEnabled) {
+                updateHoverBrushMask(a, b, -1);
+            } else if (mainWindowVM.TemplatePlaceModeEnabled) {
+                // TODO template hover
             }
 
             mainWindowVM.HelperTiles.Clear();
-            int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
+            if (!mainWindowVM.TemplateAddModeEnabled && !mainWindowVM.TemplatePlaceModeEnabled) {
+                int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
 
-            foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
-                if (availableAtLoc.Contains(centralManager.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))) {
-                    tvm.Highlighted = tvm.PatternIndex == selectedIndex;
-                    mainWindowVM.HelperTiles.Add(tvm);
+                foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
+                    if (availableAtLoc.Contains(centralManager.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))) {
+                        tvm.Highlighted = tvm.PatternIndex == selectedIndex;
+                        mainWindowVM.HelperTiles.Add(tvm);
+                    }
                 }
             }
         }
     }
 
-    private void updateHoverBrushMask(int a, int b) {
-        int rawBrushSize = centralManager.getPaintingWindow().getPaintBrushSize();
+    private void updateHoverBrushMask(int a, int b, int overrideSize = -2) {
+        int rawBrushSize = overrideSize == -2 ? centralManager.getPaintingWindow().getPaintBrushSize() : overrideSize;
 
         double brushSize = rawBrushSize switch {
             1 => rawBrushSize,
@@ -714,7 +726,7 @@ public class InputManager {
             }
         }
 
-        updateMask(hoverMaskColours, false);
+        updateMask(hoverMaskColours, false, false);
     }
 
     public void processClickMask(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
@@ -757,14 +769,28 @@ public class InputManager {
             }
         }
 
-        updateMask(maskColours, true);
+        updateMask(maskColours, true, false);
+    }
+
+    public void processClickTemplate(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
+        int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+            b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+
+        const int rawBrushSize = -1;
+        if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+            if (rawBrushSize == -1) {
+                maskColours[a, b] = add ? Colors.Gold : default;
+            }
+        }
+
+        updateMask(maskColours, true, true);
     }
 
     public void updateMask() {
-        updateMask(maskColours, true);
+        updateMask(maskColours, true, false);
     }
 
-    private void updateMask(Color[,] colors, bool updateMain) {
+    private void updateMask(Color[,] colors, bool updateMain, bool invert) {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         WriteableBitmap bitmap = new(new PixelSize(outputWidth, outputHeight),
             new Vector(96, 96),
@@ -781,7 +807,15 @@ public class InputManager {
                 uint* dest = backBuffer + (int) yy * stride / 4;
                 for (int xx = 0; xx < outputWidth; xx++) {
                     Color c = colors[xx, (int) yy];
-                    dest[xx] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                    if (invert && c.Equals(Colors.Gold)) {
+                        if (centralManager!.getWFCHandler().isOverlappingModel()) {
+                            Color atPos = centralManager.getWFCHandler().getPropagatorOutputO().get(xx, (int) yy);
+                            dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.R) << 16) + ((255 - atPos.G) << 8)
+                                + (255 - atPos.B));
+                        } else { }
+                    } else if (!invert) {
+                        dest[xx] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                    }
                 }
             });
         }

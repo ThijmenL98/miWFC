@@ -100,14 +100,7 @@ public partial class PaintingWindow : Window {
     }
 
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
-        if (centralManager!.getMainWindowVM().PencilModeEnabled ||
-            centralManager!.getMainWindowVM().PaintModeEnabled) {
-            OutputImageOnPointerMoved(sender, e, true);
-        } else if (centralManager!.getMainWindowVM().TemplateAddModeEnabled) {
-            //TODO
-        } else if (centralManager!.getMainWindowVM().TemplatePlaceModeEnabled) {
-            //TODO
-        }
+        OutputImageOnPointerMoved(sender, e, true);
     }
 
     public void OutputImageOnPointerReleased(object sender, PointerReleasedEventArgs e) {
@@ -140,9 +133,7 @@ public partial class PaintingWindow : Window {
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
                     e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
-            } catch (IndexOutOfRangeException exception) {
-                Trace.WriteLine(exception);
-            }
+            } catch (IndexOutOfRangeException) { }
         } else if (centralManager!.getMainWindowVM().PencilModeEnabled && canUsePencil) {
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
                 int idx = getSelectedPaintIndex();
@@ -157,6 +148,19 @@ public partial class PaintingWindow : Window {
                     canUsePencil = false;
                 }
             }
+        } else if (centralManager!.getMainWindowVM().TemplateAddModeEnabled) {
+            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
+                e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) {
+                try {
+                    centralManager?.getInputManager().processClickTemplate((int) Math.Round(posX),
+                        (int) Math.Round(posY),
+                        (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+                        (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
+                        e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
+                } catch (IndexOutOfRangeException) { }
+            }
+        } else if (centralManager!.getMainWindowVM().TemplatePlaceModeEnabled) {
+            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) { }
         }
 
         centralManager?.getInputManager().processHoverAvailability((int) Math.Round(posX),
@@ -166,7 +170,9 @@ public partial class PaintingWindow : Window {
             _paintingPatternsCB.SelectedIndex, centralManager!.getMainWindowVM().PencilModeEnabled);
 
         e.Handled = true;
-    } // ReSharper disable twice UnusedParameter.Local
+    }
+
+    // ReSharper disable twice UnusedParameter.Local
     private void OnPointerMoved(object sender, PointerEventArgs e) {
         centralManager?.getInputManager().resetHoverAvailability();
     }
@@ -180,12 +186,12 @@ public partial class PaintingWindow : Window {
         _paintingPatternsCB.SelectedIndex = idx;
     }
 
-    public void setTemplates(TemplateViewModel[]? values, int idx = 0) {
-        if (values != null) {
-            _templatesCB.Items = values;
-            centralManager!.getMainWindowVM().Templates = new ObservableCollection<TemplateViewModel>(values);
+    public void setTemplates(ObservableCollection<TemplateViewModel> values, int idx = 0) {
+        if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
+            return;
         }
-
+        _templatesCB.Items = values;
+        centralManager!.getMainWindowVM().Templates = new ObservableCollection<TemplateViewModel>(values);
         _templatesCB.SelectedIndex = idx;
     }
 
