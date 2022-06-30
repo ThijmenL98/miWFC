@@ -60,9 +60,9 @@ public class MainWindowViewModel : ViewModelBase {
         _itemEditorEnabled,
         _isPaintOverrideEnabled,
         _pencilModeEnabled,
-        _eraseModeEnabled,
-        _paintKeepModeEnabled,
-        _paintEraseModeEnabled,
+        _paintModeEnabled,
+        _templateAddModeEnabled,
+        _templatePlaceModeEnabled,
         _isRunning,
         _inItemMenu,
         _itemsMayAppearAnywhere,
@@ -73,6 +73,8 @@ public class MainWindowViewModel : ViewModelBase {
     private ObservableCollection<ItemViewModel> _itemDataGrid = new();
 
     private ObservableCollection<MarkerViewModel> _markers = new();
+
+    private ObservableCollection<TemplateViewModel> _templates = new();
 
     private ObservableCollection<TileViewModel> _patternTiles = new(), _paintTiles = new(), _helperTiles = new();
 
@@ -308,6 +310,11 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _markers, value);
     }
 
+    public ObservableCollection<TemplateViewModel> Templates {
+        get => _templates;
+        set => this.RaiseAndSetIfChanged(ref _templates, value);
+    }
+
     public MainWindowViewModel VM => this;
 
     public bool MainInfoPopupVisible {
@@ -335,19 +342,19 @@ public class MainWindowViewModel : ViewModelBase {
         set => this.RaiseAndSetIfChanged(ref _pencilModeEnabled, value);
     }
 
-    public bool EraseModeEnabled {
-        get => _eraseModeEnabled;
-        set => this.RaiseAndSetIfChanged(ref _eraseModeEnabled, value);
+    public bool PaintModeEnabled {
+        get => _paintModeEnabled;
+        set => this.RaiseAndSetIfChanged(ref _paintModeEnabled, value);
     }
 
-    public bool PaintKeepModeEnabled {
-        get => _paintKeepModeEnabled;
-        set => this.RaiseAndSetIfChanged(ref _paintKeepModeEnabled, value);
+    public bool TemplateAddModeEnabled {
+        get => _templateAddModeEnabled;
+        set => this.RaiseAndSetIfChanged(ref _templateAddModeEnabled, value);
     }
 
-    public bool PaintEraseModeEnabled {
-        get => _paintEraseModeEnabled;
-        set => this.RaiseAndSetIfChanged(ref _paintEraseModeEnabled, value);
+    public bool TemplatePlaceModeEnabled {
+        get => _templatePlaceModeEnabled;
+        set => this.RaiseAndSetIfChanged(ref _templatePlaceModeEnabled, value);
     }
 
     public bool IsLoading {
@@ -530,6 +537,11 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getInputManager().updateMask();
     }
 
+    public void OnTemplateMaskReset() {
+        //TODO Reset the template mask
+        centralManager!.getInputManager().updateMask();
+    }
+
     public void OnRevert() {
         if (IsPlaying) {
             OnAnimate();
@@ -584,49 +596,62 @@ public class MainWindowViewModel : ViewModelBase {
 
     public void OnPencilModeClick() {
         PencilModeEnabled = !PencilModeEnabled;
-        EraseModeEnabled = false;
-        PaintKeepModeEnabled = false;
-        PaintEraseModeEnabled = false;
+        TemplateAddModeEnabled = false;
+        TemplatePlaceModeEnabled = false;
+        PaintModeEnabled = false;
+
+        centralManager!.getInputManager().resetOverwriteCache();
+        centralManager!.getInputManager().updateMask();
+        //TODO reset template add mask
+    }
+
+    public void OnPaintModeClick() {
+        PaintModeEnabled = !PaintModeEnabled;
+        TemplateAddModeEnabled = false;
+        TemplatePlaceModeEnabled = false;
+        PencilModeEnabled = false;
+
+        //TODO reset template add mask
+    }
+
+    public void OnTemplateAddModeClick() {
+        TemplateAddModeEnabled = !TemplateAddModeEnabled;
+        PaintModeEnabled = false;
+        TemplatePlaceModeEnabled = false;
+        PencilModeEnabled = false;
+
         centralManager!.getInputManager().resetOverwriteCache();
         centralManager!.getInputManager().updateMask();
     }
 
-    public void OnEraseModeClick() {
-        EraseModeEnabled = !EraseModeEnabled;
+    public void OnTemplatePlaceModeClick() {
+        TemplatePlaceModeEnabled = !TemplatePlaceModeEnabled;
+        TemplateAddModeEnabled = false;
+        PaintModeEnabled = false;
         PencilModeEnabled = false;
-        PaintKeepModeEnabled = false;
-        PaintEraseModeEnabled = false;
+
         centralManager!.getInputManager().resetOverwriteCache();
         centralManager!.getInputManager().updateMask();
-    }
-
-    public void OnPaintKeepModeClick() {
-        PaintKeepModeEnabled = !PaintKeepModeEnabled;
-        EraseModeEnabled = false;
-        PencilModeEnabled = false;
-        PaintEraseModeEnabled = false;
-    }
-
-    public void OnPaintEraseModeClick() {
-        PaintEraseModeEnabled = !PaintEraseModeEnabled;
-        EraseModeEnabled = false;
-        PencilModeEnabled = false;
-        PaintKeepModeEnabled = false;
+        //TODO reset template add mask
     }
 
     public async Task OnApplyClick() {
-        Color[,] mask = centralManager!.getInputManager().getMaskColours();
-        if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
-            centralManager!.getUIManager().dispatchError(centralManager.getPaintingWindow());
-            return;
+        if (PaintModeEnabled) {
+            Color[,] mask = centralManager!.getInputManager().getMaskColours();
+            if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
+                centralManager!.getUIManager().dispatchError(centralManager.getPaintingWindow());
+                return;
+            }
+
+            setLoading(true);
+            centralManager!.getMainWindowVM().StepAmount = 1;
+
+            centralManager.getInputManager().resetOverwriteCache();
+            centralManager.getInputManager().updateMask();
+            await centralManager.getWFCHandler().handlePaintBrush(mask);
+        } else if (TemplateAddModeEnabled) {
+            //TODO
         }
-
-        setLoading(true);
-        centralManager!.getMainWindowVM().StepAmount = 1;
-
-        centralManager.getInputManager().resetOverwriteCache();
-        centralManager.getInputManager().updateMask();
-        await centralManager.getWFCHandler().handlePaintBrush(mask);
     }
 
     public void resetDataGrid() {

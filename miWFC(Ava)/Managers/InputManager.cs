@@ -639,7 +639,7 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                 }
-            } else if (mainWindowVM.PaintEraseModeEnabled || mainWindowVM.PaintKeepModeEnabled) {
+            } else if (mainWindowVM.PaintModeEnabled) {
                 updateHoverBrushMask(a, b);
             }
 
@@ -669,7 +669,7 @@ public class InputManager {
                     mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                         PixelFormat.Bgra8888, AlphaFormat.Unpremul);
                 }
-            } else if (mainWindowVM.PaintEraseModeEnabled || mainWindowVM.PaintKeepModeEnabled) {
+            } else if (mainWindowVM.PaintModeEnabled) {
                 updateHoverBrushMask(a, b);
             }
 
@@ -687,7 +687,6 @@ public class InputManager {
 
     private void updateHoverBrushMask(int a, int b) {
         int rawBrushSize = centralManager.getPaintingWindow().getPaintBrushSize();
-        bool add = mainWindowVM.PaintKeepModeEnabled;
 
         double brushSize = rawBrushSize switch {
             1 => rawBrushSize,
@@ -699,7 +698,7 @@ public class InputManager {
 
         if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (rawBrushSize == -1) {
-                hoverMaskColours[a, b] = add ? Colors.Green : Colors.Red;
+                hoverMaskColours[a, b] = Colors.Yellow;
             } else {
                 for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
                     for (int y = 0; y < mainWindowVM.ImageOutHeight; y++) {
@@ -708,7 +707,7 @@ public class InputManager {
                         double distanceSquared = dx * dx + dy * dy;
 
                         if (distanceSquared <= brushSize) {
-                            hoverMaskColours[x, y] = add ? Colors.Green : Colors.Red;
+                            hoverMaskColours[x, y] = Colors.Yellow;
                         }
                     }
                 }

@@ -12,7 +12,7 @@ using miWFC.ViewModels;
 namespace miWFC.Views;
 
 public partial class PaintingWindow : Window {
-    private readonly ComboBox _paintingPatternsCB, _paintingSizeCB;
+    private readonly ComboBox _paintingPatternsCB, _templatesCB, _paintingSizeCB;
 
     private bool canUsePencil = true;
     private CentralManager? centralManager;
@@ -29,6 +29,7 @@ public partial class PaintingWindow : Window {
         };
 
         _paintingPatternsCB = this.Find<ComboBox>("tilePaintSelectCB");
+        _templatesCB = this.Find<ComboBox>("templateCB");
         _paintingSizeCB = this.Find<ComboBox>("BrushSizeCB");
     }
 
@@ -48,12 +49,7 @@ public partial class PaintingWindow : Window {
                 e.Handled = true;
                 break;
             case Key.B:
-                if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
-                    centralManager.getMainWindowVM().OnPaintEraseModeClick();
-                } else {
-                    centralManager.getMainWindowVM().OnPaintKeepModeClick();
-                }
-
+                centralManager.getMainWindowVM().OnPaintModeClick();
                 e.Handled = true;
                 break;
             case Key.R:
@@ -105,9 +101,12 @@ public partial class PaintingWindow : Window {
 
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
         if (centralManager!.getMainWindowVM().PencilModeEnabled ||
-            centralManager!.getMainWindowVM().PaintEraseModeEnabled ||
-            centralManager!.getMainWindowVM().PaintKeepModeEnabled) {
+            centralManager!.getMainWindowVM().PaintModeEnabled) {
             OutputImageOnPointerMoved(sender, e, true);
+        } else if (centralManager!.getMainWindowVM().TemplateAddModeEnabled) {
+            //TODO
+        } else if (centralManager!.getMainWindowVM().TemplatePlaceModeEnabled) {
+            //TODO
         }
     }
 
@@ -119,6 +118,10 @@ public partial class PaintingWindow : Window {
         return _paintingPatternsCB.SelectedIndex;
     }
 
+    public int getSelectedTemplateIndex() {
+        return _templatesCB.SelectedIndex;
+    }
+
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         // ReSharper disable once IntroduceOptionalParameters.Local
         OutputImageOnPointerMoved(sender, e, false);
@@ -128,15 +131,15 @@ public partial class PaintingWindow : Window {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
         bool allowClick = !centralManager!.getMainWindowVM().IsPaintOverrideEnabled || forceClick;
-        if ((centralManager!.getMainWindowVM().PaintEraseModeEnabled
-             || centralManager!.getMainWindowVM().PaintKeepModeEnabled)
-            && e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
+        if ((centralManager!.getMainWindowVM().PaintModeEnabled)
+            && (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
+                e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) && allowClick) {
             try {
                 centralManager?.getInputManager().processClickMask((int) Math.Round(posX),
                     (int) Math.Round(posY),
                     (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-                    centralManager!.getMainWindowVM().PaintKeepModeEnabled);
+                    e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
             } catch (IndexOutOfRangeException exception) {
                 Trace.WriteLine(exception);
             }
@@ -175,6 +178,15 @@ public partial class PaintingWindow : Window {
         }
 
         _paintingPatternsCB.SelectedIndex = idx;
+    }
+
+    public void setTemplates(TemplateViewModel[]? values, int idx = 0) {
+        if (values != null) {
+            _templatesCB.Items = values;
+            centralManager!.getMainWindowVM().Templates = new ObservableCollection<TemplateViewModel>(values);
+        }
+
+        _templatesCB.SelectedIndex = idx;
     }
 
     public double getTimelineWidth() {

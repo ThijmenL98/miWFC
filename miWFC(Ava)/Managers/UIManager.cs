@@ -290,7 +290,7 @@ public class UIManager {
         if (!checkClicked) {
             IMsBoxWindow<string> messageBoxCustomWindow = MessageBoxManager
                 .GetMessageBoxCustomWindow(new MessageBoxCustomParams {
-                    ContentMessage = "Brush mask has not been applied!",
+                    ContentMessage = "Mask hasn't been applied!",
                     ButtonDefinitions = new[] {
                         new ButtonDefinition {Name = "Apply"},
                         new ButtonDefinition {Name = "Discard"}
@@ -305,10 +305,10 @@ public class UIManager {
             }
         }
 
-        mainWindowVM.PaintEraseModeEnabled = false;
-        mainWindowVM.EraseModeEnabled = false;
+        mainWindowVM.TemplateAddModeEnabled = false;
+        mainWindowVM.TemplatePlaceModeEnabled = false;
         mainWindowVM.PencilModeEnabled = true;
-        mainWindowVM.PaintKeepModeEnabled = false;
+        mainWindowVM.PaintModeEnabled = false;
 
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);

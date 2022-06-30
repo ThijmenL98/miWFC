@@ -13,27 +13,29 @@
 		<Image Source="/Assets/BackHover.png" x:Key="hoverBackKey" x:Name="hoverBack" />
 		<Image Source="/Assets/PencilHover.png" x:Key="hoverPencilKey" x:Name="hoverPencil" />
 		<Image Source="/Assets/EraseHover.png" x:Key="hoverEraseKey" x:Name="hoverErase" />
-		<Image Source="/Assets/PaintKeepHover.png" x:Key="hoverPaintKeepKey" x:Name="hoverPaintKeep" />
-		<Image Source="/Assets/PaintEraseHover.png" x:Key="hoverPaintEraseKey" x:Name="hoverPaintErase" />
+		<Image Source="/Assets/CustomizeHover.png" x:Key="hoverPaintKey" x:Name="hoverPaint" />
 		<Image Source="/Assets/SaveHover.png" x:Key="hoverSaveKey" x:Name="hoverSave" />
 		<Image Source="/Assets/LoadHover.png" x:Key="hoverLoadKey" x:Name="hoverLoad" />
 		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
 		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
+		<Image Source="/Assets/TemplatingAddClick.png" x:Key="clickTemplatingAddKey" x:Name="clickTemplatingAdd" />
+		<Image Source="/Assets/TemplatingPlaceClick.png" x:Key="clickTemplatingPlaceKey" x:Name="clickTemplatingPlace" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
 		<Image Source="/Assets/PencilClick.png" x:Key="clickPencilKey" x:Name="clickPencil" />
 		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
 		<Image Source="/Assets/EraseClick.png" x:Key="clickEraseKey" x:Name="clickErase" />
-		<Image Source="/Assets/PaintKeepClick.png" x:Key="clickPaintKeepKey" x:Name="clickPaintKeep" />
-		<Image Source="/Assets/PaintEraseClick.png" x:Key="clickPaintEraseKey" x:Name="clickPaintErase" />
+		<Image Source="/Assets/CustomizeClick.png" x:Key="clickPaintKey" x:Name="clickPaint" />
 		<Image Source="/Assets/LoadClick.png" x:Key="clickLoadKey" x:Name="clickLoad" />
 		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
 		<Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
 		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
 		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
+		<Image Source="/Assets/TemplatingAddHover.png" x:Key="hoverTemplatingAddKey" x:Name="hoverTemplatingAdd" />
+		<Image Source="/Assets/TemplatingPlaceHover.png" x:Key="hoverTemplatingPlaceKey" x:Name="hoverTemplatingPlace" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -100,7 +102,7 @@
 					</Popup>
 
 					<Grid ColumnDefinitions="Auto, *, Auto" x:Name="paintingMainGrid">
-						<Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, *" Margin="10"
+						<Grid Grid.Column="0" ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" Margin="10"
 						      VerticalAlignment="Top">
 							<Button Padding="0" Background="Transparent" Grid.Row="0"
 							        Command="{Binding OnPencilModeClick}" Grid.Column="0"
@@ -127,58 +129,94 @@
 								</ToolTip.Tip>
 							</Button>
 
-							<Button Padding="0" Background="Transparent" Grid.Row="1"
-							        Command="{Binding OnPaintKeepModeClick}" Grid.Column="0"
+							<Button Padding="0" Background="Transparent" Grid.Row="0"
+							        Command="{Binding OnPaintModeClick}" Grid.Column="1"
 							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">
 								<Button.Styles>
 									<Style Selector="Button:pointerover /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource hoverPaintKeepKey}" />
+										<Setter Property="Content" Value="{DynamicResource hoverPaintKey}" />
 										<Setter Property="Background" Value="Transparent" />
 									</Style>
 									<Style Selector="Button:pressed /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource clickPaintKeepKey}" />
+										<Setter Property="Content" Value="{DynamicResource clickPaintKey}" />
 										<Setter Property="Background" Value="Transparent" />
 									</Style>
 								</Button.Styles>
 								<Panel>
-									<Image IsVisible="{Binding !PaintKeepModeEnabled}" Source="/Assets/PaintKeep.png" />
-									<Image IsVisible="{Binding PaintKeepModeEnabled}"
-									       Source="/Assets/PaintKeepSelected.png" />
-								</Panel>
-								<ToolTip.Tip>
-									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Paint over areas you would like to keep</TextBlock>
-									</StackPanel>
-								</ToolTip.Tip>
-							</Button>
-
-							<Button Padding="0" Background="Transparent" Grid.Row="1"
-							        Command="{Binding OnPaintEraseModeClick}" Grid.Column="1"
-							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">
-								<Button.Styles>
-									<Style Selector="Button:pointerover /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource hoverPaintEraseKey}" />
-										<Setter Property="Background" Value="Transparent" />
-									</Style>
-									<Style Selector="Button:pressed /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource clickPaintEraseKey}" />
-										<Setter Property="Background" Value="Transparent" />
-									</Style>
-								</Button.Styles>
-								<Panel>
-									<Image IsVisible="{Binding !PaintEraseModeEnabled}" Source="/Assets/PaintErase.png" />
-									<Image IsVisible="{Binding PaintEraseModeEnabled}"
-									       Source="/Assets/PaintEraseSelected.png" />
+									<Image IsVisible="{Binding !PaintModeEnabled}" Source="/Assets/Customize.png" />
+									<Image IsVisible="{Binding PaintModeEnabled}"
+									       Source="/Assets/CustomizeSelected.png" />
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
 										<TextBlock TextWrapping="Wrap">Paint over areas you would like to re-do</TextBlock>
+										<TextBlock TextWrapping="Wrap">Left Mouse: Add - Right Mouse: Remove</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
 
-							<Grid Grid.Column="1" Grid.Row="0" RowDefinitions="Auto, *"
-							      IsVisible="{Binding PencilModeEnabled}">
+							<Button Padding="0" Background="Transparent" Grid.Row="2"
+							        Command="{Binding OnTemplateAddModeClick}" Grid.Column="0"
+							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverTemplatingAddKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickTemplatingAddKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image IsVisible="{Binding !TemplateAddModeEnabled}" Source="/Assets/TemplatingAdd.png" />
+									<Image IsVisible="{Binding TemplateAddModeEnabled}"
+									       Source="/Assets/TemplatingAddSelected.png" />
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Create region templates to place as a whole</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+
+							<Button Padding="0" Background="Transparent" Grid.Row="2"
+							        Command="{Binding OnTemplatePlaceModeClick}" Grid.Column="1"
+							        HorizontalAlignment="Center" Margin="10" MaxWidth="110">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverTemplatingPlaceKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickTemplatingPlaceKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image IsVisible="{Binding !TemplatePlaceModeEnabled}" Source="/Assets/TemplatingPlace.png" />
+									<Image IsVisible="{Binding TemplatePlaceModeEnabled}"
+									       Source="/Assets/TemplatingPlaceSelected.png" />
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Place created templates on the output</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+
+							<Separator Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="0" Background="#55000000" Height="2" CornerRadius="1"
+							           Margin="0,5,0,5" />
+							
+							<TextBlock Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center"
+							           Margin="15, 15, 15, 7">
+								Selected Tool Options:
+							</TextBlock>
+
+							<!-- Tool Options for the Pencil Mode below -->
+							
+							<Grid Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" RowDefinitions="Auto, *"
+							       HorizontalAlignment="Center" IsVisible="{Binding PencilModeEnabled}">
 								<ComboBox Grid.Row="0"
 								          SelectedIndex="0" Items="{Binding PaintTiles}"
 								          x:Name="tilePaintSelectCB" HorizontalAlignment="Center"
@@ -221,11 +259,13 @@
 									</ToolTip.Tip>
 								</ToggleSwitch>
 							</Grid>
+							
+							<!-- Tool Options for the Paint Mode below -->
 
-							<Button Padding="0" Background="Transparent" Grid.Row="2" VerticalAlignment="Bottom"
+							<Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
 							        Command="{Binding OnApplyClick}" Grid.Column="1"
 							        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-							        IsVisible="{Binding !PencilModeEnabled}">
+							        IsVisible="{Binding PaintModeEnabled}">
 								<Button.Styles>
 									<Style Selector="Button:pointerover /template/ ContentPresenter">
 										<Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
@@ -246,9 +286,9 @@
 								</ToolTip.Tip>
 							</Button>
 
-							<Button Padding="0" Grid.Row="2" Grid.Column="0" Margin="10" MaxWidth="110"
+							<Button Padding="0" Grid.Row="5" Grid.Column="0" Margin="10" MaxWidth="110"
 							        Command="{Binding OnMaskReset}" Background="Transparent"
-							        IsVisible="{Binding !PencilModeEnabled}">
+							        IsVisible="{Binding PaintModeEnabled}">
 								<Button.Styles>
 									<Style Selector="Button:pointerover /template/ ContentPresenter">
 										<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -283,8 +323,8 @@
 								</ToolTip.Tip>
 							</Button>
 
-							<StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Margin="15"
-							            IsVisible="{Binding !PencilModeEnabled}">
+							<StackPanel Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="2" Margin="15"
+							            IsVisible="{Binding PaintModeEnabled}">
 								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
 								           Margin="15, 15, 15, 7">
 									Brush Size
@@ -301,7 +341,100 @@
 									<ComboBoxItem>Huge</ComboBoxItem>
 								</ComboBox>
 							</StackPanel>
+							
+							<!-- Tool Options for the Templating Create below -->
+							
+							<Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
+							        Command="{Binding OnApplyClick}" Grid.Column="1"
+							        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
+							        IsVisible="{Binding TemplateAddModeEnabled}">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickApplyKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Apply.png" />
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Save the current selection of tiles as template</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+
+							<Button Padding="0" Grid.Row="5" Grid.Column="0" Margin="10" MaxWidth="110"
+							        Command="{Binding OnTemplateMaskReset}" Background="Transparent"
+							        IsVisible="{Binding TemplateAddModeEnabled}">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
+										<Setter Property="Background" Value="Transparent" />
+										<Setter Property="RenderTransform">
+											<Setter.Value>
+												<RotateTransform Angle="-90" />
+											</Setter.Value>
+										</Setter>
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickRestartKey}" />
+										<Setter Property="Background" Value="Transparent" />
+										<Setter Property="RenderTransform">
+											<Setter.Value>
+												<RotateTransform Angle="-90" />
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/Restart.png">
+										<Image.RenderTransform>
+											<RotateTransform Angle="-90" />
+										</Image.RenderTransform>
+									</Image>
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Reset the template creator mask</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+							
+							<!-- Tool Options for the Templating Place below -->
+							
+							<ComboBox Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="5" HorizontalAlignment="Center"
+							          x:Name="templateCB" SelectedIndex="0" Items="{Binding Templates}"
+							          IsVisible="{Binding TemplatePlaceModeEnabled}">
+								<ComboBox.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel Orientation="Horizontal" MaxWidth="400" />
+									</ItemsPanelTemplate>
+								</ComboBox.ItemsPanel>
+								<ComboBox.ItemTemplate>
+									<DataTemplate>
+										<Border Width="58" Padding="1" Background="#55000000" CornerRadius="9"
+										        Margin="0, 5, 0, 5">
+											<Border Padding="-4" CornerRadius="5" ClipToBounds="True" Margin="4"
+											        Background="#552FACED">
+												<Image Width="50" Height="50" Margin="4"
+												       Source="{Binding TemplateImage}"
+												       RenderOptions.BitmapInterpolationMode="Default">
+												</Image>
+											</Border>
+										</Border>
+									</DataTemplate>
+								</ComboBox.ItemTemplate>
+							</ComboBox>
+						
+							<!-- TODO Delete Current Button -->
 						</Grid>
+							
+						<!-- Tools End -->
 
 						<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
 						        CommandParameter="P"
