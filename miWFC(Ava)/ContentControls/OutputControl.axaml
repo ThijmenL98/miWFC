@@ -44,7 +44,7 @@
 				</Panel>
 				<ToolTip.Tip>
 					<StackPanel>
-						<TextBlock TextWrapping="Wrap">Import previously created output, potentially including items. Partially complete output is allowed</TextBlock>
+						<TextBlock TextWrapping="Wrap">Import previously generated output. Partially completed images are allowed.</TextBlock>
 					</StackPanel>
 				</ToolTip.Tip>
 			</Button>
@@ -208,7 +208,7 @@
 					</Panel>
 					<ToolTip.Tip>
 						<StackPanel>
-							<TextBlock TextWrapping="Wrap">Start/Stop generation animation</TextBlock>
+							<TextBlock TextWrapping="Wrap">Start/Stop the generation animation</TextBlock>
 						</StackPanel>
 					</ToolTip.Tip>
 				</Button>
@@ -233,7 +233,7 @@
 					</Panel>
 					<ToolTip.Tip>
 						<StackPanel>
-							<TextBlock TextWrapping="Wrap">Start/Stop generation animation</TextBlock>
+							<TextBlock TextWrapping="Wrap">Start/Stop the generation animation</TextBlock>
 						</StackPanel>
 					</ToolTip.Tip>
 				</Button>
@@ -299,7 +299,7 @@
 					</Panel>
 					<ToolTip.Tip>
 						<StackPanel>
-							<TextBlock TextWrapping="Wrap">Place a new marker</TextBlock>
+							<TextBlock TextWrapping="Wrap">Place a new save point marker</TextBlock>
 						</StackPanel>
 					</ToolTip.Tip>
 				</Button>
@@ -351,7 +351,7 @@
 					</Panel>
 					<ToolTip.Tip>
 						<StackPanel>
-							<TextBlock TextWrapping="Wrap">Revert back to last marker (if available)</TextBlock>
+							<TextBlock TextWrapping="Wrap">Revert back to the last save point marker</TextBlock>
 						</StackPanel>
 					</ToolTip.Tip>
 				</Button>
@@ -406,7 +406,7 @@
 					</Panel>
 					<ToolTip.Tip>
 						<StackPanel>
-							<TextBlock TextWrapping="Wrap">Switch to the painting customization editor</TextBlock>
+							<TextBlock TextWrapping="Wrap">Switch to the painting editor</TextBlock>
 						</StackPanel>
 					</ToolTip.Tip>
 				</Button>

@@ -206,7 +206,7 @@
 									</Panel>
 									<ToolTip.Tip>
 										<StackPanel>
-											<TextBlock TextWrapping="Wrap">Import an existing weight mapping</TextBlock>
+											<TextBlock TextWrapping="Wrap">Import an existing value mapping</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
@@ -229,7 +229,7 @@
 									</Panel>
 									<ToolTip.Tip>
 										<StackPanel>
-											<TextBlock TextWrapping="Wrap">Export the current weight mapping for later use</TextBlock>
+											<TextBlock TextWrapping="Wrap">Export the current value mapping for later use</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
