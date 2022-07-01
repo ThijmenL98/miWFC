@@ -307,7 +307,7 @@ public class InputManager {
         }
     }
 
- public async void importSolution() {
+    public async void importSolution() {
         OpenFileDialog ofd = new() {
             Title = @"Select png solution to import",
             Filters = new List<FileDialogFilter> {
@@ -370,13 +370,13 @@ public class InputManager {
 
             if (centralManager.getWFCHandler().isOverlappingModel()) {
                 await restartSolution("Import weights update", true);
-                
+
                 for (int retry = 0; retry < 3; retry++) {
                     bool noTransparentEncounter = true;
                     for (int x = 0; x < imageWidth; x++) {
                         for (int y = 0; y < imageHeight; y++) {
-                            Color toPaint = colourArray[x][y];
-                            Color foundAtPos = centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x];
+                            Color toPaint = colourArray[y][x];
+                            Color foundAtPos = centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[x, y];
 
                             if (!toPaint.Equals(foundAtPos) && toPaint.A.Equals(255) && foundAtPos.A.Equals(0)) {
                                 int idx = -1;
@@ -386,7 +386,7 @@ public class InputManager {
                                     break;
                                 }
 
-                                bool? success = processClick(y, x, imageWidth, imageHeight, idx, true).Result;
+                                bool? success = processClick(x, y, imageWidth, imageHeight, idx, true).Result;
 
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
@@ -403,7 +403,8 @@ public class InputManager {
                             }
 
                             noTransparentEncounter = noTransparentEncounter &&
-                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
+                                                     centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[
+                                                         x, y].A.Equals(255);
                         }
                     }
 

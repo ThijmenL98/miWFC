@@ -223,7 +223,7 @@
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Reset the weights to default</TextBlock>
+													<TextBlock TextWrapping="Wrap">Reset the values to default</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>
