@@ -652,11 +652,12 @@ public class MainWindowViewModel : ViewModelBase {
             bool nonEmpty = false;
 
             if (centralManager!.getWFCHandler().isOverlappingModel()) {
-                ITopoArray<Color> oOutput = centralManager!.getWFCHandler().getPropagatorOutputO();
                 for (int a = 0; a < mask.GetLength(0); a++) {
                     for (int b = 0; b < mask.GetLength(1); b++) {
                         if (mask[a, b] == Colors.Gold) {
-                            if (oOutput.get(a, b).A != 255) {
+                            Color atPos = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
+                            
+                            if (atPos.A != 255) {
                                 centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
                                 return;
                             }
@@ -694,7 +695,7 @@ public class MainWindowViewModel : ViewModelBase {
                 for (int a = minX; a <= maxX; a++) {
                     for (int b = minY; b <= maxY; b++) {
                         if (mask[a, b] == Colors.Gold) { 
-                            offsetMask[a - minX, b - minY] = oOutput.get(a, b);
+                            offsetMask[a - minX, b - minY] = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
                         } else {
                             offsetMask[a - minX, b - minY] = Colors.Transparent;
                         }

@@ -452,7 +452,12 @@ public class WavePropagator {
         sw.Restart();
 
         int averageSize = (int) ((outWidth + outHeight) / 2d);
-        int allowedTime = (int) (1.4d * (averageSize * averageSize) - 12.1d * averageSize + 98.3d);
+#if DEBUG
+        // Debug takes longer due to the console writing and other debugging tools
+        int allowedTime = (int) (3.5d * (averageSize * averageSize) - 30d * averageSize + 250d);
+#else
+        int allowedTime = (int) (1.5d * (averageSize * averageSize) - 12d * averageSize + 100d);
+#endif
 
         while (true) {
             Step();
@@ -460,9 +465,9 @@ public class WavePropagator {
                 return Status;
             }
 
-            // if (sw.ElapsedMilliseconds > allowedTime) {
-            //     return Resolution.TIMEOUT;
-            // }
+            if (sw.ElapsedMilliseconds > allowedTime) {
+                return Resolution.TIMEOUT;
+            }
         }
     }
 
@@ -557,6 +562,8 @@ public class WavePropagator {
             return false;
         }
 
+        // TODO Experiment?
+        
         bool isContradiction = false;
 
         patternModelConstraint.DoSelect(index, chosenPattern);

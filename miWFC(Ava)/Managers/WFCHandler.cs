@@ -127,7 +127,7 @@ public class WFCHandler {
             return (new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
                 true);
         }
-        
+
         mainWindowVM.setLoading(true);
 
         if (dbPropagator is {Status: Resolution.DECIDED} && !reset) {
@@ -506,22 +506,16 @@ public class WFCHandler {
         isBrushing = true;
         int imageWidth = mainWindowVM.ImageOutWidth, imageHeight = mainWindowVM.ImageOutHeight;
         if (isOverlappingModel()) {
-            ITopoArray<Color> dbOutput = dbPropagator.toValueArray<Color>();
             Dictionary<Tuple<int, int>, Color> newInputDict = new();
 
             await Task.Run(() => {
                 for (int y = 0; y < imageHeight; y++) {
                     for (int x = 0; x < imageWidth; x++) {
                         if (colors[x, y].Equals(Colors.Green)) {
-                            Color c = dbOutput.get(x, y);
-                            int selectedIndex = dbPropagator.Topology.GetIndex(x, y, 0);
-                            ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
+                            Color toSet = getOverlappingOutputAt(x, y);
 
-                            Color? toSet = possibleTiles.Count == 1 ? possibleTiles.First() :
-                                currentColors!.Contains(c) ? c : null;
-
-                            if (toSet != null) {
-                                newInputDict.Add(new Tuple<int, int>(x, y), (Color) toSet);
+                            if (toSet.A == 255) {
+                                newInputDict.Add(new Tuple<int, int>(x, y), toSet);
                             }
                         }
                     }
@@ -689,7 +683,7 @@ public class WFCHandler {
                     for (int j = 0; j < height; j++) {
                         Tuple<int, int> key = new(i, j);
 
-                        Color value = prevOutput[i, j];
+                        Color value = getOverlappingOutputAt(i, j);
                         Color? toReSet = currentColors!.Contains(value) ? value : null;
 
                         if (toReSet != null) {
@@ -1056,13 +1050,10 @@ public class WFCHandler {
                     int selectedIndex = dbPropagator.Topology.GetIndex(x, (int) y, 0);
                     ISet<Color> possibleTiles = dbPropagator.GetPossibleValues<Color>(selectedIndex);
 
-                    Color toSet = possibleTiles.Count == 1
-                        ? possibleTiles.First()
-                        : currentColors!.Contains(c)
-                            ? c
-                            : grid
-                                ? (x + y) % 2 == 0 ? Color.Parse("#11000000") : Color.Parse("#00000000")
-                                : Color.Parse("#00000000");
+                    Color toSet = possibleTiles.Count == 1 ? possibleTiles.First() :
+                        currentColors!.Contains(c) ? c :
+                        grid ? (x + y) % 2 == 0 ? Color.Parse("#11000000") : Color.Parse("#00000000") :
+                        Color.Parse("#00000000");
                     dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
 
                     if (toSet.A > 200) {
@@ -1203,6 +1194,18 @@ public class WFCHandler {
         return dbPropagator.toValueArray<Color>();
     }
 
+    public Color getOverlappingOutputAt(int x, int y, bool grid = false) {
+        Color c = dbPropagator.toValueArray<Color>().get(x, y);
+        int selectedIndex = getDbPropagator().Topology.GetIndex(x, y, 0);
+        ISet<Color> possibleTiles = getDbPropagator().GetPossibleValues<Color>(selectedIndex);
+
+        Color atPos = possibleTiles.Count == 1 ? possibleTiles.First() :
+            getCurrentColors()!.Contains(c) ? c :
+            grid ? (x + y) % 2 == 0 ? Color.Parse("#11000000") : Color.Parse("#00000000") : Color.Parse("#00000000");
+
+        return atPos;
+    }
+
     public ITopoArray<int> getPropagatorOutputA() {
         return dbPropagator.toValueArray(-1, -2);
     }
@@ -1269,5 +1272,13 @@ public class WFCHandler {
 
     public Dictionary<int, Tuple<Color[], Tile>> getTileCache() {
         return tileCache;
+    }
+
+    public HashSet<Color>? getCurrentColors() {
+        return currentColors;
+    }
+
+    public TilePropagator getDbPropagator() {
+        return dbPropagator;
     }
 }

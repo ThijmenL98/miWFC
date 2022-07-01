@@ -13,7 +13,7 @@ public class TemplateViewModel : ReactiveObject {
     private readonly WriteableBitmap _templateImage = null!;
     private readonly int[,] _templateDataAdj = { };
     private readonly Color[,] _templateDataOve = { };
-    private readonly int status = 0; // 0 = uninitialized, 1 = overlapping template, 2 = adjacent template
+    private readonly int status; // 0 = uninitialized, 1 = overlapping template, 2 = adjacent template
     private string myHash;
 
     public TemplateViewModel(WriteableBitmap image, int[,] templateData, string hash = "") {

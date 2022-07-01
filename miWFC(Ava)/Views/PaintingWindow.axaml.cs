@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -190,6 +189,7 @@ public partial class PaintingWindow : Window {
         if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
             return;
         }
+
         _templatesCB.Items = values;
         centralManager!.getMainWindowVM().Templates = new ObservableCollection<TemplateViewModel>(values);
         _templatesCB.SelectedIndex = idx;

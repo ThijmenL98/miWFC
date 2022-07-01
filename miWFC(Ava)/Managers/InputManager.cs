@@ -151,7 +151,7 @@ public class InputManager {
                 MarkerViewModel curMarker = mainWindowVM.Markers[savePoints.Count - 1];
                 bool canReturn
                     = Math.Abs(centralManager.getWFCHandler().getPercentageCollapsed() -
-                        curMarker.MarkerCollapsePercentage) >
+                               curMarker.MarkerCollapsePercentage) >
                     0.00001d || curMarker.Revertible;
                 if (!canReturn) {
                     centralManager.getUIManager().dispatchError(mainWindow);
@@ -376,7 +376,7 @@ public class InputManager {
                     for (int x = 0; x < imageWidth; x++) {
                         for (int y = 0; y < imageHeight; y++) {
                             Color toPaint = colourArray[x][y];
-                            Color foundAtPos = centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x];
+                            Color foundAtPos = centralManager.getWFCHandler().getOverlappingOutputAt(y, x);
 
                             if (!toPaint.Equals(foundAtPos) && toPaint.A.Equals(255) && foundAtPos.A.Equals(0)) {
                                 int idx = -1;
@@ -403,7 +403,8 @@ public class InputManager {
                             }
 
                             noTransparentEncounter = noTransparentEncounter &&
-                                centralManager.getWFCHandler().getPropagatorOutputO().toArray2d()[y, x].A.Equals(255);
+                                                     centralManager.getWFCHandler().getOverlappingOutputAt(y, x).A
+                                                         .Equals(255);
                         }
                     }
 
@@ -474,8 +475,8 @@ public class InputManager {
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
             bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
-                && centralManager.getWFCHandler().isCollapsed()
-                && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
+                            && centralManager.getWFCHandler().isCollapsed()
+                            && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
 
             if (hasItems) {
                 centralManager.getWFCHandler().getLatestOutputBM(false)
@@ -807,14 +808,23 @@ public class InputManager {
                 uint* dest = backBuffer + (int) yy * stride / 4;
                 for (int xx = 0; xx < outputWidth; xx++) {
                     Color c = colors[xx, (int) yy];
-                    if (invert && c.Equals(Colors.Gold)) {
-                        if (centralManager!.getWFCHandler().isOverlappingModel()) {
-                            Color atPos = centralManager.getWFCHandler().getPropagatorOutputO().get(xx, (int) yy);
-                            dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.R) << 16) + ((255 - atPos.G) << 8)
-                                + (255 - atPos.B));
-                        } else { }
-                    } else if (!invert) {
-                        dest[xx] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                    switch (invert) {
+                        case true when c.Equals(Colors.Gold): {
+                            if (centralManager.getWFCHandler().isOverlappingModel()) {
+                                Color atPos = centralManager.getWFCHandler().getOverlappingOutputAt(xx, (int) yy);
+                                dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.R) << 16) + ((255 - atPos.G) << 8)
+                                                   + (255 - atPos.B));
+                            } else {
+                                Color atPos = Colors.Cyan;
+                                dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.G) << 16) + ((255 - atPos.B) << 8)
+                                                   + (255 - atPos.R));
+                            }
+
+                            break;
+                        }
+                        case false:
+                            dest[xx] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
+                            break;
                     }
                 }
             });
