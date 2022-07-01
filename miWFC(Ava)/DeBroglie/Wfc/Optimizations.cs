@@ -3,5 +3,5 @@
 // Some compile time togglable optimizations
 // Mostly of interest when benchmarking
 internal static class Optimizations {
-    public const bool QuickSelect = false;
+    public const bool QuickSelect = true;
 }

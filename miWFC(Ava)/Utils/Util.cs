@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -185,8 +184,6 @@ public static class Util {
         int width = values.GetLength(0) * tileSize;
         int height = values.GetLength(1) * tileSize;
 
-        Trace.WriteLine(width);
-
         WriteableBitmap outputBitmap = new(new PixelSize(width, height), new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Unpremul);
@@ -246,6 +243,22 @@ public static class Util {
         }
 
         return lst.ToArray();
+    }
+
+    public static T[,] RotateArrayClockwise<T>(T[,] src) {
+        int width = src.GetUpperBound(0) + 1;
+        int height = src.GetUpperBound(1) + 1;
+        T[,] dst = new T[height, width];
+
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                int newCol = height - (row + 1);
+
+                dst[newCol, col] = src[col, row];
+            }
+        }
+
+        return dst;
     }
 
     public static WriteableBitmap combineBitmaps(WriteableBitmap bottom, int tileSizeB, WriteableBitmap top,
@@ -490,7 +503,7 @@ public static class Util {
             int firstDim = source.Count;
             int secondDim = source.GroupBy(row => row.Length).Single().Key;
 
-            var result = new T[firstDim, secondDim];
+            T[,] result = new T[firstDim, secondDim];
             for (int i = 0; i < firstDim; ++i) {
                 for (int j = 0; j < secondDim; ++j) {
                     result[i, j] = source[i][j];
@@ -503,9 +516,24 @@ public static class Util {
         }
     }
 
+    public static T[,] TransposeMatrix<T>(T[,] matrix) {
+        int rows = matrix.GetLength(0);
+        int columns = matrix.GetLength(1);
+
+        T[,] result = new T[columns, rows];
+
+        for (int c = 0; c < columns; c++) {
+            for (int r = 0; r < rows; r++) {
+                result[c, r] = matrix[r, c];
+            }
+        }
+
+        return result;
+    }
+
     public static ObservableCollection<TemplateViewModel> GetTemplates(CentralManager centralManager) {
         string inputImage = centralManager.getMainWindowVM().InputImageSelection;
-        bool isOverlapping = centralManager!.getWFCHandler().isOverlappingModel();
+        bool isOverlapping = centralManager.getWFCHandler().isOverlappingModel();
 
         string baseDir = $"{AppContext.BaseDirectory}/Assets/Templates/";
         if (!Directory.Exists(baseDir)) {
@@ -527,9 +555,9 @@ public static class Util {
                     int tileSize = centralManager.getWFCHandler().getTileSize();
                     int imageWidth = inputImageWidth / tileSize;
                     int imageHeight = inputImageHeight / tileSize;
-                    
+
                     byte[] input = File.ReadAllBytes(file);
-                    
+
                     IEnumerable<byte> trimmedInputB
                         = input.Skip(Math.Max(0,
                             input.Length - imageWidth * imageHeight));
@@ -537,10 +565,9 @@ public static class Util {
                     Split(inputBUntrimmed, imageWidth * imageHeight, out byte[] inputB, out byte[] _);
 
                     int[,] values = new int[imageWidth, imageHeight];
-                    
+
                     for (int x = 0; x < imageWidth; x++) {
                         for (int y = 0; y < imageHeight; y++) {
-                            Trace.WriteLine(x * imageWidth + y);
                             values[x, y] = inputB[x * imageHeight + y] - 2;
                         }
                     }

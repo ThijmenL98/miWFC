@@ -123,7 +123,7 @@ public partial class PaintingWindow : Window {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
         bool allowClick = !centralManager!.getMainWindowVM().IsPaintOverrideEnabled || forceClick;
-        if ((centralManager!.getMainWindowVM().PaintModeEnabled)
+        if (centralManager!.getMainWindowVM().PaintModeEnabled
             && (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
                 e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) && allowClick) {
             try {
@@ -151,7 +151,7 @@ public partial class PaintingWindow : Window {
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
                 e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) {
                 try {
-                    centralManager?.getInputManager().processClickTemplate((int) Math.Round(posX),
+                    centralManager?.getInputManager().processClickTemplateAdd((int) Math.Round(posX),
                         (int) Math.Round(posY),
                         (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                         (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
@@ -159,7 +159,12 @@ public partial class PaintingWindow : Window {
                 } catch (IndexOutOfRangeException) { }
             }
         } else if (centralManager!.getMainWindowVM().TemplatePlaceModeEnabled) {
-            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) { }
+            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
+                centralManager?.getInputManager().processClickTemplatePlace((int) Math.Round(posX),
+                    (int) Math.Round(posY),
+                    (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
+                    (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom));
+            }
         }
 
         centralManager?.getInputManager().processHoverAvailability((int) Math.Round(posX),

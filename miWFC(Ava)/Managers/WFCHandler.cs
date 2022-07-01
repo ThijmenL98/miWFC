@@ -423,7 +423,7 @@ public class WFCHandler {
             toAddPaint.Add(tvm);
         }
 
-        int sampleDimension = (xRoot.Element("rows")?.Elements("row")!).Count();
+        int sampleDimension = xRoot.Element("rows")?.Elements("row").Count() ?? 0;
         int[][] values = new int[sampleDimension][];
 
         int j = 0;
@@ -928,7 +928,7 @@ public class WFCHandler {
                                 for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
                                     toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
                                         where tvmPatt.PatternIndex.Equals(i)
-                                        let myRot = (int) (((tvmPatt.PatternRotation + 360d) % 360d) / 90d)
+                                        let myRot = (int) ((tvmPatt.PatternRotation + 360d) % 360d / 90d)
                                         where !myRot.Equals(rotRaw) || tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
                                         select tvmPatt.PatternIndex);
                                 }
@@ -939,7 +939,7 @@ public class WFCHandler {
                                 for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
                                     toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
                                         where tvmPatt.PatternIndex.Equals(i)
-                                        let myRot = (int) (((tvmPatt.PatternRotation + 360d) % 360d) / 90d)
+                                        let myRot = (int) ((tvmPatt.PatternRotation + 360d) % 360d / 90d)
                                         where !myRot.Equals(rotRaw)
                                         select tvmPatt.PatternIndex);
                                 }
@@ -1272,6 +1272,10 @@ public class WFCHandler {
 
     public Dictionary<int, Tuple<Color[], Tile>> getTileCache() {
         return tileCache;
+    }
+
+    public List<TileViewModel> getColours() {
+        return toAddPaint;
     }
 
     public HashSet<Color>? getCurrentColors() {

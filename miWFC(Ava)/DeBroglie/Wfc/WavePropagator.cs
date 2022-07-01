@@ -561,8 +561,6 @@ public class WavePropagator {
 
             return false;
         }
-
-        // TODO Experiment?
         
         bool isContradiction = false;
 
@@ -576,7 +574,6 @@ public class WavePropagator {
             if (Wave.Get(index, pattern)) {
                 // This is mostly a repeat of InternalBan, as except for patternModelConstraint,
                 // Selects are just seen as a set of bans
-
 
                 // Record information for backtracking
                 backtrackItems.Push(new IndexPatternItem {

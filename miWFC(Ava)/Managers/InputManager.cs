@@ -70,7 +70,9 @@ public class InputManager {
      */
 
     public async Task restartSolution(string source, bool force = false, bool keepOutput = false) {
+#if DEBUG
         Trace.WriteLine(@$"Restarting -> {source}");
+#endif
         if (centralManager.getWFCHandler().isChangingModels() || centralManager.getWFCHandler().isChangingImages()) {
             return;
         }
@@ -375,8 +377,8 @@ public class InputManager {
                     bool noTransparentEncounter = true;
                     for (int x = 0; x < imageWidth; x++) {
                         for (int y = 0; y < imageHeight; y++) {
-                            Color toPaint = colourArray[x][y];
-                            Color foundAtPos = centralManager.getWFCHandler().getOverlappingOutputAt(y, x);
+                            Color toPaint = colourArray[y][x];
+                            Color foundAtPos = centralManager.getWFCHandler().getOverlappingOutputAt(x, y);
 
                             if (!toPaint.Equals(foundAtPos) && toPaint.A.Equals(255) && foundAtPos.A.Equals(0)) {
                                 int idx = -1;
@@ -386,7 +388,7 @@ public class InputManager {
                                     break;
                                 }
 
-                                bool? success = processClick(y, x, imageWidth, imageHeight, idx, true).Result;
+                                bool? success = processClick(x, y, imageWidth, imageHeight, idx, true).Result;
 
                                 if (success != null && !(bool) success) {
                                     centralManager.getUIManager().dispatchError(mainWindow);
@@ -403,7 +405,7 @@ public class InputManager {
                             }
 
                             noTransparentEncounter = noTransparentEncounter &&
-                                                     centralManager.getWFCHandler().getOverlappingOutputAt(y, x).A
+                                                     centralManager.getWFCHandler().getOverlappingOutputAt(x, y).A
                                                          .Equals(255);
                         }
                     }
@@ -445,10 +447,10 @@ public class InputManager {
                     }
 
                     centralManager.getMainWindowVM().setWeights(inputW.Select(x => (double) x).ToArray());
-                } catch (AggregateException e) {
+                } catch (AggregateException exception) {
                     // TODO pre processing?
                     centralManager.getUIManager().dispatchError(mainWindow);
-                    Trace.WriteLine(e);
+                    Trace.WriteLine(exception);
                     // TODO Popup telling user input image is mismatching?
                     await restartSolution("Imported image failure (mismatch)", true);
                     return;
@@ -616,86 +618,98 @@ public class InputManager {
 
         lastProcessedX = a;
         lastProcessedY = b;
+        List<Color> availableAtLocC = new();
+        List<int> availableAtLocI = new();
+        bool? showPixel = false;
 
-        if (centralManager.getWFCHandler().isOverlappingModel()) {
-            List<Color> availableAtLoc;
+        if (pencilSelected) {
             try {
-                availableAtLoc = centralManager.getWFCHandler().getAvailablePatternsAtLocation<Color>(a, b);
-            } catch (Exception) {
-                return;
-            }
-
-            if (pencilSelected) {
-                try {
-                    (WriteableBitmap? _, bool? showPixel)
-                        = await centralManager.getWFCHandler().setTile(a, b, selectedValue, true);
-                    if (showPixel != null && (bool) showPixel) {
-                        mainWindowVM.OutputPreviewMask = centralManager.getWFCHandler().getLatestOutputBM(false);
-                        centralManager.getWFCHandler().stepBackWfc();
-                    } else {
-                        mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                            PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+                if (centralManager.getWFCHandler().isOverlappingModel()) {
+                    try {
+                        availableAtLocC = centralManager.getWFCHandler().getAvailablePatternsAtLocation<Color>(a, b);
+                    } catch (Exception) {
+                        return;
                     }
-                } catch (IndexOutOfRangeException) {
-                    mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                        PixelFormat.Bgra8888, AlphaFormat.Unpremul);
-                }
-            } else if (mainWindowVM.PaintModeEnabled) {
-                updateHoverBrushMask(a, b);
-            } else if (mainWindowVM.TemplateAddModeEnabled) {
-                updateHoverBrushMask(a, b, -1);
-            } else if (mainWindowVM.TemplatePlaceModeEnabled) {
-                // TODO template hover
-            }
-
-            mainWindowVM.HelperTiles.Clear();
-            if (!mainWindowVM.TemplateAddModeEnabled && !mainWindowVM.TemplatePlaceModeEnabled) {
-                int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
-                foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
-                    if (availableAtLoc.Contains(centralManager.getWFCHandler().getColorFromIndex(tvm.PatternIndex))) {
-                        tvm.Highlighted = tvm.PatternIndex == selectedIndex;
-                        mainWindowVM.HelperTiles.Add(tvm);
-                    }
-                }
-            }
-        } else {
-            List<int> availableAtLoc;
-            try {
-                availableAtLoc = centralManager.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);
-            } catch (Exception) {
-                return;
-            }
-
-            if (pencilSelected) {
-                (WriteableBitmap? _, bool? showPixel)
-                    = await centralManager.getWFCHandler().setTile(a, b, selectedValue, true);
-                if (showPixel != null && (bool) showPixel) {
-                    mainWindowVM.OutputPreviewMask = centralManager.getWFCHandler().getLatestOutputBM(false);
-                    centralManager.getWFCHandler().stepBackWfc();
                 } else {
-                    mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
-                        PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+                    try {
+                        availableAtLocI = centralManager.getWFCHandler().getAvailablePatternsAtLocation<int>(a, b);
+                    } catch (Exception) {
+                        return;
+                    }
                 }
-            } else if (mainWindowVM.PaintModeEnabled) {
-                updateHoverBrushMask(a, b);
-            } else if (mainWindowVM.TemplateAddModeEnabled) {
-                updateHoverBrushMask(a, b, -1);
-            } else if (mainWindowVM.TemplatePlaceModeEnabled) {
-                // TODO template hover
+
+                (WriteableBitmap? _, showPixel)
+                    = await centralManager.getWFCHandler().setTile(a, b, selectedValue, true);
+            } catch (IndexOutOfRangeException) {
+                mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+                    PixelFormat.Bgra8888, AlphaFormat.Unpremul);
             }
+        }
 
-            mainWindowVM.HelperTiles.Clear();
-            if (!mainWindowVM.TemplateAddModeEnabled && !mainWindowVM.TemplatePlaceModeEnabled) {
-                int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
+        if (showPixel != null && (bool) showPixel) {
+            mainWindowVM.OutputPreviewMask = centralManager.getWFCHandler().getLatestOutputBM(false);
+            centralManager.getWFCHandler().stepBackWfc();
+        } else {
+            mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888,
+                AlphaFormat.Unpremul);
+        }
 
-                foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
-                    if (availableAtLoc.Contains(centralManager.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))) {
-                        tvm.Highlighted = tvm.PatternIndex == selectedIndex;
-                        mainWindowVM.HelperTiles.Add(tvm);
+        if (mainWindowVM.PaintModeEnabled) {
+            updateHoverBrushMask(a, b);
+        } else if (mainWindowVM.TemplateAddModeEnabled) {
+            updateHoverBrushMask(a, b, -1);
+        } else if (mainWindowVM.TemplatePlaceModeEnabled) {
+            updateHoverTemplateMask(a, b, mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight);
+        }
+
+        mainWindowVM.HelperTiles.Clear();
+        if (!mainWindowVM.TemplateAddModeEnabled && !mainWindowVM.TemplatePlaceModeEnabled) {
+            int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
+
+            foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
+                if (centralManager.getWFCHandler().isOverlappingModel()
+                        ? availableAtLocC.Contains(centralManager.getWFCHandler()
+                            .getColorFromIndex(tvm.PatternIndex))
+                        : availableAtLocI.Contains(centralManager.getWFCHandler().getDescrambledIndex(tvm.PatternIndex))
+                   ) {
+                    tvm.Highlighted = tvm.PatternIndex == selectedIndex;
+                    mainWindowVM.HelperTiles.Add(tvm);
+                }
+            }
+        }
+    }
+
+    private void updateHoverTemplateMask(int x, int y, int imgWidth, int imgHeight) {
+        int templateIndex = centralManager.getPaintingWindow().getSelectedTemplateIndex();
+        if (templateIndex == -1) {
+            return;
+        }
+
+        TemplateViewModel selectedTVM = centralManager.getMainWindowVM().Templates[templateIndex];
+        int startX = x - selectedTVM.CenterPoint.Item1, startY = y - selectedTVM.CenterPoint.Item2;
+        int endX = startX + selectedTVM.Dimension.Item1, endY = startY + selectedTVM.Dimension.Item2;
+
+        Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
+
+        for (int placeX = startX; placeX < endX; placeX++) {
+            for (int placeY = startY; placeY < endY; placeY++) {
+                if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
+                    int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
+                        mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
+                    if (centralManager.getWFCHandler().isOverlappingModel()) {
+                        if (selectedTVM.TemplateDataO[mappedY, mappedX].A == 255) {
+                            hoverMaskColours[placeX, placeY] = Colors.Gold;
+                        }
+                    } else {
+                        if (selectedTVM.TemplateDataA[mappedY, mappedX] > 0) {
+                            hoverMaskColours[placeX, placeY] = Colors.Gold;
+                        }
                     }
                 }
             }
         }
+
+        updateMask(hoverMaskColours, false, false);
     }
 
     private void updateHoverBrushMask(int a, int b, int overrideSize = -2) {
@@ -773,7 +787,7 @@ public class InputManager {
         updateMask(maskColours, true, false);
     }
 
-    public void processClickTemplate(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
+    public void processClickTemplateAdd(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
@@ -785,6 +799,81 @@ public class InputManager {
         }
 
         updateMask(maskColours, true, true);
+    }
+
+    public async void processClickTemplatePlace(int clickX, int clickY, int imgWidth, int imgHeight) {
+        int x = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+            y = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+
+        int templateIndex = centralManager.getPaintingWindow().getSelectedTemplateIndex();
+        if (templateIndex == -1) {
+            return;
+        }
+
+        TemplateViewModel selectedTVM = centralManager.getMainWindowVM().Templates[templateIndex];
+        int startX = x - selectedTVM.CenterPoint.Item1, startY = y - selectedTVM.CenterPoint.Item2;
+        int endX = startX + selectedTVM.Dimension.Item1, endY = startY + selectedTVM.Dimension.Item2;
+
+        int placeCount = 0;
+        bool error = false;
+
+        for (int placeX = startX; placeX < endX; placeX++) {
+            for (int placeY = startY; placeY < endY; placeY++) {
+                if (!error) {
+                    if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
+                        int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
+                            mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
+                        if (centralManager.getWFCHandler().isOverlappingModel()) {
+                            Color toPlace = selectedTVM.TemplateDataO[mappedY, mappedX];
+                            if (toPlace.A == 255) {
+                                int idx = centralManager.getWFCHandler().getColours()
+                                    .TakeWhile(tileVM => !tileVM.PatternColour.Equals(toPlace)).Count();
+                                Color valAt = centralManager.getWFCHandler().getOverlappingOutputAt(placeX, placeY);
+                                if (valAt.A != 255) {
+                                    (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
+                                        .getWFCHandler()
+                                        .setTile(placeX, placeY, idx, false);
+                                    if (showPixel != null && (bool) showPixel) {
+                                        mainWindowVM.OutputImage = writeableBitmap!;
+                                        placeCount++;
+                                    } else {
+                                        error = true;
+                                    }
+                                } else {
+                                    error = !valAt.Equals(toPlace);
+                                }
+                            }
+                            //TODO
+                        } else {
+                            int indexToPlace = TransposeMatrix(selectedTVM.TemplateDataA)[mappedY, mappedX];
+                            if (indexToPlace > 0) {
+                                int valAt = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[placeX,
+                                    placeY];
+                                if (valAt.Equals(indexToPlace)) { } else if (valAt < 0) {
+                                    (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
+                                        .getWFCHandler()
+                                        .setTile(placeX, placeY, indexToPlace, false);
+                                    if (showPixel != null && (bool) showPixel) {
+                                        mainWindowVM.OutputImage = writeableBitmap!;
+                                        placeCount++;
+                                    } else {
+                                        error = true;
+                                    }
+                                } else {
+                                    error = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (error) {
+            centralManager.getWFCHandler().stepBackWfc(placeCount);
+            mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+            centralManager.getUIManager().dispatchError(centralManager.getPaintingWindow());
+        }
     }
 
     public void updateMask() {
@@ -812,8 +901,13 @@ public class InputManager {
                         case true when c.Equals(Colors.Gold): {
                             if (centralManager.getWFCHandler().isOverlappingModel()) {
                                 Color atPos = centralManager.getWFCHandler().getOverlappingOutputAt(xx, (int) yy);
-                                dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.R) << 16) + ((255 - atPos.G) << 8)
-                                                   + (255 - atPos.B));
+                                if (atPos.A == 0) {
+                                    dest[xx] = unchecked((uint) ((255 << 24) + (200 << 16)));
+                                } else {
+                                    dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.R) << 16) +
+                                                       ((255 - atPos.G) << 8)
+                                                       + (255 - atPos.B));
+                                }
                             } else {
                                 Color atPos = Colors.Cyan;
                                 dest[xx] = (uint) ((atPos.A << 24) + ((255 - atPos.G) << 16) + ((255 - atPos.B) << 8)

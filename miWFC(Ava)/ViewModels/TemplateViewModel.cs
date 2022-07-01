@@ -14,6 +14,8 @@ public class TemplateViewModel : ReactiveObject {
     private readonly int[,] _templateDataAdj = { };
     private readonly Color[,] _templateDataOve = { };
     private readonly int status; // 0 = uninitialized, 1 = overlapping template, 2 = adjacent template
+    private readonly (int, int) _centerP, _dim;
+
     private string myHash;
 
     public TemplateViewModel(WriteableBitmap image, int[,] templateData, string hash = "") {
@@ -21,6 +23,12 @@ public class TemplateViewModel : ReactiveObject {
         TemplateDataA = templateData;
         status = 2;
         myHash = hash;
+
+        templateData = Util.RotateArrayClockwise(templateData);
+
+        CenterPoint = ((int) Math.Floor((templateData.GetLength(0) - 1) / 2d),
+            (int) Math.Floor((templateData.GetLength(1) - 1) / 2d));
+        Dimension = (templateData.GetLength(0), templateData.GetLength(1));
     }
 
     public TemplateViewModel(WriteableBitmap image, Color[,] templateData, string hash = "") {
@@ -28,6 +36,12 @@ public class TemplateViewModel : ReactiveObject {
         TemplateDataO = templateData;
         status = 1;
         myHash = hash;
+
+        templateData = Util.RotateArrayClockwise(templateData);
+
+        CenterPoint = ((int) Math.Floor((templateData.GetLength(0) - 1) / 2d),
+            (int) Math.Floor((templateData.GetLength(1) - 1) / 2d));
+        Dimension = (templateData.GetLength(0), templateData.GetLength(1));
     }
 
     public async Task<bool> Save(string inputImage) {
@@ -38,7 +52,7 @@ public class TemplateViewModel : ReactiveObject {
             case 1:
                 for (int x = 0; x < TemplateDataO.GetLength(0); x++) {
                     for (int y = 0; y < TemplateDataO.GetLength(1); y++) {
-                        templateHash += (TemplateDataO[x, y].GetHashCode() * (x + 1) * (y + 1));
+                        templateHash += TemplateDataO[x, y].GetHashCode() * (x + 1) * (y + 1);
                     }
                 }
 
@@ -46,7 +60,7 @@ public class TemplateViewModel : ReactiveObject {
             case 2:
                 for (int x = 0; x < TemplateDataA.GetLength(0); x++) {
                     for (int y = 0; y < TemplateDataA.GetLength(1); y++) {
-                        templateHash += (TemplateDataA[x, y].GetHashCode() * (x + 1) * (y + 1));
+                        templateHash += TemplateDataA[x, y].GetHashCode() * (x + 1) * (y + 1);
                     }
                 }
 
@@ -66,9 +80,9 @@ public class TemplateViewModel : ReactiveObject {
             TemplateImage.Save(fileName);
 
             if (status == 2) {
-                await Util.AppendPictureData(fileName, TemplateDataA,true);
+                await Util.AppendPictureData(fileName, TemplateDataA, true);
             }
-            
+
             return true;
         }
 
@@ -87,7 +101,9 @@ public class TemplateViewModel : ReactiveObject {
 
         string fileName = baseDir + $"{inputImage}_{myHash}.wfcPatt";
 
+#if DEBUG
         Trace.WriteLine($"Deleting {fileName}");
+#endif
         if (!File.Exists(fileName)) {
             return;
         }
@@ -100,13 +116,23 @@ public class TemplateViewModel : ReactiveObject {
         init => this.RaiseAndSetIfChanged(ref _templateImage, value);
     }
 
-    private int[,] TemplateDataA {
+    public int[,] TemplateDataA {
         get => _templateDataAdj;
         init => this.RaiseAndSetIfChanged(ref _templateDataAdj, value);
     }
 
-    private Color[,] TemplateDataO {
+    public Color[,] TemplateDataO {
         get => _templateDataOve;
         init => this.RaiseAndSetIfChanged(ref _templateDataOve, value);
+    }
+
+    public (int, int) CenterPoint {
+        get => _centerP;
+        init => this.RaiseAndSetIfChanged(ref _centerP, value);
+    }
+
+    public (int, int) Dimension {
+        get => _dim;
+        init => this.RaiseAndSetIfChanged(ref _dim, value);
     }
 }
