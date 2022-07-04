@@ -23,6 +23,9 @@ using miWFC.Views;
 
 namespace miWFC.Managers;
 
+/// <summary>
+/// Manager to handle (everything) UI Related
+/// </summary>
 public class UIManager {
     private readonly CentralManager centralManager;
     private readonly MainWindow mainWindow;
@@ -47,16 +50,48 @@ public class UIManager {
     private int patternCount;
     private Dictionary<int, List<Bitmap>> similarityMap = new();
 
+    /*
+     * Initializing Functions & Constructor
+     */
+
     public UIManager(CentralManager parent) {
         centralManager = parent;
         mainWindowVM = parent.getMainWindowVM();
         mainWindow = parent.getMainWindow();
     }
-
+    
     /*
-     * UI Elements Content Updating
+     * Getters & Setters
      */
 
+    // Strings
+
+    // Numeric (Integer, Double, Float, Long ...)
+
+    // Booleans
+
+    // Images
+
+    // Objects
+
+    // Lists
+
+    // Other
+
+    /*
+     * UI Callbacks
+     */
+
+    /*
+     * Functions
+     */
+    
+    /// <summary>
+    /// Update the categories combo box 
+    /// </summary>
+    /// 
+    /// <param name="values">New Combo Box values</param>
+    /// <param name="idx">Index, default is the first item</param>
     public void updateCategories(string[]? values, int idx = 0) {
         if (values != null) {
             mainWindow.getInputControl()
@@ -65,26 +100,53 @@ public class UIManager {
         }
     }
 
+    /// <summary>
+    /// Update the input images combo box
+    /// </summary>
+    /// 
+    /// <param name="values">New Combo Box values</param>
+    /// <param name="idx">Index, default is the first item</param>
     public void updateInputImages(string[]? values, int idx = 0) {
         mainWindow.getInputControl().setInputImages(values, idx);
     }
-
+    
+    /// <summary>
+    /// Update the pattern sizes combo box
+    /// </summary>
+    /// 
+    /// <param name="values">New Combo Box values</param>
+    /// <param name="idx">Index, default is the first item</param>
     public void updatePatternSizes(int[]? values, int idx = 0) {
         mainWindow.getInputControl().setPatternSizes(values, idx);
     }
 
+    /// <summary>
+    /// Set the input image in the UI to the currently selected image
+    /// </summary>
+    /// 
+    /// <param name="newImage">Name of the selected input image</param>
     public void updateInputImage(string newImage) {
         // ReSharper disable once InconsistentNaming
         string URI = $"{AppContext.BaseDirectory}/samples/{newImage}.png";
         mainWindowVM.InputImage = new Bitmap(URI);
     }
 
+    /// <summary>
+    /// Set whether the application should instantly collapse or take steps
+    /// </summary>
+    /// 
+    /// <param name="newValue">Amount of steps to take (>100 = instantly collapse)</param>
     public void updateInstantCollapse(int newValue) {
-        bool ic = newValue == 100;
+        bool ic = newValue >= 100;
         mainWindowVM.StepAmountString = ic ? "Instantly generate output" : "Steps to take: " + newValue;
         mainWindowVM.InstantCollapse = !ic;
     }
 
+    /// <summary>
+    /// Update the position of the "Current location in time" timestamp marker
+    /// </summary>
+    /// 
+    /// <param name="amountCollapsed">Percentage of the output collapsed</param>
     public void updateTimeStampPosition(double amountCollapsed) {
         double tWidth = centralManager.getMainWindow().IsVisible
             ? mainWindow.getOutputControl().getTimelineWidth()
@@ -92,10 +154,11 @@ public class UIManager {
         mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
 
-    /*
-     * UI Window Manipulation
-     */
-
+    /// <summary>
+    /// Show each window's popup to the user
+    /// </summary>
+    ///
+    /// <param name="param">Which popup to show, based on the window the user is on</param>
     public void showPopUp(string param) {
         switch (param) {
             case "M":
@@ -113,6 +176,9 @@ public class UIManager {
         }
     }
 
+    /// <summary>
+    /// Hide all popups, triggered on closing of any popup.
+    /// </summary>
     public void hidePopUp() {
         mainWindowVM.MainInfoPopupVisible = false;
         mainWindowVM.PaintInfoPopupVisible = false;
@@ -120,17 +186,35 @@ public class UIManager {
         mainWindowVM.HeatmapInfoPopupVisible = false;
     }
 
+    /// <summary>
+    /// Whether one (or more, although designwise impossible) popups are opened or not
+    /// </summary>
+    /// 
+    /// <returns>Is any popup opened?</returns>
     public bool popUpOpened() {
         return mainWindowVM.MainInfoPopupVisible || mainWindowVM.ItemsInfoPopupVisible ||
                mainWindowVM.PaintInfoPopupVisible || mainWindowVM.HeatmapInfoPopupVisible;
     }
 
+    /// <summary>
+    /// Reset the patterns extracted from the input image to allow for the new input image to load its patterns.
+    /// </summary>
     public void resetPatterns() {
         similarityMap = new Dictionary<int, List<Bitmap>>();
         curBitmaps = new HashSet<ImageR>();
         patternCount = 0;
     }
 
+    /// <summary>
+    /// Add a new tile/pattern to the tile/pattern section of the application
+    /// </summary>
+    /// 
+    /// <param name="colors">Colour(s) used in the pattern/tile</param>
+    /// <param name="weight">Weight of the pattern/tile</param>
+    /// <param name="tileSymmetries">Symmetries of the all tiles keyed by parent tiles</param>
+    /// <param name="rawIndex">Raw index of the tile</param>
+    /// 
+    /// <returns>The TileViewModel created by the addition of the tile/pattern</returns>
     public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries,
         int rawIndex) {
         int n = colors.Height;
@@ -183,6 +267,11 @@ public class UIManager {
         return tvm;
     }
 
+    /// <summary>
+    /// Function to shake the window if the user has done something erroneous
+    /// </summary>
+    /// 
+    /// <param name="window">Window to shake</param>
     public void dispatchError(Window window) {
         dt.Stop();
         if (origPos != null) {
@@ -218,6 +307,14 @@ public class UIManager {
         dt.Start();
     }
 
+    /// <summary>
+    /// Function to switch windows
+    /// </summary>
+    /// 
+    /// <param name="window">Window to switch to</param>
+    /// <param name="checkClicked">Whether the user needs to agree to discard or save unsaved work</param>
+    /// 
+    /// <exception cref="NotImplementedException">Error caused by a nonexisting window being asked to switch to</exception>
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
 
@@ -286,6 +383,13 @@ public class UIManager {
         target.Position = source.Position;
     }
 
+    /// <summary>
+    /// Function to handle the closing of the painting window which might contain unsaved work
+    /// </summary>
+    /// 
+    /// <param name="checkClicked">Whether the user has unsaved work</param>
+    /// 
+    /// <returns>Task that finishes upon closing the prompt to save or discard unsaved work</returns>
     private async Task<bool> handlePaintingClose(bool checkClicked) {
         if (!checkClicked) {
             IMsBoxWindow<string> messageBoxCustomWindow = MessageBoxManager
@@ -315,16 +419,21 @@ public class UIManager {
         return false;
     }
 
-    /*
-     * Helper functions
-     */
-
+    /// <summary>
+    /// Reference image record struct
+    /// </summary>
+    /// 
+    /// <param name="Size">Size of the image reference</param>
+    /// <param name="Data">Data of the image reference</param>
     private record ImageR(Size Size, Dictionary<Point, Color> Data) {
         public Size Size { get; } = Size;
         public Dictionary<Point, Color> Data { get; } = Data;
     }
 }
 
+/// <summary>
+/// Enumerator for the different types of windows in this application
+/// </summary>
 public enum Windows {
     MAIN,
     PAINTING,

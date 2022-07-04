@@ -6,11 +6,20 @@ using miWFC.ContentControls;
 using miWFC.Managers;
 using miWFC.Utils;
 
+// ReSharper disable UnusedParameter.Local
+
 namespace miWFC.Views;
 
+/// <summary>
+/// Main window of the application
+/// </summary>
 public partial class MainWindow : Window {
     private CentralManager? centralManager;
     private bool triggered;
+
+    /*
+     * Initializing Functions & Constructor
+     */
 
     public MainWindow() {
         InitializeComponent();
@@ -30,17 +39,61 @@ public partial class MainWindow : Window {
         this.Find<OutputControl>("outputControl").setCentralManager(cm);
     }
 
+    /*
+     * Getters & Setters
+     */
+
+    // Strings
+
+    // Numeric (Integer, Double, Float, Long ...)
+
+    // Booleans
+
+    /// <summary>
+    /// Whether the main window has already been initialized and activated
+    /// </summary>
+    /// 
+    /// <returns>Boolean</returns>
+    public bool isWindowTriggered() {
+        return triggered;
+    }
+
+    // Images
+
+    // Objects
+
+    /// <summary>
+    /// Get the input control of the application
+    /// </summary>
+    /// 
+    /// <returns>InputControl</returns>
     public InputControl getInputControl() {
         return this.Find<InputControl>("inputControl");
     }
 
+    /// <summary>
+    /// Get the output control of the application
+    /// </summary>
+    /// 
+    /// <returns>OutputControl</returns>
     public OutputControl getOutputControl() {
         return this.Find<OutputControl>("outputControl");
     }
 
+    // Lists
+
+    // Other
+
     /*
-     * Event Handlers
+     * UI Callbacks
      */
+
+    /// <summary>
+    /// Callback for changing tabs, causing the mode of the algorithm to change
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">SelectionChangedEventArgs</param>
     private void OnTabChange(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
@@ -52,6 +105,12 @@ public partial class MainWindow : Window {
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Custom handler for keyboard input
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">KeyEventArgs</param>
     private async void keyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
@@ -130,8 +189,14 @@ public partial class MainWindow : Window {
                 base.OnKeyDown(e);
                 break;
         }
-    } // ReSharper disable twice UnusedParameter.Local
+    }
 
+    /// <summary>
+    /// Callback when the window has been initialized and activated
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">EventArgs</param>
     private async void WindowBase_OnActivated(object? sender, EventArgs e) {
         if (triggered) {
             return;
@@ -141,13 +206,18 @@ public partial class MainWindow : Window {
         triggered = true;
 
         centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager));
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(
+            centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(),
+            centralManager.getWFCHandler().getTileSize()));
     }
 
-    public bool isWindowTriggered() {
-        return triggered;
-    }
-
+    /// <summary>
+    /// Callback when the user clicks anywhere in the application and the informative popup window is opened, causing
+    /// it to close
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">PointerPressedEventArgs</param>
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e) {
         if (centralManager != null && !this.Find<Popup>("infoPopup").IsPointerOverPopup &&
             centralManager.getUIManager().popUpOpened()) {
@@ -155,6 +225,12 @@ public partial class MainWindow : Window {
         }
     }
 
+    /// <summary>
+    /// Callback when the user moves their mouse to update whether the output has been collapsed.
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">PointerEventArgs</param>
     private void InputElement_OnPointerMoved(object? sender, PointerEventArgs e) {
         centralManager!.getWFCHandler().isCollapsed();
     }

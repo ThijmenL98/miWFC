@@ -3,6 +3,9 @@ using miWFC.Views;
 
 namespace miWFC.Managers;
 
+/// <summary>
+/// Central manager of the application, tying all windows and managers together for communication of data
+/// </summary>
 public class CentralManager {
     private readonly InputManager inputManager;
     private readonly ItemWindow itemWindow;
@@ -14,6 +17,10 @@ public class CentralManager {
     private readonly UIManager uiManager;
     private readonly WeightMapWindow weightMapWindow;
     private readonly WFCHandler wfcHandler;
+
+    /*
+     * Initializing Functions & Constructor
+     */
 
     public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,
         WeightMapWindow wMW) {
@@ -28,35 +35,79 @@ public class CentralManager {
         uiManager = new UIManager(this);
         inputManager = new InputManager(this);
     }
+    
+    /*
+     * Getters
+     */
 
+    /// <summary>
+    /// Get the application's input manager
+    /// </summary>
+    /// 
+    /// <returns>InputManager</returns>
     public InputManager getInputManager() {
         return inputManager;
     }
-
+    
+    /// <summary>
+    /// Get the application's UI manager
+    /// </summary>
+    /// 
+    /// <returns>UIManager</returns>
     public UIManager getUIManager() {
         return uiManager;
     }
 
+    /// <summary>
+    /// Get the application's WFC Algorithm manager
+    /// </summary>
+    /// 
+    /// <returns>WFCHandler</returns>
     public WFCHandler getWFCHandler() {
         return wfcHandler;
     }
 
+    /// <summary>
+    /// Get the application's Main Window
+    /// </summary>
+    /// 
+    /// <returns>MainWindow</returns>
     public MainWindow getMainWindow() {
         return mainWindow;
     }
 
+    /// <summary>
+    /// Get the application's Painting Window
+    /// </summary>
+    /// 
+    /// <returns>PaintingWindow</returns>
     public PaintingWindow getPaintingWindow() {
         return paintingWindow;
     }
 
+    /// <summary>
+    /// Get the application's Item Window
+    /// </summary>
+    /// 
+    /// <returns>ItemWindow</returns>
     public ItemWindow getItemWindow() {
         return itemWindow;
     }
 
+    /// <summary>
+    /// Get the application's Main Window View Model
+    /// </summary>
+    /// 
+    /// <returns>MainWindowViewModel</returns>
     public MainWindowViewModel getMainWindowVM() {
         return mainWindowViewModel;
     }
 
+    /// <summary>
+    /// Get the application's Weight Mapping Window
+    /// </summary>
+    /// 
+    /// <returns>WeightMapWindow</returns>
     public WeightMapWindow getWeightMapWindow() {
         return weightMapWindow;
     }

@@ -9,9 +9,16 @@ using miWFC.ViewModels;
 
 namespace miWFC.ContentControls;
 
+/// <summary>
+/// Separated control for the input side of the application
+/// </summary>
 public partial class InputControl : UserControl {
     private readonly ComboBox _categoryCB, _inputCB, _patternSizeCB;
     private CentralManager? centralManager;
+
+    /*
+     * Initializing Functions & Constructor
+     */
 
     public InputControl() {
         InitializeComponent();
@@ -21,20 +28,103 @@ public partial class InputControl : UserControl {
         _patternSizeCB = this.Find<ComboBox>("patternSizeCB");
     }
 
+    private void InitializeComponent() {
+        AvaloniaXamlLoader.Load(this);
+    }
+
     public void setCentralManager(CentralManager cm) {
         centralManager = cm;
         inImgCBChangeHandler(null, null);
     }
 
-    private void InitializeComponent() {
-        AvaloniaXamlLoader.Load(this);
+    /*
+     * Getters
+     */
+
+    /// <summary>
+    /// Get the currently selected input category as string
+    /// </summary>
+    /// 
+    /// <returns>Input Category String, default "Textures"</returns>
+    public string getCategory() {
+        return (_categoryCB.SelectedItem as HoverableTextViewModel)?.DisplayText ?? "Textures";
+    }
+
+    /// <summary>
+    /// Get the currently selected input image as string
+    /// </summary>
+    /// 
+    /// <returns>Input Image String, default "3Bricks"</returns>
+    public string getInputImage() {
+        return _inputCB.SelectedItem as string ?? "3Bricks";
+    }
+
+    /// <summary>
+    /// Get the currently selected pattern size
+    /// </summary>
+    /// 
+    /// <returns>Pattern Size, default 3</returns>
+    public int getPatternSize() {
+        return (int) (_patternSizeCB.SelectedItem ?? 3);
     }
 
     /*
-     * Handlers
+     * Setters
      */
 
-    private void catCBChangeHandler(object _, SelectionChangedEventArgs e) {
+    /// <summary>
+    /// Set the input categories
+    /// </summary>
+    /// 
+    /// <param name="idx">Index</param>
+    /// <param name="values">New Combo Box Values</param>
+    public void setCategories(HoverableTextViewModel[]? values, int idx = 0) {
+        if (values != null) {
+            _categoryCB.Items = values;
+        }
+
+        _categoryCB.SelectedIndex = idx;
+    }
+
+    /// <summary>
+    /// Set the input images, decided by the selected input category
+    /// </summary>
+    /// 
+    /// <param name="idx">Index</param>
+    /// <param name="values">New Combo Box Values</param>
+    public void setInputImages(string[]? values, int idx = 0) {
+        if (values != null) {
+            _inputCB.Items = values;
+        }
+
+        _inputCB.SelectedIndex = idx;
+    }
+
+    /// <summary>
+    /// Set the pattern sizes, decided by the selected input image
+    /// </summary>
+    /// 
+    /// <param name="idx">Index</param>
+    /// <param name="values">New Combo Box Values</param>
+    public void setPatternSizes(int[]? values, int idx = 0) {
+        if (values != null) {
+            _patternSizeCB.Items = values;
+        }
+
+        _patternSizeCB.SelectedIndex = idx;
+    }
+
+    /*
+     * UI Callbacks
+     */
+
+    /// <summary>
+    /// Callback for when the user changes the input category
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">SelectionChangedEventArgs</param>
+    private void catCBChangeHandler(object sender, SelectionChangedEventArgs e) {
         if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
             return;
         }
@@ -49,11 +139,13 @@ public partial class InputControl : UserControl {
         e.Handled = true;
     }
 
-    public void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e) {
-        inImgCBChangeHandler(o, e, -1);
-    }
-
-    private async void inImgCBChangeHandler(object? o, SelectionChangedEventArgs? e, int newTab) {
+    /// <summary>
+    /// Callback for when the user changes the input image
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">SelectionChangedEventArgs</param>
+    public async void inImgCBChangeHandler(object? sender, SelectionChangedEventArgs? e) {
         if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
             return;
         }
@@ -71,25 +163,23 @@ public partial class InputControl : UserControl {
         }
 
         centralManager.getWFCHandler().setImageChanging(false);
-        if (newTab > 1 || newTab == -1) {
-            await centralManager.getInputManager().restartSolution("Image CB Handler", true);
-        }
+        await centralManager.getInputManager().restartSolution("Image CB Handler", true);
 
         centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager));
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(), centralManager.getWFCHandler().getTileSize()));
 
         if (e != null) {
             e.Handled = true;
         }
     }
 
-    public void reInitializeTemplates() {
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager));
-    }
-
-    // ReSharper disable once UnusedMember.Local
-    private async void pattSizeCBChangeHandler(object? _, SelectionChangedEventArgs e) {
+    /// <summary>
+    /// Callback for when the user changes the pattern size
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">SelectionChangedEventArgs</param>
+    private async void pattSizeCBChangeHandler(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
         }
@@ -99,57 +189,5 @@ public partial class InputControl : UserControl {
         if (centralManager.getMainWindowVM().SelectedTabIndex > 1) {
             await centralManager.getInputManager().restartSolution("Pattern CB Handler");
         }
-    }
-
-    /*
-     * Setters
-     */
-
-    public void setInputImages(string[]? values, int idx = 0) {
-        if (values != null) {
-            _inputCB.Items = values;
-        }
-
-        _inputCB.SelectedIndex = idx;
-    }
-
-    public void setPatternSizes(int[]? values, int idx = 0) {
-        if (values != null) {
-            _patternSizeCB.Items = values;
-        }
-
-        _patternSizeCB.SelectedIndex = idx;
-    }
-
-    public void setCategories(HoverableTextViewModel[]? values, int idx = 0) {
-        if (values != null) {
-            _categoryCB.Items = values;
-        }
-
-        _categoryCB.SelectedIndex = idx;
-    }
-
-    /*
-     * Getters
-     */
-
-    public string getInputImage() {
-        return _inputCB.SelectedItem as string ?? "3Bricks";
-    }
-
-    public string getCategory() {
-        return (_categoryCB.SelectedItem as HoverableTextViewModel)?.DisplayText ?? "Textures";
-    }
-
-    public int getPatternSize() {
-        return (int) (_patternSizeCB.SelectedItem ?? 3);
-    }
-
-    public double getInputImageHeight() {
-        return this.Find<Image>("inputImage").Bounds.Height;
-    }
-
-    public double getInputImageWidth() {
-        return this.Find<Image>("inputImage").Bounds.Width;
     }
 }

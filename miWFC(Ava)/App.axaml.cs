@@ -9,7 +9,15 @@ using miWFC.Views;
 
 namespace miWFC;
 
+/// <summary>
+/// Entry point of the Avalonia Application
+/// </summary>
 public class App : Application {
+    
+    /*
+     * Initializing Functions & Constructor
+     */
+
     public override void Initialize() {
         AvaloniaXamlLoader.Load(this);
         ConsoleTraceListener myWriter = new();

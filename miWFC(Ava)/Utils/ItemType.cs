@@ -2,7 +2,14 @@
 
 namespace miWFC.Utils;
 
+/// <summary>
+/// Enumerator for the different types (Categorically sorted) of items the user may place in the world.
+/// </summary>
 public class ItemType {
+    
+    /// <summary>
+    /// Enumerating list of item types
+    /// </summary>
     public static readonly ItemType[] itemTypes = {
         new(0, "#FF0000", "Key Item", "A shiny collectible usually meant for unlocking something.", false),
 
@@ -41,6 +48,10 @@ public class ItemType {
         new(12, "#00FFFF", "NPC Spawn Location",
             "Location for a Non Player Character to appear for the player to interact with.", true)
     };
+    
+    /*
+     * Initializing Functions & Constructor
+     */
 
     private ItemType(int id, string sColor, string dName, string desc, bool darkText) {
         Color = Color.Parse(sColor);
@@ -49,18 +60,63 @@ public class ItemType {
         ID = id;
         HasDarkText = darkText;
     }
+    
+    /*
+     * Getters & Setters
+     */
 
-    public Color Color { get; }
+    // Strings
 
+    /// <summary>
+    /// Display name of the item
+    /// </summary>
     public string DisplayName { get; }
 
+    /// <summary>
+    /// Description of the item
+    /// </summary>
     public string Description { get; }
 
+    // Numeric (Integer, Double, Float, Long ...)
+
+    /// <summary>
+    /// ID of the item in the enumerator
+    /// </summary>
     public int ID { get; }
 
+    // Booleans
+
+    /// <summary>
+    /// Whether the index of the item, associated with dependent items, should be dark (or light) to contrast the item
+    /// background colour
+    /// </summary>
     public bool HasDarkText { get; }
 
+    // Images
+
+    // Objects
+
+    /// <summary>
+    /// Item background colour
+    /// </summary>
+    public Color Color { get; }
+
+    /// <summary>
+    /// Function to get the item type enumerator object by its ID
+    /// </summary>
+    /// 
+    /// <param name="id">Item ID</param>
+    /// 
+    /// <returns>Item Type Enumerator Object</returns>
     public static ItemType getItemTypeByID(int id) {
         return itemTypes[id];
     }
+
+    // Lists
+
+    // Other
+    
+    /*
+     * UI Callbacks
+     */
 }

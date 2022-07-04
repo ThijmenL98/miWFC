@@ -22,6 +22,9 @@ using static miWFC.Utils.Util;
 
 namespace miWFC.Managers;
 
+/// <summary>
+/// Input Manager of the application
+/// </summary>
 public class InputManager {
     private readonly CentralManager centralManager;
     private readonly MainWindow mainWindow;
@@ -37,6 +40,10 @@ public class InputManager {
     private Color[,] maskColours;
 
     private DispatcherTimer timer = new();
+
+    /*
+     * Initializing Functions & Constructor
+     */
 
     public InputManager(CentralManager parent) {
         centralManager = parent;
@@ -66,9 +73,52 @@ public class InputManager {
     }
 
     /*
+     * Getters & Setters
+     */
+
+    // Strings
+
+    // Numeric (Integer, Double, Float, Long ...)
+
+    // Booleans
+
+    // Images
+
+    // Objects
+
+    /// <summary>
+    /// Get the default image shown to the user if the algorithm contradicts
+    /// </summary>
+    /// 
+    /// <returns>Bitmap</returns>
+    public Bitmap getNoResBM() {
+        return noResultFoundBM;
+    }
+
+    // Lists
+
+    /// <summary>
+    /// Get the colours of the user drawn mask
+    /// </summary>
+    /// 
+    /// <returns>Colour matrix</returns>
+    public Color[,] getMaskColours() {
+        return maskColours;
+    }
+
+    // Other
+
+    /*
      * Functionality
      */
 
+    /// <summary>
+    /// Restart the output, resetting all values to their defaults
+    /// </summary>
+    /// 
+    /// <param name="source">DEBUG: Source of the restart</param>
+    /// <param name="force">Whether the restart should be forced, </param>
+    /// <param name="keepOutput">Whether the reset output should be shown to the user</param>
     public async Task restartSolution(string source, bool force = false, bool keepOutput = false) {
 #if DEBUG
         Trace.WriteLine(@$"Restarting -> {source}");
@@ -114,6 +164,9 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Advance a single step in the generation of the algorithm
+    /// </summary>
     public async void advanceStep() {
         if (centralManager.getWFCHandler().getAmountCollapsed()
             .Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
@@ -142,6 +195,9 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Revert a single step in the generation of the algorithm
+    /// </summary>
     public void revertStep() {
         try {
             int prevAmountCollapsed = centralManager.getWFCHandler().getAmountCollapsed();
@@ -209,24 +265,25 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Reset the user editable mask to its defaults
+    /// </summary>
     public void resetMask() {
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
     }
 
-    public Color[,] getMaskColours() {
-        return maskColours;
-    }
-
-    public Stack<int> getSavePoints() {
-        return savePoints;
-    }
-
-    public void placeMarker(bool revertible = true, bool force = false, int curStepOverwrite = -1) {
+    /// <summary>
+    /// Place a marker or save point onto the timeline with the current state of the algorithm
+    /// </summary>
+    /// 
+    /// <param name="revertible">Whether the user can revert into the history prior to the placement of this marker</param>
+    /// <param name="force">Whether the placement of this marker should be forced</param>
+    public void placeMarker(bool revertible = true, bool force = false) {
         if (centralManager.getWFCHandler().isCollapsed() && !force) {
             return;
         }
 
-        int curStep = curStepOverwrite != -1 ? curStepOverwrite : centralManager.getWFCHandler().getAmountCollapsed();
+        int curStep = centralManager.getWFCHandler().getAmountCollapsed();
         if (curStep == 0 && !force) {
             return;
         }
@@ -263,7 +320,10 @@ public class InputManager {
         }
     }
 
-    public void loadMarker(bool doBacktrack = true) {
+    /// <summary>
+    /// Load to the first available marker unless the current marker is non-revertible
+    /// </summary>
+    public void loadMarker() {
         int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
 
         bool skipPop = false;
@@ -298,10 +358,8 @@ public class InputManager {
         }
 
         try {
-            if (doBacktrack) {
-                while (centralManager.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
-                    mainWindowVM.OutputImage = centralManager.getWFCHandler().stepBackWfc();
-                }
+            while (centralManager.getWFCHandler().getAmountCollapsed() > prevAmountCollapsed) {
+                mainWindowVM.OutputImage = centralManager.getWFCHandler().stepBackWfc();
             }
         } catch (Exception exception) {
             Trace.WriteLine(exception);
@@ -309,6 +367,9 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Allow the user to import a pre-existing solution into the application
+    /// </summary>
     public async void importSolution() {
         OpenFileDialog ofd = new() {
             Title = @"Select png solution to import",
@@ -462,6 +523,9 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Allow the user to save the current output to their system
+    /// </summary>
     public async void exportSolution() {
         SaveFileDialog sfd = new() {
             Title = @"Select export location & file name",
@@ -504,7 +568,7 @@ public class InputManager {
                             centralManager.getWFCHandler().isOverlappingModel()
                                 ? 1
                                 : centralManager.getWFCHandler().getTileSize(),
-                            getLatestItemBitMap(), getDimension(), mainWindowVM.ImageOutWidth,
+                            getLatestItemBitMap(), 17, mainWindowVM.ImageOutWidth,
                             mainWindowVM.ImageOutHeight)
                         .Save(settingsFileName.Replace(".png", ".jpg"));
                 }
@@ -518,15 +582,14 @@ public class InputManager {
                     await AppendPictureData(settingsFileName,
                         centralManager.getMainWindowVM().PaintTiles.Select(x => (int) x.PatternWeight).ToArray(),
                         false);
-                } else {
-                    await AppendPictureData(settingsFileName,
-                        centralManager.getMainWindowVM().PaintTiles.Select(x => (int) RemapToByte(x.PatternWeight))
-                            .ToArray(), false);
                 }
             }
         }
     }
 
+    /// <summary>
+    /// Upon clicking the animate button, a constant looping task is called every few milliseconds, until disabled or collapsed
+    /// </summary>
     public async void animate() {
         if (centralManager.getWFCHandler().isCollapsed()) {
             mainWindowVM.IsPlaying = false;
@@ -561,6 +624,12 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// The logic executed at each tick of the animation
+    /// </summary>
+    /// 
+    /// <param name="sender">Origin of function call</param>
+    /// <param name="e">EventArgs</param>
     private void animationTimerTick(object sender, EventArgs e) {
         lock (timer) {
             /* only work when this is no reentry while we are already working */
@@ -586,6 +655,18 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Process the user clicking onto the output whilst painting
+    /// </summary>
+    /// 
+    /// <param name="a">Click location on the x dimension</param>
+    /// <param name="b">Click location on the y dimension</param>
+    /// <param name="imgWidth">Width of the image the user clicked on</param>
+    /// <param name="imgHeight">Height of the image the user clicked on</param>
+    /// <param name="tileIdx">Index of the tile the user has selected to paint</param>
+    /// <param name="skipUI">Whether to show the output affected by the user click to the user</param>
+    /// 
+    /// <returns>Task which is completed upon setting the user selected tile at the clicked location</returns>
     public async Task<bool?> processClick(int a, int b, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
         if (!skipUI) {
             a = (int) Math.Floor(a * mainWindowVM.ImageOutWidth / (double) imgWidth);
@@ -607,6 +688,17 @@ public class InputManager {
         return showPixel;
     }
 
+    /// <summary>
+    /// Update the output hover image based on the user selected value
+    /// </summary>
+    /// 
+    /// <param name="hoverX">Hover location on the x axis</param>
+    /// <param name="hoverY">Hover location on the y axis</param>
+    /// <param name="imgWidth">Width of the image the user clicked on</param>
+    /// <param name="imgHeight">Height of the image the user clicked on</param>
+    /// <param name="selectedValue">Index of the tile the user has selected to paint</param>
+    /// <param name="pencilSelected">Whether the user has the pencil selected or a different tool</param>
+    /// <param name="force">Whether to force the hover mask creation</param>
     public async void processHoverAvailability(int hoverX, int hoverY, int imgWidth, int imgHeight, int selectedValue,
         bool pencilSelected, bool force = false) {
         int a = (int) Math.Floor(hoverX * mainWindowVM.ImageOutWidth / (double) imgWidth),
@@ -679,6 +771,14 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Update the actual mask values of the hover template
+    /// </summary>
+    /// 
+    /// <param name="x">Hover location on the x axis</param>
+    /// <param name="y">Hover location on the y axis</param>
+    /// <param name="imgWidth">Width of the image the user clicked on</param>
+    /// <param name="imgHeight">Height of the image the user clicked on</param>
     private void updateHoverTemplateMask(int x, int y, int imgWidth, int imgHeight) {
         int templateIndex = centralManager.getPaintingWindow().getSelectedTemplateIndex();
         if (templateIndex == -1) {
@@ -712,6 +812,13 @@ public class InputManager {
         updateMask(hoverMaskColours, false, false);
     }
 
+    /// <summary>
+    /// Update the actual mask values of the hover template in the painting mode
+    /// </summary>
+    /// 
+    /// <param name="a">Hover location on the x axis</param>
+    /// <param name="b">Hover location on the y axis</param>
+    /// <param name="overrideSize">Size of the brush, overwritten by the function if not set</param>
     private void updateHoverBrushMask(int a, int b, int overrideSize = -2) {
         int rawBrushSize = overrideSize == -2 ? centralManager.getPaintingWindow().getPaintBrushSize() : overrideSize;
 
@@ -744,6 +851,15 @@ public class InputManager {
         updateMask(hoverMaskColours, false, false);
     }
 
+    /// <summary>
+    /// Update the mask upon clicking in the brushing mode(s)
+    /// </summary>
+    /// 
+    /// <param name="clickX">Click location on the x axis</param>
+    /// <param name="clickY">Click location on the y axis</param>
+    /// <param name="imgWidth">Width of the image the user clicked on</param>
+    /// <param name="imgHeight">Height of the image the user clicked on</param>
+    /// <param name="add">Whether the additive or subtractive brush is selected</param>
     public void processClickMask(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
@@ -787,6 +903,15 @@ public class InputManager {
         updateMask(maskColours, true, false);
     }
 
+    /// <summary>
+    /// Update the mask when clicking in the template creation mode
+    /// </summary>
+    /// 
+    /// <param name="clickX">Click location on the x axis</param>
+    /// <param name="clickY">Click location on the y axis</param>
+    /// <param name="imgWidth">Width of the image the user clicked on</param>
+    /// <param name="imgHeight">Height of the image the user clicked on</param>
+    /// <param name="add">Whether the user has decided to add or remove from the template outline</param>
     public void processClickTemplateAdd(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
@@ -801,6 +926,14 @@ public class InputManager {
         updateMask(maskColours, true, true);
     }
 
+    /// <summary>
+    /// Update the output when clicking with a template onto the output
+    /// </summary>
+    /// 
+    /// <param name="clickX">Click location on the x axis</param>
+    /// <param name="clickY">Click location on the y axis</param>
+    /// <param name="imgWidth">Width of the image the user clicked on</param>
+    /// <param name="imgHeight">Height of the image the user clicked on</param>
     public async void processClickTemplatePlace(int clickX, int clickY, int imgWidth, int imgHeight) {
         int x = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             y = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
@@ -876,10 +1009,20 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Forwarding function with default values to updateMask(Color[,], bool, bool)
+    /// </summary>
     public void updateMask() {
         updateMask(maskColours, true, false);
     }
 
+    /// <summary>
+    /// Create and apply image representation of the user created mask
+    /// </summary>
+    /// 
+    /// <param name="colors">Mask colours</param>
+    /// <param name="updateMain">Whether to update the main image or the preview image</param>
+    /// <param name="invert">Whether to invert the colours found at each position</param>
     private void updateMask(Color[,] colors, bool updateMain, bool invert) {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
         WriteableBitmap bitmap = new(new PixelSize(outputWidth, outputHeight),
@@ -931,13 +1074,12 @@ public class InputManager {
         }
     }
 
+    /// <summary>
+    /// Reset the hovering mask
+    /// </summary>
     public void resetHoverAvailability() {
         mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
             PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         mainWindowVM.HelperTiles.Clear();
-    }
-
-    public Bitmap getNoResBM() {
-        return noResultFoundBM;
     }
 }

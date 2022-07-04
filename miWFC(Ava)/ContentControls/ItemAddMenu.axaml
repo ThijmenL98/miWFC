@@ -91,7 +91,7 @@
 										<Grid ColumnDefinitions="Auto, Auto" Margin="5">
 											<!-- ReSharper disable twice Xaml.BindingWithContextNotResolved -->
 											<CheckBox Grid.Column="0" Margin="10, 0, -10, 0"
-											          Command="{Binding OnCheckChange}"
+											          Command="{Binding ForwardSelectionToggle}"
 											          IsChecked="{Binding ItemAddChecked}" />
 											<Border Grid.Column="1" Width="58" Padding="1" Background="#55000000"
 											        CornerRadius="9"
@@ -135,7 +135,7 @@
 
 						<ComboBox Grid.Column="1" Margin="25, 5" HorizontalAlignment="Stretch" MinWidth="200" MaxWidth="300"
 						          MinHeight="40" SelectedItem="{Binding SelectedItemDependency}" x:Name="itemDependenciesCB"
-						          SelectionChanged="OnDependencyChanged" IsEnabled="{Binding ItemIsDependent}">
+						          IsEnabled="{Binding ItemIsDependent}">
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
 									<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"

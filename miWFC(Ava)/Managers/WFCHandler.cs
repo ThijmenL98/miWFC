@@ -204,7 +204,7 @@ public class WFCHandler {
     }
 
     private void initializeLocalValues() {
-        currentBitmap = getImageFromURI(mainWindow.getInputControl().getInputImage());
+        currentBitmap = getSampleFromPath(mainWindow.getInputControl().getInputImage());
         mainWindowVM.PatternTiles.Clear();
         mainWindowVM.PaintTiles.Clear();
         toAddPaint = new List<TileViewModel>();

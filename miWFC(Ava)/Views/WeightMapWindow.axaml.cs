@@ -11,16 +11,26 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.Managers;
 using miWFC.ViewModels;
+using static miWFC.Utils.Util;
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable SuggestBaseTypeForParameter
 
 namespace miWFC.Views;
 
+/// <summary>
+/// Window that handles the dynamic weight mapping of the application
+/// </summary>
 public partial class WeightMapWindow : Window {
     private readonly ComboBox _selectedTileCB, _paintingSizeCB;
     private CentralManager? centralManager;
 
     private int lastPosX = -1, lastPosY = -1;
 
-    private double[,] currentHeatMap = new double[0,0];
+    private double[,] currentHeatMap = new double[0, 0];
+
+    /*
+     * Initializing Functions & Constructor
+     */
 
     public WeightMapWindow() {
         InitializeComponent();
@@ -42,32 +52,57 @@ public partial class WeightMapWindow : Window {
 #endif
     }
 
-    /*
-     * Event Handlers
-     */
-
-    private void keyDownHandler(object? sender, KeyEventArgs e) {
-        if (centralManager == null) {
-            return;
-        }
-
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
-        switch (e.Key) {
-            default:
-                base.OnKeyDown(e);
-                break;
-        }
-    }
-
     public void setCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
+    /*
+     * Getters & Setters
+     */
+
+    // Strings
+
+    // Numeric (Integer, Double, Float, Long ...)
+
+    /// <summary>
+    /// Get the selected size of the brush, these values are diameters, not radii
+    /// </summary>
+    /// 
+    /// <returns>Selected brush size</returns>
     private int getPaintBrushSize() {
         int[] sizes = {1, 3, 6, 15, 25};
         return sizes[_paintingSizeCB.SelectedIndex];
     }
 
+    /// <summary>
+    /// Get the value of the weight mapping at the desired position
+    /// </summary>
+    /// 
+    /// <param name="x">X position</param>
+    /// <param name="y">Y position</param>
+    /// 
+    /// <returns>Value of the gradient at the desired position</returns>
+    public double getGradientValue(int x, int y) {
+        if (currentHeatMap.GetLength(0) <= x || currentHeatMap.GetLength(1) <= y) {
+            return 0d;
+        }
+
+        return currentHeatMap[x, y];
+    }
+
+    // Booleans
+
+    // Images
+
+    // Objects
+
+    /// <summary>
+    /// Get a colour representation of a 0-1 value on the inferno colour spectrum
+    /// </summary>
+    /// 
+    /// <param name="value">Value to get a colour representation of</param>
+    /// 
+    /// <returns>Hex-colour representation of the input value</returns>
     private static Color getGradientColor(double value) {
         Color[] intermediatePoints = {
             Color.Parse("#eff821"), Color.Parse("#f89540"), Color.Parse("#ca4678"), Color.Parse("#7c02a7"),
@@ -95,173 +130,50 @@ public partial class WeightMapWindow : Window {
         };
     }
 
-    public double getGradientValue(int x, int y) {
-        if (currentHeatMap.GetLength(0) <= x || currentHeatMap.GetLength(1) <= y) {
-            return 0d;
-        }
-        return currentHeatMap[x, y];
-    }
+    // Lists
 
-    private static double normalizeValue(double value, double fromOld, double toOld) {
-        return (value - fromOld) / (toOld - fromOld);
-    }
+    // Other
 
-    private static Color interpolate(Color c1, Color c2, double percentage) {
-        (double h1, double s1, double v1) = RGBtoHSV(c1);
-        (double h2, double s2, double v2) = RGBtoHSV(c2);
+    /*
+     * UI Callbacks
+     */
 
-
-        double delta = Clamp(h2 - h1 - Math.Floor((h2 - h1) / 360) * 360, 0.0f, 360);
-        if (delta > 180) {
-            delta -= 360;
+    /// <summary>
+    /// Custom handler for keyboard input
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">KeyEventArgs</param>
+    private void keyDownHandler(object? sender, KeyEventArgs e) {
+        if (centralManager == null) {
+            return;
         }
 
-        double clampedPercentage = percentage < 0d ? 0d : percentage > 1d ? 1d : percentage;
-        double newH = h1 + delta * clampedPercentage;
-
-        return HSVtoRGB(newH,
-            percentage * s1 + (1d - percentage) * s2,
-            percentage * v1 + (1d - percentage) * v2);
-    }
-
-    private static double Clamp(double value, double min, double max) {
-        if (value < min) {
-            value = min;
-        } else if (value > max) {
-            value = max;
-        }
-
-        return value;
-    }
-
-    private static (double, double, double) RGBtoHSV(Color rgb) {
-        double h = 0, s;
-
-        double min = Math.Min(Math.Min(rgb.R, rgb.G), rgb.B);
-        double v = Math.Max(Math.Max(rgb.R, rgb.G), rgb.B);
-        double delta = v - min;
-
-        if (v == 0.0) {
-            s = 0;
-        } else {
-            s = delta / v;
-        }
-
-        if (s == 0) {
-            h = 0.0;
-        } else {
-            // ReSharper disable trice CompareOfFloatsByEqualityOperator
-            if (rgb.R == v) {
-                h = (rgb.G - rgb.B) / delta;
-            } else if (rgb.G == v) {
-                h = 2 + (rgb.B - rgb.R) / delta;
-            } else if (rgb.B == v) {
-                h = 4 + (rgb.R - rgb.G) / delta;
-            }
-
-            h *= 60;
-
-            if (h < 0.0) {
-                h += 360;
-            }
-        }
-
-        return (h, s, v / 255);
-    }
-
-    private static Color HSVtoRGB(double hue, double saturation, double value) {
-        int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
-        double f = hue / 60 - Math.Floor(hue / 60);
-
-        value *= 255;
-        int v = Convert.ToInt32(value);
-        int p = Convert.ToInt32(value * (1 - saturation));
-        int q = Convert.ToInt32(value * (1 - f * saturation));
-        int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
-
-        return hi switch {
-            0 => new Color(255, (byte) v, (byte) t, (byte) p),
-            1 => Color.FromArgb(255, (byte) q, (byte) v, (byte) p),
-            2 => Color.FromArgb(255, (byte) p, (byte) v, (byte) t),
-            3 => Color.FromArgb(255, (byte) p, (byte) q, (byte) v),
-            4 => Color.FromArgb(255, (byte) t, (byte) p, (byte) v),
-            _ => Color.FromArgb(255, (byte) v, (byte) p, (byte) q)
-        };
-    }
-    
-    public void updateOutput(double[,] newCurrentHeatMap) {
-        currentHeatMap = newCurrentHeatMap;
-        int outWidth = centralManager!.getMainWindowVM().ImageOutWidth;
-        int outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
-
-        WriteableBitmap outputBitmap = new(new PixelSize(outWidth, outHeight), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
-
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, outHeight, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < outWidth; x++) {
-                    Color toSet = getGradientColor(currentHeatMap[x, (int) y]);
-                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                }
-            });
-        }
-
-        centralManager!.getMainWindowVM().CurrentHeatmap = outputBitmap;
-    }
-
-    public void resetCurrentMapping() {
-        if (_selectedTileCB.SelectedItem != null) {
-            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
-
-            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
-            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
-            double[,] maskValues = new double[outputWidth, outputHeight];
-
-            for (int x = 0; x < outputWidth; x++) {
-                for (int y = 0; y < outputHeight; y++) {
-                    maskValues[x, y] = selectedTVM.PatternWeight;
-                }
-            }
-
-            selectedTVM.WeightHeatMap = maskValues;
-            selectedTVM.DynamicWeight = false;
-
-            updateOutput(maskValues);
+        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+        switch (e.Key) {
+            default:
+                base.OnKeyDown(e);
+                break;
         }
     }
 
-    public void setCurrentMapping(double[,] maskValues) {
-        if (_selectedTileCB.SelectedItem != null) {
-            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
-            selectedTVM.WeightHeatMap = maskValues;
-            
-            HashSet<double> unique = new();
-            HashSet<double> duplicates = new();
-
-            for (int i = 0; i < maskValues.GetLength(0); ++i) {
-                for (int j = 0; j < maskValues.GetLength(1); ++j) {
-                    if (!unique.Add(maskValues[i, j])) {
-                        duplicates.Add(maskValues[i, j]);
-                    }
-                }
-            }
-
-            selectedTVM.DynamicWeight = duplicates.Count > 1;
-        }
-    }
-
+    /// <summary>
+    /// Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">PointerPressedEventArgs</param>
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
-        // ReSharper disable once IntroduceOptionalParameters.Local
         OutputImageOnPointerMoved(sender, e);
     }
 
+    /// <summary>
+    /// Callback when the user moves or clicks on the output image to adjust weights depending on the brush size at
+    /// the clicked location
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">PointerEventArgs</param>
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
             (double posX, double posY) = e.GetPosition(e.Source as Image);
@@ -341,16 +253,12 @@ public partial class WeightMapWindow : Window {
         }
     }
 
-    public void setSelectedTile(int patternIndex) {
-        foreach (TileViewModel tvm in _selectedTileCB.Items) {
-            if (tvm.RawPatternIndex.Equals(patternIndex)) {
-                _selectedTileCB.SelectedItem = tvm;
-            }
-        }
-    }
-
-    // ReSharper disable once UnusedParameter.Local
-    // ReSharper disable once SuggestBaseTypeForParameter
+    /// <summary>
+    /// Callback when the user changes the currently selected tile to set the mapping for
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">SelectionChangedEventArgs</param>
     private void SelectedTileCB_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
@@ -379,6 +287,104 @@ public partial class WeightMapWindow : Window {
             }
 
             updateOutput(maskValues);
+        }
+    }
+
+    /*
+     * Functions
+     */
+
+    /// <summary>
+    /// Function to reset the current mapping and update the output image shown to the user
+    /// </summary>
+    public void resetCurrentMapping() {
+        if (_selectedTileCB.SelectedItem != null) {
+            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
+
+            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+            double[,] maskValues = new double[outputWidth, outputHeight];
+
+            for (int x = 0; x < outputWidth; x++) {
+                for (int y = 0; y < outputHeight; y++) {
+                    maskValues[x, y] = selectedTVM.PatternWeight;
+                }
+            }
+
+            selectedTVM.WeightHeatMap = maskValues;
+            selectedTVM.DynamicWeight = false;
+
+            updateOutput(maskValues);
+        }
+    }
+
+    /// <summary>
+    /// Function to set the currently selected tile forcibly based on index
+    /// </summary>
+    ///
+    /// <param name="patternIndex">index to select</param>
+    public void setSelectedTile(int patternIndex) {
+        foreach (TileViewModel tvm in _selectedTileCB.Items) {
+            if (tvm.RawPatternIndex.Equals(patternIndex)) {
+                _selectedTileCB.SelectedItem = tvm;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Function to update the output image based on the current mapping
+    /// </summary>
+    /// 
+    /// <param name="newCurrentHeatMap">Current weight mapping</param>
+    public void updateOutput(double[,] newCurrentHeatMap) {
+        currentHeatMap = newCurrentHeatMap;
+        int outWidth = centralManager!.getMainWindowVM().ImageOutWidth;
+        int outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
+
+        WriteableBitmap outputBitmap = new(new PixelSize(outWidth, outHeight), new Vector(96, 96),
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, outHeight, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < outWidth; x++) {
+                    Color toSet = getGradientColor(currentHeatMap[x, (int) y]);
+                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
+                }
+            });
+        }
+
+        centralManager!.getMainWindowVM().CurrentHeatmap = outputBitmap;
+    }
+
+    /// <summary>
+    /// Function to forcibly set the weight mapping of the currently selected tile to a new mapping
+    /// </summary>
+    /// 
+    /// <param name="maskValues">The new weight mapping</param>
+    public void setCurrentMapping(double[,] maskValues) {
+        if (_selectedTileCB.SelectedItem != null) {
+            TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
+            selectedTVM.WeightHeatMap = maskValues;
+
+            HashSet<double> unique = new();
+            HashSet<double> duplicates = new();
+
+            for (int i = 0; i < maskValues.GetLength(0); ++i) {
+                for (int j = 0; j < maskValues.GetLength(1); ++j) {
+                    if (!unique.Add(maskValues[i, j])) {
+                        duplicates.Add(maskValues[i, j]);
+                    }
+                }
+            }
+
+            selectedTVM.DynamicWeight = duplicates.Count > 1;
         }
     }
 }

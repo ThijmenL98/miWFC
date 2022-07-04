@@ -114,8 +114,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -126,8 +126,8 @@ public class MainWindowViewModel : ViewModelBase {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
             if (centralManager != null) {
                 OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                    !centralManager!.getMainWindow().getInputControl().getCategory()
-                        .Contains("Side");
+                                               !centralManager!.getMainWindow().getInputControl().getCategory()
+                                                   .Contains("Side");
             }
 
             CategoryDescription = Util.getDescription(CategorySelection.DisplayText);
@@ -369,8 +369,8 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                !centralManager!.getMainWindow().getInputControl().getCategory()
-                    .Contains("Side");
+                                           !centralManager!.getMainWindow().getInputControl().getCategory()
+                                               .Contains("Side");
         }
     }
 
@@ -455,8 +455,8 @@ public class MainWindowViewModel : ViewModelBase {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-            !centralManager!.getMainWindow().getInputControl().getCategory()
-                .Contains("Side");
+                                       !centralManager!.getMainWindow().getInputControl().getCategory()
+                                           .Contains("Side");
 
         if (IsPlaying) {
             OnAnimate();
@@ -656,7 +656,7 @@ public class MainWindowViewModel : ViewModelBase {
                     for (int b = 0; b < mask.GetLength(1); b++) {
                         if (mask[a, b] == Colors.Gold) {
                             Color atPos = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
-                            
+
                             if (atPos.A != 255) {
                                 centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
                                 return;
@@ -694,8 +694,9 @@ public class MainWindowViewModel : ViewModelBase {
 
                 for (int a = minX; a <= maxX; a++) {
                     for (int b = minY; b <= maxY; b++) {
-                        if (mask[a, b] == Colors.Gold) { 
-                            offsetMask[a - minX, b - minY] = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
+                        if (mask[a, b] == Colors.Gold) {
+                            offsetMask[a - minX, b - minY]
+                                = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
                         } else {
                             offsetMask[a - minX, b - minY] = Colors.Transparent;
                         }
@@ -838,7 +839,7 @@ public class MainWindowViewModel : ViewModelBase {
             tvm.ItemAddChecked = false;
         }
 
-        centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
+        centralManager!.getItemWindow().getItemAddMenu().updateAllowedTiles();
         ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
         OnApplyItemsClick();
@@ -857,7 +858,7 @@ public class MainWindowViewModel : ViewModelBase {
             tvm.ItemAddChecked = false;
         }
 
-        centralManager!.getItemWindow().getItemAddMenu().updateCheckBoxesLength();
+        centralManager!.getItemWindow().getItemAddMenu().updateAllowedTiles();
     }
 
     public async void OnCustomizeWindowSwitch(string param) {
@@ -935,7 +936,7 @@ public class MainWindowViewModel : ViewModelBase {
         foreach ((TileViewModel tvm, int index) in PaintTiles.Select((model, i) => (model, i))) {
             if (itemSelected.AllowedTiles.Select(at => at.PatternIndex).Contains(index)) {
                 tvm.ItemAddChecked = true;
-                centralManager!.getItemWindow().getItemAddMenu().forwardCheckChange(index, true);
+                centralManager!.getItemWindow().getItemAddMenu().forwardAllowedTileChange(index, true);
             }
         }
 
@@ -1235,10 +1236,14 @@ public class MainWindowViewModel : ViewModelBase {
         if (templateIndex == -1) {
             return;
         }
+
         TemplateViewModel tvm = Templates[templateIndex];
         tvm.DeleteFile(InputImageSelection);
         Templates.Remove(tvm);
-        centralManager!.getMainWindow().getInputControl().reInitializeTemplates();
+        centralManager!.getInputManager().resetMask();
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(
+            centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(),
+            centralManager.getWFCHandler().getTileSize()));
     }
 
     public Tuple<int, int>[,] getLatestItemGrid() {
