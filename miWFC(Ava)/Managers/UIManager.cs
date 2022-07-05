@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -19,6 +18,7 @@ using MessageBox.Avalonia.Models;
 using miWFC.DeBroglie.Models;
 using miWFC.Utils;
 using miWFC.ViewModels;
+using miWFC.ViewModels.Structs;
 using miWFC.Views;
 
 namespace miWFC.Managers;
@@ -126,9 +126,8 @@ public class UIManager {
     /// 
     /// <param name="newImage">Name of the selected input image</param>
     public void updateInputImage(string newImage) {
-        // ReSharper disable once InconsistentNaming
-        string URI = $"{AppContext.BaseDirectory}/samples/{newImage}.png";
-        mainWindowVM.InputImage = new Bitmap(URI);
+        string uri = $"{AppContext.BaseDirectory}/samples/{newImage}.png";
+        mainWindowVM.InputImage = new Bitmap(uri);
     }
 
     /// <summary>
@@ -187,7 +186,7 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Whether one (or more, although designwise impossible) popups are opened or not
+    /// Whether one (or more, although design-wise impossible) popups are opened or not
     /// </summary>
     /// 
     /// <returns>Is any popup opened?</returns>
@@ -314,7 +313,7 @@ public class UIManager {
     /// <param name="window">Window to switch to</param>
     /// <param name="checkClicked">Whether the user needs to agree to discard or save unsaved work</param>
     /// 
-    /// <exception cref="NotImplementedException">Error caused by a nonexisting window being asked to switch to</exception>
+    /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
     public async Task switchWindow(Windows window, bool checkClicked = false) {
         mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
 
@@ -335,13 +334,13 @@ public class UIManager {
                 bool stillApply = await handlePaintingClose(checkClicked);
 
                 if (stillApply) {
-                    await centralManager.getMainWindowVM().OnApplyClick();
+                    await centralManager.getMainWindowVM().PaintingVM.OnApplyClick();
                 }
 
                 break;
             case Windows.PAINTING:
                 // Goto paint
-                mainWindowVM.PencilModeEnabled = true;
+                mainWindowVM.PaintingVM.PencilModeEnabled = true;
                 target = centralManager.getPaintingWindow();
                 break;
             case Windows.ITEMS:
@@ -409,10 +408,10 @@ public class UIManager {
             }
         }
 
-        mainWindowVM.TemplateAddModeEnabled = false;
-        mainWindowVM.TemplatePlaceModeEnabled = false;
-        mainWindowVM.PencilModeEnabled = true;
-        mainWindowVM.PaintModeEnabled = false;
+        mainWindowVM.PaintingVM.TemplateAddModeEnabled = false;
+        mainWindowVM.PaintingVM.TemplatePlaceModeEnabled = false;
+        mainWindowVM.PaintingVM.PencilModeEnabled = true;
+        mainWindowVM.PaintingVM.PaintModeEnabled = false;
 
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);

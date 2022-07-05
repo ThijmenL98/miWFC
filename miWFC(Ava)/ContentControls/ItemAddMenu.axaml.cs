@@ -12,7 +12,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.Managers;
 using miWFC.Utils;
-using miWFC.ViewModels;
+using miWFC.ViewModels.Structs;
+// ReSharper disable UnusedParameter.Local
 
 namespace miWFC.ContentControls;
 
@@ -184,7 +185,6 @@ public partial class ItemAddMenu : UserControl {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
-    // ReSharper disable twice UnusedParameter.Local
     private void OnItemChanged(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
@@ -193,8 +193,8 @@ public partial class ItemAddMenu : UserControl {
         int index = _itemsCB.SelectedIndex;
         if (index >= 0) {
             ItemType selection = ItemType.getItemTypeByID(index);
-            centralManager!.getMainWindowVM().CurrentItemImage = getItemImage(selection);
-            centralManager!.getMainWindowVM().ItemDescription = selection.Description;
+            centralManager!.getMainWindowVM().ItemVM.CurrentItemImage = getItemImage(selection);
+            centralManager!.getMainWindowVM().ItemVM.ItemDescription = selection.Description;
 
             if (_depsCB.SelectedIndex.Equals(index)) {
                 _depsCB.SelectedIndex = index == 0 ? 1 : 0;
@@ -225,7 +225,6 @@ public partial class ItemAddMenu : UserControl {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">NumericUpDownValueChangedEventArgs</param>
-    // ReSharper disable trice SuggestBaseTypeForParameter
     private void AmountRange_OnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e) {
         if (centralManager == null) {
             return;
@@ -234,34 +233,34 @@ public partial class ItemAddMenu : UserControl {
         if (e.Source is NumericUpDown source) {
             switch (source.Name!) {
                 case "NUDUpper":
-                    centralManager!.getMainWindowVM().ItemsToAddUpper
+                    centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper
                         = (int) this.Find<NumericUpDown>("NUDUpper").Value;
 
-                    while (centralManager!.getMainWindowVM().ItemsToAddUpper <=
-                           centralManager!.getMainWindowVM().ItemsToAddLower) {
-                        centralManager!.getMainWindowVM().ItemsToAddLower--;
-                        if (centralManager!.getMainWindowVM().ItemsToAddLower <= 0) {
-                            centralManager!.getMainWindowVM().ItemsToAddLower = 1;
-                            centralManager!.getMainWindowVM().ItemsToAddUpper++;
+                    while (centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper <=
+                           centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower) {
+                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower--;
+                        if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower <= 0) {
+                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower = 1;
+                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper++;
                         }
                     }
 
                     break;
 
                 case "NUDLower":
-                    centralManager!.getMainWindowVM().ItemsToAddLower
+                    centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower
                         = (int) this.Find<NumericUpDown>("NUDLower").Value;
 
-                    if (centralManager!.getMainWindowVM().ItemsToAddLower <= 0) {
-                        centralManager!.getMainWindowVM().ItemsToAddLower = 1;
+                    if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower <= 0) {
+                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower = 1;
                     }
 
-                    if (centralManager!.getMainWindowVM().ItemsToAddUpper <=
-                        centralManager!.getMainWindowVM().ItemsToAddLower) {
-                        centralManager!.getMainWindowVM().ItemsToAddUpper++;
-                        if (centralManager!.getMainWindowVM().ItemsToAddLower <= 0) {
-                            centralManager!.getMainWindowVM().ItemsToAddLower = 1;
-                            centralManager!.getMainWindowVM().ItemsToAddUpper++;
+                    if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper <=
+                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower) {
+                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper++;
+                        if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower <= 0) {
+                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower = 1;
+                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper++;
                         }
                     }
 
@@ -285,34 +284,34 @@ public partial class ItemAddMenu : UserControl {
         if (e.Source is NumericUpDown source) {
             switch (source.Name!) {
                 case "NUDMaxDist":
-                    centralManager!.getMainWindowVM().DepMaxDistance
+                    centralManager!.getMainWindowVM().ItemVM.DepMaxDistance
                         = (int) this.Find<NumericUpDown>("NUDMaxDist").Value;
 
-                    while (centralManager!.getMainWindowVM().DepMaxDistance
-                           <= centralManager!.getMainWindowVM().DepMinDistance) {
-                        centralManager!.getMainWindowVM().DepMinDistance--;
-                        if (centralManager!.getMainWindowVM().DepMinDistance <= 0) {
-                            centralManager!.getMainWindowVM().DepMinDistance = 1;
-                            centralManager!.getMainWindowVM().DepMaxDistance++;
+                    while (centralManager!.getMainWindowVM().ItemVM.DepMaxDistance
+                           <= centralManager!.getMainWindowVM().ItemVM.DepMinDistance) {
+                        centralManager!.getMainWindowVM().ItemVM.DepMinDistance--;
+                        if (centralManager!.getMainWindowVM().ItemVM.DepMinDistance <= 0) {
+                            centralManager!.getMainWindowVM().ItemVM.DepMinDistance = 1;
+                            centralManager!.getMainWindowVM().ItemVM.DepMaxDistance++;
                         }
                     }
 
                     break;
 
                 case "NUDMinDist":
-                    centralManager!.getMainWindowVM().DepMinDistance
+                    centralManager!.getMainWindowVM().ItemVM.DepMinDistance
                         = (int) this.Find<NumericUpDown>("NUDMinDist").Value;
 
-                    if (centralManager!.getMainWindowVM().DepMinDistance <= 0) {
-                        centralManager!.getMainWindowVM().DepMinDistance = 1;
+                    if (centralManager!.getMainWindowVM().ItemVM.DepMinDistance <= 0) {
+                        centralManager!.getMainWindowVM().ItemVM.DepMinDistance = 1;
                     }
 
-                    if (centralManager!.getMainWindowVM().DepMaxDistance
-                        <= centralManager!.getMainWindowVM().DepMinDistance) {
-                        centralManager!.getMainWindowVM().DepMaxDistance++;
-                        if (centralManager!.getMainWindowVM().DepMinDistance <= 0) {
-                            centralManager!.getMainWindowVM().DepMinDistance = 1;
-                            centralManager!.getMainWindowVM().DepMaxDistance++;
+                    if (centralManager!.getMainWindowVM().ItemVM.DepMaxDistance
+                        <= centralManager!.getMainWindowVM().ItemVM.DepMinDistance) {
+                        centralManager!.getMainWindowVM().ItemVM.DepMaxDistance++;
+                        if (centralManager!.getMainWindowVM().ItemVM.DepMinDistance <= 0) {
+                            centralManager!.getMainWindowVM().ItemVM.DepMinDistance = 1;
+                            centralManager!.getMainWindowVM().ItemVM.DepMaxDistance++;
                         }
                     }
 

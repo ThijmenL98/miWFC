@@ -5,7 +5,6 @@ using Avalonia.Input;
 using miWFC.ContentControls;
 using miWFC.Managers;
 using miWFC.Utils;
-
 // ReSharper disable UnusedParameter.Local
 
 namespace miWFC.Views;
@@ -116,7 +115,6 @@ public partial class MainWindow : Window {
             return;
         }
 
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (e.Key) {
             case Key.Left:
             case Key.Delete:

@@ -132,9 +132,9 @@
 							</StackPanel>
 
 							<ToggleSwitch Grid.Row="2" OffContent="Hard Brush" OnContent="Soft Brush" Margin="5"
-							              IsChecked="{Binding !HardBrushEnabled}" />
+							              IsChecked="{Binding !MappingVM.HardBrushEnabled}" />
 
-							<Button Padding="0" Grid.Row="3" Width="80" Margin="0" Command="{Binding OnMappingReset}"
+							<Button Padding="0" Grid.Row="3" Width="80" Margin="0" Command="{Binding MappingVM.OnMappingReset}"
 							        HorizontalAlignment="Center" Background="Transparent">
 								<Button.Styles>
 									<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -161,7 +161,7 @@
 								<TextBlock Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center"
 								           VerticalAlignment="Center" Width="45"
 								           FontWeight="UltraBold" FontSize="24" Margin="0"
-								           Text="{Binding HeatmapValue}" />
+								           Text="{Binding MappingVM.HeatmapValue}" />
 
 								<TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center"
 								           VerticalAlignment="Center"
@@ -170,7 +170,7 @@
 								<GridSplitter Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="10"
 								              IsEnabled="False" Background="Transparent" />
 
-								<Slider Grid.Row="2" Grid.Column="1" Value="{Binding HeatmapValue}"
+								<Slider Grid.Row="2" Grid.Column="1" Value="{Binding MappingVM.HeatmapValue}"
 								        Minimum="0" Maximum="250" TickFrequency="1"
 								        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
 								        Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
@@ -189,7 +189,7 @@
 							<Grid Grid.Row="5" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" Margin="5">
 								
 								<Button Grid.Row="0" Grid.Column="0" Padding="0" Background="Transparent"
-								        Command="{Binding OnImportWeightMap}"
+								        Command="{Binding MappingVM.OnImportWeightMap}"
 								        CommandParameter="M" Margin="5" MaxWidth="70">
 									<Button.Styles>
 										<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -212,7 +212,7 @@
 								</Button>
 								
 								<Button Grid.Row="0" Grid.Column="1" Padding="0" Background="Transparent"
-								        Command="{Binding OnExportWeightMap}"
+								        Command="{Binding MappingVM.OnExportWeightMap}"
 								        CommandParameter="M" Margin="5" MaxWidth="70">
 									<Button.Styles>
 										<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -283,7 +283,7 @@
 									<Border Margin="10" Background="#11000000" CornerRadius="10">
 										<Grid>
 											<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
-											       x:Name="outputImage" Source="{Binding CurrentHeatmap}"
+											       x:Name="outputImage" Source="{Binding MappingVM.CurrentHeatmap}"
 											       PointerPressed="OutputImageOnPointerPressed"
 											       PointerMoved="OutputImageOnPointerMoved" />
 											<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default" IsHitTestVisible="False"

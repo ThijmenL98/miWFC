@@ -5,7 +5,8 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using miWFC.Managers;
-using miWFC.ViewModels;
+using miWFC.ViewModels.Structs;
+// ReSharper disable UnusedParameter.Local
 
 namespace miWFC.Views;
 
@@ -137,7 +138,7 @@ public partial class PaintingWindow : Window {
         }
 
         _templatesCB.Items = values;
-        centralManager!.getMainWindowVM().Templates = new ObservableCollection<TemplateViewModel>(values);
+        centralManager!.getMainWindowVM().PaintingVM.Templates = new ObservableCollection<TemplateViewModel>(values);
         _templatesCB.SelectedIndex = idx;
     }
 
@@ -156,22 +157,21 @@ public partial class PaintingWindow : Window {
             return;
         }
 
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (e.Key) {
             case Key.P:
-                centralManager.getMainWindowVM().OnPencilModeClick();
+                centralManager.getMainWindowVM().PaintingVM.OnPencilModeClick();
                 e.Handled = true;
                 break;
             case Key.B:
-                centralManager.getMainWindowVM().OnPaintModeClick();
+                centralManager.getMainWindowVM().PaintingVM.OnPaintModeClick();
                 e.Handled = true;
                 break;
             case Key.R:
-                centralManager.getMainWindowVM().OnMaskReset();
+                centralManager.getMainWindowVM().PaintingVM.OnMaskReset();
                 e.Handled = true;
                 break;
             case Key.A:
-                await centralManager.getMainWindowVM().OnApplyClick();
+                await centralManager.getMainWindowVM().PaintingVM.OnApplyClick();
                 e.Handled = true;
                 break;
             case Key.Back:
@@ -243,8 +243,8 @@ public partial class PaintingWindow : Window {
     private async void OutputImageOnPointerMoved(object sender, PointerEventArgs e, bool mouseClicked) {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-        bool allowClick = !centralManager!.getMainWindowVM().IsPaintOverrideEnabled || mouseClicked;
-        if (centralManager!.getMainWindowVM().PaintModeEnabled
+        bool allowClick = !centralManager!.getMainWindowVM().PaintingVM.IsPaintOverrideEnabled || mouseClicked;
+        if (centralManager!.getMainWindowVM().PaintingVM.PaintModeEnabled
             && (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
                 e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) && allowClick) {
             try {
@@ -254,7 +254,7 @@ public partial class PaintingWindow : Window {
                     (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
                     e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
             } catch (IndexOutOfRangeException) { }
-        } else if (centralManager!.getMainWindowVM().PencilModeEnabled && canUsePencil) {
+        } else if (centralManager!.getMainWindowVM().PaintingVM.PencilModeEnabled && canUsePencil) {
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
                 int idx = getSelectedPaintIndex();
 
@@ -268,7 +268,7 @@ public partial class PaintingWindow : Window {
                     canUsePencil = false;
                 }
             }
-        } else if (centralManager!.getMainWindowVM().TemplateAddModeEnabled) {
+        } else if (centralManager!.getMainWindowVM().PaintingVM.TemplateAddModeEnabled) {
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
                 e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) {
                 try {
@@ -279,7 +279,7 @@ public partial class PaintingWindow : Window {
                         e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
                 } catch (IndexOutOfRangeException) { }
             }
-        } else if (centralManager!.getMainWindowVM().TemplatePlaceModeEnabled) {
+        } else if (centralManager!.getMainWindowVM().PaintingVM.TemplatePlaceModeEnabled) {
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
                 centralManager?.getInputManager().processClickTemplatePlace((int) Math.Round(posX),
                     (int) Math.Round(posY),
@@ -292,7 +292,7 @@ public partial class PaintingWindow : Window {
             (int) Math.Round(posY),
             (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
             (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-            _paintingPatternsCB.SelectedIndex, centralManager!.getMainWindowVM().PencilModeEnabled);
+            _paintingPatternsCB.SelectedIndex, centralManager!.getMainWindowVM().PaintingVM.PencilModeEnabled);
 
         e.Handled = true;
     }

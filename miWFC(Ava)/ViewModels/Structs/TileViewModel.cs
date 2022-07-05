@@ -5,11 +5,9 @@ using Avalonia.Media.Imaging;
 using miWFC.Managers;
 using ReactiveUI;
 // ReSharper disable UnusedMember.Global
-
 // ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable PropertyCanBeMadeInitOnly.Global
 
-namespace miWFC.ViewModels;
+namespace miWFC.ViewModels.Structs;
 
 /// <summary>
 /// View model for the tiles used in the application, whether it be an overlapping pattern or an adjacent tile
@@ -26,10 +24,11 @@ public class TileViewModel : ReactiveObject {
         _rotateDisabled,
         _highlighted,
         _itemAddChecked,
-        _dynamicWeight,
-        _mayRotate,
-        _mayFlip,
-        _mayTransform,
+        _dynamicWeight;
+
+    private readonly bool _mayFlip, _mayRotate;
+
+    private bool _mayTransform,
         _patternDisabled;
 
     private double _patternWeight, _changeAmount = 1.0d;
@@ -258,7 +257,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public bool MayRotate {
         get => _mayRotate;
-        set {
+        init {
             this.RaiseAndSetIfChanged(ref _mayRotate, value);
             MayTransform = MayFlip || MayRotate;
         }
@@ -269,7 +268,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public bool MayFlip {
         get => _mayFlip;
-        set {
+        init {
             this.RaiseAndSetIfChanged(ref _mayFlip, value);
             MayTransform = MayFlip || MayRotate;
         }

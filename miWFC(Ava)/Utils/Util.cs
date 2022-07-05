@@ -13,9 +13,10 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.DeBroglie;
-using miWFC.ViewModels;
+using miWFC.ViewModels.Structs;
 
 // ReSharper disable PossibleMultipleEnumeration
+
 
 namespace miWFC.Utils;
 
@@ -525,8 +526,7 @@ public static class Util {
                             }
                         }
                     } else {
-                        // ReSharper disable once MergeIntoPattern
-                        if (x >= 5 && x <= 11 && x != 8 && y is >= 6 and <= 10) {
+                        if (x is >= 5 and <= 11 && x != 8 && y is >= 6 and <= 10) {
                             if (x < 8) {
                                 int idx = (x - 5) % 3 + (y - 6) * 3;
                                 if (segments[1][idx]) {
@@ -766,29 +766,6 @@ public static class Util {
         Array.Copy(source, index, last, 0, len2);
     }
 
-    /// <summary>
-    /// Create the transpose of a matrix
-    /// </summary>
-    /// 
-    /// <param name="matrix">Matrix to transpose</param>
-    /// <typeparam name="T">Type of the matrix</typeparam>
-    /// 
-    /// <returns>Transposed Matrix</returns>
-    public static T[,] TransposeMatrix<T>(T[,] matrix) {
-        int rows = matrix.GetLength(0);
-        int columns = matrix.GetLength(1);
-
-        T[,] result = new T[columns, rows];
-
-        for (int c = 0; c < columns; c++) {
-            for (int r = 0; r < rows; r++) {
-                result[c, r] = matrix[r, c];
-            }
-        }
-
-        return result;
-    }
-
     /*
      * PNG Logic
      */
@@ -901,15 +878,16 @@ public static class Util {
             s = delta / v;
         }
 
+        const double tolerance = 0.001d;
+
         if (s == 0) {
             h = 0.0;
         } else {
-            // ReSharper disable trice CompareOfFloatsByEqualityOperator
-            if (rgb.R == v) {
+            if (Math.Abs(rgb.R - v) < tolerance) {
                 h = (rgb.G - rgb.B) / delta;
-            } else if (rgb.G == v) {
+            } else if (Math.Abs(rgb.G - v) < tolerance) {
                 h = 2 + (rgb.B - rgb.R) / delta;
-            } else if (rgb.B == v) {
+            } else if (Math.Abs(rgb.B - v) < tolerance) {
                 h = 4 + (rgb.R - rgb.G) / delta;
             }
 

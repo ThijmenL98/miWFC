@@ -14,6 +14,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using miWFC.DeBroglie.Topo;
 using miWFC.ViewModels;
+using miWFC.ViewModels.Structs;
 using miWFC.Views;
 using static miWFC.Utils.Util;
 
@@ -542,7 +543,7 @@ public class InputManager {
         if (settingsFileName != null) {
             bool hasItems = mainWindow.getInputControl().getCategory().Equals("Worlds Top-Down")
                             && centralManager.getWFCHandler().isCollapsed()
-                            && centralManager.getMainWindowVM().ItemDataGrid.Count > 0;
+                            && centralManager.getMainWindowVM().ItemVM.ItemDataGrid.Count > 0;
 
             if (hasItems) {
                 centralManager.getWFCHandler().getLatestOutputBM(false)
@@ -553,7 +554,7 @@ public class InputManager {
                         centralManager.getWFCHandler().getPropagatorOutputA().toArray2d(), false);
                 }
 
-                Tuple<int, int>[,] itemsGrid = mainWindowVM.getLatestItemGrid();
+                Tuple<int, int>[,] itemsGrid = mainWindowVM.ItemVM.getLatestItemGrid();
                 List<Tuple<int, int>> list = new();
                 for (int i = 0; i < itemsGrid.GetLength(0); i++) {
                     for (int j = 0; j < itemsGrid.GetLength(1); j++) {
@@ -564,7 +565,7 @@ public class InputManager {
                 if (list.Distinct().Count() > 1 ||
                     (!list.Distinct().Select(x => x.Item1).Contains(-1) && list.Distinct().Any())) {
                     generateRawItemImage(itemsGrid).Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
-                    combineBitmaps(centralManager.getWFCHandler().getLatestOutput(),
+                    combineBitmaps(centralManager.getWFCHandler().getLatestOutputBM(false),
                             centralManager.getWFCHandler().isOverlappingModel()
                                 ? 1
                                 : centralManager.getWFCHandler().getTileSize(),
@@ -573,7 +574,7 @@ public class InputManager {
                         .Save(settingsFileName.Replace(".png", ".jpg"));
                 }
             } else {
-                centralManager.getWFCHandler().getLatestOutput().Save(settingsFileName);
+                centralManager.getWFCHandler().getLatestOutputBM(false).Save(settingsFileName);
 
                 if (!centralManager.getWFCHandler().isOverlappingModel()) {
                     await AppendPictureData(settingsFileName,
@@ -676,7 +677,7 @@ public class InputManager {
         (WriteableBitmap? bitmap, bool? showPixel)
             = await centralManager.getWFCHandler().setTile(a, b, tileIdx, false, skipUI);
 
-        if (!skipUI && !mainWindowVM.IsPaintOverrideEnabled) {
+        if (!skipUI && !mainWindowVM.PaintingVM.IsPaintOverrideEnabled) {
             if (showPixel != null && (bool) showPixel) {
                 mainWindowVM.OutputImage = bitmap!;
                 processHoverAvailability(a, b, imgWidth, imgHeight, tileIdx, true, true);
@@ -746,16 +747,16 @@ public class InputManager {
                 AlphaFormat.Unpremul);
         }
 
-        if (mainWindowVM.PaintModeEnabled) {
+        if (mainWindowVM.PaintingVM.PaintModeEnabled) {
             updateHoverBrushMask(a, b);
-        } else if (mainWindowVM.TemplateAddModeEnabled) {
+        } else if (mainWindowVM.PaintingVM.TemplateAddModeEnabled) {
             updateHoverBrushMask(a, b, -1);
-        } else if (mainWindowVM.TemplatePlaceModeEnabled) {
+        } else if (mainWindowVM.PaintingVM.TemplatePlaceModeEnabled) {
             updateHoverTemplateMask(a, b, mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight);
         }
 
         mainWindowVM.HelperTiles.Clear();
-        if (!mainWindowVM.TemplateAddModeEnabled && !mainWindowVM.TemplatePlaceModeEnabled) {
+        if (!mainWindowVM.PaintingVM.TemplateAddModeEnabled && !mainWindowVM.PaintingVM.TemplatePlaceModeEnabled) {
             int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
 
             foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
@@ -785,7 +786,7 @@ public class InputManager {
             return;
         }
 
-        TemplateViewModel selectedTVM = centralManager.getMainWindowVM().Templates[templateIndex];
+        TemplateViewModel selectedTVM = centralManager.getMainWindowVM().PaintingVM.Templates[templateIndex];
         int startX = x - selectedTVM.CenterPoint.Item1, startY = y - selectedTVM.CenterPoint.Item2;
         int endX = startX + selectedTVM.Dimension.Item1, endY = startY + selectedTVM.Dimension.Item2;
 
@@ -943,7 +944,7 @@ public class InputManager {
             return;
         }
 
-        TemplateViewModel selectedTVM = centralManager.getMainWindowVM().Templates[templateIndex];
+        TemplateViewModel selectedTVM = centralManager.getMainWindowVM().PaintingVM.Templates[templateIndex];
         int startX = x - selectedTVM.CenterPoint.Item1, startY = y - selectedTVM.CenterPoint.Item2;
         int endX = startX + selectedTVM.Dimension.Item1, endY = startY + selectedTVM.Dimension.Item2;
 
@@ -978,7 +979,7 @@ public class InputManager {
                             }
                             //TODO
                         } else {
-                            int indexToPlace = TransposeMatrix(selectedTVM.TemplateDataA)[mappedY, mappedX];
+                            int indexToPlace = selectedTVM.TemplateDataA[mappedY, mappedX];
                             if (indexToPlace > 0) {
                                 int valAt = centralManager.getWFCHandler().getPropagatorOutputA().toArray2d()[placeX,
                                     placeY];

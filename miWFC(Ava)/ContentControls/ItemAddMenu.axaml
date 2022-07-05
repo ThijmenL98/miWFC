@@ -8,7 +8,7 @@
 		<Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
 			<Grid Grid.Row="0" RowDefinitions="Auto, *" ColumnDefinitions="Auto, Auto, *" Margin="5">
 				<ComboBox Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Stretch" Width="300"
-				          MinHeight="40" SelectedItem="{Binding SelectedItemToAdd}" x:Name="itemTypesCB"
+				          MinHeight="40" SelectedItem="{Binding ItemVM.SelectedItemToAdd}" x:Name="itemTypesCB"
 				          SelectionChanged="OnItemChanged">
 					<ComboBox.ItemTemplate>
 						<DataTemplate>
@@ -27,20 +27,20 @@
 
 						<TextBlock Grid.Column="0" Grid.Row="0" Text="Amount:" HorizontalAlignment="Center"
 						           VerticalAlignment="Center" Margin="5" />
-						<RadioButton Grid.Column="1" Margin="5, 0" IsChecked="{Binding !ItemsInRange}" Content="Fixed" />
-						<RadioButton Grid.Column="2" Margin="5, 0" IsChecked="{Binding ItemsInRange}" Content="Range" />
+						<RadioButton Grid.Column="1" Margin="5, 0" IsChecked="{Binding !ItemVM.ItemsInRange}" Content="Fixed" />
+						<RadioButton Grid.Column="2" Margin="5, 0" IsChecked="{Binding ItemVM.ItemsInRange}" Content="Range" />
 					</Grid>
 
-					<NumericUpDown Grid.Row="1" MaxHeight="10" Value="{Binding ItemsToAddValue}" IsVisible="{Binding !ItemsInRange}"
+					<NumericUpDown Grid.Row="1" MaxHeight="10" Value="{Binding ItemVM.ItemsToAddValue}" IsVisible="{Binding !ItemVM.ItemsInRange}"
 					               HorizontalAlignment="Center" Minimum="1" />
 
-					<Grid Grid.Row="1" IsVisible="{Binding ItemsInRange}" ColumnDefinitions="Auto, Auto, Auto"
+					<Grid Grid.Row="1" IsVisible="{Binding ItemVM.ItemsInRange}" ColumnDefinitions="Auto, Auto, Auto"
 					      HorizontalAlignment="Center">
-						<NumericUpDown Grid.Column="0" MaxHeight="10" Value="{Binding ItemsToAddLower}" Minimum="1"
+						<NumericUpDown Grid.Column="0" MaxHeight="10" Value="{Binding ItemVM.ItemsToAddLower}" Minimum="1"
 						               HorizontalAlignment="Center" ValueChanged="AmountRange_OnValueChanged" x:Name="NUDLower" />
 						<TextBlock Grid.Column="1" Text="to" HorizontalAlignment="Center"
 						           VerticalAlignment="Center" Margin="5" />
-						<NumericUpDown Grid.Column="2" MaxHeight="10" Value="{Binding ItemsToAddUpper}" Minimum="1"
+						<NumericUpDown Grid.Column="2" MaxHeight="10" Value="{Binding ItemVM.ItemsToAddUpper}" Minimum="1"
 						               HorizontalAlignment="Center" ValueChanged="AmountRange_OnValueChanged" x:Name="NUDUpper" />
 					</Grid>
 				</Grid>
@@ -48,14 +48,14 @@
 				<Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BoxShadow="0 0 15 0.25 Black"
 				        Margin="15, 5, 15, 5"
 				        Background="#22000000" CornerRadius="10" HorizontalAlignment="Stretch" ClipToBounds="True">
-					<Image Width="100" Height="100" Source="{Binding CurrentItemImage}"
+					<Image Width="100" Height="100" Source="{Binding ItemVM.ItemVMCurrentItemImage}"
 					       RenderOptions.BitmapInterpolationMode="Default" />
 				</Border>
 
 				<GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" IsEnabled="False" Background="Transparent"
 				              MinWidth="50" />
 
-				<TextBox Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="5, 0" Text="{Binding ItemDescription}"
+				<TextBox Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="5, 0" Text="{Binding ItemVM.ItemDescription}"
 				         HorizontalAlignment="Stretch" TextWrapping="Wrap" />
 			</Grid>
 
@@ -65,15 +65,15 @@
 				<Grid Grid.Column="0" Grid.Row="0" RowDefinitions="Auto, Auto, Auto">
 					<TextBlock Grid.Row="0" Text="Where to appear:" VerticalAlignment="Center" Margin="5" />
 
-					<RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemsMayAppearAnywhere}"
+					<RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemVM.ItemsMayAppearAnywhere}"
 					             Content="Dynamic" />
-					<RadioButton Grid.Row="2" Margin="25, 0, 5, 0" IsChecked="{Binding ItemsMayAppearAnywhere}"
+					<RadioButton Grid.Row="2" Margin="25, 0, 5, 0" IsChecked="{Binding ItemVM.ItemsMayAppearAnywhere}"
 					             Content="Anywhere" />
 				</Grid>
 
 				<Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Margin="5, 0, 5, 110" RowDefinitions="Auto, *"
 				      Width="230"
-				      IsVisible="{Binding !ItemsMayAppearAnywhere}">
+				      IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}">
 					<TextBlock Grid.Row="0" Text="Please select the allowed tiles:" Margin="5, 5, 5, 15" />
 
 					<Border Background="#22000000" Grid.Row="1"
@@ -127,15 +127,15 @@
 				<Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto, Auto, Auto, Auto, Auto">
 					<TextBlock Grid.Row="0" Text="(Optional) Select linked item:" VerticalAlignment="Center" Margin="5" />
 
-					<RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemIsDependent}"
+					<RadioButton Grid.Row="1" Margin="25, 0, 5, 0" IsChecked="{Binding !ItemVM.ItemIsDependent}"
 					             Content="None" />
-					<Grid Grid.Row="2" Margin="25, 0, 5, 0" Grid.ColumnDefinitions="Auto, *">
-						<RadioButton Grid.Column="0" IsChecked="{Binding ItemIsDependent}"
+					<Grid Grid.Row="2" Margin="25, 0, 5, 0" ColumnDefinitions="Auto, *">
+						<RadioButton Grid.Column="0" IsChecked="{Binding ItemVM.ItemIsDependent}"
 						             Content="Select:" />
 
 						<ComboBox Grid.Column="1" Margin="25, 5" HorizontalAlignment="Stretch" MinWidth="200" MaxWidth="300"
-						          MinHeight="40" SelectedItem="{Binding SelectedItemDependency}" x:Name="itemDependenciesCB"
-						          IsEnabled="{Binding ItemIsDependent}">
+						          MinHeight="40" SelectedItem="{Binding ItemVM.SelectedItemDependency}" x:Name="itemDependenciesCB"
+						          IsEnabled="{Binding ItemVM.ItemIsDependent}">
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
 									<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
@@ -149,17 +149,17 @@
 						</ComboBox>
 					</Grid>
 
-					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" IsVisible="{Binding ItemIsDependent}">
+					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" IsVisible="{Binding ItemVM.ItemIsDependent}">
 						<Image Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left" Margin="15" />
 
 						<Grid Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *"
 						      VerticalAlignment="Center" Margin="15">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="Max distance:" Margin="15, 35" />
-							<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding DepMaxDistance}"
+							<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ItemVM.DepMaxDistance}"
 							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMaxDist" Minimum="1" />
 
 							<TextBlock Grid.Column="0" Grid.Row="1" Text="Min distance:" Margin="15, 35" />
-							<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" Value="{Binding DepMinDistance}"
+							<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" Value="{Binding ItemVM.DepMinDistance}"
 							               ValueChanged="DependencyDistance_OnValueChanged" x:Name="NUDMinDist" Minimum="1" />
 						</Grid>
 					</Grid>
@@ -175,10 +175,10 @@
 
 					<GridSplitter Grid.Row="1" Grid.Column="1" Width="20"
 					              IsEnabled="False" Background="Transparent"
-					              IsVisible="{Binding !ItemsMayAppearAnywhere}" />
+					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 
 					<Button Padding="0" Background="Transparent" Grid.Row="1" VerticalAlignment="Bottom"
-					        Command="{Binding OnItemMenuApply}" Grid.Column="2"
+					        Command="{Binding ItemVM.OnItemMenuApply}" Grid.Column="2"
 					        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 						<Button.Styles>
 							<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -202,10 +202,10 @@
 
 					<GridSplitter Grid.Row="1" Grid.Column="3" Width="20"
 					              IsEnabled="False" Background="Transparent"
-					              IsVisible="{Binding !ItemsMayAppearAnywhere}" />
+					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 
 					<Button Grid.Row="1" Grid.Column="4" Padding="0" Background="Transparent"
-					        Command="{Binding OnExitItemAddition}"
+					        Command="{Binding ItemVM.OnExitItemAddition}"
 					        HorizontalAlignment="Center" Margin="5" MaxWidth="80"
 					        VerticalAlignment="Bottom">
 						<Button.Styles>
@@ -230,7 +230,7 @@
 
 					<GridSplitter Grid.Row="1" Grid.Column="5" Width="20"
 					              IsEnabled="False" Background="Transparent"
-					              IsVisible="{Binding !ItemsMayAppearAnywhere}" />
+					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 				</Grid>
 			</Grid>
 		</Grid>

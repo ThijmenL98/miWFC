@@ -2,10 +2,9 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using miWFC.Managers;
 using miWFC.Utils;
-using miWFC.ViewModels;
-
-// ReSharper disable SuggestBaseTypeForParameter
+using miWFC.ViewModels.Structs;
 // ReSharper disable UnusedParameter.Local
+// ReSharper disable SuggestBaseTypeForParameter
 
 namespace miWFC.ContentControls;
 
@@ -166,7 +165,9 @@ public partial class InputControl : UserControl {
         await centralManager.getInputManager().restartSolution("Image CB Handler", true);
 
         centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(), centralManager.getWFCHandler().getTileSize()));
+        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(
+            centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(),
+            centralManager.getWFCHandler().getTileSize()));
 
         if (e != null) {
             e.Handled = true;

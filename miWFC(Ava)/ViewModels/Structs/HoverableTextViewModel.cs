@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
+// ReSharper disable UnusedMember.Local
 
-namespace miWFC.ViewModels;
+namespace miWFC.ViewModels.Structs;
 
 /// <summary>
 /// View Model element for combobox string entries, allows the element to be hovered instead of being pure text
@@ -29,14 +30,13 @@ public class HoverableTextViewModel : ReactiveObject {
     /// </summary>
     public string DisplayText {
         get => _displayText;
-        init => this.RaiseAndSetIfChanged(ref _displayText, value);
+        private init => this.RaiseAndSetIfChanged(ref _displayText, value);
     }
 
     /// <summary>
     /// Text shown to the user when hovering
     /// </summary>
     private string ToolTipText {
-        // ReSharper disable once UnusedMember.Local
         get => _toolTipText;
         init => this.RaiseAndSetIfChanged(ref _toolTipText, value);
     }

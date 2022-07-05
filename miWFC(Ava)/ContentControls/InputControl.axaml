@@ -98,7 +98,7 @@
 			<TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Text="Input Wrapping" TextAlignment="Center"
 			           VerticalAlignment="Center" />
 
-			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" Command="{Binding OnInputWrappingChanged}" />
+			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" Command="{Binding InputVM.OnInputWrappingChanged}" />
 		</Grid>
 
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300" />

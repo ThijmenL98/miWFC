@@ -108,7 +108,7 @@
                               RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" Margin="10"
                               VerticalAlignment="Top">
                             <Button Padding="0" Background="Transparent" Grid.Row="0"
-                                    Command="{Binding OnPencilModeClick}" Grid.Column="0"
+                                    Command="{Binding PaintingVM.OnPencilModeClick}" Grid.Column="0"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -121,8 +121,8 @@
                                     </Style>
                                 </Button.Styles>
                                 <Panel>
-                                    <Image IsVisible="{Binding !PencilModeEnabled}" Source="/Assets/Pencil.png" />
-                                    <Image IsVisible="{Binding PencilModeEnabled}" Source="/Assets/PencilSelected.png" />
+                                    <Image IsVisible="{Binding !PaintingVM.PencilModeEnabled}" Source="/Assets/Pencil.png" />
+                                    <Image IsVisible="{Binding PaintingVM.PencilModeEnabled}" Source="/Assets/PencilSelected.png" />
                                 </Panel>
                                 <ToolTip.Tip>
                                     <StackPanel>
@@ -133,7 +133,7 @@
                             </Button>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="0"
-                                    Command="{Binding OnPaintModeClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.OnPaintModeClick}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -146,8 +146,8 @@
                                     </Style>
                                 </Button.Styles>
                                 <Panel>
-                                    <Image IsVisible="{Binding !PaintModeEnabled}" Source="/Assets/Customize.png" />
-                                    <Image IsVisible="{Binding PaintModeEnabled}"
+                                    <Image IsVisible="{Binding !PaintingVM.PaintModeEnabled}" Source="/Assets/Customize.png" />
+                                    <Image IsVisible="{Binding PaintingVM.PaintModeEnabled}"
                                            Source="/Assets/CustomizeSelected.png" />
                                 </Panel>
                                 <ToolTip.Tip>
@@ -159,7 +159,7 @@
                             </Button>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="2"
-                                    Command="{Binding OnTemplateAddModeClick}" Grid.Column="0"
+                                    Command="{Binding PaintingVM.OnTemplateAddModeClick}" Grid.Column="0"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -172,9 +172,9 @@
                                     </Style>
                                 </Button.Styles>
                                 <Panel>
-                                    <Image IsVisible="{Binding !TemplateAddModeEnabled}"
+                                    <Image IsVisible="{Binding !PaintingVM.TemplateAddModeEnabled}"
                                            Source="/Assets/TemplatingAdd.png" />
-                                    <Image IsVisible="{Binding TemplateAddModeEnabled}"
+                                    <Image IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}"
                                            Source="/Assets/TemplatingAddSelected.png" />
                                 </Panel>
                                 <ToolTip.Tip>
@@ -185,7 +185,7 @@
                             </Button>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="2"
-                                    Command="{Binding OnTemplatePlaceModeClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.OnTemplatePlaceModeClick}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -198,9 +198,9 @@
                                     </Style>
                                 </Button.Styles>
                                 <Panel>
-                                    <Image IsVisible="{Binding !TemplatePlaceModeEnabled}"
+                                    <Image IsVisible="{Binding !PaintingVM.TemplatePlaceModeEnabled}"
                                            Source="/Assets/TemplatingPlace.png" />
-                                    <Image IsVisible="{Binding TemplatePlaceModeEnabled}"
+                                    <Image IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}"
                                            Source="/Assets/TemplatingPlaceSelected.png" />
                                 </Panel>
                                 <ToolTip.Tip>
@@ -216,22 +216,22 @@
 
                             <StackPanel Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2">
                                 <TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0"
-                                           IsVisible="{Binding PaintModeEnabled}"
+                                           IsVisible="{Binding PaintingVM.PaintModeEnabled}"
                                            Foreground="#007700">
                                     Left Mouse Button: Add tile(s)
                                 </TextBlock>
                                 <TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0"
-                                           IsVisible="{Binding PaintModeEnabled}"
+                                           IsVisible="{Binding PaintingVM.PaintModeEnabled}"
                                            Foreground="#CC0000">
                                     Right Mouse Button: Remove tile(s)
                                 </TextBlock>
                                 <TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0" 
-                                           IsVisible="{Binding TemplateAddModeEnabled}"
+                                           IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}"
                                            Foreground="#007700">
                                     Left Mouse Button: Add tile(s)
                                 </TextBlock>
                                 <TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0" 
-                                           IsVisible="{Binding TemplateAddModeEnabled}"
+                                           IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}"
                                            Foreground="#CC0000">
                                     Right Mouse Button: Remove tile(s)
                                 </TextBlock>
@@ -244,7 +244,7 @@
                             <!-- Tool Options for the Pencil Mode below -->
 
                             <Grid Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2" RowDefinitions="Auto, *"
-                                  HorizontalAlignment="Center" IsVisible="{Binding PencilModeEnabled}">
+                                  HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.PencilModeEnabled}">
                                 <ComboBox Grid.Row="0"
                                           SelectedIndex="0" Items="{Binding PaintTiles}"
                                           x:Name="tilePaintSelectCB" HorizontalAlignment="Center"
@@ -279,7 +279,7 @@
                                 </ComboBox>
 
                                 <ToggleSwitch Grid.Row="1" OffContent="Overwrite*" OnContent="Overwrite*"
-                                              IsChecked="{Binding IsPaintOverrideEnabled}">
+                                              IsChecked="{Binding PaintingVM.IsPaintOverrideEnabled}">
                                     <ToolTip.Tip>
                                         <StackPanel>
                                             <TextBlock TextWrapping="Wrap">Use with caution! Can only be used for single tile clicking</TextBlock>
@@ -291,9 +291,9 @@
                             <!-- Tool Options for the Paint Mode below -->
 
                             <Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-                                    Command="{Binding OnApplyClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.OnApplyClick}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-                                    IsVisible="{Binding PaintModeEnabled}">
+                                    IsVisible="{Binding PaintingVM.PaintModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
@@ -315,8 +315,8 @@
                             </Button>
 
                             <Button Padding="0" Grid.Row="5" Grid.Column="0" Margin="10" MaxWidth="110"
-                                    Command="{Binding OnMaskReset}" Background="Transparent"
-                                    IsVisible="{Binding PaintModeEnabled}">
+                                    Command="{Binding PaintingVM.OnMaskReset}" Background="Transparent"
+                                    IsVisible="{Binding PaintingVM.PaintModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -352,7 +352,7 @@
                             </Button>
 
                             <StackPanel Grid.Column="0" Grid.Row="6" Grid.ColumnSpan="2" Margin="15"
-                                        IsVisible="{Binding PaintModeEnabled}">
+                                        IsVisible="{Binding PaintingVM.PaintModeEnabled}">
                                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Margin="15, 15, 15, 7">
                                     Brush Size
@@ -373,9 +373,9 @@
                             <!-- Tool Options for the Templating Create below -->
 
                             <Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-                                    Command="{Binding OnApplyClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.OnApplyClick}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-                                    IsVisible="{Binding TemplateAddModeEnabled}">
+                                    IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
@@ -397,8 +397,8 @@
                             </Button>
 
                             <Button Padding="0" Grid.Row="5" Grid.Column="0" Margin="10" MaxWidth="110"
-                                    Command="{Binding OnMaskReset}" Background="Transparent"
-                                    IsVisible="{Binding TemplateAddModeEnabled}">
+                                    Command="{Binding PaintingVM.OnMaskReset}" Background="Transparent"
+                                    IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -436,8 +436,8 @@
                             <!-- Tool Options for the Templating Place below -->
 
                             <ComboBox Grid.Column="0" Grid.Row="5" HorizontalAlignment="Center"
-                                      x:Name="templateCB" SelectedIndex="0" Items="{Binding Templates}"
-                                      IsVisible="{Binding TemplatePlaceModeEnabled}">
+                                      x:Name="templateCB" SelectedIndex="0" Items="{Binding PaintingVM.Templates}"
+                                      IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}">
                                 <ComboBox.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel Orientation="Horizontal" MaxWidth="400" />
@@ -459,9 +459,9 @@
                             </ComboBox>
                             
                             <Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-                                    Command="{Binding OnTemplateDeleteClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.OnTemplateDeleteClick}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-                                    IsVisible="{Binding TemplatePlaceModeEnabled}">
+                                    IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverDeleteKey}" />
@@ -526,7 +526,7 @@
                                 </Grid>
                             </Grid>
 
-                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding !TemplateAddModeEnabled}">
+                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding !PaintingVM.TemplateAddModeEnabled}">
                                 <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
                                     <Border Margin="10" CornerRadius="10">
                                         <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
@@ -537,7 +537,7 @@
                                 </Grid>
                             </Grid>
 
-                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding TemplateAddModeEnabled}">
+                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}">
                                 <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
                                     <Border Margin="10" CornerRadius="10">
                                         <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
@@ -595,9 +595,9 @@
 
                         <Grid Grid.Column="2" RowDefinitions="Auto, *, Auto" Width="400">
                             <TextBlock Grid.Row="0" Margin="10" Text="Available Tiles at mouse position:"
-                                       HorizontalAlignment="Center" IsVisible="{Binding PencilModeEnabled}" />
+                                       HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.PencilModeEnabled}" />
                             <TextBlock Grid.Row="0" Margin="10" Text="Available Tiles at mouse position:"
-                                       HorizontalAlignment="Center" IsVisible="{Binding PaintModeEnabled}" />
+                                       HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.PaintModeEnabled}" />
 
                             <ItemsControl Grid.Row="1" Items="{Binding HelperTiles}"
                                           x:Name="patternItemsControl" Margin="10">
@@ -657,7 +657,7 @@
                             <Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto, *, Auto">
                                 <GridSplitter Grid.Column="0" IsEnabled="False" Background="Transparent" />
 
-                                <Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OnSave}"
+                                <Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OutputVM.OnSave}"
                                         Margin="5"
                                         HorizontalAlignment="Center" MaxWidth="80"
                                         IsEnabled="{Binding InstantCollapse}">
@@ -685,7 +685,7 @@
                                     </ToolTip.Tip>
                                 </Button>
 
-                                <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OnLoad}"
+                                <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OutputVM.OnLoad}"
                                         Margin="5"
                                         HorizontalAlignment="Center" MaxWidth="80"
                                         IsEnabled="{Binding InstantCollapse}">

@@ -56,10 +56,10 @@
 									<Grid>
 										<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
 										       x:Name="outputImage" Source="{Binding OutputImage}"
-										       IsHitTestVisible="False" IsVisible="{Binding !InItemMenu}" />
+										       IsHitTestVisible="False" IsVisible="{Binding !ItemVM.InItemMenu}" />
 										<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
 										       x:Name="itemOverlayImage" Source="{Binding ItemOverlay}"
-										       IsHitTestVisible="False" IsVisible="{Binding !InItemMenu}" />
+										       IsHitTestVisible="False" IsVisible="{Binding !ItemVM.InItemMenu}" />
 									</Grid>
 								</Border>
 							</Grid>
@@ -84,7 +84,7 @@
 						</Grid>
 
 						<contentControls:ItemAddMenu Grid.Column="0" DataContext="{Binding VM}" x:Name="itemAddMenu"
-						                             IsVisible="{Binding InItemMenu}" Margin="10" />
+						                             IsVisible="{Binding ItemVM.InItemMenu}" Margin="10" />
 
 						<Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="10" HorizontalAlignment="Stretch">
 							<Grid.Resources>
@@ -157,7 +157,7 @@
 							        VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 								<DataGrid Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
 								          GridLinesVisibility="All" HorizontalAlignment="Stretch"
-								          Items="{Binding ItemDataGrid}" x:Name="itemsDataGrid">
+								          Items="{Binding ItemVM.ItemDataGrid}" x:Name="itemsDataGrid">
 									<DataGrid.Columns>
 										<DataGridTemplateColumn Header="Item"
 										                        CellTemplate="{StaticResource ItemNameDataTemplate}"
@@ -172,8 +172,8 @@
 							<Grid Grid.Row="1" VerticalAlignment="Bottom">
 								<Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto, *, Auto">
 									<Button Padding="0" Background="Transparent" Grid.Row="0" Grid.Column="0"
-									        Command="{Binding OnAddItemEntry}"
-									        IsEnabled="{Binding !InItemMenu}"
+									        Command="{Binding ItemVM.OnAddItemEntry}"
+									        IsEnabled="{Binding !ItemVM.InItemMenu}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -200,8 +200,8 @@
 									</Button>
 
 									<Button Padding="0" Background="Transparent" Grid.Column="1"
-									        IsEnabled="{Binding !InItemMenu}"
-									        Command="{Binding OnEditItemEntry}"
+									        IsEnabled="{Binding !ItemVM.InItemMenu}"
+									        Command="{Binding ItemVM.OnEditItemEntry}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -228,8 +228,8 @@
 									</Button>
 
 									<Button Padding="0" Background="Transparent" Grid.Column="2"
-									        IsEnabled="{Binding !InItemMenu}"
-									        Command="{Binding OnRemoveItemEntry}"
+									        IsEnabled="{Binding !ItemVM.InItemMenu}"
+									        Command="{Binding ItemVM.OnRemoveItemEntry}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -258,8 +258,8 @@
 									<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
 
 									<Button Padding="0" Background="Transparent" Grid.Column="4"
-									        Command="{Binding OnApplyItemsClick}"
-									        IsEnabled="{Binding !InItemMenu}"
+									        Command="{Binding ItemVM.OnApplyItemsClick}"
+									        IsEnabled="{Binding !ItemVM.InItemMenu}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">

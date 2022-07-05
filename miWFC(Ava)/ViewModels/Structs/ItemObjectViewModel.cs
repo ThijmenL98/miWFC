@@ -3,17 +3,14 @@ using System.Collections.ObjectModel;
 using Avalonia.Media.Imaging;
 using miWFC.Utils;
 using ReactiveUI;
+// ReSharper disable UnusedMember.Local
 
-// ReSharper disable MemberCanBePrivate.Global
-// ReSharper disable UnusedMember.Global
-// ReSharper disable PropertyCanBeMadeInitOnly.Global
-
-namespace miWFC.ViewModels;
+namespace miWFC.ViewModels.Structs;
 
 /// <summary>
 /// View model for the items in the item addition side of the application
 /// </summary>
-public class ItemViewModel : ReactiveObject {
+public class ItemObjectViewModel : ReactiveObject {
     private readonly ObservableCollection<TileViewModel> _allowedTiles;
     private readonly WriteableBitmap? _depItemIcon;
     private readonly bool _hasDependentItem;
@@ -21,16 +18,16 @@ public class ItemViewModel : ReactiveObject {
 
     private readonly string _itemName, _depItemString;
     private readonly ItemType _itemType;
-    private (int, int) _amount;
-    private string _amountStr;
-    private Tuple<ItemType?, (int, int)> _dependentItem;
+    private readonly (int, int) _amount;
+    private readonly string _amountStr;
+    private readonly Tuple<ItemType?, (int, int)> _dependentItem;
 
     /*
      * Initializing Functions & Constructor
      */
 
 #pragma warning disable CS8618
-    public ItemViewModel(ItemType itemType, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
+    public ItemObjectViewModel(ItemType itemType, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
         WriteableBitmap itemIcon, Tuple<ItemType?, WriteableBitmap?, (int, int)>? dependentItem) {
 #pragma warning restore CS8618
         ItemType = itemType;
@@ -64,7 +61,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Name of the item
     /// </summary>
-    public string Item {
+    private string Item {
         get => _itemName;
         init => this.RaiseAndSetIfChanged(ref _itemName, value);
     }
@@ -72,7 +69,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Name of the dependent item
     /// </summary>
-    public string DepItemString {
+    private string DepItemString {
         get => _depItemString;
         init => this.RaiseAndSetIfChanged(ref _depItemString, value);
     }
@@ -80,9 +77,9 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// String representation of the amount of appearance
     /// </summary>
-    public string AmountStr {
+    private string AmountStr {
         get => _amountStr;
-        set => this.RaiseAndSetIfChanged(ref _amountStr, value);
+        init => this.RaiseAndSetIfChanged(ref _amountStr, value);
     }
 
     // Numeric (Integer, Double, Float, Long ...)
@@ -94,7 +91,7 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public bool HasDependentItem {
         get => _hasDependentItem;
-        init => this.RaiseAndSetIfChanged(ref _hasDependentItem, value);
+        private init => this.RaiseAndSetIfChanged(ref _hasDependentItem, value);
     }
 
     // Images
@@ -102,7 +99,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Image of the item
     /// </summary>
-    public WriteableBitmap ItemIcon {
+    private WriteableBitmap ItemIcon {
         get => _itemIcon;
         init => this.RaiseAndSetIfChanged(ref _itemIcon, value);
     }
@@ -110,7 +107,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Image of the dependent item
     /// </summary>
-    public WriteableBitmap? DepItemIcon {
+    private WriteableBitmap? DepItemIcon {
         get => _depItemIcon;
         init => this.RaiseAndSetIfChanged(ref _depItemIcon, value);
     }
@@ -122,7 +119,7 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public ItemType ItemType {
         get => _itemType;
-        init => this.RaiseAndSetIfChanged(ref _itemType, value);
+        private init => this.RaiseAndSetIfChanged(ref _itemType, value);
     }
 
     // Lists
@@ -132,7 +129,7 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public ObservableCollection<TileViewModel> AllowedTiles {
         get => _allowedTiles;
-        init => this.RaiseAndSetIfChanged(ref _allowedTiles, value);
+        private init => this.RaiseAndSetIfChanged(ref _allowedTiles, value);
     }
 
     // Other
@@ -144,7 +141,7 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public (int, int) Amount {
         get => _amount;
-        set => this.RaiseAndSetIfChanged(ref _amount, value);
+        private init => this.RaiseAndSetIfChanged(ref _amount, value);
     }
 
     /// <summary>
@@ -155,7 +152,7 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public Tuple<ItemType?, (int, int)> DependentItem {
         get => _dependentItem;
-        set => this.RaiseAndSetIfChanged(ref _dependentItem, value);
+        private init => this.RaiseAndSetIfChanged(ref _dependentItem, value);
     }
 
     /*

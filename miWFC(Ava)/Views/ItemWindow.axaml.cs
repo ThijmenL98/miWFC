@@ -96,7 +96,6 @@ public partial class ItemWindow : Window {
             return;
         }
 
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (e.Key) {
             default:
                 base.OnKeyDown(e);

@@ -11,9 +11,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.Managers;
 using miWFC.ViewModels;
+using miWFC.ViewModels.Structs;
 using static miWFC.Utils.Util;
 // ReSharper disable UnusedParameter.Local
-// ReSharper disable SuggestBaseTypeForParameter
 
 namespace miWFC.Views;
 
@@ -149,7 +149,6 @@ public partial class WeightMapWindow : Window {
             return;
         }
 
-        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
         switch (e.Key) {
             default:
                 base.OnKeyDown(e);
@@ -206,7 +205,7 @@ public partial class WeightMapWindow : Window {
                     maskValues = selectedTVM.WeightHeatMap;
                 }
 
-                double selectedValue = mainWindowVM.HeatmapValue > 0 ? mainWindowVM.HeatmapValue : 0.00000000001d;
+                double selectedValue = mainWindowVM.MappingVM.HeatmapValue > 0 ? mainWindowVM.MappingVM.HeatmapValue : 0.00000000001d;
 
                 if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
                     for (int x = 0; x < outputWidth; x++) {
@@ -215,7 +214,7 @@ public partial class WeightMapWindow : Window {
                             double dy = (double) y - b;
                             double distanceSquared = dx * dx + dy * dy;
 
-                            if (mainWindowVM.HardBrushEnabled) {
+                            if (mainWindowVM.MappingVM.HardBrushEnabled) {
                                 if (distanceSquared <= brushSize) {
                                     maskValues[x, y] = selectedValue;
                                 }
@@ -243,7 +242,7 @@ public partial class WeightMapWindow : Window {
 
                 selectedTVM.DynamicWeight = duplicates.Count > 1;
                 if (!selectedTVM.DynamicWeight && duplicates.Count == 1) {
-                    selectedTVM.PatternWeight = mainWindowVM.HeatmapValue;
+                    selectedTVM.PatternWeight = mainWindowVM.MappingVM.HeatmapValue;
                 }
 
                 selectedTVM.WeightHeatMap = maskValues;
@@ -360,7 +359,7 @@ public partial class WeightMapWindow : Window {
             });
         }
 
-        centralManager!.getMainWindowVM().CurrentHeatmap = outputBitmap;
+        centralManager!.getMainWindowVM().MappingVM.CurrentHeatmap = outputBitmap;
     }
 
     /// <summary>

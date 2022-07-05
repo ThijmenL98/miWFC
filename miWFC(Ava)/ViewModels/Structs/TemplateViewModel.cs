@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Utils;
 using ReactiveUI;
-// ReSharper disable MemberCanBePrivate.Global
 
-namespace miWFC.ViewModels;
+namespace miWFC.ViewModels.Structs;
 
 /// <summary>
 /// View model for the templates created by the user to place as a whole into the output at a later stage
@@ -81,7 +79,7 @@ public class TemplateViewModel : ReactiveObject {
     /// </summary>
     public int[,] TemplateDataA {
         get => _templateDataAdj;
-        init => this.RaiseAndSetIfChanged(ref _templateDataAdj, value);
+        private init => this.RaiseAndSetIfChanged(ref _templateDataAdj, value);
     }
 
     /// <summary>
@@ -89,7 +87,7 @@ public class TemplateViewModel : ReactiveObject {
     /// </summary>
     public Color[,] TemplateDataO {
         get => _templateDataOve;
-        init => this.RaiseAndSetIfChanged(ref _templateDataOve, value);
+        private init => this.RaiseAndSetIfChanged(ref _templateDataOve, value);
     }
     
     // Other
@@ -100,7 +98,7 @@ public class TemplateViewModel : ReactiveObject {
     /// </summary>
     public (int, int) CenterPoint {
         get => _centerP;
-        init => this.RaiseAndSetIfChanged(ref _centerP, value);
+        private init => this.RaiseAndSetIfChanged(ref _centerP, value);
     }
 
     /// <summary>
@@ -108,7 +106,7 @@ public class TemplateViewModel : ReactiveObject {
     /// </summary>
     public (int, int) Dimension {
         get => _dim;
-        init => this.RaiseAndSetIfChanged(ref _dim, value);
+        private init => this.RaiseAndSetIfChanged(ref _dim, value);
     }
 
     /*

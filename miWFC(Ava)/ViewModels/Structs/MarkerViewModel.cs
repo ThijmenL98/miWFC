@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 
-namespace miWFC.ViewModels;
+namespace miWFC.ViewModels.Structs;
 
 /// <summary>
 /// View model for the markers shown on the application timeline
@@ -8,7 +8,7 @@ namespace miWFC.ViewModels;
 public class MarkerViewModel : ReactiveObject {
     private readonly int _index;
     private readonly bool _revertible;
-    private readonly double _widthOffset, _collapsePercentage; // ReSharper disable trice UnusedMember.Local
+    private readonly double _widthOffset, _collapsePercentage;
 
     /*
      * Initializing Functions & Constructor
@@ -34,8 +34,7 @@ public class MarkerViewModel : ReactiveObject {
     /// </summary>
     public int MarkerIndex {
         get => _index;
-        // ReSharper disable once MemberCanBePrivate.Global
-        init => this.RaiseAndSetIfChanged(ref _index, value);
+        private init => this.RaiseAndSetIfChanged(ref _index, value);
     }
 
     /// <summary>
@@ -51,8 +50,7 @@ public class MarkerViewModel : ReactiveObject {
     /// </summary>
     public double MarkerCollapsePercentage {
         get => _collapsePercentage;
-        // ReSharper disable once MemberCanBePrivate.Global
-        init => this.RaiseAndSetIfChanged(ref _collapsePercentage, value);
+        private init => this.RaiseAndSetIfChanged(ref _collapsePercentage, value);
     }
     
     // Booleans
