@@ -64,7 +64,7 @@
 								</Border>
 							</Grid>
 
-							<Button Padding="0" Background="Transparent" Command="{Binding OnInfoClick}"
+							<Button Padding="0" Background="Transparent" Command="{Binding OpenInfoPopup}"
 							        CommandParameter="I"
 							        Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
 								<Button.Styles>
@@ -172,7 +172,7 @@
 							<Grid Grid.Row="1" VerticalAlignment="Bottom">
 								<Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto, *, Auto">
 									<Button Padding="0" Background="Transparent" Grid.Row="0" Grid.Column="0"
-									        Command="{Binding ItemVM.OnAddItemEntry}"
+									        Command="{Binding ItemVM.CreateNewItem}"
 									        IsEnabled="{Binding !ItemVM.InItemMenu}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
@@ -201,7 +201,7 @@
 
 									<Button Padding="0" Background="Transparent" Grid.Column="1"
 									        IsEnabled="{Binding !ItemVM.InItemMenu}"
-									        Command="{Binding ItemVM.OnEditItemEntry}"
+									        Command="{Binding ItemVM.EditSelectedItem}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -229,7 +229,7 @@
 
 									<Button Padding="0" Background="Transparent" Grid.Column="2"
 									        IsEnabled="{Binding !ItemVM.InItemMenu}"
-									        Command="{Binding ItemVM.OnRemoveItemEntry}"
+									        Command="{Binding ItemVM.RemoveSelectedItem}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -258,7 +258,7 @@
 									<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
 
 									<Button Padding="0" Background="Transparent" Grid.Column="4"
-									        Command="{Binding ItemVM.OnApplyItemsClick}"
+									        Command="{Binding ItemVM.GenerateItemGrid}"
 									        IsEnabled="{Binding !ItemVM.InItemMenu}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
@@ -288,7 +288,7 @@
 									<GridSplitter Grid.Column="5" IsEnabled="False" Background="Transparent" />
 
 									<Button Grid.Column="6" Padding="0" Background="Transparent"
-									        Command="{Binding OnCustomizeWindowSwitch}"
+									        Command="{Binding SwitchWindow}"
 									        CommandParameter="M" HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:pointerover /template/ ContentPresenter">

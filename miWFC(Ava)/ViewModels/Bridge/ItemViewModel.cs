@@ -215,7 +215,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Function called when applying the currently created item in the item addition menu
     /// </summary>
-    public void OnItemMenuApply() {
+    public void AddItemToDataGrid() {
         ItemType itemType = centralManager!.getItemWindow().getItemAddMenu().getSelectedItemType();
         int amountUpper;
         int amountLower;
@@ -257,7 +257,7 @@ public class ItemViewModel : ReactiveObject {
         }
 
         if (_editingEntry != -2) {
-            OnRemoveItemEntryI(_editingEntry);
+            RemoveIndexedItem(_editingEntry);
         }
 
         ItemDataGrid.Add(new ItemObjectViewModel(itemType, (amountLower, amountUpper),
@@ -280,13 +280,13 @@ public class ItemViewModel : ReactiveObject {
         mainWindowViewModel.ItemOverlay
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
-        OnApplyItemsClick();
+        GenerateItemGrid();
     }
 
     /// <summary>
     /// Function called when exiting the item addition menu
     /// </summary>
-    public void OnExitItemAddition() {
+    public void ExitItemAddition() {
         InItemMenu = false;
         _editingEntry = -2;
         ItemsMayAppearAnywhere = false;
@@ -305,7 +305,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Function called when creating a new item
     /// </summary>
-    public void OnAddItemEntry() {
+    public void CreateNewItem() {
         centralManager!.getItemWindow().getItemAddMenu().updateSelectedItemIndex();
         centralManager!.getItemWindow().getItemAddMenu().updateDependencyIndex();
         ItemDescription = ItemType.itemTypes[0].Description;
@@ -315,7 +315,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Function called when editing the currently selected existing item from the data grid
     /// </summary>
-    public void OnEditItemEntry() {
+    public void EditSelectedItem() {
         DataGrid dg = centralManager!.getItemWindow().getDataGrid();
         int selectedIndex = dg.SelectedIndex;
         if (selectedIndex.Equals(-1)) {
@@ -361,15 +361,15 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Function called when removing the currently selected existing item from the data grid
     /// </summary>
-    public void OnRemoveItemEntry() {
-        OnRemoveItemEntryI(-2);
+    public void RemoveSelectedItem() {
+        RemoveIndexedItem(-2);
     }
 
     /// <summary>
     /// Function called when removing an existing item by index from the data grid
     /// </summary>
     /// <param name="selectedIndex"></param>
-    public void OnRemoveItemEntryI(int selectedIndex) {
+    public void RemoveIndexedItem(int selectedIndex) {
         DataGrid dg = centralManager!.getItemWindow().getDataGrid();
         selectedIndex = selectedIndex == -2 ? dg.SelectedIndex : selectedIndex;
         if (selectedIndex < 0) {
@@ -384,7 +384,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Function called when applying the current items from the data grid
     /// </summary>
-    public void OnApplyItemsClick() {
+    public void GenerateItemGrid() {
         if (ItemDataGrid.Count < 1) {
             WriteableBitmap newItemOverlayEmpty
                 = Util.generateItemOverlay(new Tuple<int, int>[0, 0], mainWindowViewModel.ImageOutWidth,
@@ -573,7 +573,7 @@ public class ItemViewModel : ReactiveObject {
     /// <summary>
     /// Function called to reset the items in the image
     /// </summary>
-    public void resetDataGrid() {
+    public void ResetDataGrid() {
         ItemDataGrid = new ObservableCollection<ItemObjectViewModel>();
     }
 }

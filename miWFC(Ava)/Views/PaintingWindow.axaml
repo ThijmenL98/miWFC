@@ -75,7 +75,7 @@
                                         <Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
                                                 VerticalAlignment="Top"
                                                 x:Name="borderPaddingToggle" Background="Transparent"
-                                                Command="{Binding OnCloseClick}">
+                                                Command="{Binding CloseInfoPopup}">
                                             <Button.Styles>
                                                 <Style Selector="Button:pointerover /template/ ContentPresenter">
                                                     <Setter Property="Content"
@@ -108,7 +108,7 @@
                               RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, *" Margin="10"
                               VerticalAlignment="Top">
                             <Button Padding="0" Background="Transparent" Grid.Row="0"
-                                    Command="{Binding PaintingVM.OnPencilModeClick}" Grid.Column="0"
+                                    Command="{Binding PaintingVM.ActivatePencilMode}" Grid.Column="0"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -133,7 +133,7 @@
                             </Button>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="0"
-                                    Command="{Binding PaintingVM.OnPaintModeClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.ActivatePaintMode}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -159,7 +159,7 @@
                             </Button>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="2"
-                                    Command="{Binding PaintingVM.OnTemplateAddModeClick}" Grid.Column="0"
+                                    Command="{Binding PaintingVM.ActivateTemplateCreationMode}" Grid.Column="0"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -172,9 +172,9 @@
                                     </Style>
                                 </Button.Styles>
                                 <Panel>
-                                    <Image IsVisible="{Binding !PaintingVM.TemplateAddModeEnabled}"
+                                    <Image IsVisible="{Binding !PaintingVM.TemplateCreationModeEnabled}"
                                            Source="/Assets/TemplatingAdd.png" />
-                                    <Image IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}"
+                                    <Image IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}"
                                            Source="/Assets/TemplatingAddSelected.png" />
                                 </Panel>
                                 <ToolTip.Tip>
@@ -185,7 +185,7 @@
                             </Button>
 
                             <Button Padding="0" Background="Transparent" Grid.Row="2"
-                                    Command="{Binding PaintingVM.OnTemplatePlaceModeClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.ActivateTemplatePlacementMode}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -226,12 +226,12 @@
                                     Right Mouse Button: Remove tile(s)
                                 </TextBlock>
                                 <TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0" 
-                                           IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}"
+                                           IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}"
                                            Foreground="#007700">
                                     Left Mouse Button: Add tile(s)
                                 </TextBlock>
                                 <TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0" 
-                                           IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}"
+                                           IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}"
                                            Foreground="#CC0000">
                                     Right Mouse Button: Remove tile(s)
                                 </TextBlock>
@@ -291,7 +291,7 @@
                             <!-- Tool Options for the Paint Mode below -->
 
                             <Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-                                    Command="{Binding PaintingVM.OnApplyClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.ApplyPaintMask}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110"
                                     IsVisible="{Binding PaintingVM.PaintModeEnabled}">
                                 <Button.Styles>
@@ -315,7 +315,7 @@
                             </Button>
 
                             <Button Padding="0" Grid.Row="5" Grid.Column="0" Margin="10" MaxWidth="110"
-                                    Command="{Binding PaintingVM.OnMaskReset}" Background="Transparent"
+                                    Command="{Binding PaintingVM.ResetMask}" Background="Transparent"
                                     IsVisible="{Binding PaintingVM.PaintModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -373,9 +373,9 @@
                             <!-- Tool Options for the Templating Create below -->
 
                             <Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-                                    Command="{Binding PaintingVM.OnApplyClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.CreateTemplate}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-                                    IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}">
+                                    IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
@@ -397,8 +397,8 @@
                             </Button>
 
                             <Button Padding="0" Grid.Row="5" Grid.Column="0" Margin="10" MaxWidth="110"
-                                    Command="{Binding PaintingVM.OnMaskReset}" Background="Transparent"
-                                    IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}">
+                                    Command="{Binding PaintingVM.ResetMask}" Background="Transparent"
+                                    IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}">
                                 <Button.Styles>
                                     <Style Selector="Button:pointerover /template/ ContentPresenter">
                                         <Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -459,7 +459,7 @@
                             </ComboBox>
                             
                             <Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-                                    Command="{Binding PaintingVM.OnTemplateDeleteClick}" Grid.Column="1"
+                                    Command="{Binding PaintingVM.DeleteTemplate}" Grid.Column="1"
                                     HorizontalAlignment="Center" Margin="10" MaxWidth="110"
                                     IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}">
                                 <Button.Styles>
@@ -485,7 +485,7 @@
 
                         <!-- Tools End -->
 
-                        <Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
+                        <Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OpenInfoPopup}"
                                 CommandParameter="P"
                                 Margin="5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
                             <Button.Styles>
@@ -526,7 +526,7 @@
                                 </Grid>
                             </Grid>
 
-                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding !PaintingVM.TemplateAddModeEnabled}">
+                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding !PaintingVM.TemplateCreationModeEnabled}">
                                 <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
                                     <Border Margin="10" CornerRadius="10">
                                         <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
@@ -537,7 +537,7 @@
                                 </Grid>
                             </Grid>
 
-                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.TemplateAddModeEnabled}">
+                            <Grid Grid.Row="0" RowDefinitions="*" HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}">
                                 <Grid Grid.Row="0" ColumnDefinitions="*" VerticalAlignment="Center">
                                     <Border Margin="10" CornerRadius="10">
                                         <Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
@@ -657,7 +657,7 @@
                             <Grid Grid.Row="2" ColumnDefinitions="*, Auto, Auto, *, Auto">
                                 <GridSplitter Grid.Column="0" IsEnabled="False" Background="Transparent" />
 
-                                <Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OutputVM.OnSave}"
+                                <Button Padding="0" Background="Transparent" Grid.Column="1" Command="{Binding OutputVM.PlaceMarker}"
                                         Margin="5"
                                         HorizontalAlignment="Center" MaxWidth="80"
                                         IsEnabled="{Binding InstantCollapse}">
@@ -685,7 +685,7 @@
                                     </ToolTip.Tip>
                                 </Button>
 
-                                <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OutputVM.OnLoad}"
+                                <Button Padding="0" Background="Transparent" Grid.Column="2" Command="{Binding OutputVM.RevertToMarker}"
                                         Margin="5"
                                         HorizontalAlignment="Center" MaxWidth="80"
                                         IsEnabled="{Binding InstantCollapse}">
@@ -716,7 +716,7 @@
                                 <GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
 
                                 <Button Grid.Column="4" Padding="0" Background="Transparent"
-                                        Command="{Binding OnCustomizeWindowSwitch}"
+                                        Command="{Binding SwitchWindow}"
                                         CommandParameter="M" VerticalAlignment="Center"
                                         HorizontalAlignment="Right" Margin="10" MaxWidth="80">
                                     <Button.Styles>

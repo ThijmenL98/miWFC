@@ -159,19 +159,24 @@ public partial class PaintingWindow : Window {
 
         switch (e.Key) {
             case Key.P:
-                centralManager.getMainWindowVM().PaintingVM.OnPencilModeClick();
+                centralManager.getMainWindowVM().PaintingVM.ActivatePencilMode();
                 e.Handled = true;
                 break;
             case Key.B:
-                centralManager.getMainWindowVM().PaintingVM.OnPaintModeClick();
+                centralManager.getMainWindowVM().PaintingVM.ActivatePaintMode();
                 e.Handled = true;
                 break;
             case Key.R:
-                centralManager.getMainWindowVM().PaintingVM.OnMaskReset();
+                centralManager.getMainWindowVM().PaintingVM.ResetMask();
                 e.Handled = true;
                 break;
             case Key.A:
-                await centralManager.getMainWindowVM().PaintingVM.OnApplyClick();
+                if (centralManager.getMainWindowVM().PaintingVM.PaintModeEnabled) {
+                    await centralManager.getMainWindowVM().PaintingVM.ApplyPaintMask();
+                } else if (centralManager.getMainWindowVM().PaintingVM.TemplateCreationModeEnabled) { 
+                    await centralManager.getMainWindowVM().PaintingVM.CreateTemplate();
+                }
+
                 e.Handled = true;
                 break;
             case Key.Back:
@@ -268,11 +273,11 @@ public partial class PaintingWindow : Window {
                     canUsePencil = false;
                 }
             }
-        } else if (centralManager!.getMainWindowVM().PaintingVM.TemplateAddModeEnabled) {
+        } else if (centralManager!.getMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
             if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
                 e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) {
                 try {
-                    centralManager?.getInputManager().processClickTemplateAdd((int) Math.Round(posX),
+                    centralManager?.getInputManager().processClickTemplateCreation((int) Math.Round(posX),
                         (int) Math.Round(posY),
                         (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
                         (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),

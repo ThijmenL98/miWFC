@@ -178,7 +178,7 @@
 					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 
 					<Button Padding="0" Background="Transparent" Grid.Row="1" VerticalAlignment="Bottom"
-					        Command="{Binding ItemVM.OnItemMenuApply}" Grid.Column="2"
+					        Command="{Binding ItemVM.AddItemToDataGrid}" Grid.Column="2"
 					        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 						<Button.Styles>
 							<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -205,7 +205,7 @@
 					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 
 					<Button Grid.Row="1" Grid.Column="4" Padding="0" Background="Transparent"
-					        Command="{Binding ItemVM.OnExitItemAddition}"
+					        Command="{Binding ItemVM.ExitItemAddition}"
 					        HorizontalAlignment="Center" Margin="5" MaxWidth="80"
 					        VerticalAlignment="Bottom">
 						<Button.Styles>

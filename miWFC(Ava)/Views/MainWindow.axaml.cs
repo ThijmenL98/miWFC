@@ -99,7 +99,7 @@ public partial class MainWindow : Window {
         }
 
         int newTab = (sender as TabControl)!.SelectedIndex;
-        centralManager!.getMainWindowVM().OnModelClick(newTab);
+        centralManager!.getMainWindowVM().ChangeModel(newTab);
 
         e.Handled = true;
     }

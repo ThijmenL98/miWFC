@@ -334,7 +334,7 @@ public class UIManager {
                 bool stillApply = await handlePaintingClose(checkClicked);
 
                 if (stillApply) {
-                    await centralManager.getMainWindowVM().PaintingVM.OnApplyClick();
+                    await centralManager.getMainWindowVM().PaintingVM.ApplyPaintMask();
                 }
 
                 break;
@@ -408,7 +408,7 @@ public class UIManager {
             }
         }
 
-        mainWindowVM.PaintingVM.TemplateAddModeEnabled = false;
+        mainWindowVM.PaintingVM.TemplateCreationModeEnabled = false;
         mainWindowVM.PaintingVM.TemplatePlaceModeEnabled = false;
         mainWindowVM.PaintingVM.PencilModeEnabled = true;
         mainWindowVM.PaintingVM.PaintModeEnabled = false;

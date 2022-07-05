@@ -85,14 +85,14 @@ public class MappingViewModel : ReactiveObject {
     /// <summary>
     /// Function called when resetting the weight mapping
     /// </summary>
-    public void OnMappingReset() {
+    public void ResetWeightMapping() {
         centralManager!.getWeightMapWindow().resetCurrentMapping();
     }
 
     /// <summary>
     /// Function called upon importing a weight map
     /// </summary>
-    public async void OnImportWeightMap() {
+    public async void ImportWeightMap() {
         OpenFileDialog ofd = new() {
             Title = @"Select export location & file name",
             Filters = new List<FileDialogFilter> {
@@ -140,7 +140,7 @@ public class MappingViewModel : ReactiveObject {
     /// <summary>
     /// Function called upon exporting a weight map
     /// </summary>
-    public async void OnExportWeightMap() {
+    public async void ExportWeightMap() {
         SaveFileDialog sfd = new() {
             Title = @"Select export location & file name",
             DefaultExtension = "wMap",

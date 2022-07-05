@@ -150,7 +150,7 @@
 												<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 												        VerticalAlignment="Top"
 												        x:Name="borderPaddingToggle" Background="Transparent"
-												        Command="{Binding OnCloseClick}">
+												        Command="{Binding CloseInfoPopup}">
 													<Button.Styles>
 														<Style Selector="Button:pointerover /template/ ContentPresenter">
 															<Setter Property="Content"
@@ -179,8 +179,7 @@
 							</Popup>
 
 							<Grid ColumnDefinitions="Auto, *" Grid.Column="0">
-								<contentControls:InputControl DataContext="{Binding VM}"
-								                              Grid.Row="0" x:Name="inputControl" />
+								<contentControls:InputControl Grid.Row="0" x:Name="inputControl" />
 
 								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
 									<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
@@ -196,7 +195,7 @@
 										           IsVisible="{ReflectionBinding OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
 
 										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
-										        Command="{Binding OnWeightReset}"
+										        Command="{Binding ResetWeights}"
 										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
 											<Button.Styles>
 												<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -235,13 +234,12 @@
 
 									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">
-										<contentControls:SimplePatternItemControl DataContext="{Binding VM}" />
+										<contentControls:SimplePatternItemControl />
 									</Border>
 								</Grid>
 							</Grid>
 
-							<contentControls:OutputControl DataContext="{Binding VM}"
-							                               Grid.Column="1" x:Name="outputControl" />
+							<contentControls:OutputControl Grid.Column="1" x:Name="outputControl" />
 						</Grid>
 
 						<avaloniaGif:GifImage SourceUriRaw="resm:miWFC.Assets.LoadingAnim.gif"

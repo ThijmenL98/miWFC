@@ -3,7 +3,12 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:miWFC.ViewModels"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<Design.DataContext>
+		<viewModels:MainWindowViewModel />
+	</Design.DataContext>
 
 	<Grid Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto">
 		<Grid
@@ -98,13 +103,13 @@
 			<TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Text="Input Wrapping" TextAlignment="Center"
 			           VerticalAlignment="Center" />
 
-			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" Command="{Binding InputVM.OnInputWrappingChanged}" />
+			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" Command="{Binding InputVM.ToggleInputWrapping}" />
 		</Grid>
 
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300" />
 
 		<Grid ColumnDefinitions="Auto, *, Auto" Grid.Row="4" Margin="5, -30, 5, 5">
-			<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OnInfoClick}"
+			<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OpenInfoPopup}"
 			        CommandParameter="M"
 			        Margin="-5" MaxHeight="60" VerticalAlignment="Bottom" HorizontalAlignment="Left">
 				<Button.Styles>

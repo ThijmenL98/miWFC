@@ -384,6 +384,15 @@ public class MainWindowViewModel : ViewModelBase {
     /// </summary>
     public MainWindowViewModel VM => this;
 
+    /// <summary>
+    /// Set my randomness function
+    /// </summary>
+    /// 
+    /// <param name="newRand">The Randomness function</param>
+    public void SetRandomnessFunction(Random newRand) {
+        R = newRand;
+    }
+
     // Lists
 
     /// <summary>
@@ -417,6 +426,17 @@ public class MainWindowViewModel : ViewModelBase {
         get => _markers;
         set => this.RaiseAndSetIfChanged(ref _markers, value);
     }
+    
+    /// <summary>
+    /// Update the weights based on the user input
+    /// </summary>
+    /// 
+    /// <param name="weights">New weights to use</param>
+    public void setWeights(double[] weights) {
+        for (int i = 0; i < PaintTiles.Count; i++) {
+            PaintTiles[i].PatternWeight = weights[i];
+        }
+    }
 
     // Other
 
@@ -427,15 +447,6 @@ public class MainWindowViewModel : ViewModelBase {
     /*
      * Logic
      */
-
-    /// <summary>
-    /// Set my randomness function
-    /// </summary>
-    /// 
-    /// <param name="newRand">The Randomness function</param>
-    public void setR(Random newRand) {
-        R = newRand;
-    }
 
     public void setCentralManager(CentralManager cm) {
         lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
@@ -457,7 +468,7 @@ public class MainWindowViewModel : ViewModelBase {
     /// </summary>
     /// 
     /// <param name="newTab">Tab index, currently eiter 0 or 1</param>
-    public void OnModelClick(int newTab) {
+    public void ChangeModel(int newTab) {
         centralManager!.getWFCHandler().setModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
@@ -465,7 +476,7 @@ public class MainWindowViewModel : ViewModelBase {
                                            .Contains("Side");
 
         if (IsPlaying) {
-            OutputVM.OnAnimate();
+            OutputVM.ToggleAnimation();
         }
 
         bool changingToSmart = newTab is 0 or 2;
@@ -505,7 +516,7 @@ public class MainWindowViewModel : ViewModelBase {
     /// <summary>
     /// Function called to reset all weights to their default values
     /// </summary>
-    public void OnWeightReset() {
+    public void ResetWeights() {
         centralManager!.getWFCHandler().resetWeights(force: true);
     }
 
@@ -514,9 +525,9 @@ public class MainWindowViewModel : ViewModelBase {
     /// </summary>
     /// 
     /// <param name="param">The window the info button was clicked on</param>
-    public void OnInfoClick(string param) {
+    public void OpenInfoPopup(string param) {
         if (IsPlaying) {
-            OutputVM.OnAnimate();
+            OutputVM.ToggleAnimation();
         }
 
         centralManager!.getUIManager().showPopUp(param);
@@ -529,11 +540,11 @@ public class MainWindowViewModel : ViewModelBase {
     /// <param name="param">Window to switch to</param>
     /// 
     /// <exception cref="NotImplementedException">If an non-existing window is asked to be opened</exception>
-    public async void OnCustomizeWindowSwitch(string param) {
+    public async void SwitchWindow(string param) {
         switch (param) {
             case "P":
                 if (IsPlaying) {
-                    OutputVM.OnAnimate();
+                    OutputVM.ToggleAnimation();
                 }
 
                 await centralManager!.getUIManager().switchWindow(Windows.PAINTING);
@@ -561,7 +572,7 @@ public class MainWindowViewModel : ViewModelBase {
     /// </summary>
     /// 
     /// <param name="value">Toggle value</param>
-    public void setLoading(bool value) {
+    public void toggleLoadingAnimation(bool value) {
         IsLoading = value || centralManager!.getWFCHandler().isBrushing();
         centralManager?.getMainWindow().InvalidateVisual();
     }
@@ -569,18 +580,7 @@ public class MainWindowViewModel : ViewModelBase {
     /// <summary>
     /// Function called when closing the popup on any window
     /// </summary>
-    public void OnCloseClick() {
+    public void CloseInfoPopup() {
         centralManager!.getUIManager().hidePopUp();
-    }
-
-    /// <summary>
-    /// Update the weights based on the user input
-    /// </summary>
-    /// 
-    /// <param name="weights">New weights to use</param>
-    public void setWeights(double[] weights) {
-        for (int i = 0; i < PaintTiles.Count; i++) {
-            PaintTiles[i].PatternWeight = weights[i];
-        }
     }
 }

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -54,7 +53,6 @@ public class WFCHandler {
 
     private readonly List<Color[]> disabledPatterns = new();
 
-    private Dictionary<int, double> origTileWeights = new();
     private double percentageCollapsed;
     private Dictionary<int, Tuple<Color[], Tile>> tileCache;
     private ITopoArray<Tile> tiles;
@@ -115,7 +113,7 @@ public class WFCHandler {
                 true);
         }
 
-        mainWindowVM.setLoading(true);
+        mainWindowVM.toggleLoadingAnimation(true);
 
         if (dbPropagator is {Status: Resolution.DECIDED} && !reset) {
             updateWeights();
@@ -125,7 +123,7 @@ public class WFCHandler {
         if (reset) {
             string inputImage = mainWindow.getInputControl().getInputImage();
             string category = mainWindow.getInputControl().getCategory();
-            mainWindowVM.ItemVM.resetDataGrid();
+            mainWindowVM.ItemVM.ResetDataGrid();
             centralManager.getMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);
             bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
@@ -164,7 +162,7 @@ public class WFCHandler {
 
             int curSeed = Environment.TickCount;
             Random rand = new(curSeed);
-            mainWindowVM.setR(rand);
+            mainWindowVM.SetRandomnessFunction(rand);
 
             await Task.Run(() => {
                 createPropagator(outputWidth, outputHeight, seamlessOutput, rand);
@@ -183,7 +181,7 @@ public class WFCHandler {
             inputHasChanged = false;
         }
 
-        mainWindowVM.setLoading(false);
+        mainWindowVM.toggleLoadingAnimation(false);
 
         (WriteableBitmap latestOutput, bool decided) = runWfcDB(steps);
         isCollapsed();
@@ -257,9 +255,7 @@ public class WFCHandler {
             total += curWeight;
             weights[index] = curWeight;
         }
-
-        origTileWeights = weights;
-
+        
         foreach ((int index, double weightAvg) in weights) {
             double percentage = weightAvg / total;
             toAddPaint[index].PatternWeight = percentage;
@@ -1106,7 +1102,7 @@ public class WFCHandler {
                 }
 
                 _isBrushing = false;
-                mainWindowVM.setLoading(false);
+                mainWindowVM.toggleLoadingAnimation(false);
             });
         } else {
             Dictionary<Tuple<int, int>, int> newInputDict = new();
@@ -1150,7 +1146,7 @@ public class WFCHandler {
                 }
 
                 _isBrushing = false;
-                mainWindowVM.setLoading(false);
+                mainWindowVM.toggleLoadingAnimation(false);
             });
         }
 
@@ -1224,7 +1220,7 @@ public class WFCHandler {
             }
 
             if (paintOverwrite && (possibleTiles.Count == 1 || !possibleTiles.Contains(c))) {
-                mainWindowVM.setLoading(true);
+                mainWindowVM.toggleLoadingAnimation(true);
 
                 Color[,] prevOutput = getPropagatorOutputO().toArray2d();
                 int width = prevOutput.GetLength(0);
@@ -1292,7 +1288,7 @@ public class WFCHandler {
                     }
                 }
 
-                mainWindowVM.setLoading(false);
+                mainWindowVM.toggleLoadingAnimation(false);
 
                 for (int i = 0; i < distinctList.Count; i++) {
                     centralManager.getInputManager().advanceStep();
@@ -1367,7 +1363,7 @@ public class WFCHandler {
 #endif
 
             if (paintOverwrite && (availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex))) {
-                mainWindowVM.setLoading(true);
+                mainWindowVM.toggleLoadingAnimation(true);
 
                 int[,] prevOutput = getPropagatorOutputA().toArray2d();
                 int width = prevOutput.GetLength(0);
@@ -1403,7 +1399,7 @@ public class WFCHandler {
 #pragma warning restore CS4014
                         }
 
-                        mainWindowVM.setLoading(false);
+                        mainWindowVM.toggleLoadingAnimation(false);
                     });
                 } catch (TargetException) {
                     mainWindowVM.OutputImage = centralManager.getInputManager().getNoResBM();

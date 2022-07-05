@@ -45,7 +45,7 @@ public class InputViewModel : ReactiveObject {
     /// <summary>
     /// Function called from the UI once the input wrapping is changed
     /// </summary>
-    public async void OnInputWrappingChanged() {
+    public async void ToggleInputWrapping() {
         mainWindowViewModel.InputWrapping = !mainWindowViewModel.InputWrapping;
         centralManager!.getWFCHandler().setInputChanged("Input Wrapping Change");
         await centralManager!.getInputManager().restartSolution("Input Wrapping Change");

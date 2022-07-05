@@ -749,14 +749,14 @@ public class InputManager {
 
         if (mainWindowVM.PaintingVM.PaintModeEnabled) {
             updateHoverBrushMask(a, b);
-        } else if (mainWindowVM.PaintingVM.TemplateAddModeEnabled) {
+        } else if (mainWindowVM.PaintingVM.TemplateCreationModeEnabled) {
             updateHoverBrushMask(a, b, -1);
         } else if (mainWindowVM.PaintingVM.TemplatePlaceModeEnabled) {
             updateHoverTemplateMask(a, b, mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight);
         }
 
         mainWindowVM.HelperTiles.Clear();
-        if (!mainWindowVM.PaintingVM.TemplateAddModeEnabled && !mainWindowVM.PaintingVM.TemplatePlaceModeEnabled) {
+        if (!mainWindowVM.PaintingVM.TemplateCreationModeEnabled && !mainWindowVM.PaintingVM.TemplatePlaceModeEnabled) {
             int selectedIndex = centralManager.getPaintingWindow().getSelectedPaintIndex();
 
             foreach (TileViewModel tvm in mainWindowVM.PaintTiles) {
@@ -913,7 +913,7 @@ public class InputManager {
     /// <param name="imgWidth">Width of the image the user clicked on</param>
     /// <param name="imgHeight">Height of the image the user clicked on</param>
     /// <param name="add">Whether the user has decided to add or remove from the template outline</param>
-    public void processClickTemplateAdd(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
+    public void processClickTemplateCreation(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 

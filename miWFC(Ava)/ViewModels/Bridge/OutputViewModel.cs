@@ -46,7 +46,7 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when starting or stopping the animation
     /// </summary>
-    public void OnAnimate() {
+    public void ToggleAnimation() {
         mainWindowViewModel.IsPlaying = !mainWindowViewModel.IsPlaying;
         centralManager!.getInputManager().animate();
     }
@@ -54,9 +54,9 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when advancing a single step
     /// </summary>
-    public void OnAdvance() {
+    public void AdvanceStep() {
         if (mainWindowViewModel.IsPlaying) {
-            OnAnimate();
+            ToggleAnimation();
         }
 
         centralManager!.getInputManager().advanceStep();
@@ -65,16 +65,16 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when placing a marker
     /// </summary>
-    public void OnSave() {
+    public void PlaceMarker() {
         centralManager!.getInputManager().placeMarker();
     }
 
     /// <summary>
     /// Function called when loading to the most recent previous marker
     /// </summary>
-    public void OnLoad() {
+    public void RevertToMarker() {
         if (mainWindowViewModel.IsPlaying) {
-            OnAnimate();
+            ToggleAnimation();
         }
 
         centralManager!.getInputManager().loadMarker();
@@ -83,9 +83,9 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when stepping a single step back
     /// </summary>
-    public void OnRevert() {
+    public void BacktrackStep() {
         if (mainWindowViewModel.IsPlaying) {
-            OnAnimate();
+            ToggleAnimation();
         }
 
         centralManager!.getInputManager().revertStep();
@@ -94,9 +94,9 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when toggling the seamless output of the image
     /// </summary>
-    public async void OnPaddingToggle() {
+    public async void ToggleSeamlessness() {
         if (mainWindowViewModel.IsPlaying) {
-            OnAnimate();
+            ToggleAnimation();
         }
 
         mainWindowViewModel.SeamlessOutput = !mainWindowViewModel.SeamlessOutput;
@@ -106,16 +106,16 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when importing an image
     /// </summary>
-    public void OnImport() {
+    public void ImportFromDevice() {
         centralManager!.getInputManager().importSolution();
     }
 
     /// <summary>
     /// Function called when exporting an image
     /// </summary>
-    public void OnExport() {
+    public void ExportToDevice() {
         if (mainWindowViewModel.IsPlaying) {
-            OnAnimate();
+            ToggleAnimation();
         }
 
         centralManager!.getInputManager().exportSolution();
@@ -124,9 +124,9 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     /// Function called when restarting the solution
     /// </summary>
-    public async void OnRestart() {
+    public async void Restart() {
         if (mainWindowViewModel.IsPlaying) {
-            OnAnimate();
+            ToggleAnimation();
         }
 
         centralManager!.getWFCHandler().resetWeights(false);
