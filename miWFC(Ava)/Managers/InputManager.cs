@@ -813,23 +813,37 @@ public class InputManager {
         }
 
         TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
-        int startX = x - selectedTVM.CenterPoint.Item1, startY = y - selectedTVM.CenterPoint.Item2;
-        int endX = startX + selectedTVM.Dimension.Item1, endY = startY + selectedTVM.Dimension.Item2;
+        int startX, startY, endX, endY;
+        if (centralManager.GetWFCHandler().IsOverlappingModel()) {
+            startY = x - selectedTVM.CenterPoint.Item1;
+            startX = y - selectedTVM.CenterPoint.Item2;
+
+            endY = startY + selectedTVM.Dimension.Item1;
+            endX = startX + selectedTVM.Dimension.Item2;
+        } else {
+            startY = x - selectedTVM.CenterPoint.Item2;
+            startX = y - selectedTVM.CenterPoint.Item1;
+
+            endY = startY + selectedTVM.Dimension.Item2;
+            endX = startX + selectedTVM.Dimension.Item1;
+        }
 
         Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
 
         for (int placeX = startX; placeX < endX; placeX++) {
             for (int placeY = startY; placeY < endY; placeY++) {
-                if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
-                    int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
-                        mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
+                if (placeY >= 0 && placeX >= 0 && placeY < imgWidth && placeX < imgHeight) {
                     if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                        if (selectedTVM.TemplateDataO[mappedY, mappedX].A == 255) {
-                            hoverMaskColours[placeX, placeY] = Colors.Gold;
+                        int mappedY = placeY - x + selectedTVM.CenterPoint.Item1,
+                            mappedX = placeX - y + selectedTVM.CenterPoint.Item2;
+                        if (selectedTVM.TemplateDataO[mappedX, mappedY].A == 255) {
+                            hoverMaskColours[placeY, placeX] = Colors.Gold;
                         }
                     } else {
-                        if (TransposeMatrix(selectedTVM.TemplateDataA)[mappedY, mappedX] > 0) {
-                            hoverMaskColours[placeX, placeY] = Colors.Gold;
+                        int mappedY = placeY - x + selectedTVM.CenterPoint.Item2,
+                            mappedX = placeX - y + selectedTVM.CenterPoint.Item1;
+                        if (selectedTVM.TemplateDataA[mappedY, mappedX] >= 0) {
+                            hoverMaskColours[placeY, placeX] = Colors.Gold;
                         }
                     }
                 }
@@ -962,70 +976,88 @@ public class InputManager {
     /// <param name="imgWidth">Width of the image the user clicked on</param>
     /// <param name="imgHeight">Height of the image the user clicked on</param>
     public async void ProcessClickTemplatePlace(int clickX, int clickY, int imgWidth, int imgHeight) {
-        int x = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
-            y = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
-
-        int templateIndex = centralManager.GetPaintingWindow().GetSelectedTemplateIndex();
-        if (templateIndex == -1) {
-            return;
-        }
-
-        TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
-        int startX = x - selectedTVM.CenterPoint.Item1, startY = y - selectedTVM.CenterPoint.Item2;
-        int endX = startX + selectedTVM.Dimension.Item1, endY = startY + selectedTVM.Dimension.Item2;
-
         int placeCount = 0;
         bool error = false;
 
-        for (int placeX = startX; placeX < endX; placeX++) {
+        try {
+            int x = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+                y = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+
+            int templateIndex = centralManager.GetPaintingWindow().GetSelectedTemplateIndex();
+            if (templateIndex == -1) {
+                return;
+            }
+
+            TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
+            int startY, startX, endY, endX;
+            if (centralManager.GetWFCHandler().IsOverlappingModel()) {
+                startY = x - selectedTVM.CenterPoint.Item1;
+                startX = y - selectedTVM.CenterPoint.Item2;
+                endY = startY + selectedTVM.Dimension.Item1;
+                endX = startX + selectedTVM.Dimension.Item2;
+            } else {
+                startX = x - selectedTVM.CenterPoint.Item2;
+                startY = y - selectedTVM.CenterPoint.Item1;
+
+                endX = startX + selectedTVM.Dimension.Item2;
+                endY = startY + selectedTVM.Dimension.Item1;
+            }
+
             for (int placeY = startY; placeY < endY; placeY++) {
-                if (!error) {
-                    if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
-                        int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
-                            mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
-                        if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                            Color toPlace = selectedTVM.TemplateDataO[mappedY, mappedX];
-                            if (toPlace.A == 255) {
-                                int idx = centralManager.GetWFCHandler().GetColours()
-                                    .TakeWhile(tileVM => !tileVM.PatternColour.Equals(toPlace)).Count();
-                                Color valAt = centralManager.GetWFCHandler().GetOverlappingOutputAt(placeX, placeY);
-                                if (valAt.A != 255) {
-                                    (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
-                                        .GetWFCHandler()
-                                        .SetTile(placeX, placeY, idx, false);
-                                    if (showPixel != null && (bool) showPixel) {
-                                        mainWindowVM.OutputImage = writeableBitmap!;
-                                        placeCount++;
+                for (int placeX = startX; placeX < endX; placeX++) {
+                    if (!error) {
+                        if (placeY >= 0 && placeX >= 0 && placeY < imgWidth && placeX < imgHeight) {
+                            if (centralManager.GetWFCHandler().IsOverlappingModel()) {
+                                int mappedX = placeY - x + selectedTVM.CenterPoint.Item1,
+                                    mappedY = placeX - y + selectedTVM.CenterPoint.Item2;
+                                Color toPlace = selectedTVM.TemplateDataO[mappedY, mappedX];
+                                if (toPlace.A == 255) {
+                                    int idx = centralManager.GetWFCHandler().GetColours()
+                                        .TakeWhile(tileVM => !tileVM.PatternColour.Equals(toPlace)).Count();
+                                    Color valAt = centralManager.GetWFCHandler().GetOverlappingOutputAt(placeY, placeX);
+                                    if (valAt.A != 255) {
+                                        (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
+                                            .GetWFCHandler()
+                                            .SetTile(placeY, placeX, idx, false);
+                                        if (showPixel != null && (bool) showPixel) {
+                                            mainWindowVM.OutputImage = writeableBitmap!;
+                                            placeCount++;
+                                        } else {
+                                            error = true;
+                                        }
                                     } else {
-                                        error = true;
+                                        error = !valAt.Equals(toPlace);
                                     }
-                                } else {
-                                    error = !valAt.Equals(toPlace);
                                 }
-                            }
-                        } else {
-                            int indexToPlace = TransposeMatrix(selectedTVM.TemplateDataA)[mappedY, mappedX];
-                            if (indexToPlace > 0) {
-                                int valAt = centralManager.GetWFCHandler().GetPropagatorOutputA().toArray2d()[placeX,
-                                    placeY];
-                                if (valAt.Equals(indexToPlace)) { } else if (valAt < 0) {
-                                    (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
-                                        .GetWFCHandler()
-                                        .SetTile(placeX, placeY, indexToPlace, false);
-                                    if (showPixel != null && (bool) showPixel) {
-                                        mainWindowVM.OutputImage = writeableBitmap!;
-                                        placeCount++;
+                            } else {
+                                int mappedY = placeY - y + selectedTVM.CenterPoint.Item1,
+                                    mappedX = placeX - x + selectedTVM.CenterPoint.Item2;
+                                int indexToPlace = selectedTVM.TemplateDataA[mappedX, mappedY];
+                                if (indexToPlace > 0) {
+                                    int valAt = centralManager.GetWFCHandler().GetPropagatorOutputA().toArray2d()[
+                                        placeX,
+                                        placeY];
+                                    if (valAt.Equals(indexToPlace)) { } else if (valAt < 0) {
+                                        (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
+                                            .GetWFCHandler()
+                                            .SetTile(placeX, placeY, indexToPlace, false);
+                                        if (showPixel != null && (bool) showPixel) {
+                                            mainWindowVM.OutputImage = writeableBitmap!;
+                                            placeCount++;
+                                        } else {
+                                            error = true;
+                                        }
                                     } else {
                                         error = true;
                                     }
-                                } else {
-                                    error = true;
                                 }
                             }
                         }
                     }
                 }
             }
+        } catch (Exception) {
+            error = true;
         }
 
         if (error) {
