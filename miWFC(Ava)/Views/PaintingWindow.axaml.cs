@@ -2,10 +2,12 @@
 using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using miWFC.Managers;
 using miWFC.ViewModels.Structs;
+
 // ReSharper disable UnusedParameter.Local
 
 namespace miWFC.Views;
@@ -26,11 +28,11 @@ public partial class PaintingWindow : Window {
     public PaintingWindow() {
         InitializeComponent();
 
-        KeyDown += keyDownHandler;
+        KeyDown += KeyDownHandler;
         Closing += (_, e) => {
-            Color[,] mask = centralManager!.getInputManager().getMaskColours();
-            centralManager?.getUIManager()
-                .switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+            Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
+            centralManager?.GetUIManager()
+                .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
             e.Cancel = true;
         };
 
@@ -47,7 +49,7 @@ public partial class PaintingWindow : Window {
 #endif
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
@@ -64,7 +66,7 @@ public partial class PaintingWindow : Window {
     /// </summary>
     /// 
     /// <returns>Selected pattern index</returns>
-    public int getSelectedPaintIndex() {
+    public int GetSelectedPaintIndex() {
         return _paintingPatternsCB.SelectedIndex;
     }
 
@@ -73,7 +75,7 @@ public partial class PaintingWindow : Window {
     /// </summary>
     /// 
     /// <returns>Selected template index</returns>
-    public int getSelectedTemplateIndex() {
+    public int GetSelectedTemplateIndex() {
         return _templatesCB.SelectedIndex;
     }
 
@@ -82,7 +84,7 @@ public partial class PaintingWindow : Window {
     /// </summary>
     /// 
     /// <returns>Selected brush size</returns>
-    public int getPaintBrushSize() {
+    public int GetPaintBrushSize() {
         int[] sizes = {-1, 1, 2, 3, 6, 10, 15, 25};
         return sizes[_paintingSizeCB.SelectedIndex];
     }
@@ -92,7 +94,7 @@ public partial class PaintingWindow : Window {
     /// </summary>
     /// 
     /// <returns>Width</returns>
-    public double getTimelineWidth() {
+    public double GetTimelineWidth() {
         return this.Find<Grid>("timeline").Bounds.Width;
     }
 
@@ -116,10 +118,10 @@ public partial class PaintingWindow : Window {
     /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
-    public void setPaintingPatterns(TileViewModel[]? values, int idx = 0) {
+    public void SetPaintingPatterns(TileViewModel[]? values, int idx = 0) {
         if (values != null) {
             _paintingPatternsCB.Items = values;
-            centralManager!.getMainWindowVM().PaintTiles = new ObservableCollection<TileViewModel>(values);
+            centralManager!.GetMainWindowVM().PaintTiles = new ObservableCollection<TileViewModel>(values);
         }
 
         _paintingPatternsCB.SelectedIndex = idx;
@@ -132,13 +134,13 @@ public partial class PaintingWindow : Window {
     /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
-    public void setTemplates(ObservableCollection<TemplateViewModel> values, int idx = 0) {
-        if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
+    public void SetTemplates(ObservableCollection<TemplateViewModel> values, int idx = 0) {
+        if (centralManager == null || centralManager.GetWFCHandler().IsChangingModels()) {
             return;
         }
 
         _templatesCB.Items = values;
-        centralManager!.getMainWindowVM().PaintingVM.Templates = new ObservableCollection<TemplateViewModel>(values);
+        centralManager!.GetMainWindowVM().PaintingVM.Templates = new ObservableCollection<TemplateViewModel>(values);
         _templatesCB.SelectedIndex = idx;
     }
 
@@ -152,52 +154,52 @@ public partial class PaintingWindow : Window {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
-    private async void keyDownHandler(object? sender, KeyEventArgs e) {
+    private async void KeyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
         }
 
         switch (e.Key) {
             case Key.P:
-                centralManager.getMainWindowVM().PaintingVM.ActivatePencilMode();
+                centralManager.GetMainWindowVM().PaintingVM.ActivatePencilMode();
                 e.Handled = true;
                 break;
             case Key.B:
-                centralManager.getMainWindowVM().PaintingVM.ActivatePaintMode();
+                centralManager.GetMainWindowVM().PaintingVM.ActivatePaintMode();
                 e.Handled = true;
                 break;
             case Key.R:
-                centralManager.getMainWindowVM().PaintingVM.ResetMask();
+                centralManager.GetMainWindowVM().PaintingVM.ResetMask();
                 e.Handled = true;
                 break;
             case Key.A:
-                if (centralManager.getMainWindowVM().PaintingVM.PaintModeEnabled) {
-                    await centralManager.getMainWindowVM().PaintingVM.ApplyPaintMask();
-                } else if (centralManager.getMainWindowVM().PaintingVM.TemplateCreationModeEnabled) { 
-                    await centralManager.getMainWindowVM().PaintingVM.CreateTemplate();
+                if (centralManager.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
+                    await centralManager.GetMainWindowVM().PaintingVM.ApplyPaintMask();
+                } else if (centralManager.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
+                    centralManager.GetMainWindowVM().PaintingVM.CreateTemplate();
                 }
 
                 e.Handled = true;
                 break;
             case Key.Back:
             case Key.Escape:
-                if (centralManager.getUIManager().popUpOpened()) {
-                    centralManager.getUIManager().hidePopUp();
+                if (centralManager.GetUIManager().PopUpOpened()) {
+                    centralManager.GetUIManager().HidePopUp();
                 } else {
-                    Color[,] mask = centralManager!.getInputManager().getMaskColours();
-                    centralManager?.getUIManager()
-                        .switchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+                    Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
+                    centralManager?.GetUIManager()
+                        .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
                 }
 
                 e.Handled = true;
                 break;
             case Key.S:
             case Key.M:
-                centralManager.getInputManager().placeMarker();
+                centralManager.GetInputManager().PlaceMarker();
                 e.Handled = true;
                 break;
             case Key.L:
-                centralManager.getInputManager().loadMarker();
+                centralManager.GetInputManager().LoadMarker();
                 e.Handled = true;
                 break;
             default:
@@ -245,61 +247,126 @@ public partial class PaintingWindow : Window {
     /// <param name="sender"></param>
     /// <param name="e">PointerEventArgs</param>
     /// <param name="mouseClicked">Whether this function was called from a mouse click or mouse move</param>
-    private async void OutputImageOnPointerMoved(object sender, PointerEventArgs e, bool mouseClicked) {
+    private void OutputImageOnPointerMoved(object sender, PointerEventArgs e, bool mouseClicked) {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-        bool allowClick = !centralManager!.getMainWindowVM().PaintingVM.IsPaintOverrideEnabled || mouseClicked;
-        if (centralManager!.getMainWindowVM().PaintingVM.PaintModeEnabled
-            && (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
-                e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) && allowClick) {
-            try {
-                centralManager?.getInputManager().processClickMask((int) Math.Round(posX),
-                    (int) Math.Round(posY),
-                    (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                    (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-                    e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
-            } catch (IndexOutOfRangeException) { }
-        } else if (centralManager!.getMainWindowVM().PaintingVM.PencilModeEnabled && canUsePencil) {
-            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed && allowClick) {
-                int idx = getSelectedPaintIndex();
+        bool allowClick = !centralManager!.GetMainWindowVM().PaintingVM.IsPaintOverrideEnabled || mouseClicked;
 
-                bool? success = await centralManager?.getInputManager().processClick((int) Math.Round(posX),
-                    (int) Math.Round(posY),
-                    (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                    (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-                    idx)!;
-                if (success != null && !(bool) success) {
-                    centralManager?.getUIManager().dispatchError(this);
-                    canUsePencil = false;
-                }
-            }
-        } else if (centralManager!.getMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
-            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed ||
-                e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed) {
-                try {
-                    centralManager?.getInputManager().processClickTemplateCreation((int) Math.Round(posX),
-                        (int) Math.Round(posY),
-                        (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                        (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-                        e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed);
-                } catch (IndexOutOfRangeException) { }
-            }
-        } else if (centralManager!.getMainWindowVM().PaintingVM.TemplatePlaceModeEnabled) {
-            if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
-                centralManager?.getInputManager().processClickTemplatePlace((int) Math.Round(posX),
-                    (int) Math.Round(posY),
-                    (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
-                    (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom));
-            }
+        bool lbmPressed = e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed;
+        bool rbmPressed = e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed;
+
+        if (centralManager!.GetMainWindowVM().PaintingVM.PaintModeEnabled
+            && (lbmPressed || rbmPressed) && allowClick) {
+            HandlePaintModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed);
+        } else if (centralManager!.GetMainWindowVM().PaintingVM.PencilModeEnabled && canUsePencil) {
+            HandlePencilModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed, allowClick);
+        } else if (centralManager!.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
+            HandleTemplateCreationModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed,
+                rbmPressed);
+        } else if (centralManager!.GetMainWindowVM().PaintingVM.TemplatePlaceModeEnabled) {
+            HandleTemplatePlaceModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed);
         }
 
-        centralManager?.getInputManager().processHoverAvailability((int) Math.Round(posX),
+        centralManager?.GetInputManager().ProcessHoverAvailability((int) Math.Round(posX),
             (int) Math.Round(posY),
             (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
             (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-            _paintingPatternsCB.SelectedIndex, centralManager!.getMainWindowVM().PaintingVM.PencilModeEnabled);
+            _paintingPatternsCB.SelectedIndex, centralManager!.GetMainWindowVM().PaintingVM.PencilModeEnabled);
 
         e.Handled = true;
+    }
+
+    /// <summary>
+    /// Handle the movement of the mouse in the Paint Mode
+    /// </summary>
+    /// 
+    /// <param name="posX">X position of the mouse</param>
+    /// <param name="posY">Y position of the mouse</param>
+    /// <param name="imageWidth">Image width</param>
+    /// <param name="imageHeight">Image height</param>
+    /// <param name="imageSource">Source of the mouse movement call</param>
+    /// <param name="lbmPressed">Whether the left mouse button is pressed</param>
+    private void HandlePaintModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
+        ILayoutable imageSource, bool lbmPressed) {
+        try {
+            centralManager?.GetInputManager().ProcessClickMask((int) Math.Round(posX),
+                (int) Math.Round(posY),
+                (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
+                (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
+                lbmPressed);
+        } catch (IndexOutOfRangeException) { }
+    }
+
+    /// <summary>
+    /// Handle the movement of the mouse in the Pencil Mode
+    /// </summary>
+    /// 
+    /// <param name="posX">X position of the mouse</param>
+    /// <param name="posY">Y position of the mouse</param>
+    /// <param name="imageWidth">Image width</param>
+    /// <param name="imageHeight">Image height</param>
+    /// <param name="imageSource">Source of the mouse movement call</param>
+    /// <param name="lbmPressed">Whether the left mouse button is pressed</param>
+    /// <param name="allowClick">Whether the user is allowed to click at this position</param>
+    private async void HandlePencilModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
+        ILayoutable imageSource, bool lbmPressed, bool allowClick) {
+        if (lbmPressed && allowClick) {
+            int idx = GetSelectedPaintIndex();
+
+            bool? success = await centralManager?.GetInputManager().ProcessClick((int) Math.Round(posX),
+                (int) Math.Round(posY),
+                (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
+                (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
+                idx)!;
+            if (success != null && !(bool) success) {
+                centralManager?.GetUIManager().DispatchError(this);
+                canUsePencil = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handle the movement of the mouse in the Template Creation Mode
+    /// </summary>
+    /// 
+    /// <param name="posX">X position of the mouse</param>
+    /// <param name="posY">Y position of the mouse</param>
+    /// <param name="imageWidth">Image width</param>
+    /// <param name="imageHeight">Image height</param>
+    /// <param name="imageSource">Source of the mouse movement call</param>
+    /// <param name="lbmPressed">Whether the left mouse button is pressed</param>
+    /// <param name="rbmPressed">Whether the right mouse button is pressed</param>
+    private void HandleTemplateCreationModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
+        ILayoutable imageSource, bool lbmPressed, bool rbmPressed) {
+        if (lbmPressed || rbmPressed) {
+            try {
+                centralManager?.GetInputManager().ProcessClickTemplateCreation((int) Math.Round(posX),
+                    (int) Math.Round(posY),
+                    (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
+                    (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
+                    lbmPressed);
+            } catch (IndexOutOfRangeException) { }
+        }
+    }
+
+    /// <summary>
+    /// Handle the movement of the mouse in the Template Placement Mode
+    /// </summary>
+    /// 
+    /// <param name="posX">X position of the mouse</param>
+    /// <param name="posY">Y position of the mouse</param>
+    /// <param name="imageWidth">Image width</param>
+    /// <param name="imageHeight">Image height</param>
+    /// <param name="imageSource">Source of the mouse movement call</param>
+    /// <param name="lbmPressed">Whether the left mouse button is pressed</param>
+    private void HandleTemplatePlaceModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
+        ILayoutable imageSource, bool lbmPressed) {
+        if (lbmPressed) {
+            centralManager?.GetInputManager().ProcessClickTemplatePlace((int) Math.Round(posX),
+                (int) Math.Round(posY),
+                (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
+                (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom));
+        }
     }
 
     /// <summary>
@@ -309,6 +376,6 @@ public partial class PaintingWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void OnPointerMoved(object sender, PointerEventArgs e) {
-        centralManager?.getInputManager().resetHoverAvailability();
+        centralManager?.GetInputManager().ResetHoverAvailability();
     }
 }

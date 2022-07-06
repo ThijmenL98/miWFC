@@ -16,7 +16,7 @@ public class InputViewModel : ReactiveObject {
         mainWindowViewModel = mwvm;
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
@@ -47,7 +47,7 @@ public class InputViewModel : ReactiveObject {
     /// </summary>
     public async void ToggleInputWrapping() {
         mainWindowViewModel.InputWrapping = !mainWindowViewModel.InputWrapping;
-        centralManager!.getWFCHandler().setInputChanged("Input Wrapping Change");
-        await centralManager!.getInputManager().restartSolution("Input Wrapping Change");
+        centralManager!.GetWFCHandler().SetInputChanged("Input Wrapping Change");
+        await centralManager!.GetInputManager().RestartSolution("Input Wrapping Change");
     }
 }

@@ -2,7 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              Width="750" d:DesignHeight="766" d:DesignWidth="750" MinHeight="766"
+             xmlns:viewModels="clr-namespace:miWFC.ViewModels"
              x:Class="miWFC.ContentControls.ItemAddMenu">
+
+	<Design.DataContext>
+		<viewModels:MainWindowViewModel />
+	</Design.DataContext>
 
 	<Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10">
 		<Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
@@ -48,7 +53,7 @@
 				<Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BoxShadow="0 0 15 0.25 Black"
 				        Margin="15, 5, 15, 5"
 				        Background="#22000000" CornerRadius="10" HorizontalAlignment="Stretch" ClipToBounds="True">
-					<Image Width="100" Height="100" Source="{Binding ItemVM.ItemVMCurrentItemImage}"
+					<Image Width="100" Height="100" Source="{Binding ItemVM.CurrentItemImage}"
 					       RenderOptions.BitmapInterpolationMode="Default" />
 				</Border>
 

@@ -343,28 +343,28 @@ public class TileViewModel : ReactiveObject {
     /// Function to handle a weight increase
     /// </summary>
     public void OnIncrement() {
-        handleWeightChange(true);
+        HandleWeightChange(true);
     }
 
     /// <summary>
     /// Function to handle a weight decrease
     /// </summary>
     public void OnDecrement() {
-        handleWeightChange(false);
+        HandleWeightChange(false);
     }
 
     /// <summary>
     /// Function to handle an increase in the amount to change the actual weight with
     /// </summary>
     public void OnWeightIncrement() {
-        handleWeightGapChange(true);
+        HandleWeightGapChange(true);
     }
     
     /// <summary>
     /// Function to handle an decrease in the amount to change the actual weight with
     /// </summary>
     public void OnWeightDecrement() {
-        handleWeightGapChange(false);
+        HandleWeightGapChange(false);
     }
 
     /// <summary>
@@ -372,7 +372,7 @@ public class TileViewModel : ReactiveObject {
     /// 1, 10, 20, 30...
     /// </summary>
     /// <param name="increment">Whether to increase or decrease the gap to change the actual weight with</param>
-    private void handleWeightGapChange(bool increment) {
+    private void HandleWeightGapChange(bool increment) {
         switch (ChangeAmount) {
             case 1d:
                 if (increment) {
@@ -407,7 +407,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     /// 
     /// <param name="increment">Whether to increment (inverse decrement) the weight</param>
-    private void handleWeightChange(bool increment) {
+    private void HandleWeightChange(bool increment) {
         switch (increment) {
             case false when !(PatternWeight > 0):
                 return;
@@ -423,8 +423,8 @@ public class TileViewModel : ReactiveObject {
         PatternWeight = Math.Min(Math.Round(PatternWeight, 1), 250d);
 
         if (!DynamicWeight) {
-            int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
-                yDim = centralManager!.getMainWindowVM().ImageOutHeight;
+            int xDim = centralManager!.GetMainWindowVM().ImageOutWidth,
+                yDim = centralManager!.GetMainWindowVM().ImageOutHeight;
             _weightHeatmap = new double[xDim, yDim];
             for (int i = 0; i < xDim; i++) {
                 for (int j = 0; j < yDim; j++) {
@@ -438,16 +438,16 @@ public class TileViewModel : ReactiveObject {
     /// Callback when clicking on the weight value of the tile, opening the weight mapping window.
     /// </summary>
     public async void DynamicWeightClick() {
-        await centralManager!.getUIManager().switchWindow(Windows.HEATMAP);
+        await centralManager!.GetUIManager().SwitchWindow(Windows.HEATMAP);
 
-        int xDim = centralManager!.getMainWindowVM().ImageOutWidth,
-            yDim = centralManager!.getMainWindowVM().ImageOutHeight;
+        int xDim = centralManager!.GetMainWindowVM().ImageOutWidth,
+            yDim = centralManager!.GetMainWindowVM().ImageOutHeight;
         if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
-            centralManager.getWFCHandler().resetWeights();
+            centralManager.GetWFCHandler().ResetWeights();
         }
 
-        centralManager!.getWeightMapWindow().setSelectedTile(RawPatternIndex);
-        centralManager!.getWeightMapWindow().updateOutput(_weightHeatmap);
+        centralManager!.GetWeightMapWindow().SetSelectedTile(RawPatternIndex);
+        centralManager!.GetWeightMapWindow().UpdateOutput(_weightHeatmap);
     }
 
     /// <summary>
@@ -455,8 +455,8 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public async void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
-        await centralManager!.getInputManager().restartSolution("Rotate toggle", true);
-        centralManager!.getWFCHandler().updateTransformations();
+        await centralManager!.GetInputManager().RestartSolution("Rotate toggle", true);
+        centralManager!.GetWFCHandler().UpdateTransformations();
     }
 
     /// <summary>
@@ -464,15 +464,15 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public async void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
-        await centralManager!.getInputManager().restartSolution("Flip toggle", true);
-        centralManager!.getWFCHandler().updateTransformations();
+        await centralManager!.GetInputManager().RestartSolution("Flip toggle", true);
+        centralManager!.GetWFCHandler().UpdateTransformations();
     }
 
     /// <summary>
     /// Forward the selection of the current pattern to be used as a host for the currently selected item to the menu
     /// </summary>
     public void ForwardSelectionToggle() {
-        centralManager!.getItemWindow().getItemAddMenu().forwardAllowedTileChange(PatternIndex, ItemAddChecked);
+        centralManager!.GetItemWindow().GetItemAddMenu().ForwardAllowedTileChange(PatternIndex, ItemAddChecked);
     }
 
     /// <summary>
@@ -480,7 +480,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public void TogglePatternAppearance() {
         PatternDisabled = !PatternDisabled;
-        centralManager!.getWFCHandler().setPatternDisabled(PatternDisabled, RawPatternIndex);
+        centralManager!.GetWFCHandler().SetPatternDisabled(PatternDisabled, RawPatternIndex);
     }
 
     /// <summary>
@@ -495,8 +495,8 @@ public class TileViewModel : ReactiveObject {
             UserRotation %= 360;
         }
 
-        await centralManager!.getInputManager().restartSolution("User rotate change", true);
-        centralManager!.getWFCHandler().updateTransformations();
+        await centralManager!.GetInputManager().RestartSolution("User rotate change", true);
+        centralManager!.GetWFCHandler().UpdateTransformations();
     }
     
     /// <summary>
@@ -509,7 +509,7 @@ public class TileViewModel : ReactiveObject {
             UserFlipping = 1;
         }
 
-        await centralManager!.getInputManager().restartSolution("User flip change", true);
-        centralManager!.getWFCHandler().updateTransformations();
+        await centralManager!.GetInputManager().RestartSolution("User flip change", true);
+        centralManager!.GetWFCHandler().UpdateTransformations();
     }
 }

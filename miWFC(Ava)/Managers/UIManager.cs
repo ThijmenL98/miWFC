@@ -56,8 +56,8 @@ public class UIManager {
 
     public UIManager(CentralManager parent) {
         centralManager = parent;
-        mainWindowVM = parent.getMainWindowVM();
-        mainWindow = parent.getMainWindow();
+        mainWindowVM = parent.GetMainWindowVM();
+        mainWindow = parent.GetMainWindow();
     }
     
     /*
@@ -92,11 +92,11 @@ public class UIManager {
     /// 
     /// <param name="values">New Combo Box values</param>
     /// <param name="idx">Index, default is the first item</param>
-    public void updateCategories(string[]? values, int idx = 0) {
+    public void UpdateCategories(string[]? values, int idx = 0) {
         if (values != null) {
-            mainWindow.getInputControl()
-                .setCategories(
-                    values.Select(cat => new HoverableTextViewModel(cat, Util.getDescription(cat))).ToArray(), idx);
+            mainWindow.GetInputControl()
+                .SetCategories(
+                    values.Select(cat => new HoverableTextViewModel(cat, Util.GetDescription(cat))).ToArray(), idx);
         }
     }
 
@@ -106,8 +106,8 @@ public class UIManager {
     /// 
     /// <param name="values">New Combo Box values</param>
     /// <param name="idx">Index, default is the first item</param>
-    public void updateInputImages(string[]? values, int idx = 0) {
-        mainWindow.getInputControl().setInputImages(values, idx);
+    public void UpdateInputImages(string[]? values, int idx = 0) {
+        mainWindow.GetInputControl().SetInputImages(values, idx);
     }
     
     /// <summary>
@@ -116,8 +116,8 @@ public class UIManager {
     /// 
     /// <param name="values">New Combo Box values</param>
     /// <param name="idx">Index, default is the first item</param>
-    public void updatePatternSizes(int[]? values, int idx = 0) {
-        mainWindow.getInputControl().setPatternSizes(values, idx);
+    public void UpdatePatternSizes(int[]? values, int idx = 0) {
+        mainWindow.GetInputControl().SetPatternSizes(values, idx);
     }
 
     /// <summary>
@@ -125,7 +125,7 @@ public class UIManager {
     /// </summary>
     /// 
     /// <param name="newImage">Name of the selected input image</param>
-    public void updateInputImage(string newImage) {
+    public void UpdateInputImage(string newImage) {
         string uri = $"{AppContext.BaseDirectory}/samples/{newImage}.png";
         mainWindowVM.InputImage = new Bitmap(uri);
     }
@@ -135,7 +135,7 @@ public class UIManager {
     /// </summary>
     /// 
     /// <param name="newValue">Amount of steps to take (>100 = instantly collapse)</param>
-    public void updateInstantCollapse(int newValue) {
+    public void UpdateInstantCollapse(int newValue) {
         bool ic = newValue >= 100;
         mainWindowVM.StepAmountString = ic ? "Instantly generate output" : "Steps to take: " + newValue;
         mainWindowVM.InstantCollapse = !ic;
@@ -146,10 +146,10 @@ public class UIManager {
     /// </summary>
     /// 
     /// <param name="amountCollapsed">Percentage of the output collapsed</param>
-    public void updateTimeStampPosition(double amountCollapsed) {
-        double tWidth = centralManager.getMainWindow().IsVisible
-            ? mainWindow.getOutputControl().getTimelineWidth()
-            : centralManager.getPaintingWindow().getTimelineWidth();
+    public void UpdateTimeStampPosition(double amountCollapsed) {
+        double tWidth = centralManager.GetMainWindow().IsVisible
+            ? mainWindow.GetOutputControl().GetTimelineWidth()
+            : centralManager.GetPaintingWindow().GetTimelineWidth();
         mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
 
@@ -158,7 +158,7 @@ public class UIManager {
     /// </summary>
     ///
     /// <param name="param">Which popup to show, based on the window the user is on</param>
-    public void showPopUp(string param) {
+    public void ShowPopUp(string param) {
         switch (param) {
             case "M":
                 mainWindowVM.MainInfoPopupVisible = true;
@@ -178,7 +178,7 @@ public class UIManager {
     /// <summary>
     /// Hide all popups, triggered on closing of any popup.
     /// </summary>
-    public void hidePopUp() {
+    public void HidePopUp() {
         mainWindowVM.MainInfoPopupVisible = false;
         mainWindowVM.PaintInfoPopupVisible = false;
         mainWindowVM.ItemsInfoPopupVisible = false;
@@ -190,7 +190,7 @@ public class UIManager {
     /// </summary>
     /// 
     /// <returns>Is any popup opened?</returns>
-    public bool popUpOpened() {
+    public bool PopUpOpened() {
         return mainWindowVM.MainInfoPopupVisible || mainWindowVM.ItemsInfoPopupVisible ||
                mainWindowVM.PaintInfoPopupVisible || mainWindowVM.HeatmapInfoPopupVisible;
     }
@@ -198,7 +198,7 @@ public class UIManager {
     /// <summary>
     /// Reset the patterns extracted from the input image to allow for the new input image to load its patterns.
     /// </summary>
-    public void resetPatterns() {
+    public void ResetPatterns() {
         similarityMap = new Dictionary<int, List<Bitmap>>();
         curBitmaps = new HashSet<ImageR>();
         patternCount = 0;
@@ -214,29 +214,18 @@ public class UIManager {
     /// <param name="rawIndex">Raw index of the tile</param>
     /// 
     /// <returns>The TileViewModel created by the addition of the tile/pattern</returns>
-    public TileViewModel? addPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries,
+    public TileViewModel? AddPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries,
         int rawIndex) {
         int n = colors.Height;
-        WriteableBitmap pattern = new(new PixelSize(n, n), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
+
+        WriteableBitmap pattern = Util.CreateBitmapFromData(n,n,1, (x, y) => (Color) colors.getTileAt(x, y).Value);
 
         ConcurrentDictionary<Point, Color> data = new();
-
-        using ILockedFramebuffer? frameBuffer = pattern.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, n, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < n; x++) {
-                    Color c = (Color) colors.getTileAt(x, (int) y).Value;
-                    dest[x] = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
-                    data[new Point(x, (int) y)] = c;
-                }
-            });
+        
+        for (int y = 0; y < n; y++) {
+            for (int x = 0; x < n; x++) {
+                data[new Point(x, y)] = (Color) colors.getTileAt(x, y).Value;
+            }
         }
 
         ImageR cur = new(pattern.Size, data.ToDictionary(kvp => kvp.Key,
@@ -271,7 +260,7 @@ public class UIManager {
     /// </summary>
     /// 
     /// <param name="window">Window to shake</param>
-    public void dispatchError(Window window) {
+    public void DispatchError(Window window) {
         dt.Stop();
         if (origPos != null) {
             window.Position = (PixelPoint) origPos;
@@ -314,8 +303,8 @@ public class UIManager {
     /// <param name="checkClicked">Whether the user needs to agree to discard or save unsaved work</param>
     /// 
     /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
-    public async Task switchWindow(Windows window, bool checkClicked = false) {
-        mainWindowVM.OutputImage = centralManager.getWFCHandler().getLatestOutputBM();
+    public async Task SwitchWindow(Windows window, bool checkClicked = false) {
+        mainWindowVM.OutputImage = centralManager.GetWFCHandler().GetLatestOutputBm();
 
 #if DEBUG
         Trace.WriteLine(@$"We want to switch to {window}");
@@ -325,55 +314,55 @@ public class UIManager {
         switch (window) {
             case Windows.MAIN:
                 // Goto main
-                source = centralManager.getPaintingWindow().IsVisible
-                    ? centralManager.getPaintingWindow()
-                    : centralManager.getItemWindow().IsVisible
-                        ? centralManager.getItemWindow()
-                        : centralManager.getWeightMapWindow();
+                source = centralManager.GetPaintingWindow().IsVisible
+                    ? centralManager.GetPaintingWindow()
+                    : centralManager.GetItemWindow().IsVisible
+                        ? centralManager.GetItemWindow()
+                        : centralManager.GetWeightMapWindow();
 
-                bool stillApply = await handlePaintingClose(checkClicked);
+                bool stillApply = await HandlePaintingClose(checkClicked);
 
                 if (stillApply) {
-                    await centralManager.getMainWindowVM().PaintingVM.ApplyPaintMask();
+                    await centralManager.GetMainWindowVM().PaintingVM.ApplyPaintMask();
                 }
 
                 break;
             case Windows.PAINTING:
                 // Goto paint
                 mainWindowVM.PaintingVM.PencilModeEnabled = true;
-                target = centralManager.getPaintingWindow();
+                target = centralManager.GetPaintingWindow();
                 break;
             case Windows.ITEMS:
                 // Goto items
-                target = centralManager.getItemWindow();
+                target = centralManager.GetItemWindow();
                 break;
             case Windows.HEATMAP:
                 // Goto Items
-                target = centralManager.getWeightMapWindow();
+                target = centralManager.GetWeightMapWindow();
                 break;
             default:
                 throw new NotImplementedException();
         }
 
-        if (!window.Equals(Windows.HEATMAP) && !source.Equals(centralManager.getWeightMapWindow())) {
+        if (!window.Equals(Windows.HEATMAP) && !source.Equals(centralManager.GetWeightMapWindow())) {
             target.Width = source.Width;
             target.Height = source.Height;
         }
 
-        if (!Equals(target, centralManager.getItemWindow()) && !Equals(source, centralManager.getItemWindow())) {
+        if (!Equals(target, centralManager.GetItemWindow()) && !Equals(source, centralManager.GetItemWindow())) {
             ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
 
             mainWindowVM.Markers.Clear();
             foreach (MarkerViewModel mvm in mvmListCopy) {
-                double offset = (centralManager.getMainWindow().IsVisible
-                        ? mainWindow.getOutputControl().getTimelineWidth()
-                        : centralManager.getPaintingWindow().getTimelineWidth()) *
+                double offset = (centralManager.GetMainWindow().IsVisible
+                        ? mainWindow.GetOutputControl().GetTimelineWidth()
+                        : centralManager.GetPaintingWindow().GetTimelineWidth()) *
                     mvm.MarkerCollapsePercentage + 1;
                 mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
                     offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
             }
 
-            updateTimeStampPosition(centralManager.getWFCHandler().getPercentageCollapsed());
+            UpdateTimeStampPosition(centralManager.GetWFCHandler().GetPercentageCollapsed());
         }
 
         source.Hide();
@@ -389,7 +378,7 @@ public class UIManager {
     /// <param name="checkClicked">Whether the user has unsaved work</param>
     /// 
     /// <returns>Task that finishes upon closing the prompt to save or discard unsaved work</returns>
-    private async Task<bool> handlePaintingClose(bool checkClicked) {
+    private async Task<bool> HandlePaintingClose(bool checkClicked) {
         if (!checkClicked) {
             IMsBoxWindow<string> messageBoxCustomWindow = MessageBoxManager
                 .GetMessageBoxCustomWindow(new MessageBoxCustomParams {

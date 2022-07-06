@@ -31,7 +31,7 @@ public class PaintingViewModel : ReactiveObject {
         mainWindowViewModel = mwvm;
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
@@ -114,8 +114,8 @@ public class PaintingViewModel : ReactiveObject {
         TemplatePlaceModeEnabled = false;
         PaintModeEnabled = false;
 
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getInputManager().updateMask();
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetInputManager().UpdateMask();
     }
 
     /// <summary>
@@ -127,8 +127,8 @@ public class PaintingViewModel : ReactiveObject {
         TemplatePlaceModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getInputManager().updateMask();
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetInputManager().UpdateMask();
     }
 
     /// <summary>
@@ -140,8 +140,8 @@ public class PaintingViewModel : ReactiveObject {
         TemplatePlaceModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getInputManager().updateMask();
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetInputManager().UpdateMask();
     }
 
     /// <summary>
@@ -153,174 +153,197 @@ public class PaintingViewModel : ReactiveObject {
         PaintModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getInputManager().updateMask();
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetInputManager().UpdateMask();
     }
 
     /// <summary>
     /// Function called applying the current paint mask
     /// </summary>
     public async Task ApplyPaintMask() {
-        Color[,] mask = centralManager!.getInputManager().getMaskColours();
+        Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
         if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
-            centralManager!.getUIManager().dispatchError(centralManager.getPaintingWindow());
+            centralManager!.GetUIManager().DispatchError(centralManager.GetPaintingWindow());
             return;
         }
 
-        mainWindowViewModel.toggleLoadingAnimation(true);
-        centralManager!.getMainWindowVM().StepAmount = 1;
+        mainWindowViewModel.ToggleLoadingAnimation(true);
+        centralManager!.GetMainWindowVM().StepAmount = 1;
 
-        centralManager.getInputManager().resetMask();
-        centralManager.getInputManager().updateMask();
-        await centralManager.getWFCHandler().handlePaintBrush(mask);
+        centralManager.GetInputManager().ResetMask();
+        centralManager.GetInputManager().UpdateMask();
+        await centralManager.GetWFCHandler().HandlePaintBrush(mask);
     }
 
     /// <summary>
     /// Function called applying the current template
     /// </summary>
-    public async Task CreateTemplate() {
-        Color[,] mask = centralManager!.getInputManager().getMaskColours();
+    public async void CreateTemplate() {
+        Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
 
+        if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
+            await CreateOverlappingTemplate(mask);
+        } else {
+            await CreateAdjacentTemplate(mask);
+        }
+
+        centralManager.GetPaintingWindow().SetTemplates(Templates);
+        centralManager.GetInputManager().ResetMask();
+        centralManager.GetInputManager().UpdateMask();
+    }
+
+    /// <summary>
+    /// Create a template with the current mask in the overlapping mode
+    /// </summary>
+    /// 
+    /// <param name="mask">User created mask</param>
+    private async Task CreateOverlappingTemplate(Color[,] mask) {
         int minX = int.MaxValue, maxX = int.MinValue;
         int minY = int.MaxValue, maxY = int.MinValue;
 
         bool nonEmpty = false;
 
-        if (centralManager!.getWFCHandler().isOverlappingModel()) {
-            for (int a = 0; a < mask.GetLength(0); a++) {
-                for (int b = 0; b < mask.GetLength(1); b++) {
-                    if (mask[a, b] == Colors.Gold) {
-                        Color atPos = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
+        for (int a = 0; a < mask.GetLength(0); a++) {
+            for (int b = 0; b < mask.GetLength(1); b++) {
+                if (mask[a, b] == Colors.Gold) {
+                    Color atPos = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
 
-                        if (atPos.A != 255) {
-                            centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
-                            return;
-                        }
+                    if (atPos.A != 255) {
+                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+                        return;
+                    }
 
-                        nonEmpty = true;
+                    nonEmpty = true;
 
-                        if (a < minX) {
-                            minX = a;
-                        }
+                    if (a < minX) {
+                        minX = a;
+                    }
 
-                        if (a > maxX) {
-                            maxX = a;
-                        }
+                    if (a > maxX) {
+                        maxX = a;
+                    }
 
-                        if (b < minY) {
-                            minY = b;
-                        }
+                    if (b < minY) {
+                        minY = b;
+                    }
 
-                        if (b > maxY) {
-                            maxY = b;
-                        }
+                    if (b > maxY) {
+                        maxY = b;
                     }
                 }
-            }
-
-            if (!nonEmpty) {
-                centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
-                return;
-            }
-
-            int patternWidth = maxX - minX + 1;
-            int patternHeight = maxY - minY + 1;
-            Color[,] offsetMask = new Color[patternWidth, patternHeight];
-
-            for (int a = minX; a <= maxX; a++) {
-                for (int b = minY; b <= maxY; b++) {
-                    if (mask[a, b] == Colors.Gold) {
-                        offsetMask[a - minX, b - minY]
-                            = centralManager.getWFCHandler().getOverlappingOutputAt(a, b);
-                    } else {
-                        offsetMask[a - minX, b - minY] = Colors.Transparent;
-                    }
-                }
-            }
-
-            TemplateViewModel tvm = new(Util.ColourArrayToImage(offsetMask), offsetMask);
-            bool saved = await tvm.Save(mainWindowViewModel.InputImageSelection);
-            if (saved) {
-                Templates.Add(tvm);
-            }
-        } else {
-            ITopoArray<int> aOutput = centralManager!.getWFCHandler().getPropagatorOutputA();
-            for (int a = 0; a < mask.GetLength(0); a++) {
-                for (int b = 0; b < mask.GetLength(1); b++) {
-                    if (mask[a, b] == Colors.Gold) {
-                        if (aOutput.get(a, b) < 0) {
-                            centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
-                            return;
-                        }
-
-                        nonEmpty = true;
-
-                        if (a < minX) {
-                            minX = a;
-                        }
-
-                        if (a > maxX) {
-                            maxX = a;
-                        }
-
-                        if (b < minY) {
-                            minY = b;
-                        }
-
-                        if (b > maxY) {
-                            maxY = b;
-                        }
-                    }
-                }
-            }
-
-            if (!nonEmpty) {
-                centralManager.getUIManager().dispatchError(centralManager!.getPaintingWindow());
-                return;
-            }
-
-            int patternWidth = maxX - minX + 1;
-            int patternHeight = maxY - minY + 1;
-            int[,] offsetMask = new int[patternWidth, patternHeight];
-
-            for (int a = minX; a <= maxX; a++) {
-                for (int b = minY; b <= maxY; b++) {
-                    if (mask[a, b] == Colors.Gold) {
-                        offsetMask[a - minX, b - minY] = aOutput.get(a, b);
-                    } else {
-                        offsetMask[a - minX, b - minY] = -1;
-                    }
-                }
-            }
-
-            TemplateViewModel tvm
-                = new(
-                    Util.ValueArrayToImage(offsetMask, centralManager!.getWFCHandler().getTileSize(),
-                        centralManager!.getWFCHandler().getTileCache()), offsetMask);
-            bool saved = await tvm.Save(mainWindowViewModel.InputImageSelection);
-            if (saved) {
-                Templates.Add(tvm);
             }
         }
 
-        centralManager.getPaintingWindow().setTemplates(Templates);
-        centralManager.getInputManager().resetMask();
-        centralManager.getInputManager().updateMask();
+        if (!nonEmpty) {
+            centralManager!.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+            return;
+        }
+
+        int patternWidth = maxX - minX + 1;
+        int patternHeight = maxY - minY + 1;
+        Color[,] offsetMask = new Color[patternWidth, patternHeight];
+
+        for (int a = minX; a <= maxX; a++) {
+            for (int b = minY; b <= maxY; b++) {
+                if (mask[a, b] == Colors.Gold) {
+                    offsetMask[a - minX, b - minY]
+                        = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
+                } else {
+                    offsetMask[a - minX, b - minY] = Colors.Transparent;
+                }
+            }
+        }
+
+        TemplateViewModel tvm = new(Util.ColourArrayToImage(offsetMask), offsetMask);
+        bool saved = await tvm.Save(mainWindowViewModel.InputImageSelection);
+        if (saved) {
+            Templates.Add(tvm);
+        }
+    }
+
+    /// <summary>
+    /// Create a template with the current mask in the adjacent mode
+    /// </summary>
+    /// 
+    /// <param name="mask">User created mask</param>
+    private async Task CreateAdjacentTemplate(Color[,] mask) {
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minY = int.MaxValue, maxY = int.MinValue;
+
+        bool nonEmpty = false;
+
+        ITopoArray<int> aOutput = centralManager!.GetWFCHandler().GetPropagatorOutputA();
+        for (int a = 0; a < mask.GetLength(0); a++) {
+            for (int b = 0; b < mask.GetLength(1); b++) {
+                if (mask[a, b] == Colors.Gold) {
+                    if (aOutput.get(a, b) < 0) {
+                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+                        return;
+                    }
+
+                    nonEmpty = true;
+
+                    if (a < minX) {
+                        minX = a;
+                    }
+
+                    if (a > maxX) {
+                        maxX = a;
+                    }
+
+                    if (b < minY) {
+                        minY = b;
+                    }
+
+                    if (b > maxY) {
+                        maxY = b;
+                    }
+                }
+            }
+        }
+
+        if (!nonEmpty) {
+            centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+            return;
+        }
+
+        int patternWidth = maxX - minX + 1;
+        int patternHeight = maxY - minY + 1;
+        int[,] offsetMask = new int[patternWidth, patternHeight];
+
+        for (int a = minX; a <= maxX; a++) {
+            for (int b = minY; b <= maxY; b++) {
+                if (mask[a, b] == Colors.Gold) {
+                    offsetMask[a - minX, b - minY] = aOutput.get(a, b);
+                } else {
+                    offsetMask[a - minX, b - minY] = -1;
+                }
+            }
+        }
+
+        TemplateViewModel tvm
+            = new(
+                Util.ValueArrayToImage(offsetMask, centralManager!.GetWFCHandler().GetTileSize(),
+                    centralManager!.GetWFCHandler().GetTileCache()), offsetMask);
+        bool saved = await tvm.Save(mainWindowViewModel.InputImageSelection);
+        if (saved) {
+            Templates.Add(tvm);
+        }
     }
 
     /// <summary>
     /// Function called to reset the mask that is being painted on
     /// </summary>
     public void ResetMask() {
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getInputManager().updateMask();
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetInputManager().UpdateMask();
     }
 
     /// <summary>
     /// Function called when deleting the current template from the user system
     /// </summary>
     public void DeleteTemplate() {
-        int templateIndex = centralManager!.getPaintingWindow().getSelectedTemplateIndex();
+        int templateIndex = centralManager!.GetPaintingWindow().GetSelectedTemplateIndex();
         if (templateIndex == -1) {
             return;
         }
@@ -328,9 +351,9 @@ public class PaintingViewModel : ReactiveObject {
         TemplateViewModel tvm = Templates[templateIndex];
         tvm.DeleteFile(mainWindowViewModel.InputImageSelection);
         Templates.Remove(tvm);
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(
-            centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(),
-            centralManager.getWFCHandler().getTileSize()));
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+            centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
+            centralManager.GetWFCHandler().GetTileSize()));
     }
 }

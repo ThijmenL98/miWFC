@@ -19,15 +19,15 @@ public partial class ItemWindow : Window {
     public ItemWindow() {
         InitializeComponent();
 
-        KeyDown += keyDownHandler;
+        KeyDown += KeyDownHandler;
         Closing += (_, e) => {
-            centralManager?.getUIManager().switchWindow(Windows.MAIN, true);
-            getDataGrid().SelectedIndex = -1;
+            centralManager?.GetUIManager().SwitchWindow(Windows.MAIN, true);
+            GetDataGrid().SelectedIndex = -1;
             e.Cancel = true;
         };
         Opened += (_, _) => {
             if (centralManager != null) {
-                centralManager!.getItemWindow().getItemAddMenu().updateAllowedTiles();
+                centralManager!.GetItemWindow().GetItemAddMenu().UpdateAllowedTiles();
             }
         };
     }
@@ -40,9 +40,9 @@ public partial class ItemWindow : Window {
 #endif
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
-        this.Find<ItemAddMenu>("itemAddMenu").setCentralManager(cm);
+        this.Find<ItemAddMenu>("itemAddMenu").SetCentralManager(cm);
     }
     
     /*
@@ -64,7 +64,7 @@ public partial class ItemWindow : Window {
     /// </summary>
     /// 
     /// <returns></returns>
-    public ItemAddMenu getItemAddMenu() {
+    public ItemAddMenu GetItemAddMenu() {
         return this.Find<ItemAddMenu>("itemAddMenu");
     }
 
@@ -73,7 +73,7 @@ public partial class ItemWindow : Window {
     /// </summary>
     /// 
     /// <returns></returns>
-    public DataGrid getDataGrid() {
+    public DataGrid GetDataGrid() {
         return this.Find<DataGrid>("itemsDataGrid");
     }
 
@@ -91,7 +91,7 @@ public partial class ItemWindow : Window {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
-    private void keyDownHandler(object? sender, KeyEventArgs e) {
+    private void KeyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
         }

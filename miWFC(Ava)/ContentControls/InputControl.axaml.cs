@@ -31,9 +31,9 @@ public partial class InputControl : UserControl {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
-        inImgCBChangeHandler(null, null);
+        InImgCBChangeHandler(null, null);
     }
 
     /*
@@ -45,7 +45,7 @@ public partial class InputControl : UserControl {
     /// </summary>
     /// 
     /// <returns>Input Category String, default "Textures"</returns>
-    public string getCategory() {
+    public string GetCategory() {
         return (_categoryCB.SelectedItem as HoverableTextViewModel)?.DisplayText ?? "Textures";
     }
 
@@ -54,7 +54,7 @@ public partial class InputControl : UserControl {
     /// </summary>
     /// 
     /// <returns>Input Image String, default "3Bricks"</returns>
-    public string getInputImage() {
+    public string GetInputImage() {
         return _inputCB.SelectedItem as string ?? "3Bricks";
     }
 
@@ -63,7 +63,7 @@ public partial class InputControl : UserControl {
     /// </summary>
     /// 
     /// <returns>Pattern Size, default 3</returns>
-    public int getPatternSize() {
+    public int GetPatternSize() {
         return (int) (_patternSizeCB.SelectedItem ?? 3);
     }
 
@@ -77,7 +77,7 @@ public partial class InputControl : UserControl {
     /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
-    public void setCategories(HoverableTextViewModel[]? values, int idx = 0) {
+    public void SetCategories(HoverableTextViewModel[]? values, int idx = 0) {
         if (values != null) {
             _categoryCB.Items = values;
         }
@@ -91,7 +91,7 @@ public partial class InputControl : UserControl {
     /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
-    public void setInputImages(string[]? values, int idx = 0) {
+    public void SetInputImages(string[]? values, int idx = 0) {
         if (values != null) {
             _inputCB.Items = values;
         }
@@ -105,7 +105,7 @@ public partial class InputControl : UserControl {
     /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
-    public void setPatternSizes(int[]? values, int idx = 0) {
+    public void SetPatternSizes(int[]? values, int idx = 0) {
         if (values != null) {
             _patternSizeCB.Items = values;
         }
@@ -123,17 +123,17 @@ public partial class InputControl : UserControl {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
-    private void catCBChangeHandler(object sender, SelectionChangedEventArgs e) {
-        if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
+    private void CatCBChangeHandler(object sender, SelectionChangedEventArgs e) {
+        if (centralManager == null || centralManager.GetWFCHandler().IsChangingModels()) {
             return;
         }
 
-        string newValue = getCategory();
-        bool isOverlapping = !centralManager!.getMainWindowVM().SimpleModelSelected;
+        string newValue = GetCategory();
+        bool isOverlapping = !centralManager!.GetMainWindowVM().SimpleModelSelected;
 
         string[] inputImageDataSource
-            = Util.getModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
-        setInputImages(inputImageDataSource);
+            = Util.GetModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
+        SetInputImages(inputImageDataSource);
 
         e.Handled = true;
     }
@@ -144,30 +144,30 @@ public partial class InputControl : UserControl {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
-    public async void inImgCBChangeHandler(object? sender, SelectionChangedEventArgs? e) {
-        if (centralManager == null || centralManager.getWFCHandler().isChangingModels()) {
+    public async void InImgCBChangeHandler(object? sender, SelectionChangedEventArgs? e) {
+        if (centralManager == null || centralManager.GetWFCHandler().IsChangingModels()) {
             return;
         }
 
-        centralManager.getWFCHandler().setImageChanging(true);
+        centralManager.GetWFCHandler().SetImageChanging(true);
 
-        string newValue = getInputImage();
-        centralManager.getUIManager().updateInputImage(newValue);
+        string newValue = GetInputImage();
+        centralManager.GetUIManager().UpdateInputImage(newValue);
 
-        centralManager.getWFCHandler().setInputChanged("Image CB");
+        centralManager.GetWFCHandler().SetInputChanged("Image CB");
 
-        if (!centralManager.getMainWindowVM().SimpleModelSelected) {
-            (int[] patternSizeDataSource, int i) = Util.getImagePatternDimensions(newValue);
-            setPatternSizes(patternSizeDataSource, i);
+        if (!centralManager.GetMainWindowVM().SimpleModelSelected) {
+            (int[] patternSizeDataSource, int i) = Util.GetImagePatternDimensions(newValue);
+            SetPatternSizes(patternSizeDataSource, i);
         }
 
-        centralManager.getWFCHandler().setImageChanging(false);
-        await centralManager.getInputManager().restartSolution("Image CB Handler", true);
+        centralManager.GetWFCHandler().SetImageChanging(false);
+        await centralManager.GetInputManager().RestartSolution("Image CB Handler", true);
 
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(
-            centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(),
-            centralManager.getWFCHandler().getTileSize()));
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+            centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
+            centralManager.GetWFCHandler().GetTileSize()));
 
         if (e != null) {
             e.Handled = true;
@@ -180,15 +180,15 @@ public partial class InputControl : UserControl {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
-    private async void pattSizeCBChangeHandler(object? sender, SelectionChangedEventArgs e) {
+    private async void PattSizeCBChangeHandler(object? sender, SelectionChangedEventArgs e) {
         if (centralManager == null) {
             return;
         }
 
-        centralManager.getWFCHandler().setInputChanged("Pattern Size CB");
+        centralManager.GetWFCHandler().SetInputChanged("Pattern Size CB");
         e.Handled = true;
-        if (centralManager.getMainWindowVM().SelectedTabIndex > 1) {
-            await centralManager.getInputManager().restartSolution("Pattern CB Handler");
+        if (centralManager.GetMainWindowVM().SelectedTabIndex > 1) {
+            await centralManager.GetInputManager().RestartSolution("Pattern CB Handler");
         }
     }
 }

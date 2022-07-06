@@ -108,7 +108,7 @@ public class ItemType {
     /// <param name="id">Item ID</param>
     /// 
     /// <returns>Item Type Enumerator Object</returns>
-    public static ItemType getItemTypeByID(int id) {
+    public static ItemType GetItemTypeById(int id) {
         return itemTypes[id];
     }
 

@@ -17,7 +17,7 @@ public class OutputViewModel : ReactiveObject {
         mainWindowViewModel = mwvm;
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
@@ -48,7 +48,7 @@ public class OutputViewModel : ReactiveObject {
     /// </summary>
     public void ToggleAnimation() {
         mainWindowViewModel.IsPlaying = !mainWindowViewModel.IsPlaying;
-        centralManager!.getInputManager().animate();
+        centralManager!.GetInputManager().Animate();
     }
 
     /// <summary>
@@ -59,14 +59,14 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.getInputManager().advanceStep();
+        centralManager!.GetInputManager().AdvanceStep();
     }
 
     /// <summary>
     /// Function called when placing a marker
     /// </summary>
     public void PlaceMarker() {
-        centralManager!.getInputManager().placeMarker();
+        centralManager!.GetInputManager().PlaceMarker();
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.getInputManager().loadMarker();
+        centralManager!.GetInputManager().LoadMarker();
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.getInputManager().revertStep();
+        centralManager!.GetInputManager().RevertStep();
     }
 
     /// <summary>
@@ -100,14 +100,14 @@ public class OutputViewModel : ReactiveObject {
         }
 
         mainWindowViewModel.SeamlessOutput = !mainWindowViewModel.SeamlessOutput;
-        await centralManager!.getInputManager().restartSolution("Padding Toggle Change");
+        await centralManager!.GetInputManager().RestartSolution("Padding Toggle Change");
     }
 
     /// <summary>
     /// Function called when importing an image
     /// </summary>
     public void ImportFromDevice() {
-        centralManager!.getInputManager().importSolution();
+        centralManager!.GetInputManager().ImportSolution();
     }
 
     /// <summary>
@@ -118,7 +118,7 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.getInputManager().exportSolution();
+        centralManager!.GetInputManager().ExportSolution();
     }
 
     /// <summary>
@@ -129,9 +129,9 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.getWFCHandler().resetWeights(false);
-        centralManager!.getWFCHandler().updateWeights();
+        centralManager!.GetWFCHandler().ResetWeights(false);
+        centralManager!.GetWFCHandler().UpdateWeights();
 
-        await centralManager!.getInputManager().restartSolution("Restart UI call");
+        await centralManager!.GetInputManager().RestartSolution("Restart UI call");
     }
 }

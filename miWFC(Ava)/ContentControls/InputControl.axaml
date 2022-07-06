@@ -34,7 +34,7 @@
 
 			<ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0" MinHeight="40"
 			          SelectedItem="{Binding CategorySelection}"
-			          SelectionChanged="catCBChangeHandler" x:Name="categoryCB">
+			          SelectionChanged="CatCBChangeHandler" x:Name="categoryCB">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
@@ -59,7 +59,7 @@
 
 			<ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0" MinHeight="40"
 			          SelectedItem="{Binding InputImageSelection}"
-			          SelectionChanged="inImgCBChangeHandler" x:Name="inputCB" />
+			          SelectionChanged="InImgCBChangeHandler" x:Name="inputCB" />
 		</Grid>
 
 		<Border Grid.Column="0" Grid.Row="1" BoxShadow="0 0 15 0.25 Black" Margin="10" MaxWidth="300"
@@ -97,7 +97,7 @@
 
 			<ComboBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" SelectedIndex="0"
 			          MaxHeight="35" Padding="0, -2, 0, -2" x:Name="patternSizeCB"
-			          SelectionChanged="pattSizeCBChangeHandler" SelectedItem="{Binding PatternSize}"
+			          SelectionChanged="PattSizeCBChangeHandler" SelectedItem="{Binding PatternSize}"
 			          VerticalAlignment="Center" IsVisible="{Binding OverlappingAdvancedEnabled}" />
 
 			<TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Text="Input Wrapping" TextAlignment="Center"

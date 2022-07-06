@@ -64,7 +64,7 @@ public class FixedSizeQueue<T> {
     /// </summary>
     /// 
     /// <returns>List representation of the Queue</returns>
-    public List<T> toList() {
+    public List<T> ToList() {
         lock (lockObject) {
             List<T> listQueue = new(q.ToArray());
             listQueue.Reverse();

@@ -4,9 +4,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.Managers;
+using miWFC.Utils;
 using ReactiveUI;
 
 // ReSharper disable UnusedMember.Global
@@ -32,7 +34,7 @@ public class MappingViewModel : ReactiveObject {
         mainWindowViewModel = mwvm;
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
@@ -86,7 +88,7 @@ public class MappingViewModel : ReactiveObject {
     /// Function called when resetting the weight mapping
     /// </summary>
     public void ResetWeightMapping() {
-        centralManager!.getWeightMapWindow().resetCurrentMapping();
+        centralManager!.GetWeightMapWindow().ResetCurrentMapping();
     }
 
     /// <summary>
@@ -132,8 +134,8 @@ public class MappingViewModel : ReactiveObject {
                 });
             }
 
-            centralManager!.getWeightMapWindow().updateOutput(mapValues);
-            centralManager!.getWeightMapWindow().setCurrentMapping(mapValues);
+            centralManager!.GetWeightMapWindow().UpdateOutput(mapValues);
+            centralManager!.GetWeightMapWindow().SetCurrentMapping(mapValues);
         }
     }
 
@@ -154,28 +156,13 @@ public class MappingViewModel : ReactiveObject {
 
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
-            WriteableBitmap toExport = new(
-                new PixelSize(mainWindowViewModel.ImageOutWidth, mainWindowViewModel.ImageOutHeight),
-                new Vector(96, 96),
-                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-                AlphaFormat.Unpremul);
-
-            using ILockedFramebuffer? frameBuffer = toExport.Lock();
-
-            unsafe {
-                uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-                int stride = frameBuffer.RowBytes;
-
-                Parallel.For(0L, mainWindowViewModel.ImageOutHeight, y => {
-                    uint* dest = backBuffer + (int) y * stride / 4;
-                    for (int x = 0; x < mainWindowViewModel.ImageOutWidth; x++) {
-                        int greyValue = (int) centralManager!.getWeightMapWindow().getGradientValue(x, (int) y);
-                        dest[x] = (uint) ((255 << 24) + (greyValue << 16) + (greyValue << 8) + greyValue);
-                    }
+            WriteableBitmap exportBitmap = Util.CreateBitmapFromData(mainWindowViewModel.ImageOutWidth,
+                mainWindowViewModel.ImageOutHeight, 1, (x, y) => {
+                    int greyValue = (int) centralManager!.GetWeightMapWindow().GetGradientValue(x,  y);
+                    return Color.FromRgb((byte) greyValue, (byte)greyValue, (byte)greyValue);
                 });
-            }
 
-            toExport.Save(settingsFileName);
+            exportBitmap.Save(settingsFileName);
         }
     }
 }

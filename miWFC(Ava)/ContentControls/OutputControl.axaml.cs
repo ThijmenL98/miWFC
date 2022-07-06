@@ -23,7 +23,7 @@ public partial class OutputControl : UserControl {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
     
@@ -36,7 +36,7 @@ public partial class OutputControl : UserControl {
     /// </summary>
     /// 
     /// <returns>Width</returns>
-    public double getTimelineWidth() {
+    public double GetTimelineWidth() {
         return this.Find<Grid>("timeline").Bounds.Width;
     }
     
@@ -55,9 +55,9 @@ public partial class OutputControl : UserControl {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
-    public void speedSliderChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
+    public void SpeedSliderChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
         if (e.Property.ToString().Equals("Value") && e.NewValue != null) {
-            centralManager?.getUIManager().updateInstantCollapse((int) (double) e.NewValue);
+            centralManager?.GetUIManager().UpdateInstantCollapse((int) (double) e.NewValue);
         }
     }
 }

@@ -45,7 +45,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>InputManager</returns>
-    public InputManager getInputManager() {
+    public InputManager GetInputManager() {
         return inputManager;
     }
     
@@ -54,7 +54,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>UIManager</returns>
-    public UIManager getUIManager() {
+    public UIManager GetUIManager() {
         return uiManager;
     }
 
@@ -63,7 +63,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>WFCHandler</returns>
-    public WFCHandler getWFCHandler() {
+    public WFCHandler GetWFCHandler() {
         return wfcHandler;
     }
 
@@ -72,7 +72,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>MainWindow</returns>
-    public MainWindow getMainWindow() {
+    public MainWindow GetMainWindow() {
         return mainWindow;
     }
 
@@ -81,7 +81,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>PaintingWindow</returns>
-    public PaintingWindow getPaintingWindow() {
+    public PaintingWindow GetPaintingWindow() {
         return paintingWindow;
     }
 
@@ -90,7 +90,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>ItemWindow</returns>
-    public ItemWindow getItemWindow() {
+    public ItemWindow GetItemWindow() {
         return itemWindow;
     }
 
@@ -99,7 +99,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>MainWindowViewModel</returns>
-    public MainWindowViewModel getMainWindowVM() {
+    public MainWindowViewModel GetMainWindowVM() {
         return mainWindowViewModel;
     }
 
@@ -108,7 +108,7 @@ public class CentralManager {
     /// </summary>
     /// 
     /// <returns>WeightMapWindow</returns>
-    public WeightMapWindow getWeightMapWindow() {
+    public WeightMapWindow GetWeightMapWindow() {
         return weightMapWindow;
     }
 }

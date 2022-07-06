@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using miWFC.Managers;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
+
+// ReSharper disable SuggestBaseTypeForParameter
+
 // ReSharper disable UnusedParameter.Local
 
 namespace miWFC.ContentControls;
@@ -54,17 +53,17 @@ public partial class ItemAddMenu : UserControl {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
 
-        allowedTiles = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
+        allowedTiles = new bool[centralManager!.GetMainWindowVM().PaintTiles.Count];
     }
 
     /// <summary>
     /// Reset the allowed tiles array, which has a boolean for each tile whether they are allowed to host the item
     /// </summary>
-    public void updateAllowedTiles() {
-        allowedTiles = new bool[centralManager!.getMainWindowVM().PaintTiles.Count];
+    public void UpdateAllowedTiles() {
+        allowedTiles = new bool[centralManager!.GetMainWindowVM().PaintTiles.Count];
     }
 
     /*
@@ -80,31 +79,14 @@ public partial class ItemAddMenu : UserControl {
     /// embedded within the image</param>
     /// 
     /// <returns>Item image</returns>
-    public WriteableBitmap getItemImage(ItemType itemType, int index = -1) {
+    public WriteableBitmap GetItemImage(ItemType itemType, int index = -1) {
         if (imageCache.ContainsKey(itemType.ID)) {
             return imageCache[itemType.ID];
         }
 
-        WriteableBitmap outputBitmap = new(new PixelSize(Dimension, Dimension), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
-
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-        Color[] rawColours = Util.getItemImageRaw(itemType, index);
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, Dimension, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < Dimension; x++) {
-                    Color toSet = rawColours[y % Dimension * Dimension + x % Dimension];
-
-                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                }
-            });
-        }
+        Color[] rawColours = Util.GetItemImageRaw(itemType, index);
+        WriteableBitmap outputBitmap = Util.CreateBitmapFromData(Dimension, Dimension, 1,
+            (x, y) => rawColours[y % Dimension * Dimension + x % Dimension]);
 
         imageCache[itemType.ID] = outputBitmap;
 
@@ -116,8 +98,8 @@ public partial class ItemAddMenu : UserControl {
     /// </summary>
     /// 
     /// <returns>The dependent item object</returns>
-    public ItemType getSelectedItemType() {
-        return ItemType.getItemTypeByID(_itemsCB.SelectedIndex);
+    public ItemType GetSelectedItemType() {
+        return ItemType.GetItemTypeById(_itemsCB.SelectedIndex);
     }
 
     /// <summary>
@@ -125,8 +107,8 @@ public partial class ItemAddMenu : UserControl {
     /// </summary>
     /// 
     /// <returns>The dependent item object</returns>
-    public ItemType getDependencyItemType() {
-        return ItemType.getItemTypeByID(_depsCB.SelectedIndex);
+    public ItemType GetDependencyItemType() {
+        return ItemType.GetItemTypeById(_depsCB.SelectedIndex);
     }
 
     /// <summary>
@@ -134,7 +116,7 @@ public partial class ItemAddMenu : UserControl {
     /// </summary>
     /// 
     /// <returns>Array of booleans, indexed by tile indices</returns>
-    public IEnumerable<bool> getAllowedTiles() {
+    public IEnumerable<bool> GetAllowedTiles() {
         return allowedTiles;
     }
 
@@ -147,7 +129,7 @@ public partial class ItemAddMenu : UserControl {
     /// </summary>
     /// 
     /// <param name="idx">Index, default is the first item</param>
-    public void updateSelectedItemIndex(int idx = 0) {
+    public void UpdateSelectedItemIndex(int idx = 0) {
         _itemsCB.SelectedIndex = idx;
     }
 
@@ -156,7 +138,7 @@ public partial class ItemAddMenu : UserControl {
     /// </summary>
     /// 
     /// <param name="idx">The to be selected index after initialization, default is the first item</param>
-    public void updateDependencyIndex(int idx = 0) {
+    public void UpdateDependencyIndex(int idx = 0) {
         _depsCB.SelectedIndex = idx;
 
         if (_itemsCB.SelectedIndex.Equals(idx)) {
@@ -170,7 +152,7 @@ public partial class ItemAddMenu : UserControl {
     /// 
     /// <param name="idx">Index</param>
     /// <param name="allowed">Whether to allow this tile to be the host of the item with index i</param>
-    public void forwardAllowedTileChange(int idx, bool allowed) {
+    public void ForwardAllowedTileChange(int idx, bool allowed) {
         allowedTiles[idx] = allowed;
     }
 
@@ -192,9 +174,9 @@ public partial class ItemAddMenu : UserControl {
 
         int index = _itemsCB.SelectedIndex;
         if (index >= 0) {
-            ItemType selection = ItemType.getItemTypeByID(index);
-            centralManager!.getMainWindowVM().ItemVM.CurrentItemImage = getItemImage(selection);
-            centralManager!.getMainWindowVM().ItemVM.ItemDescription = selection.Description;
+            ItemType selection = ItemType.GetItemTypeById(index);
+            centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = GetItemImage(selection);
+            centralManager!.GetMainWindowVM().ItemVM.ItemDescription = selection.Description;
 
             if (_depsCB.SelectedIndex.Equals(index)) {
                 _depsCB.SelectedIndex = index == 0 ? 1 : 0;
@@ -231,41 +213,20 @@ public partial class ItemAddMenu : UserControl {
         }
 
         if (e.Source is NumericUpDown source) {
-            switch (source.Name!) {
-                case "NUDUpper":
-                    centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper
-                        = (int) this.Find<NumericUpDown>("NUDUpper").Value;
+            int oldUpper = centralManager!.GetMainWindowVM().ItemVM.ItemsToAddUpper;
+            int oldLower = centralManager!.GetMainWindowVM().ItemVM.ItemsToAddLower;
+            bool lowerAdapted = source.Name!.Equals("NUDLower");
 
-                    while (centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper <=
-                           centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower) {
-                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower--;
-                        if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower <= 0) {
-                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower = 1;
-                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper++;
-                        }
-                    }
+            (int newLower, int newUpper) = Util.BalanceValues(oldLower, oldUpper,
+                lowerAdapted
+                    ? (int) this.Find<NumericUpDown>("NUDLower").Value - oldLower
+                    : (int) this.Find<NumericUpDown>("NUDUpper").Value - oldUpper, lowerAdapted);
 
-                    break;
+            centralManager!.GetMainWindowVM().ItemVM.ItemsToAddUpper = newUpper;
+            centralManager!.GetMainWindowVM().ItemVM.ItemsToAddLower = newLower;
 
-                case "NUDLower":
-                    centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower
-                        = (int) this.Find<NumericUpDown>("NUDLower").Value;
-
-                    if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower <= 0) {
-                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower = 1;
-                    }
-
-                    if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper <=
-                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower) {
-                        centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper++;
-                        if (centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower <= 0) {
-                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddLower = 1;
-                            centralManager!.getMainWindowVM().ItemVM.ItemsToAddUpper++;
-                        }
-                    }
-
-                    break;
-            }
+            this.Find<NumericUpDown>("NUDUpper").Value = newUpper;
+            this.Find<NumericUpDown>("NUDLower").Value = newLower;
         }
     }
 
@@ -282,41 +243,20 @@ public partial class ItemAddMenu : UserControl {
         }
 
         if (e.Source is NumericUpDown source) {
-            switch (source.Name!) {
-                case "NUDMaxDist":
-                    centralManager!.getMainWindowVM().ItemVM.DepMaxDistance
-                        = (int) this.Find<NumericUpDown>("NUDMaxDist").Value;
+            int oldMax = centralManager!.GetMainWindowVM().ItemVM.DepMaxDistance;
+            int oldMin = centralManager!.GetMainWindowVM().ItemVM.DepMinDistance;
+            bool minAdapted = source.Name!.Equals("NUDMinDist");
 
-                    while (centralManager!.getMainWindowVM().ItemVM.DepMaxDistance
-                           <= centralManager!.getMainWindowVM().ItemVM.DepMinDistance) {
-                        centralManager!.getMainWindowVM().ItemVM.DepMinDistance--;
-                        if (centralManager!.getMainWindowVM().ItemVM.DepMinDistance <= 0) {
-                            centralManager!.getMainWindowVM().ItemVM.DepMinDistance = 1;
-                            centralManager!.getMainWindowVM().ItemVM.DepMaxDistance++;
-                        }
-                    }
+            (int newMin, int newMax) = Util.BalanceValues(oldMin, oldMax,
+                minAdapted
+                    ? (int) this.Find<NumericUpDown>("NUDMinDist").Value - oldMin
+                    : (int) this.Find<NumericUpDown>("NUDMaxDist").Value - oldMax, minAdapted);
 
-                    break;
+            centralManager!.GetMainWindowVM().ItemVM.DepMaxDistance = newMax;
+            centralManager!.GetMainWindowVM().ItemVM.DepMinDistance = newMin;
 
-                case "NUDMinDist":
-                    centralManager!.getMainWindowVM().ItemVM.DepMinDistance
-                        = (int) this.Find<NumericUpDown>("NUDMinDist").Value;
-
-                    if (centralManager!.getMainWindowVM().ItemVM.DepMinDistance <= 0) {
-                        centralManager!.getMainWindowVM().ItemVM.DepMinDistance = 1;
-                    }
-
-                    if (centralManager!.getMainWindowVM().ItemVM.DepMaxDistance
-                        <= centralManager!.getMainWindowVM().ItemVM.DepMinDistance) {
-                        centralManager!.getMainWindowVM().ItemVM.DepMaxDistance++;
-                        if (centralManager!.getMainWindowVM().ItemVM.DepMinDistance <= 0) {
-                            centralManager!.getMainWindowVM().ItemVM.DepMinDistance = 1;
-                            centralManager!.getMainWindowVM().ItemVM.DepMaxDistance++;
-                        }
-                    }
-
-                    break;
-            }
+            this.Find<NumericUpDown>("NUDMaxDist").Value = newMax;
+            this.Find<NumericUpDown>("NUDMinDist").Value = newMin;
         }
     }
 }

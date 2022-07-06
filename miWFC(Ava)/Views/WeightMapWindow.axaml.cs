@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using miWFC.Managers;
 using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
@@ -35,9 +31,9 @@ public partial class WeightMapWindow : Window {
     public WeightMapWindow() {
         InitializeComponent();
 
-        KeyDown += keyDownHandler;
+        KeyDown += KeyDownHandler;
         Closing += (_, e) => {
-            centralManager?.getUIManager().switchWindow(Windows.MAIN, true);
+            centralManager?.GetUIManager().SwitchWindow(Windows.MAIN, true);
             e.Cancel = true;
         };
 
@@ -52,7 +48,7 @@ public partial class WeightMapWindow : Window {
 #endif
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
     }
 
@@ -69,7 +65,7 @@ public partial class WeightMapWindow : Window {
     /// </summary>
     /// 
     /// <returns>Selected brush size</returns>
-    private int getPaintBrushSize() {
+    private int GetPaintBrushSize() {
         int[] sizes = {1, 3, 6, 15, 25};
         return sizes[_paintingSizeCB.SelectedIndex];
     }
@@ -82,7 +78,7 @@ public partial class WeightMapWindow : Window {
     /// <param name="y">Y position</param>
     /// 
     /// <returns>Value of the gradient at the desired position</returns>
-    public double getGradientValue(int x, int y) {
+    public double GetGradientValue(int x, int y) {
         if (currentHeatMap.GetLength(0) <= x || currentHeatMap.GetLength(1) <= y) {
             return 0d;
         }
@@ -103,7 +99,7 @@ public partial class WeightMapWindow : Window {
     /// <param name="value">Value to get a colour representation of</param>
     /// 
     /// <returns>Hex-colour representation of the input value</returns>
-    private static Color getGradientColor(double value) {
+    private static Color GetGradientColor(double value) {
         Color[] intermediatePoints = {
             Color.Parse("#eff821"), Color.Parse("#f89540"), Color.Parse("#ca4678"), Color.Parse("#7c02a7"),
             Color.Parse("#0c0786")
@@ -113,19 +109,19 @@ public partial class WeightMapWindow : Window {
             value = 0;
         }
 
-        double percentage = 1d - normalizeValue(value, 0, 250);
+        double percentage = 1d - NormalizeValue(value, 0, 250);
 
         return percentage switch {
             0d => intermediatePoints[0],
-            < 0.25d => interpolate(intermediatePoints[0], intermediatePoints[1], normalizeValue(percentage, 0d, 0.25d)),
+            < 0.25d => Interpolate(intermediatePoints[0], intermediatePoints[1], NormalizeValue(percentage, 0d, 0.25d)),
             0.25d => intermediatePoints[1],
-            < 0.5d => interpolate(intermediatePoints[1], intermediatePoints[2],
-                normalizeValue(percentage, 0.25d, 0.5d)),
+            < 0.5d => Interpolate(intermediatePoints[1], intermediatePoints[2],
+                NormalizeValue(percentage, 0.25d, 0.5d)),
             0.5d => intermediatePoints[2],
-            < 0.75d => interpolate(intermediatePoints[2], intermediatePoints[3],
-                normalizeValue(percentage, 0.5d, 0.75d)),
+            < 0.75d => Interpolate(intermediatePoints[2], intermediatePoints[3],
+                NormalizeValue(percentage, 0.5d, 0.75d)),
             0.75d => intermediatePoints[3],
-            < 1d => interpolate(intermediatePoints[3], intermediatePoints[4], normalizeValue(percentage, 0.75d, 1d)),
+            < 1d => Interpolate(intermediatePoints[3], intermediatePoints[4], NormalizeValue(percentage, 0.75d, 1d)),
             _ => Color.Parse("#0b0781")
         };
     }
@@ -144,7 +140,7 @@ public partial class WeightMapWindow : Window {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
-    private void keyDownHandler(object? sender, KeyEventArgs e) {
+    private void KeyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
         }
@@ -178,7 +174,7 @@ public partial class WeightMapWindow : Window {
             (double posX, double posY) = e.GetPosition(e.Source as Image);
             (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
 
-            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
             int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
             int a = (int) Math.Floor(Math.Round(posX) * mainWindowVM.ImageOutWidth / Math.Round(imgWidth)),
@@ -191,7 +187,7 @@ public partial class WeightMapWindow : Window {
             lastPosX = a;
             lastPosY = b;
 
-            int rawBrushSize = getPaintBrushSize();
+            int rawBrushSize = GetPaintBrushSize();
             double brushSize = rawBrushSize switch {
                 1 => rawBrushSize,
                 _ => rawBrushSize * 3d
@@ -247,7 +243,7 @@ public partial class WeightMapWindow : Window {
 
                 selectedTVM.WeightHeatMap = maskValues;
 
-                updateOutput(maskValues);
+                UpdateOutput(maskValues);
             }
         }
     }
@@ -267,7 +263,7 @@ public partial class WeightMapWindow : Window {
         if (selectedItem != null) {
             TileViewModel selectedTVM = (TileViewModel) selectedItem;
 
-            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
             int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
             double[,] maskValues = new double[outputWidth, outputHeight];
 
@@ -285,7 +281,7 @@ public partial class WeightMapWindow : Window {
                 maskValues = selectedTVM.WeightHeatMap;
             }
 
-            updateOutput(maskValues);
+            UpdateOutput(maskValues);
         }
     }
 
@@ -296,11 +292,11 @@ public partial class WeightMapWindow : Window {
     /// <summary>
     /// Function to reset the current mapping and update the output image shown to the user
     /// </summary>
-    public void resetCurrentMapping() {
+    public void ResetCurrentMapping() {
         if (_selectedTileCB.SelectedItem != null) {
             TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
 
-            MainWindowViewModel mainWindowVM = centralManager!.getMainWindowVM();
+            MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
             int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
             double[,] maskValues = new double[outputWidth, outputHeight];
 
@@ -313,7 +309,7 @@ public partial class WeightMapWindow : Window {
             selectedTVM.WeightHeatMap = maskValues;
             selectedTVM.DynamicWeight = false;
 
-            updateOutput(maskValues);
+            UpdateOutput(maskValues);
         }
     }
 
@@ -322,7 +318,7 @@ public partial class WeightMapWindow : Window {
     /// </summary>
     ///
     /// <param name="patternIndex">index to select</param>
-    public void setSelectedTile(int patternIndex) {
+    public void SetSelectedTile(int patternIndex) {
         foreach (TileViewModel tvm in _selectedTileCB.Items) {
             if (tvm.RawPatternIndex.Equals(patternIndex)) {
                 _selectedTileCB.SelectedItem = tvm;
@@ -335,31 +331,14 @@ public partial class WeightMapWindow : Window {
     /// </summary>
     /// 
     /// <param name="newCurrentHeatMap">Current weight mapping</param>
-    public void updateOutput(double[,] newCurrentHeatMap) {
+    public void UpdateOutput(double[,] newCurrentHeatMap) {
         currentHeatMap = newCurrentHeatMap;
-        int outWidth = centralManager!.getMainWindowVM().ImageOutWidth;
-        int outHeight = centralManager!.getMainWindowVM().ImageOutHeight;
+        int outWidth = centralManager!.GetMainWindowVM().ImageOutWidth;
+        int outHeight = centralManager!.GetMainWindowVM().ImageOutHeight;
 
-        WriteableBitmap outputBitmap = new(new PixelSize(outWidth, outHeight), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
+        WriteableBitmap outputBitmap = CreateBitmapFromData(outWidth, outHeight, 1, (x, y) => GetGradientColor(currentHeatMap[x, y]));
 
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, outHeight, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < outWidth; x++) {
-                    Color toSet = getGradientColor(currentHeatMap[x, (int) y]);
-                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                }
-            });
-        }
-
-        centralManager!.getMainWindowVM().MappingVM.CurrentHeatmap = outputBitmap;
+        centralManager!.GetMainWindowVM().MappingVM.CurrentHeatmap = outputBitmap;
     }
 
     /// <summary>
@@ -367,7 +346,7 @@ public partial class WeightMapWindow : Window {
     /// </summary>
     /// 
     /// <param name="maskValues">The new weight mapping</param>
-    public void setCurrentMapping(double[,] maskValues) {
+    public void SetCurrentMapping(double[,] maskValues) {
         if (_selectedTileCB.SelectedItem != null) {
             TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
             selectedTVM.WeightHeatMap = maskValues;

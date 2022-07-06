@@ -43,11 +43,11 @@ public class App : Application {
 
             CentralManager cm = new(mWVM, mW, pW, iW, wMW);
 
-            mW.setCentralManager(cm);
-            pW.setCentralManager(cm);
-            iW.setCentralManager(cm);
-            wMW.setCentralManager(cm);
-            mWVM.setCentralManager(cm);
+            mW.SetCentralManager(cm);
+            pW.SetCentralManager(cm);
+            iW.SetCentralManager(cm);
+            wMW.SetCentralManager(cm);
+            mWVM.SetCentralManager(cm);
 
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
         }

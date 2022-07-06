@@ -59,38 +59,38 @@ internal static class OverlappingAnalysis {
                                     allSimilar[0] = allSimilar[0] && patternArray.Values[xx, yy, 0].Value
                                         .Equals(t[xx * patternArray.Values.GetLength(0) + yy]);
                                     allSimilar[1] = allSimilar[1] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.rotate(t, patternArray.Values.GetLength(0))[
+                                        .Equals(Util.Rotate(t, patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);
                                     allSimilar[2] = allSimilar[2] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.rotate(
-                                            Util.rotate(t, patternArray.Values.GetLength(0)),
+                                        .Equals(Util.Rotate(
+                                            Util.Rotate(t, patternArray.Values.GetLength(0)),
                                             patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);
                                     allSimilar[3] = allSimilar[3] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.rotate(
-                                            Util.rotate(
-                                                Util.rotate(t, patternArray.Values.GetLength(0)),
+                                        .Equals(Util.Rotate(
+                                            Util.Rotate(
+                                                Util.Rotate(t, patternArray.Values.GetLength(0)),
                                                 patternArray.Values.GetLength(0)), patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);
 
                                     allSimilar[4] = allSimilar[4] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.reflect(t, patternArray.Values.GetLength(0))[
+                                        .Equals(Util.Reflect(t, patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);
                                     allSimilar[5] = allSimilar[5] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.reflect(
-                                            Util.rotate(t, patternArray.Values.GetLength(0)),
+                                        .Equals(Util.Reflect(
+                                            Util.Rotate(t, patternArray.Values.GetLength(0)),
                                             patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);
                                     allSimilar[6] = allSimilar[6] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.reflect(
-                                            Util.rotate(
-                                                Util.rotate(t, patternArray.Values.GetLength(0)),
+                                        .Equals(Util.Reflect(
+                                            Util.Rotate(
+                                                Util.Rotate(t, patternArray.Values.GetLength(0)),
                                                 patternArray.Values.GetLength(0)), patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);
                                     allSimilar[7] = allSimilar[7] && patternArray.Values[xx, yy, 0].Value
-                                        .Equals(Util.reflect(
-                                            Util.rotate(Util.rotate(
-                                                Util.rotate(t, patternArray.Values.GetLength(0)),
+                                        .Equals(Util.Reflect(
+                                            Util.Rotate(Util.Rotate(
+                                                Util.Rotate(t, patternArray.Values.GetLength(0)),
                                                 patternArray.Values.GetLength(0)), patternArray.Values.GetLength(0)),
                                             patternArray.Values.GetLength(0))[
                                             xx * patternArray.Values.GetLength(0) + yy]);

@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Avalonia;
@@ -47,7 +48,7 @@ public static class Util {
     /// <param name="tilesize">Size (both width and height) of the tile</param>
     /// 
     /// <returns>Linear array representation of the tile</returns>
-    private static Color[] imTile(Func<int, int, Color> f, int tilesize) {
+    private static Color[] ImTile(Func<int, int, Color> f, int tilesize) {
         Color[] result = new Color[tilesize * tilesize];
         for (int y = 0; y < tilesize; y++) {
             for (int x = 0; x < tilesize; x++) {
@@ -66,8 +67,8 @@ public static class Util {
     /// <param name="tilesize">Size (both width and height) of the tile</param>
     /// 
     /// <returns>Rotated array</returns>
-    public static Color[] rotate(IReadOnlyList<Color> array, int tilesize) {
-        return imTile((x, y) => array[tilesize - 1 - y + x * tilesize], tilesize);
+    public static Color[] Rotate(IReadOnlyList<Color> array, int tilesize) {
+        return ImTile((x, y) => array[tilesize - 1 - y + x * tilesize], tilesize);
     }
 
     /// <summary>
@@ -78,8 +79,8 @@ public static class Util {
     /// <param name="tilesize">Size (both width and height) of the tile</param>
     /// 
     /// <returns>Flipped array</returns>
-    public static Color[] reflect(IReadOnlyList<Color> array, int tilesize) {
-        return imTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
+    public static Color[] Reflect(IReadOnlyList<Color> array, int tilesize) {
+        return ImTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
     }
 
     /*
@@ -94,7 +95,7 @@ public static class Util {
     /// <param name="category">category of images</param>
     /// 
     /// <returns>List of images associated with the input category</returns>
-    public static string[] getModelImages(string modelType, string category) {
+    public static string[] GetModelImages(string modelType, string category) {
         List<string> images = new();
         if (xDoc.Root != null) {
             images = xDoc.Root.Elements(modelType)
@@ -114,8 +115,8 @@ public static class Util {
     /// <param name="name">Name of the input sample</param>
     /// 
     /// <returns>The image</returns>
-    public static WriteableBitmap getSampleFromPath(string name) {
-        return getImageFromPath($"{AppContext.BaseDirectory}/samples/{name}.png");
+    public static WriteableBitmap GetSampleFromPath(string name) {
+        return GetImageFromPath($"{AppContext.BaseDirectory}/samples/{name}.png");
     }
 
     /// <summary>
@@ -125,7 +126,7 @@ public static class Util {
     /// <param name="path">Path location of the image</param>
     ///
     /// <returns>WriteableBitmap</returns>
-    private static WriteableBitmap getImageFromPath(string path) {
+    private static WriteableBitmap GetImageFromPath(string path) {
         MemoryStream ms = new(File.ReadAllBytes(path));
         WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
         return writeableBitmap;
@@ -138,7 +139,7 @@ public static class Util {
     /// <param name="imageName">Name of the input image</param>
     /// 
     /// <returns>The pattern sizes, and the amount of pattern sizes found (minus 2 default sizes, 2 and 3)</returns>
-    public static (int[], int) getImagePatternDimensions(string imageName) {
+    public static (int[], int) GetImagePatternDimensions(string imageName) {
         if (xDoc.Root == null) {
             return (Array.Empty<int>(), -1);
         }
@@ -172,7 +173,7 @@ public static class Util {
     /// <param name="modelType">Selected model</param>
     /// 
     /// <returns>List of categories</returns>
-    public static string[] getCategories(string modelType) {
+    public static string[] GetCategories(string modelType) {
         return modelType.Equals("overlapping")
             ? new[] {"Textures", "Shapes", "Knots", "Fonts", "Worlds Side-View", "Worlds Top-Down"}
             : new[] {"Worlds Top-Down", "Textures"};
@@ -185,7 +186,7 @@ public static class Util {
     /// <param name="category">Category to get a description of</param>
     /// 
     /// <returns>Description</returns>
-    public static string getDescription(string category) {
+    public static string GetDescription(string category) {
         return category switch {
             "Textures" => "Surfaces of multi dimensional objects",
             "Shapes" => "Basic shapes and patterns",
@@ -209,7 +210,7 @@ public static class Util {
     /// <param name="bmp">Input Image</param>
     /// 
     /// <returns>(matrix of colours, list of distinct colours)</returns>
-    public static (Color[][], HashSet<Color>) imageToColourArray(WriteableBitmap bmp) {
+    public static (Color[][], HashSet<Color>) ImageToColourArray(WriteableBitmap bmp) {
         int width = (int) bmp.Size.Width;
         int height = (int) bmp.Size.Height;
 
@@ -247,24 +248,7 @@ public static class Util {
         int width = colours.GetLength(0);
         int height = colours.GetLength(1);
 
-        WriteableBitmap outputBitmap = new(new PixelSize(width, height), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
-
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, height, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < width; x++) {
-                    Color toSet = colours[x, (int) y];
-                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                }
-            });
-        }
+        WriteableBitmap outputBitmap = CreateBitmapFromData(width, height, 1, (x, y) => colours[x, y]);
 
         return outputBitmap;
     }
@@ -283,30 +267,14 @@ public static class Util {
         int width = values.GetLength(0) * tileSize;
         int height = values.GetLength(1) * tileSize;
 
-        WriteableBitmap outputBitmap = new(new PixelSize(width, height), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
+        WriteableBitmap outputBitmap = CreateBitmapFromData(width, height, 1, (x, y) => {
+            int value = values[(int) Math.Floor((double) x / tileSize),
+                (int) Math.Floor((double) y / tileSize)];
 
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, height, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < width; x++) {
-                    int value = values[(int) Math.Floor((double) x / tileSize),
-                        (int) Math.Floor((double) y / tileSize)];
-
-                    bool isCollapsed = value >= 0;
-                    Color[]? outputPattern = isCollapsed ? tiles.ElementAt(value).Value.Item1 : null;
-                    Color toSet = outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Color.Parse("#00000000");
-
-                    dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                }
-            });
-        }
+            bool isCollapsed = value >= 0;
+            Color[]? outputPattern = isCollapsed ? tiles.ElementAt(value).Value.Item1 : null;
+            return outputPattern?[y % tileSize * tileSize + x % tileSize] ?? Color.Parse("#00000000");
+        });
 
         return outputBitmap;
     }
@@ -318,9 +286,9 @@ public static class Util {
     /// <param name="writeableBitmap">Input Bitmap</param>
     /// 
     /// <returns>1D array representation in Colours of the input bitmap</returns>
-    public static Color[] extractColours(WriteableBitmap writeableBitmap) {
-        (Color[][] colourArray, HashSet<Color> _) = imageToColourArray(writeableBitmap);
-        return convert2DArrayTo1D(colourArray);
+    public static Color[] ExtractColours(WriteableBitmap writeableBitmap) {
+        (Color[][] colourArray, HashSet<Color> _) = ImageToColourArray(writeableBitmap);
+        return Convert2DArrayTo1D(colourArray);
     }
 
     /// <summary>
@@ -335,11 +303,11 @@ public static class Util {
     /// <param name="imgInHeight">Height of the largest input bitmap</param>
     /// 
     /// <returns>Combined Bitmap</returns>
-    public static WriteableBitmap combineBitmaps(WriteableBitmap bottom, int tileSizeB, WriteableBitmap top,
+    public static WriteableBitmap CombineBitmaps(WriteableBitmap bottom, int tileSizeB, WriteableBitmap top,
         int tileSizeT, int imgInWidth, int imgInHeight) {
         int xDimension = imgInWidth * tileSizeB * tileSizeT;
         int yDimension = imgInHeight * tileSizeB * tileSizeT;
-
+        
         WriteableBitmap outputBitmap
             = new(new PixelSize(xDimension, yDimension), Vector.One,
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);
@@ -382,31 +350,18 @@ public static class Util {
     /// <param name="itemGrid">Grid of items</param>
     /// 
     /// <returns>Bitmap</returns>
-    public static WriteableBitmap generateRawItemImage(Tuple<int, int>[,] itemGrid) {
+    public static WriteableBitmap GenerateRawItemImage(Tuple<int, int>[,]? itemGrid) {
+        if (itemGrid == null) {
+            return new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+        }
+        
         int xDimension = itemGrid.GetLength(0);
         int yDimension = itemGrid.GetLength(1);
 
-        WriteableBitmap outputBitmap = new(new PixelSize(xDimension, yDimension), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
-
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, yDimension, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < xDimension; x++) {
-                    int itemId = itemGrid[x, y].Item1;
-                    if (itemId != -1) {
-                        Color toSet = ItemType.getItemTypeByID(itemId).Color;
-                        dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                    }
-                }
-            });
-        }
+        WriteableBitmap outputBitmap = CreateBitmapFromData(xDimension, yDimension, 1, (x, y) => {
+            int itemId = itemGrid[x, y].Item1;
+            return itemId != -1 ? ItemType.GetItemTypeById(itemId).Color : Colors.Transparent;
+        });
 
         return outputBitmap;
     }
@@ -420,43 +375,30 @@ public static class Util {
     /// <param name="imgOutHeight">Height of the current solution</param>
     /// 
     /// <returns>Bitmap</returns>
-    public static WriteableBitmap generateItemOverlay(Tuple<int, int>[,] itemGrid, int imgOutWidth, int imgOutHeight) {
+    public static WriteableBitmap GenerateItemOverlay(Tuple<int, int>[,]? itemGrid, int imgOutWidth, int imgOutHeight) {
+        if (itemGrid == null) {
+            return new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+        }
+        
         const int itemDimension = 17;
         int xDimension = imgOutWidth * itemDimension;
         int yDimension = imgOutHeight * itemDimension;
-
-        WriteableBitmap outputBitmap = new(new PixelSize(xDimension, yDimension), new Vector(96, 96),
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
-            AlphaFormat.Unpremul);
 
         Dictionary<Tuple<int, int>, Color[]> items = new();
         for (int x = 0; x < imgOutWidth; x++) {
             for (int y = 0; y < imgOutHeight; y++) {
                 int itemId = itemGrid[x, y].Item1;
                 if (itemId != -1 && !items.ContainsKey(itemGrid[x, y])) {
-                    Color[] itemBitmap = getItemImageRaw(ItemType.getItemTypeByID(itemId), itemGrid[x, y].Item2);
+                    Color[] itemBitmap = GetItemImageRaw(ItemType.GetItemTypeById(itemId), itemGrid[x, y].Item2);
                     items[itemGrid[x, y]] = itemBitmap;
                 }
             }
         }
 
-        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
-
-        unsafe {
-            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
-            int stride = frameBuffer.RowBytes;
-
-            Parallel.For(0L, yDimension, y => {
-                uint* dest = backBuffer + (int) y * stride / 4;
-                for (int x = 0; x < xDimension; x++) {
-                    Tuple<int, int> curItem = itemGrid[x / itemDimension, y / itemDimension];
-                    if (curItem.Item1 != -1) {
-                        Color toSet = items[curItem][y % itemDimension * itemDimension + x % itemDimension];
-                        dest[x] = (uint) ((toSet.A << 24) + (toSet.R << 16) + (toSet.G << 8) + toSet.B);
-                    }
-                }
-            });
-        }
+        WriteableBitmap outputBitmap = CreateBitmapFromData(xDimension, yDimension,1, (x, y) => {
+            Tuple<int, int> curItem = itemGrid[x / itemDimension, y / itemDimension];
+            return curItem.Item1 != -1 ? items[curItem][y % itemDimension * itemDimension + x % itemDimension] : Colors.Transparent;
+        });
 
         latestItemBitmap = outputBitmap;
         return outputBitmap;
@@ -467,7 +409,7 @@ public static class Util {
     /// </summary>
     /// 
     /// <returns>WriteableBitmap</returns>
-    public static WriteableBitmap getLatestItemBitMap() {
+    public static WriteableBitmap GetLatestItemBitMap() {
         return latestItemBitmap;
     }
 
@@ -476,7 +418,7 @@ public static class Util {
     /// </summary>
     /// 
     /// <param name="newLatestItemBitmap">Latest item bitmap</param>
-    public static void setLatestItemBitMap(WriteableBitmap newLatestItemBitmap) {
+    public static void SetLatestItemBitMap(WriteableBitmap newLatestItemBitmap) {
         latestItemBitmap = newLatestItemBitmap;
     }
 
@@ -492,17 +434,17 @@ public static class Util {
     /// <param name="index">Index of the dependent item</param>
     /// 
     /// <returns>Bitmap</returns>
-    public static Color[] getItemImageRaw(ItemType itemType, int index = -1) {
+    public static Color[] GetItemImageRaw(ItemType itemType, int index = -1) {
         bool singleDigit = false;
         bool[][] segments = Array.Empty<bool[]>();
         if (index != -1) {
-            (singleDigit, segments) = getSegments(index);
+            (singleDigit, segments) = GetSegments(index);
         }
 
         Color[] rawColorData = new Color[Dimension * Dimension];
         int[] whiteBorders = {5, 7, 8, 9, 10};
 
-        HashSet<Tuple<int, int>> border = getBorder();
+        HashSet<Tuple<int, int>> border = GetBorder();
 
         for (int x = 0; x < Dimension; x++) {
             for (int y = 0; y < Dimension; y++) {
@@ -554,7 +496,7 @@ public static class Util {
     /// </summary>
     /// 
     /// <returns>Set of coordinates that are part of the border</returns>
-    private static HashSet<Tuple<int, int>> getBorder() {
+    private static HashSet<Tuple<int, int>> GetBorder() {
         HashSet<Tuple<int, int>> border = new();
 
         for (double i = 0; i < 360; i += 5) {
@@ -573,12 +515,12 @@ public static class Util {
     /// <param name="i">Integer to represent</param>
     /// 
     /// <returns>Segments</returns>
-    private static (bool, bool[][]) getSegments(int i) {
+    private static (bool, bool[][]) GetSegments(int i) {
         int digits = i <= 9 ? 1 : 2;
         bool[][] pixels = new bool[digits][];
 
         for (int d = 0; d < digits; d++) {
-            pixels[d] = getSegment(d == 0 ? i % 10 : i / 10);
+            pixels[d] = GetSegment(d == 0 ? i % 10 : i / 10);
         }
 
         return (digits == 1, pixels);
@@ -591,7 +533,7 @@ public static class Util {
     /// <param name="i">Integer to represent</param>
     /// 
     /// <returns>Segment</returns>
-    private static bool[] getSegment(int i) {
+    private static bool[] GetSegment(int i) {
         bool[] segment = {
             i != 1, i != 4, i != 1, i != 2 && i != 3 && i != 7, i == 1, i != 1 && i != 5 && i != 6, i != 1 && i != 7,
             i != 0 && i != 7, i != 1, i is 2 or 6 or 8 or 0, i == 1, i != 1 && i != 2, i != 4 && i != 7,
@@ -626,10 +568,10 @@ public static class Util {
         string[] fileEntries = Directory.GetFiles(baseDir);
         foreach (string file in fileEntries) {
             if (Path.GetFileName(file).StartsWith(inputImage) && Path.GetExtension(file).Equals(".wfcPatt")) {
-                WriteableBitmap tvmBitmap = getImageFromPath(file);
+                WriteableBitmap tvmBitmap = GetImageFromPath(file);
                 if (isOverlapping) {
-                    Color[][] tvmColourArray = imageToColourArray(tvmBitmap).Item1;
-                    templateList.Add(new TemplateViewModel(tvmBitmap, convert1DArrayTo2D(tvmColourArray),
+                    Color[][] tvmColourArray = ImageToColourArray(tvmBitmap).Item1;
+                    templateList.Add(new TemplateViewModel(tvmBitmap, Convert1DArrayTo2D(tvmColourArray),
                         Path.GetFileName(file).Replace("_", "").Replace(inputImage, "").Replace(".wfcPatt", "")));
                 } else {
                     int inputImageWidth = (int) tvmBitmap.Size.Width, inputImageHeight = (int) tvmBitmap.Size.Height;
@@ -673,7 +615,7 @@ public static class Util {
     /// <typeparam name="T">Type of the array</typeparam>
     /// 
     /// <returns>1D array representation</returns>
-    private static T[] convert2DArrayTo1D<T>(IEnumerable<T[]> source) {
+    private static T[] Convert2DArrayTo1D<T>(IEnumerable<T[]> source) {
         List<T> lst = new();
         foreach (T[] a in source) {
             lst.AddRange(a);
@@ -690,7 +632,7 @@ public static class Util {
     /// <typeparam name="T">Type of the array</typeparam>
     /// 
     /// <returns>2D array representation</returns>
-    private static T[,] convert1DArrayTo2D<T>(IReadOnlyList<T[]> source) {
+    private static T[,] Convert1DArrayTo2D<T>(IReadOnlyList<T[]> source) {
         try {
             int firstDim = source.Count;
             int secondDim = source.GroupBy(row => row.Length).Single().Key;
@@ -766,9 +708,87 @@ public static class Util {
         Array.Copy(source, index, last, 0, len2);
     }
 
+    /// <summary>
+    /// Create the transpose of a matrix
+    /// </summary>
+    /// 
+    /// <param name="matrix">Matrix to transpose</param>
+    /// <typeparam name="T">Type of the matrix</typeparam>
+    /// 
+    /// <returns>Transposed Matrix</returns>
+    public static T[,] TransposeMatrix<T>(T[,] matrix) {
+        int rows = matrix.GetLength(0);
+        int columns = matrix.GetLength(1);
+
+        T[,] result = new T[columns, rows];
+
+        for (int c = 0; c < columns; c++) {
+            for (int r = 0; r < rows; r++) {
+                result[c, r] = matrix[r, c];
+            }
+        }
+
+        return result;
+    }
+
     /*
      * PNG Logic
      */
+    
+    /// <summary>
+    /// Create a bitmap from the given conversion function
+    /// </summary>
+    /// 
+    /// <param name="imageWidth">Width of the image</param>
+    /// <param name="imageHeight">Height of the image</param>
+    /// <param name="tileSize">Size of the cells in pixels</param>
+    /// <param name="conversionFunction">Function that maps a coordinate in the image to a colour</param>
+    /// 
+    /// <returns>Image</returns>
+    public static WriteableBitmap CreateBitmapFromData(int imageWidth, int imageHeight, int tileSize,
+        Func<int, int, Color> conversionFunction) {
+        return CreateBitmapFromDataFull(imageWidth, imageHeight, tileSize, conversionFunction).Item1;
+    }
+    
+    /// <summary>
+    /// Create a bitmap from the given conversion function, including the count of nontransparent pixels
+    /// </summary>
+    /// 
+    /// <param name="imageWidth">Width of the image</param>
+    /// <param name="imageHeight">Height of the image</param>
+    /// <param name="tileSize">Size of the cells in pixels</param>
+    /// <param name="conversionFunction">Function that maps a coordinate in the image to a colour</param>
+    /// 
+    /// <returns>(w, i) -> w = Image, i = count</returns>
+    public static (WriteableBitmap, int) CreateBitmapFromDataFull(int imageWidth, int imageHeight, int tileSize, Func<int, int, Color> conversionFunction) {
+        WriteableBitmap outputBitmap = new (new PixelSize(imageWidth * tileSize, imageHeight * tileSize),
+            new Vector(96, 96),
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
+            AlphaFormat.Unpremul);
+
+        using ILockedFramebuffer? frameBuffer = outputBitmap.Lock();
+
+        int collapseCount = 0;
+
+        unsafe {
+            uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
+            int stride = frameBuffer.RowBytes;
+
+            Parallel.For(0L, imageHeight * tileSize, y => {
+                uint* dest = backBuffer + (int) y * stride / 4;
+                for (int x = 0; x < imageWidth * tileSize; x++) {
+                    Color toPlace = conversionFunction(x, (int) y);
+                    dest[x] = (uint) ((toPlace.A << 24) + (toPlace.R << 16) + (toPlace.G << 8) + toPlace.B);
+
+                    if (toPlace.A == 255) {
+                        Interlocked.Increment(ref collapseCount);
+                    }
+                }
+            });
+        }
+
+        return (outputBitmap, collapseCount);
+    }
 
     /// <summary>
     /// Extended version of AppendPictureData(string, IEnumerable, bool) which first converts a 2D integer matrix to 1D
@@ -809,7 +829,7 @@ public static class Util {
     /// <param name="fromOld"></param>
     /// <param name="toOld"></param>
     /// <returns></returns>
-    public static double normalizeValue(double value, double fromOld, double toOld) {
+    public static double NormalizeValue(double value, double fromOld, double toOld) {
         return (value - fromOld) / (toOld - fromOld);
     }
 
@@ -841,9 +861,9 @@ public static class Util {
     /// <param name="percentage">Percentage</param>
     /// 
     /// <returns>Interpolated Colour</returns>
-    public static Color interpolate(Color c1, Color c2, double percentage) {
-        (double h1, double s1, double v1) = RGBtoHSV(c1);
-        (double h2, double s2, double v2) = RGBtoHSV(c2);
+    public static Color Interpolate(Color c1, Color c2, double percentage) {
+        (double h1, double s1, double v1) = RgBtoHsv(c1);
+        (double h2, double s2, double v2) = RgBtoHsv(c2);
 
         double delta = Clamp(h2 - h1 - Math.Floor((h2 - h1) / 360) * 360, 0.0f, 360);
         if (delta > 180) {
@@ -853,7 +873,7 @@ public static class Util {
         double clampedPercentage = percentage < 0d ? 0d : percentage > 1d ? 1d : percentage;
         double newH = h1 + delta * clampedPercentage;
 
-        return HSVtoRGB(newH,
+        return HsVtoRgb(newH,
             percentage * s1 + (1d - percentage) * s2,
             percentage * v1 + (1d - percentage) * v2);
     }
@@ -865,7 +885,7 @@ public static class Util {
     /// <param name="rgb">RGB Colour</param>
     /// 
     /// <returns>HSV Colour</returns>
-    private static (double, double, double) RGBtoHSV(Color rgb) {
+    private static (double, double, double) RgBtoHsv(Color rgb) {
         double h = 0, s;
 
         double min = Math.Min(Math.Min(rgb.R, rgb.G), rgb.B);
@@ -910,7 +930,7 @@ public static class Util {
     /// <param name="value">Value</param>
     /// 
     /// <returns>RGB Colour</returns>
-    private static Color HSVtoRGB(double hue, double saturation, double value) {
+    private static Color HsVtoRgb(double hue, double saturation, double value) {
         int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
         double f = hue / 60 - Math.Floor(hue / 60);
 
@@ -928,5 +948,29 @@ public static class Util {
             4 => Color.FromArgb(255, (byte) t, (byte) p, (byte) v),
             _ => Color.FromArgb(255, (byte) v, (byte) p, (byte) q)
         };
+    }
+
+    /// <summary>
+    /// Balancing function that makes sure that the lower is never bigger than or equal to the upper value
+    /// </summary>
+    /// 
+    /// <param name="lower">The lower bound</param>
+    /// <param name="upper">The upper bound</param>
+    /// <param name="change">Amount of value to change</param>
+    /// <param name="lowerAdapted">Whether the lower or upper bound is changed</param>
+    /// 
+    /// <returns>Balanced values (lower, higher)</returns>
+    public static (int, int) BalanceValues(int lower, int upper, int change, bool lowerAdapted) {
+        int newLower, newUpper;
+        
+        if (lowerAdapted) {
+            newLower = Math.Max(1, lower + change);
+            newUpper = upper - newLower < 1 ? newLower + 1 : upper;
+        } else {
+            newUpper = Math.Max(upper + change, 2);
+            newLower = newUpper - lower < 1 ? newUpper - 1 : lower;
+        }
+
+        return (newLower, newUpper);
     }
 }

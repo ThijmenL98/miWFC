@@ -23,19 +23,19 @@ public partial class MainWindow : Window {
     public MainWindow() {
         InitializeComponent();
 
-        KeyDown += keyDownHandler;
+        KeyDown += KeyDownHandler;
         Closing += (_, _) => {
-            centralManager!.getPaintingWindow().Close();
-            centralManager!.getItemWindow().Close();
-            centralManager!.getWeightMapWindow().Close();
+            centralManager!.GetPaintingWindow().Close();
+            centralManager!.GetItemWindow().Close();
+            centralManager!.GetWeightMapWindow().Close();
             Environment.Exit(0);
         };
     }
 
-    public void setCentralManager(CentralManager cm) {
+    public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
-        this.Find<InputControl>("inputControl").setCentralManager(cm);
-        this.Find<OutputControl>("outputControl").setCentralManager(cm);
+        this.Find<InputControl>("inputControl").SetCentralManager(cm);
+        this.Find<OutputControl>("outputControl").SetCentralManager(cm);
     }
 
     /*
@@ -53,7 +53,7 @@ public partial class MainWindow : Window {
     /// </summary>
     /// 
     /// <returns>Boolean</returns>
-    public bool isWindowTriggered() {
+    public bool IsWindowTriggered() {
         return triggered;
     }
 
@@ -66,7 +66,7 @@ public partial class MainWindow : Window {
     /// </summary>
     /// 
     /// <returns>InputControl</returns>
-    public InputControl getInputControl() {
+    public InputControl GetInputControl() {
         return this.Find<InputControl>("inputControl");
     }
 
@@ -75,7 +75,7 @@ public partial class MainWindow : Window {
     /// </summary>
     /// 
     /// <returns>OutputControl</returns>
-    public OutputControl getOutputControl() {
+    public OutputControl GetOutputControl() {
         return this.Find<OutputControl>("outputControl");
     }
 
@@ -99,7 +99,7 @@ public partial class MainWindow : Window {
         }
 
         int newTab = (sender as TabControl)!.SelectedIndex;
-        centralManager!.getMainWindowVM().ChangeModel(newTab);
+        centralManager!.GetMainWindowVM().ChangeModel(newTab);
 
         e.Handled = true;
     }
@@ -110,7 +110,7 @@ public partial class MainWindow : Window {
     /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
-    private async void keyDownHandler(object? sender, KeyEventArgs e) {
+    private async void KeyDownHandler(object? sender, KeyEventArgs e) {
         if (centralManager == null) {
             return;
         }
@@ -119,16 +119,16 @@ public partial class MainWindow : Window {
             case Key.Left:
             case Key.Delete:
             case Key.Back:
-                if (centralManager.getUIManager().popUpOpened()) {
-                    centralManager.getUIManager().hidePopUp();
+                if (centralManager.GetUIManager().PopUpOpened()) {
+                    centralManager.GetUIManager().HidePopUp();
                 } else {
-                    centralManager.getInputManager().revertStep();
+                    centralManager.GetInputManager().RevertStep();
                 }
 
                 e.Handled = true;
                 break;
             case Key.Right:
-                centralManager.getInputManager().advanceStep();
+                centralManager.GetInputManager().AdvanceStep();
                 e.Handled = true;
                 break;
             case Key.PageDown:
@@ -138,45 +138,45 @@ public partial class MainWindow : Window {
                 e.Handled = true;
                 break;
             case Key.Space:
-                centralManager.getInputManager().animate();
+                centralManager.GetInputManager().Animate();
                 e.Handled = true;
                 break;
             case Key.S:
             case Key.M:
-                centralManager.getInputManager().placeMarker();
+                centralManager.GetInputManager().PlaceMarker();
                 e.Handled = true;
                 break;
             case Key.E:
-                centralManager.getInputManager().exportSolution();
+                centralManager.GetInputManager().ExportSolution();
                 e.Handled = true;
                 break;
             case Key.I:
-                centralManager.getInputManager().importSolution();
+                centralManager.GetInputManager().ImportSolution();
                 e.Handled = true;
                 break;
             case Key.L:
-                centralManager.getInputManager().loadMarker();
+                centralManager.GetInputManager().LoadMarker();
                 e.Handled = true;
                 break;
             case Key.R:
-                await centralManager.getInputManager().restartSolution("Keydown Restart");
+                await centralManager.GetInputManager().RestartSolution("Keydown Restart");
                 e.Handled = true;
                 break;
             case Key.P:
-                await centralManager.getUIManager().switchWindow(Windows.PAINTING);
+                await centralManager.GetUIManager().SwitchWindow(Windows.PAINTING);
                 e.Handled = true;
                 break;
             case Key.Escape:
-                if (centralManager.getUIManager().popUpOpened()) {
-                    centralManager.getUIManager().hidePopUp();
+                if (centralManager.GetUIManager().PopUpOpened()) {
+                    centralManager.GetUIManager().HidePopUp();
                 }
 
                 e.Handled = true;
                 break;
             case Key.Z:
                 if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
-                    if (!centralManager.getUIManager().popUpOpened()) {
-                        centralManager.getInputManager().revertStep();
+                    if (!centralManager.GetUIManager().PopUpOpened()) {
+                        centralManager.GetInputManager().RevertStep();
                     }
 
                     e.Handled = true;
@@ -200,13 +200,13 @@ public partial class MainWindow : Window {
             return;
         }
 
-        await centralManager!.getInputManager().restartSolution("Window activation", true);
+        await centralManager!.GetInputManager().RestartSolution("Window activation", true);
         triggered = true;
 
-        centralManager!.getInputManager().resetMask();
-        centralManager!.getPaintingWindow().setTemplates(Util.GetTemplates(
-            centralManager.getMainWindowVM().InputImageSelection, centralManager.getWFCHandler().isOverlappingModel(),
-            centralManager.getWFCHandler().getTileSize()));
+        centralManager!.GetInputManager().ResetMask();
+        centralManager!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+            centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
+            centralManager.GetWFCHandler().GetTileSize()));
     }
 
     /// <summary>
@@ -218,8 +218,8 @@ public partial class MainWindow : Window {
     /// <param name="e">PointerPressedEventArgs</param>
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e) {
         if (centralManager != null && !this.Find<Popup>("infoPopup").IsPointerOverPopup &&
-            centralManager.getUIManager().popUpOpened()) {
-            centralManager.getUIManager().hidePopUp();
+            centralManager.GetUIManager().PopUpOpened()) {
+            centralManager.GetUIManager().HidePopUp();
         }
     }
 
@@ -230,6 +230,6 @@ public partial class MainWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void InputElement_OnPointerMoved(object? sender, PointerEventArgs e) {
-        centralManager!.getWFCHandler().isCollapsed();
+        centralManager!.GetWFCHandler().IsCollapsed();
     }
 }
