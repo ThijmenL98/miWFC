@@ -270,6 +270,14 @@ public class InputManager {
     /// </summary>
     public void ResetMask() {
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
+
+        if (centralManager.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
+            for (int x = 0; x < centralManager.GetMainWindowVM().ImageOutWidth; x++) {
+                for (int y = 0; y < centralManager.GetMainWindowVM().ImageOutHeight; y++) {
+                    maskColours[x, y] = Colors.Black;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -813,44 +821,33 @@ public class InputManager {
         }
 
         TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
-        int startX, startY, endX, endY;
-        if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-            startY = x - selectedTVM.CenterPoint.Item1;
-            startX = y - selectedTVM.CenterPoint.Item2;
+        int startX = x - selectedTVM.CenterPoint.Item1;
+        int startY = y - selectedTVM.CenterPoint.Item2;
 
-            endY = startY + selectedTVM.Dimension.Item1;
-            endX = startX + selectedTVM.Dimension.Item2;
-        } else {
-            startY = x - selectedTVM.CenterPoint.Item2;
-            startX = y - selectedTVM.CenterPoint.Item1;
-
-            endY = startY + selectedTVM.Dimension.Item2;
-            endX = startX + selectedTVM.Dimension.Item1;
-        }
+        int endX = startX + selectedTVM.Dimension.Item1;
+        int endY = startY + selectedTVM.Dimension.Item2;
 
         Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
 
-        for (int placeX = startX; placeX < endX; placeX++) {
-            for (int placeY = startY; placeY < endY; placeY++) {
-                if (placeY >= 0 && placeX >= 0 && placeY < imgWidth && placeX < imgHeight) {
+        for (int placeY = startY; placeY < endY; placeY++) {
+            for (int placeX = startX; placeX < endX; placeX++) {
+                if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
+                    int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
+                        mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
                     if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                        int mappedY = placeY - x + selectedTVM.CenterPoint.Item1,
-                            mappedX = placeX - y + selectedTVM.CenterPoint.Item2;
-                        if (selectedTVM.TemplateDataO[mappedX, mappedY].A == 255) {
-                            hoverMaskColours[placeY, placeX] = Colors.Gold;
+                        if (selectedTVM.TemplateDataO[mappedY, mappedX].A == 255) {
+                            hoverMaskColours[placeX, placeY] = Colors.Gold;
                         }
                     } else {
-                        int mappedY = placeY - x + selectedTVM.CenterPoint.Item2,
-                            mappedX = placeX - y + selectedTVM.CenterPoint.Item1;
-                        if (selectedTVM.TemplateDataA[mappedY, mappedX] >= 0) {
-                            hoverMaskColours[placeY, placeX] = Colors.Gold;
+                        if (selectedTVM.TemplateDataA[mappedX, mappedY] >= 0) {
+                            hoverMaskColours[placeX, placeY] = Colors.Gold;
                         }
                     }
                 }
             }
         }
 
-        UpdateMask(hoverMaskColours, false, false);
+        UpdateMask(hoverMaskColours, false);
     }
 
     /// <summary>
@@ -861,18 +858,12 @@ public class InputManager {
     /// <param name="b">Hover location on the y axis</param>
     /// <param name="overrideSize">Size of the brush, overwritten by the function if not set</param>
     private void UpdateHoverBrushMask(int a, int b, int overrideSize = -2) {
-        int rawBrushSize = overrideSize == -2 ? centralManager.GetPaintingWindow().GetPaintBrushSize() : overrideSize;
-
-        double brushSize = rawBrushSize switch {
-            1 => rawBrushSize,
-            2 => rawBrushSize * 2d,
-            _ => rawBrushSize * 3d
-        };
+        int brushSize = overrideSize == -2 ? centralManager.GetPaintingWindow().GetPaintBrushSize() : overrideSize;
 
         Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
 
         if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
-            if (rawBrushSize == -1) {
+            if (brushSize == -1) {
                 hoverMaskColours[a, b] = Colors.Yellow;
             } else {
                 for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
@@ -889,7 +880,7 @@ public class InputManager {
             }
         }
 
-        UpdateMask(hoverMaskColours, false, false);
+        UpdateMask(hoverMaskColours, false);
     }
 
     /// <summary>
@@ -905,17 +896,12 @@ public class InputManager {
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
-        int rawBrushSize = centralManager.GetPaintingWindow().GetPaintBrushSize();
-        double brushSize = rawBrushSize switch {
-            1 => rawBrushSize,
-            2 => rawBrushSize * 2d,
-            _ => rawBrushSize * 3d
-        };
+        int brushSize = centralManager.GetPaintingWindow().GetPaintBrushSize();
 
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
         if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
-            if (rawBrushSize == -1) {
+            if (brushSize == -1) {
                 maskColours[a, b] = add ? Colors.Green : Colors.Red;
                 for (int x = 0; x < outputWidth; x++) {
                     for (int y = 0; y < outputHeight; y++) {
@@ -941,7 +927,7 @@ public class InputManager {
             }
         }
 
-        UpdateMask(maskColours, true, false);
+        UpdateMask(maskColours, true);
     }
 
     /// <summary>
@@ -960,11 +946,11 @@ public class InputManager {
         const int rawBrushSize = -1;
         if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (rawBrushSize == -1) {
-                maskColours[a, b] = add ? Colors.Gold : default;
+                maskColours[a, b] = add ? Colors.White : Colors.Black;
             }
         }
 
-        UpdateMask(maskColours, true, true);
+        UpdateMask(maskColours, true);
     }
 
     /// <summary>
@@ -989,36 +975,27 @@ public class InputManager {
             }
 
             TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
-            int startY, startX, endY, endX;
-            if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                startY = x - selectedTVM.CenterPoint.Item1;
-                startX = y - selectedTVM.CenterPoint.Item2;
-                endY = startY + selectedTVM.Dimension.Item1;
-                endX = startX + selectedTVM.Dimension.Item2;
-            } else {
-                startX = x - selectedTVM.CenterPoint.Item2;
-                startY = y - selectedTVM.CenterPoint.Item1;
+            int startX = x - selectedTVM.CenterPoint.Item1;
+            int startY = y - selectedTVM.CenterPoint.Item2;
+            int endX = startX + selectedTVM.Dimension.Item1;
+            int endY = startY + selectedTVM.Dimension.Item2;
 
-                endX = startX + selectedTVM.Dimension.Item2;
-                endY = startY + selectedTVM.Dimension.Item1;
-            }
-
-            for (int placeY = startY; placeY < endY; placeY++) {
-                for (int placeX = startX; placeX < endX; placeX++) {
+            for (int placeX = startX; placeX < endX; placeX++) {
+                for (int placeY = startY; placeY < endY; placeY++) {
                     if (!error) {
-                        if (placeY >= 0 && placeX >= 0 && placeY < imgWidth && placeX < imgHeight) {
+                        if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
+                            int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
+                                mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
                             if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                                int mappedX = placeY - x + selectedTVM.CenterPoint.Item1,
-                                    mappedY = placeX - y + selectedTVM.CenterPoint.Item2;
                                 Color toPlace = selectedTVM.TemplateDataO[mappedY, mappedX];
                                 if (toPlace.A == 255) {
                                     int idx = centralManager.GetWFCHandler().GetColours()
                                         .TakeWhile(tileVM => !tileVM.PatternColour.Equals(toPlace)).Count();
-                                    Color valAt = centralManager.GetWFCHandler().GetOverlappingOutputAt(placeY, placeX);
+                                    Color valAt = centralManager.GetWFCHandler().GetOverlappingOutputAt(placeX, placeY);
                                     if (valAt.A != 255) {
                                         (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
                                             .GetWFCHandler()
-                                            .SetTile(placeY, placeX, idx, false);
+                                            .SetTile(placeX, placeY, idx, false);
                                         if (showPixel != null && (bool) showPixel) {
                                             mainWindowVM.OutputImage = writeableBitmap!;
                                             placeCount++;
@@ -1030,8 +1007,6 @@ public class InputManager {
                                     }
                                 }
                             } else {
-                                int mappedY = placeY - y + selectedTVM.CenterPoint.Item1,
-                                    mappedX = placeX - x + selectedTVM.CenterPoint.Item2;
                                 int indexToPlace = selectedTVM.TemplateDataA[mappedX, mappedY];
                                 if (indexToPlace > 0) {
                                     int valAt = centralManager.GetWFCHandler().GetPropagatorOutputA().toArray2d()[
@@ -1071,7 +1046,7 @@ public class InputManager {
     /// Forwarding function with default values to updateMask(Color[,], bool, bool)
     /// </summary>
     public void UpdateMask() {
-        UpdateMask(maskColours, true, false);
+        UpdateMask(maskColours, true);
     }
 
     /// <summary>
@@ -1081,24 +1056,16 @@ public class InputManager {
     /// <param name="colors">Mask colours</param>
     /// <param name="updateMain">Whether to update the main image or the preview image</param>
     /// <param name="invert">Whether to invert the colours found at each position</param>
-    private void UpdateMask(Color[,] colors, bool updateMain, bool invert) {
+    private void UpdateMask(Color[,] colors, bool updateMain) {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
         WriteableBitmap outputBitmap = CreateBitmapFromData(outputWidth, outputHeight, 1, (x, y) => {
             Color c = colors[x, y];
-            if (invert && c.Equals(Colors.Gold)) {
-                if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                    Color atPos = centralManager.GetWFCHandler().GetOverlappingOutputAt(x, y);
-                    return atPos.A == 0
-                        ? Color.FromRgb(200, 0, 0)
-                        : Color.FromArgb(255, (byte) (255 - atPos.R), (byte) (255 - atPos.G),
-                            (byte) (255 - atPos.B));
-                }
-
-                return Colors.Cyan;
+            if (c.Equals(Colors.Gold)) {
+                return centralManager.GetWFCHandler().IsOverlappingModel() ? c : Colors.Cyan;
             }
 
-            return c;
+            return c.Equals(Colors.White) ? Colors.Transparent : c;
         });
 
         if (updateMain) {

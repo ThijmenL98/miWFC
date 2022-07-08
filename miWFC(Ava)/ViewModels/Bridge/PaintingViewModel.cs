@@ -1,6 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using miWFC.DeBroglie.Topo;
 using miWFC.Managers;
 using miWFC.Utils;
@@ -14,6 +17,9 @@ namespace miWFC.ViewModels.Bridge;
 public class PaintingViewModel : ReactiveObject {
     private CentralManager? centralManager;
     private readonly MainWindowViewModel mainWindowViewModel;
+
+    private Bitmap _brushSizeImage
+        = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
     private ObservableCollection<TemplateViewModel> _templates = new();
 
@@ -86,6 +92,14 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     // Images
+
+    /// <summary>
+    /// Image shown to the user depending on the size of the brush they're using
+    /// </summary>
+    public Bitmap BrushSizeImage {
+        get => _brushSizeImage;
+        set => this.RaiseAndSetIfChanged(ref _brushSizeImage, value);
+    }
 
     // Objects
 
@@ -205,7 +219,7 @@ public class PaintingViewModel : ReactiveObject {
 
         for (int a = 0; a < mask.GetLength(0); a++) {
             for (int b = 0; b < mask.GetLength(1); b++) {
-                if (mask[a, b] == Colors.Gold) {
+                if (mask[a, b] == Colors.White) {
                     Color atPos = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
 
                     if (atPos.A != 255) {
@@ -245,7 +259,7 @@ public class PaintingViewModel : ReactiveObject {
 
         for (int a = minX; a <= maxX; a++) {
             for (int b = minY; b <= maxY; b++) {
-                if (mask[a, b] == Colors.Gold) {
+                if (mask[a, b] == Colors.White) {
                     offsetMask[a - minX, b - minY]
                         = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
                 } else {
@@ -255,10 +269,7 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         TemplateViewModel tvm = new(Util.ColourArrayToImage(offsetMask), offsetMask);
-        bool saved = await tvm.Save(mainWindowViewModel.InputImageSelection);
-        if (saved) {
-            Templates.Add(tvm);
-        }
+        await tvm.Save(mainWindowViewModel.InputImageSelection, centralManager!);
     }
 
     /// <summary>
@@ -275,7 +286,7 @@ public class PaintingViewModel : ReactiveObject {
         ITopoArray<int> aOutput = centralManager!.GetWFCHandler().GetPropagatorOutputA();
         for (int a = 0; a < mask.GetLength(0); a++) {
             for (int b = 0; b < mask.GetLength(1); b++) {
-                if (mask[a, b] == Colors.Gold) {
+                if (mask[a, b] == Colors.White) {
                     if (aOutput.get(a, b) < 0) {
                         centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
                         return;
@@ -313,7 +324,7 @@ public class PaintingViewModel : ReactiveObject {
 
         for (int a = minX; a <= maxX; a++) {
             for (int b = minY; b <= maxY; b++) {
-                if (mask[a, b] == Colors.Gold) {
+                if (mask[a, b] == Colors.White) {
                     offsetMask[a - minX, b - minY] = aOutput.get(a, b);
                 } else {
                     offsetMask[a - minX, b - minY] = -1;
@@ -325,10 +336,7 @@ public class PaintingViewModel : ReactiveObject {
             = new(
                 Util.ValueArrayToImage(offsetMask, centralManager!.GetWFCHandler().GetTileSize(),
                     centralManager!.GetWFCHandler().GetTileCache()), offsetMask);
-        bool saved = await tvm.Save(mainWindowViewModel.InputImageSelection);
-        if (saved) {
-            Templates.Add(tvm);
-        }
+        await tvm.Save(mainWindowViewModel.InputImageSelection, centralManager!);
     }
 
     /// <summary>

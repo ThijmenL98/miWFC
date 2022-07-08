@@ -198,7 +198,8 @@ public class WFCHandler {
     /// Function to initialize values related to the algorithm progression
     /// </summary>
     private void InitializeValues() {
-        currentBitmap = GetSampleFromPath(mainWindow.GetInputControl().GetInputImage());
+        currentBitmap = GetSampleFromPath(mainWindow.GetInputControl().GetInputImage(),
+            centralManager.GetMainWindow().GetInputControl().GetCategory());
         mainWindowVM.PatternTiles.Clear();
         mainWindowVM.PaintTiles.Clear();
         toAddPaint = new List<TileViewModel>();
@@ -281,7 +282,7 @@ public class WFCHandler {
     /// <returns>List of tiles extracted from the input image</returns>
     private List<TileViewModel> InitializeAdjacentModel(string inputImage) {
         dbModel = new AdjacentModel();
-        xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/{inputImage}/data.xml").Root ??
+        xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/Default/{inputImage}/data.xml").Root ??
                 new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
@@ -331,7 +332,7 @@ public class WFCHandler {
 
         foreach (XElement xTile in xRoot.Element("tiles")?.Elements("tile")!) {
             MemoryStream ms = new(File.ReadAllBytes(
-                $"{AppContext.BaseDirectory}/samples/{inputImage}/{xTile.Attribute("name")?.Value}.png"));
+                $"{AppContext.BaseDirectory}/samples/Default/{inputImage}/{xTile.Attribute("name")?.Value}.png"));
             WriteableBitmap writeableBitmap = WriteableBitmap.Decode(ms);
 
             int cardinality = char.Parse(xTile.Attribute("symmetry")?.Value ?? "X") switch {
@@ -1143,7 +1144,7 @@ public class WFCHandler {
 
                 if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
-                        Trace.WriteLine("\nAYOAYOAYO\n");
+                    Trace.WriteLine("\nAYOAYOAYO\n");
 #endif
                     break;
                 }
@@ -1196,7 +1197,7 @@ public class WFCHandler {
 
                 if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
-                        Trace.WriteLine("\nAYOAYOAYO\n");
+                    Trace.WriteLine("\nAYOAYOAYO\n");
 #endif
                     break;
                 }
@@ -1260,28 +1261,29 @@ public class WFCHandler {
         }
 
 #if DEBUG
-            if (internalDebug) {
-                Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}");
-            }
+        bool internalDebug = false;
+        if (internalDebug) {
+            Trace.WriteLine($@"Overlapping: We want to paint at ({a}, {b}) with Tile {toSet}");
+        }
 #endif
 
         List<Color> possibleTiles = GetAvailablePatternsAtLocation<Color>(a, b);
 
 #if DEBUG
-            if (internalDebug) {
-                Trace.WriteLine($@"Available colours: {string.Join(", ", possibleTiles)}");
-            }
+        if (internalDebug) {
+            Trace.WriteLine($@"Available colours: {string.Join(", ", possibleTiles)}");
+        }
 #endif
 
         Color c = toAddPaint[toSet].PatternColour;
 
         if ((possibleTiles.Count == 1 || !possibleTiles.Contains(c)) && !paintOverwrite) {
 #if DEBUG
-                if (internalDebug) {
-                    Trace.WriteLine(possibleTiles.Count == 1
-                        ? "Returning because already collapsed"
-                        : "Returning because not allowed");
-                }
+            if (internalDebug) {
+                Trace.WriteLine(possibleTiles.Count == 1
+                    ? "Returning because already collapsed"
+                    : "Returning because not allowed");
+            }
 #endif
 
             if (possibleTiles.Count == 1 && possibleTiles.Contains(c)) {
@@ -1377,15 +1379,15 @@ public class WFCHandler {
             Resolution status = dbPropagator.select(a, b, 0, tilesToSelect);
 
 #if DEBUG
-                if (internalDebug) {
-                    Trace.WriteLine($@"Proceeded with status: {status}");
-                }
+            if (internalDebug) {
+                Trace.WriteLine($@"Proceeded with status: {status}");
+            }
 #endif
 
             if (status.Equals(Resolution.CONTRADICTION)) {
 #if DEBUG
-                    Trace.WriteLine(
-                        $@"Overlapping CONTRADICTION: We want to paint at ({a}, {b}) (({px}, {py})) with Tile {toSet}, Available patterns: ");
+                Trace.WriteLine(
+                    $@"Overlapping CONTRADICTION: We want to paint at ({a}, {b}) with Tile {toSet}, Available patterns: ");
 #endif
                 StepBackWfc();
                 return (null, false);
@@ -1413,27 +1415,28 @@ public class WFCHandler {
         int descrambledIndex = GetDescrambledIndex(toSet);
 
 #if DEBUG
-            if (internalDebug) {
-                Trace.WriteLine(
-                    $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
-            }
+        bool internalDebug = false;
+        if (internalDebug) {
+            Trace.WriteLine(
+                $@"Adjacent: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}");
+        }
 #endif
 
         List<int> availableAtLoc = GetAvailablePatternsAtLocation<int>(a, b);
 
 #if DEBUG
-            if (internalDebug) {
-                Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
-            }
+        if (internalDebug) {
+            Trace.WriteLine($@"Available patterns: {string.Join(", ", availableAtLoc)}");
+        }
 #endif
 
         if ((availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex)) && !paintOverwrite) {
 #if DEBUG
-                if (internalDebug) {
-                    Trace.WriteLine(availableAtLoc.Count == 1
-                        ? "Returning because already collapsed"
-                        : "Returning because not allowed");
-                }
+            if (internalDebug) {
+                Trace.WriteLine(availableAtLoc.Count == 1
+                    ? "Returning because already collapsed"
+                    : "Returning because not allowed");
+            }
 #endif
 
             bool hasItself = availableAtLoc.Count == 1 && availableAtLoc.Contains(descrambledIndex);
@@ -1441,9 +1444,9 @@ public class WFCHandler {
         }
 
 #if DEBUG
-            if (internalDebug) {
-                Trace.WriteLine(paintOverwrite ? "Painting override enabled" : "Painting is allowed, continuing");
-            }
+        if (internalDebug) {
+            Trace.WriteLine(paintOverwrite ? "Painting override enabled" : "Painting is allowed, continuing");
+        }
 #endif
 
         if (paintOverwrite && (availableAtLoc.Count == 1 || !availableAtLoc.Contains(descrambledIndex))) {
@@ -1502,15 +1505,15 @@ public class WFCHandler {
         }
 
 #if DEBUG
-            if (internalDebug) {
-                Trace.WriteLine($@"Proceeded with status: {status}");
-            }
+        if (internalDebug) {
+            Trace.WriteLine($@"Proceeded with status: {status}");
+        }
 #endif
 
         if (status.Equals(Resolution.CONTRADICTION)) {
 #if DEBUG
-                Trace.WriteLine(
-                    $@"Adjacency CONTRADICTION: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}, Available patterns: {string.Join(", ", availableAtLoc)}");
+            Trace.WriteLine(
+                $@"Adjacency CONTRADICTION: We want to paint at ({a}, {b}) with Tile Idx:{toSet} Descrambled:{descrambledIndex}, Available patterns: {string.Join(", ", availableAtLoc)}");
 #endif
             StepBackWfc();
 
@@ -1570,7 +1573,7 @@ public class WFCHandler {
                 : Color.Parse("#00000000"));
         });
 
-        collapsedTiles = (collapsedTiles / (tileSize * tileSize));
+        collapsedTiles = collapsedTiles / (tileSize * tileSize);
 
         amountCollapsed = collapsedTiles;
         percentageCollapsed = (double) collapsedTiles / (outputHeight * outputWidth);

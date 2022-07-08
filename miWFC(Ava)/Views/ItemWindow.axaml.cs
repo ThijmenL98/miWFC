@@ -1,4 +1,7 @@
-﻿using Avalonia.Controls;
+﻿#if DEBUG
+using Avalonia;
+#endif
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using miWFC.ContentControls;

@@ -1,8 +1,12 @@
 ﻿using System;
+#if DEBUG
+using System.Diagnostics;
+#endif
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using miWFC.Managers;
 using miWFC.Utils;
 using ReactiveUI;
 
@@ -29,9 +33,7 @@ public class TemplateViewModel : ReactiveObject {
         TemplateDataA = templateData;
         status = 2;
         myHash = hash;
-
-        templateData = Util.RotateArrayClockwise(templateData);
-
+        
         CenterPoint = ((int) Math.Floor((templateData.GetLength(0) - 1) / 2d),
             (int) Math.Floor((templateData.GetLength(1) - 1) / 2d));
         Dimension = (templateData.GetLength(0), templateData.GetLength(1));
@@ -118,13 +120,14 @@ public class TemplateViewModel : ReactiveObject {
     /// </summary>
     /// 
     /// <param name="inputImage">Name of the input image currently selected</param>
+    /// <param name="centralManager">Central manager to re-load all templates</param>
     /// 
     /// <returns>Task which completes once the file has been saved and template data has been appended</returns>
-    public async Task<bool> Save(string inputImage) {
+    public async Task Save(string inputImage, CentralManager centralManager) {
         int templateHash = 0;
         switch (status) {
             case 0:
-                return false;
+                return;
             case 1:
                 for (int x = 0; x < TemplateDataO.GetLength(0); x++) {
                     for (int y = 0; y < TemplateDataO.GetLength(1); y++) {
@@ -142,7 +145,7 @@ public class TemplateViewModel : ReactiveObject {
 
                 break;
             default:
-                return false;
+                return;
         }
 
         string baseDir = $"{AppContext.BaseDirectory}/Assets/Templates/";
@@ -159,10 +162,10 @@ public class TemplateViewModel : ReactiveObject {
                 await Util.AppendPictureData(fileName, TemplateDataA, true);
             }
 
-            return true;
+            centralManager.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+                centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
+                centralManager.GetWFCHandler().GetTileSize()));
         }
-
-        return false;
     }
 
     /// <summary>

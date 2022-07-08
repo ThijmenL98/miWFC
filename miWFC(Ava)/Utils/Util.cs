@@ -97,13 +97,20 @@ public static class Util {
     /// <returns>List of images associated with the input category</returns>
     public static string[] GetModelImages(string modelType, string category) {
         List<string> images = new();
-        if (xDoc.Root != null) {
-            images = xDoc.Root.Elements(modelType)
-                .Where(xElement => (xElement.Attribute("category")?.Value ?? "").Equals(category))
-                .Select(xElement => xElement.Attribute("name")?.Value ?? "").ToList();
-        }
+        if (!category.Equals("Custom")) {
+            if (xDoc.Root != null) {
+                images = xDoc.Root.Elements(modelType)
+                    .Where(xElement => (xElement.Attribute("category")?.Value ?? "").Equals(category))
+                    .Select(xElement => xElement.Attribute("name")?.Value ?? "").ToList();
+            }
 
-        images.Sort();
+            images.Sort();
+        } else {
+            try {
+                images.AddRange(from file in Directory.GetFiles($"{AppContext.BaseDirectory}/samples/Custom", $"*.png")
+                    select Path.GetFileName(file.Replace(".png", "")));
+            } catch (DirectoryNotFoundException) { }
+        }
 
         return images.Distinct().ToArray();
     }
@@ -113,10 +120,11 @@ public static class Util {
     /// </summary>
     /// 
     /// <param name="name">Name of the input sample</param>
+    /// <param name="category">Name of the input category</param>
     /// 
     /// <returns>The image</returns>
-    public static WriteableBitmap GetSampleFromPath(string name) {
-        return GetImageFromPath($"{AppContext.BaseDirectory}/samples/{name}.png");
+    public static WriteableBitmap GetSampleFromPath(string name, string category) {
+        return GetImageFromPath($"{AppContext.BaseDirectory}/samples/{(category.Equals("Custom") ? "Custom" : "Default")}/{name}.png");
     }
 
     /// <summary>
@@ -175,7 +183,7 @@ public static class Util {
     /// <returns>List of categories</returns>
     public static string[] GetCategories(string modelType) {
         return modelType.Equals("overlapping")
-            ? new[] {"Textures", "Shapes", "Knots", "Fonts", "Worlds Side-View", "Worlds Top-Down"}
+            ? new[] {"Textures", "Shapes", "Knots", "Fonts", "Worlds Side-View", "Worlds Top-Down", "Custom"}
             : new[] {"Worlds Top-Down", "Textures"};
     }
 
@@ -195,6 +203,7 @@ public static class Util {
             "Worlds Side-View" =>
                 "Worlds as seen from the side (Seamless Output and Input Wrapping have been pre-set due to the nature of these images)",
             "Worlds Top-Down" => "(Game) Worlds as seen from above",
+            "Custom" => "Images uploaded by you yourself!",
             _ => "???"
         };
     }
@@ -228,6 +237,7 @@ public static class Util {
                 result[y] = new Color[width];
                 for (int x = 0; x < width; x++) {
                     Color c = Color.FromUInt32(bytes[x]);
+                    c = c.A <= 30 ? Color.FromArgb(30, c.R, c.G, c.B) : c;
                     result[y][x] = c;
                     currentColors[y * height + x] = c;
                 }
@@ -307,7 +317,7 @@ public static class Util {
         int tileSizeT, int imgInWidth, int imgInHeight) {
         int xDimension = imgInWidth * tileSizeB * tileSizeT;
         int yDimension = imgInHeight * tileSizeB * tileSizeT;
-        
+
         WriteableBitmap outputBitmap
             = new(new PixelSize(xDimension, yDimension), Vector.One,
                 PixelFormat.Bgra8888, AlphaFormat.Unpremul);
@@ -354,7 +364,7 @@ public static class Util {
         if (itemGrid == null) {
             return new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         }
-        
+
         int xDimension = itemGrid.GetLength(0);
         int yDimension = itemGrid.GetLength(1);
 
@@ -379,7 +389,7 @@ public static class Util {
         if (itemGrid == null) {
             return new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         }
-        
+
         const int itemDimension = 17;
         int xDimension = imgOutWidth * itemDimension;
         int yDimension = imgOutHeight * itemDimension;
@@ -395,9 +405,11 @@ public static class Util {
             }
         }
 
-        WriteableBitmap outputBitmap = CreateBitmapFromData(xDimension, yDimension,1, (x, y) => {
+        WriteableBitmap outputBitmap = CreateBitmapFromData(xDimension, yDimension, 1, (x, y) => {
             Tuple<int, int> curItem = itemGrid[x / itemDimension, y / itemDimension];
-            return curItem.Item1 != -1 ? items[curItem][y % itemDimension * itemDimension + x % itemDimension] : Colors.Transparent;
+            return curItem.Item1 != -1
+                ? items[curItem][y % itemDimension * itemDimension + x % itemDimension]
+                : Colors.Transparent;
         });
 
         latestItemBitmap = outputBitmap;
@@ -734,7 +746,7 @@ public static class Util {
     /*
      * PNG Logic
      */
-    
+
     /// <summary>
     /// Create a bitmap from the given conversion function
     /// </summary>
@@ -749,7 +761,7 @@ public static class Util {
         Func<int, int, Color> conversionFunction) {
         return CreateBitmapFromDataFull(imageWidth, imageHeight, tileSize, conversionFunction).Item1;
     }
-    
+
     /// <summary>
     /// Create a bitmap from the given conversion function, including the count of nontransparent pixels
     /// </summary>
@@ -760,8 +772,9 @@ public static class Util {
     /// <param name="conversionFunction">Function that maps a coordinate in the image to a colour</param>
     /// 
     /// <returns>(w, i) -> w = Image, i = count</returns>
-    public static (WriteableBitmap, int) CreateBitmapFromDataFull(int imageWidth, int imageHeight, int tileSize, Func<int, int, Color> conversionFunction) {
-        WriteableBitmap outputBitmap = new (new PixelSize(imageWidth * tileSize, imageHeight * tileSize),
+    public static (WriteableBitmap, int) CreateBitmapFromDataFull(int imageWidth, int imageHeight, int tileSize,
+        Func<int, int, Color> conversionFunction) {
+        WriteableBitmap outputBitmap = new(new PixelSize(imageWidth * tileSize, imageHeight * tileSize),
             new Vector(96, 96),
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? PixelFormat.Bgra8888 : PixelFormat.Rgba8888,
             AlphaFormat.Unpremul);
@@ -780,7 +793,7 @@ public static class Util {
                     Color toPlace = conversionFunction(x, (int) y);
                     dest[x] = (uint) ((toPlace.A << 24) + (toPlace.R << 16) + (toPlace.G << 8) + toPlace.B);
 
-                    if (toPlace.A == 255) {
+                    if (toPlace.A >= 20) {
                         Interlocked.Increment(ref collapseCount);
                     }
                 }
@@ -962,7 +975,7 @@ public static class Util {
     /// <returns>Balanced values (lower, higher)</returns>
     public static (int, int) BalanceValues(int lower, int upper, int change, bool lowerAdapted) {
         int newLower, newUpper;
-        
+
         if (lowerAdapted) {
             newLower = Math.Max(1, lower + change);
             newUpper = upper - newLower < 1 ? newLower + 1 : upper;

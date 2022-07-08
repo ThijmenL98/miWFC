@@ -58,7 +58,8 @@ public class MainWindowViewModel : ViewModelBase {
         _imgOutWidth,
         _imgOutHeight,
         _patternSize = 3,
-        _selectedTabIndex;
+        _selectedTabIndex,
+        _brushSize = 3;
 
     private double _timeStampOffset, _timelineWidth = 600d;
 
@@ -163,6 +164,11 @@ public class MainWindowViewModel : ViewModelBase {
     public int SelectedTabIndex {
         get => _selectedTabIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedTabIndex, value);
+    }
+
+    public int BrushSize {
+        get => _brushSize;
+        set => this.RaiseAndSetIfChanged(ref _brushSize, value);
     }
 
     /// <summary>
@@ -365,7 +371,7 @@ public class MainWindowViewModel : ViewModelBase {
     /// <summary>
     /// The currently selected category as a hoverable text object
     /// </summary>
-    private HoverableTextViewModel CategorySelection {
+    public HoverableTextViewModel CategorySelection {
         get => _selectedCategory;
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);

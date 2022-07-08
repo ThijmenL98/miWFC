@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using miWFC.Managers;
@@ -134,7 +135,7 @@ public partial class InputControl : UserControl {
         string[] inputImageDataSource
             = Util.GetModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
         SetInputImages(inputImageDataSource);
-
+        
         e.Handled = true;
     }
 
@@ -152,7 +153,9 @@ public partial class InputControl : UserControl {
         centralManager.GetWFCHandler().SetImageChanging(true);
 
         string newValue = GetInputImage();
-        centralManager.GetUIManager().UpdateInputImage(newValue);
+        if (!centralManager.GetUIManager().UpdateInputImage(newValue)) {
+            return;
+        }
 
         centralManager.GetWFCHandler().SetInputChanged("Image CB");
 

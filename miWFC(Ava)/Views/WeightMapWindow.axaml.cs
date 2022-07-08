@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
@@ -9,6 +10,7 @@ using miWFC.Managers;
 using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
 using static miWFC.Utils.Util;
+
 // ReSharper disable UnusedParameter.Local
 
 namespace miWFC.Views;
@@ -17,12 +19,15 @@ namespace miWFC.Views;
 /// Window that handles the dynamic weight mapping of the application
 /// </summary>
 public partial class WeightMapWindow : Window {
-    private readonly ComboBox _selectedTileCB, _paintingSizeCB;
+    private readonly ComboBox _selectedTileCB;
     private CentralManager? centralManager;
 
     private int lastPosX = -1, lastPosY = -1;
 
     private double[,] currentHeatMap = new double[0, 0];
+
+    private int oldBrushSize = -2, oldColourValue = -2;
+    private bool oldHardnessValue;
 
     /*
      * Initializing Functions & Constructor
@@ -38,7 +43,6 @@ public partial class WeightMapWindow : Window {
         };
 
         _selectedTileCB = this.Find<ComboBox>("selectedTileCB");
-        _paintingSizeCB = this.Find<ComboBox>("BrushSizeCB");
     }
 
     private void InitializeComponent() {
@@ -66,8 +70,9 @@ public partial class WeightMapWindow : Window {
     /// 
     /// <returns>Selected brush size</returns>
     private int GetPaintBrushSize() {
-        int[] sizes = {1, 3, 6, 15, 25};
-        return sizes[_paintingSizeCB.SelectedIndex];
+        int brushSize = centralManager!.GetMainWindowVM().BrushSize;
+        double mappingValue = 0.7d * Math.Exp(0.6d * brushSize) - 0.675d;
+        return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -187,11 +192,7 @@ public partial class WeightMapWindow : Window {
             lastPosX = a;
             lastPosY = b;
 
-            int rawBrushSize = GetPaintBrushSize();
-            double brushSize = rawBrushSize switch {
-                1 => rawBrushSize,
-                _ => rawBrushSize * 3d
-            };
+            int brushSize = GetPaintBrushSize();
 
             if (_selectedTileCB.SelectedItem != null) {
                 TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
@@ -201,7 +202,9 @@ public partial class WeightMapWindow : Window {
                     maskValues = selectedTVM.WeightHeatMap;
                 }
 
-                double selectedValue = mainWindowVM.MappingVM.HeatmapValue > 0 ? mainWindowVM.MappingVM.HeatmapValue : 0.00000000001d;
+                double selectedValue = mainWindowVM.MappingVM.HeatmapValue > 0
+                    ? mainWindowVM.MappingVM.HeatmapValue
+                    : 0.00000000001d;
 
                 if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
                     for (int x = 0; x < outputWidth; x++) {
@@ -336,7 +339,8 @@ public partial class WeightMapWindow : Window {
         int outWidth = centralManager!.GetMainWindowVM().ImageOutWidth;
         int outHeight = centralManager!.GetMainWindowVM().ImageOutHeight;
 
-        WriteableBitmap outputBitmap = CreateBitmapFromData(outWidth, outHeight, 1, (x, y) => GetGradientColor(currentHeatMap[x, y]));
+        WriteableBitmap outputBitmap
+            = CreateBitmapFromData(outWidth, outHeight, 1, (x, y) => GetGradientColor(currentHeatMap[x, y]));
 
         centralManager!.GetMainWindowVM().MappingVM.CurrentHeatmap = outputBitmap;
     }
@@ -364,5 +368,126 @@ public partial class WeightMapWindow : Window {
 
             selectedTVM.DynamicWeight = duplicates.Count > 1;
         }
+    }
+
+    /// <summary>
+    /// Callback to update the brush size image shown to the user
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
+    private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
+        BrushSize_ValueChanged(false);
+    }
+
+    /// <summary>
+    /// Callback to update the brush size image shown to the user
+    /// </summary>
+    /// 
+    /// <param name="force">Whether to force the creation of the bitmap</param>
+    private void BrushSize_ValueChanged(bool force) {
+        if (centralManager == null) {
+            return;
+        }
+        
+        if (centralManager.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
+            return;
+        }
+
+        int brushSizeRaw = GetPaintBrushSize();
+
+        if (oldBrushSize.Equals(brushSizeRaw) && !force) {
+            return;
+        }
+
+        oldBrushSize = brushSizeRaw;
+
+        if (brushSizeRaw == -1) {
+            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(3, 3, 1, (x, y) =>
+                x == 1 && y == 1 ? GetGradientColor(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue) :
+                (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
+            return;
+        }
+
+        int brushSize = Math.Max(5, brushSizeRaw);
+        bool[,] brushImageRaw = new bool[brushSize, brushSize];
+        int centerPoint = (int) Math.Round(brushSize / 2d);
+        int minX = int.MaxValue, maxX = int.MinValue;
+
+        for (int x = 0; x < brushSize; x++) {
+            for (int y = 0; y < brushSize; y++) {
+                double dx = (double) x - centerPoint;
+                double dy = (double) y - centerPoint;
+                double distanceSquared = dx * dx + dy * dy;
+
+                if (distanceSquared <= brushSizeRaw) {
+                    brushImageRaw[x, y] = true;
+
+                    if (x < minX) {
+                        minX = x;
+                    }
+
+                    if (x > maxX) {
+                        maxX = x;
+                    }
+                }
+            }
+        }
+
+        int cp = maxX - minX;
+        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(cp + 3,
+            cp + 3, 1,
+            (x, y) => {
+                double dx = x - cp / 2d - 1;
+                double dy = y - cp / 2d - 1;
+                Color selected = GetGradientColor(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue);
+                double distance = dx * dx + dy * dy;
+                return distance <= brushSizeRaw ? centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled
+                        ? selected
+                        : Color.FromArgb((byte) (255 * (1d - (distance / brushSizeRaw) * 0.85d)), selected.R,
+                            selected.G, selected.B) :
+                    (x + y) % 2 == 0 ? Colors.Transparent : Color.Parse("#11000000");
+            });
+    }
+
+    /// <summary>
+    /// Callback when the colour slider value is changed
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
+    private void ColourSlider_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (oldColourValue.Equals(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue)) {
+            return;
+        }
+
+        oldColourValue = centralManager!.GetMainWindowVM().MappingVM.HeatmapValue;
+
+        BrushSize_ValueChanged(true);
+    }
+
+
+    /// <summary>
+    /// Callback when the hardness toggle value is changed
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
+    private void AvaloniaObject_OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (oldHardnessValue.Equals(centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled)) {
+            return;
+        }
+
+        oldHardnessValue = centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled;
+
+        BrushSize_ValueChanged(true);
     }
 }

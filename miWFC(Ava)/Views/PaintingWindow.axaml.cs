@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using miWFC.Managers;
+using miWFC.Utils;
 using miWFC.ViewModels.Structs;
 
 // ReSharper disable UnusedParameter.Local
@@ -16,10 +20,13 @@ namespace miWFC.Views;
 /// Window that handles the painting features of the application
 /// </summary>
 public partial class PaintingWindow : Window {
-    private readonly ComboBox _paintingPatternsCB, _templatesCB, _paintingSizeCB;
+    private readonly ComboBox _paintingPatternsCB, _templatesCB;
 
     private bool canUsePencil = true;
     private CentralManager? centralManager;
+
+    private int oldBrushSize = -2;
+    private readonly Dictionary<int, WriteableBitmap> imageCache = new();
 
     /*
      * Initializing Functions & Constructor
@@ -38,7 +45,6 @@ public partial class PaintingWindow : Window {
 
         _paintingPatternsCB = this.Find<ComboBox>("tilePaintSelectCB");
         _templatesCB = this.Find<ComboBox>("templateCB");
-        _paintingSizeCB = this.Find<ComboBox>("BrushSizeCB");
     }
 
     private void InitializeComponent() {
@@ -85,8 +91,9 @@ public partial class PaintingWindow : Window {
     /// 
     /// <returns>Selected brush size</returns>
     public int GetPaintBrushSize() {
-        int[] sizes = {-1, 1, 2, 3, 6, 10, 15, 25};
-        return sizes[_paintingSizeCB.SelectedIndex];
+        int brushSize = centralManager!.GetMainWindowVM().BrushSize;
+        double mappingValue = 13.2d * Math.Exp(0.125 * brushSize) - 15.95d;
+        return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
@@ -377,5 +384,76 @@ public partial class PaintingWindow : Window {
     /// <param name="e">PointerEventArgs</param>
     private void OnPointerMoved(object sender, PointerEventArgs e) {
         centralManager?.GetInputManager().ResetHoverAvailability();
+    }
+
+    /// <summary>
+    /// Callback to update the brush size image shown to the user
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
+    private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (!centralManager.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
+            return;
+        }
+
+        int brushSizeRaw = GetPaintBrushSize();
+
+        if (oldBrushSize.Equals(brushSizeRaw)) {
+            return;
+        }
+
+        if (brushSizeRaw == -1) {
+            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
+                x == 1 && y == 1 ? Colors.Black : (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
+            return;
+        }
+
+        if (imageCache.ContainsKey(brushSizeRaw)) {
+            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = imageCache[brushSizeRaw];
+            return;
+        }
+
+        oldBrushSize = brushSizeRaw;
+
+        int brushSize = Math.Max(5, brushSizeRaw);
+        bool[,] brushImageRaw = new bool[brushSize, brushSize];
+        int centerPoint = (int) Math.Round(brushSize / 2d);
+        int minX = int.MaxValue, maxX = int.MinValue;
+
+        for (int x = 0; x < brushSize; x++) {
+            for (int y = 0; y < brushSize; y++) {
+                double dx = (double) x - centerPoint;
+                double dy = (double) y - centerPoint;
+                double distanceSquared = dx * dx + dy * dy;
+
+                if (distanceSquared <= brushSizeRaw) {
+                    brushImageRaw[x, y] = true;
+
+                    if (x < minX) {
+                        minX = x;
+                    }
+
+                    if (x > maxX) {
+                        maxX = x;
+                    }
+                }
+            }
+        }
+
+        int cp = maxX - minX;
+        WriteableBitmap bm = Util.CreateBitmapFromData(cp + 3, cp + 3, 1,
+            (x, y) => {
+                double dx = x - cp / 2d - 1;
+                double dy = y - cp / 2d - 1;
+                return dx * dx + dy * dy <= brushSizeRaw ? Colors.Black :
+                    (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent;
+            });
+        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
+        imageCache[brushSizeRaw] = bm;
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -59,7 +61,7 @@ public class UIManager {
         mainWindowVM = parent.GetMainWindowVM();
         mainWindow = parent.GetMainWindow();
     }
-    
+
     /*
      * Getters & Setters
      */
@@ -85,7 +87,7 @@ public class UIManager {
     /*
      * Functions
      */
-    
+
     /// <summary>
     /// Update the categories combo box 
     /// </summary>
@@ -109,7 +111,7 @@ public class UIManager {
     public void UpdateInputImages(string[]? values, int idx = 0) {
         mainWindow.GetInputControl().SetInputImages(values, idx);
     }
-    
+
     /// <summary>
     /// Update the pattern sizes combo box
     /// </summary>
@@ -125,9 +127,19 @@ public class UIManager {
     /// </summary>
     /// 
     /// <param name="newImage">Name of the selected input image</param>
-    public void UpdateInputImage(string newImage) {
-        string uri = $"{AppContext.BaseDirectory}/samples/{newImage}.png";
-        mainWindowVM.InputImage = new Bitmap(uri);
+    ///
+    /// <returns>Whether the image was correctly loaded</returns>
+    public bool UpdateInputImage(string newImage) {
+        try {
+            mainWindowVM.InputImage
+                = new Bitmap(
+                    $"{AppContext.BaseDirectory}/samples/{(centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Custom") ? "Custom" : "Default")}/{newImage}.png");
+            return true;
+        } catch (FileNotFoundException) {
+            return false;
+        } catch (DirectoryNotFoundException) {
+            return false;
+        }
     }
 
     /// <summary>
@@ -218,10 +230,10 @@ public class UIManager {
         int rawIndex) {
         int n = colors.Height;
 
-        WriteableBitmap pattern = Util.CreateBitmapFromData(n,n,1, (x, y) => (Color) colors.getTileAt(x, y).Value);
+        WriteableBitmap pattern = Util.CreateBitmapFromData(n, n, 1, (x, y) => (Color) colors.getTileAt(x, y).Value);
 
         ConcurrentDictionary<Point, Color> data = new();
-        
+
         for (int y = 0; y < n; y++) {
             for (int x = 0; x < n; x++) {
                 data[new Point(x, y)] = (Color) colors.getTileAt(x, y).Value;
@@ -304,6 +316,16 @@ public class UIManager {
     /// 
     /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
     public async Task SwitchWindow(Windows window, bool checkClicked = false) {
+        if (mainWindowVM.ImageOutWidth != (int) centralManager.GetWFCHandler().GetPropagatorSize().Width ||
+            mainWindowVM.ImageOutHeight != (int) centralManager.GetWFCHandler().GetPropagatorSize().Height) {
+            if (!mainWindowVM.IsRunning && !centralManager.GetWFCHandler().IsCollapsed()) {
+                await centralManager.GetInputManager().RestartSolution("Window switch nonequal input");
+            } else {
+                mainWindowVM.ImageOutWidth = (int) centralManager.GetWFCHandler().GetPropagatorSize().Width;
+                mainWindowVM.ImageOutHeight = (int) centralManager.GetWFCHandler().GetPropagatorSize().Height;
+            }
+        }
+
         mainWindowVM.OutputImage = centralManager.GetWFCHandler().GetLatestOutputBm();
 
 #if DEBUG

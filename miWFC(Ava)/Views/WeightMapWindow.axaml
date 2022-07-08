@@ -89,7 +89,7 @@
 							</Border>
 						</Border>
 					</Popup>
-					
+
 					<Grid ColumnDefinitions="Auto, *" x:Name="paintingMainGrid" HorizontalAlignment="Center">
 						<Grid Grid.Column="0" RowDefinitions="Auto, Auto, Auto, Auto, *, Auto" Margin="10">
 							<ComboBox Grid.Row="0" SelectionChanged="SelectedTileCB_OnSelectionChanged"
@@ -121,18 +121,22 @@
 								           Margin="5">
 									Brush Size
 								</TextBlock>
-								<ComboBox SelectedIndex="2" x:Name="BrushSizeCB" HorizontalAlignment="Center"
-								          VerticalAlignment="Center" Margin="-10, 0, -10, 15" Padding="12,3,0,4">
-									<ComboBoxItem>Tiny</ComboBoxItem>
-									<ComboBoxItem>Small</ComboBoxItem>
-									<ComboBoxItem>Medium</ComboBoxItem>
-									<ComboBoxItem>Large</ComboBoxItem>
-									<ComboBoxItem>Huge</ComboBoxItem>
-								</ComboBox>
+								<Slider Value="{Binding BrushSize}" Minimum="1" Maximum="10" TickFrequency="1"
+								        PropertyChanged="BrushSize_ValueChanged"
+								        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0" />
+								<Grid RowDefinitions="*" HorizontalAlignment="Center">
+									<Grid ColumnDefinitions="*" VerticalAlignment="Center">
+										<Border CornerRadius="30" ClipToBounds="True">
+											<Image RenderOptions.BitmapInterpolationMode="Default" Width="125"
+											       Source="{Binding PaintingVM.BrushSizeImage}" />
+										</Border>
+									</Grid>
+								</Grid>
 							</StackPanel>
 
 							<ToggleSwitch Grid.Row="2" OffContent="Hard Brush" OnContent="Soft Brush" Margin="5"
-							              IsChecked="{Binding !MappingVM.HardBrushEnabled}" />
+							              IsChecked="{Binding !MappingVM.HardBrushEnabled}"
+							              PropertyChanged="AvaloniaObject_OnPropertyChanged" />
 
 							<Button Padding="0" Grid.Row="3" Width="80" Margin="0" Command="{Binding MappingVM.ResetWeightMapping}"
 							        HorizontalAlignment="Center" Background="Transparent">
@@ -171,7 +175,7 @@
 								              IsEnabled="False" Background="Transparent" />
 
 								<Slider Grid.Row="2" Grid.Column="1" Value="{Binding MappingVM.HeatmapValue}"
-								        Minimum="0" Maximum="250" TickFrequency="1"
+								        Minimum="0" Maximum="250" TickFrequency="1" PropertyChanged="ColourSlider_PropertyChanged"
 								        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
 								        Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
 
@@ -187,7 +191,7 @@
 							</Grid>
 
 							<Grid Grid.Row="5" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" Margin="5">
-								
+
 								<Button Grid.Row="0" Grid.Column="0" Padding="0" Background="Transparent"
 								        Command="{Binding MappingVM.ImportWeightMap}"
 								        CommandParameter="M" Margin="5" MaxWidth="70">
@@ -210,7 +214,7 @@
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
-								
+
 								<Button Grid.Row="0" Grid.Column="1" Padding="0" Background="Transparent"
 								        Command="{Binding MappingVM.ExportWeightMap}"
 								        CommandParameter="M" Margin="5" MaxWidth="70">
@@ -233,7 +237,7 @@
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
-								
+
 								<Button Grid.Row="1" Grid.Column="0" Padding="0" Background="Transparent"
 								        Command="{Binding SwitchWindow}"
 								        CommandParameter="M" Margin="5" MaxWidth="70">
