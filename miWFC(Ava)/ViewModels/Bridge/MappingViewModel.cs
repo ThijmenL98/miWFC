@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -20,7 +19,9 @@ public class MappingViewModel : ReactiveObject {
     private readonly MainWindowViewModel mainWindowViewModel;
 
     private Bitmap _currentHeatMap
-        = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
+        _hoverImage
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
     private bool _hardBrushEnabled = true;
 
@@ -72,6 +73,14 @@ public class MappingViewModel : ReactiveObject {
     public Bitmap CurrentHeatmap {
         get => _currentHeatMap;
         set => this.RaiseAndSetIfChanged(ref _currentHeatMap, value);
+    }
+
+    /// <summary>
+    /// Image associated with the hovering of the mouse
+    /// </summary>
+    public Bitmap HoverImage {
+        get => _hoverImage;
+        set => this.RaiseAndSetIfChanged(ref _hoverImage, value);
     }
 
     // Objects
@@ -158,8 +167,8 @@ public class MappingViewModel : ReactiveObject {
         if (settingsFileName != null) {
             WriteableBitmap exportBitmap = Util.CreateBitmapFromData(mainWindowViewModel.ImageOutWidth,
                 mainWindowViewModel.ImageOutHeight, 1, (x, y) => {
-                    int greyValue = (int) centralManager!.GetWeightMapWindow().GetGradientValue(x,  y);
-                    return Color.FromRgb((byte) greyValue, (byte)greyValue, (byte)greyValue);
+                    int greyValue = (int) centralManager!.GetWeightMapWindow().GetGradientValue(x, y);
+                    return Color.FromRgb((byte) greyValue, (byte) greyValue, (byte) greyValue);
                 });
 
             exportBitmap.Save(settingsFileName);

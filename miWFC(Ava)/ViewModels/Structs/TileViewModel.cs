@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -439,7 +440,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public async void DynamicWeightClick() {
         await centralManager!.GetUIManager().SwitchWindow(Windows.HEATMAP);
-
+        
         int xDim = centralManager!.GetMainWindowVM().ImageOutWidth,
             yDim = centralManager!.GetMainWindowVM().ImageOutHeight;
         if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {

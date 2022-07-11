@@ -7,6 +7,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Managers;
+using miWFC.Utils;
 using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
 using static miWFC.Utils.Util;
@@ -175,25 +176,25 @@ public partial class WeightMapWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
+        (double posX, double posY) = e.GetPosition(e.Source as Image);
+        (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+
+        MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
+
+        int a = (int) Math.Floor(Math.Round(posX) * mainWindowVM.ImageOutWidth / Math.Round(imgWidth)),
+            b = (int) Math.Floor(Math.Round(posY) * mainWindowVM.ImageOutHeight / Math.Round(imgHeight));
+
+        if (lastPosX == a && lastPosY == b) {
+            return;
+        }
+
+        lastPosX = a;
+        lastPosY = b;
+
+        int brushSize = GetPaintBrushSize();
+
         if (e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
-            (double posX, double posY) = e.GetPosition(e.Source as Image);
-            (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-
-            MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
-            int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
-
-            int a = (int) Math.Floor(Math.Round(posX) * mainWindowVM.ImageOutWidth / Math.Round(imgWidth)),
-                b = (int) Math.Floor(Math.Round(posY) * mainWindowVM.ImageOutHeight / Math.Round(imgHeight));
-
-            if (lastPosX == a && lastPosY == b) {
-                return;
-            }
-
-            lastPosX = a;
-            lastPosY = b;
-
-            int brushSize = GetPaintBrushSize();
-
             if (_selectedTileCB.SelectedItem != null) {
                 TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
 
@@ -249,6 +250,29 @@ public partial class WeightMapWindow : Window {
                 UpdateOutput(maskValues);
             }
         }
+
+        centralManager.GetMainWindowVM().MappingVM.HoverImage = CreateBitmapFromData(
+            centralManager!.GetMainWindowVM().ImageOutWidth, centralManager!.GetMainWindowVM().ImageOutHeight, 1,
+            (x, y) => {
+                double dx = (double) x - a;
+                double dy = (double) y - b;
+                double distanceSquared = dx * dx + dy * dy;
+
+                if (mainWindowVM.MappingVM.HardBrushEnabled) {
+                    if (distanceSquared <= brushSize) {
+                        return Colors.Yellow;
+                    }
+                } else {
+                    if (distanceSquared <= brushSize) {
+                        double percentage = distanceSquared / brushSize;
+                        double percentageMapped = 1d - (percentage * 0.5d + 0.5d);
+                        return Color.FromArgb((byte) (percentageMapped * 255), 255, 255, 0);
+                    }
+                }
+
+                return Colors.Transparent;
+            }
+        );
     }
 
     /// <summary>
@@ -389,8 +413,8 @@ public partial class WeightMapWindow : Window {
         if (centralManager == null) {
             return;
         }
-        
-        if (centralManager.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
+
+        if (!centralManager.GetWeightMapWindow().IsVisible) {
             return;
         }
 

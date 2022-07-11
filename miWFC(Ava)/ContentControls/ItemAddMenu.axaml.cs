@@ -4,8 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using miWFC.Managers;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
@@ -20,11 +18,8 @@ namespace miWFC.ContentControls;
 /// Separated control for the item addition menu
 /// </summary>
 public partial class ItemAddMenu : UserControl {
-    private const int Dimension = 17;
-
     private readonly ComboBox _itemsCB, _depsCB;
 
-    private readonly Dictionary<int, WriteableBitmap> imageCache;
     private CentralManager? centralManager;
 
     private bool[] allowedTiles;
@@ -34,9 +29,7 @@ public partial class ItemAddMenu : UserControl {
      */
     public ItemAddMenu() {
         InitializeComponent();
-
-        imageCache = new Dictionary<int, WriteableBitmap>();
-
+        
         _itemsCB = this.Find<ComboBox>("itemTypesCB");
         _depsCB = this.Find<ComboBox>("itemDependenciesCB");
 
@@ -69,29 +62,6 @@ public partial class ItemAddMenu : UserControl {
     /*
      * Getters
      */
-
-    /// <summary>
-    /// Return the image form of an item
-    /// </summary>
-    /// 
-    /// <param name="itemType">Currently selected item</param>
-    /// <param name="index">Item dependency index, if this item is dependent on another item the index will be
-    /// embedded within the image</param>
-    /// 
-    /// <returns>Item image</returns>
-    public WriteableBitmap GetItemImage(ItemType itemType, int index = -1) {
-        if (imageCache.ContainsKey(itemType.ID)) {
-            return imageCache[itemType.ID];
-        }
-
-        Color[] rawColours = Util.GetItemImageRaw(itemType, index);
-        WriteableBitmap outputBitmap = Util.CreateBitmapFromData(Dimension, Dimension, 1,
-            (x, y) => rawColours[y % Dimension * Dimension + x % Dimension]);
-
-        imageCache[itemType.ID] = outputBitmap;
-
-        return outputBitmap;
-    }
 
     /// <summary>
     /// Get the currently selected main item
@@ -175,7 +145,7 @@ public partial class ItemAddMenu : UserControl {
         int index = _itemsCB.SelectedIndex;
         if (index >= 0) {
             ItemType selection = ItemType.GetItemTypeById(index);
-            centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = GetItemImage(selection);
+            centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = Util.GetItemImage(selection);
             centralManager!.GetMainWindowVM().ItemVM.ItemDescription = selection.Description;
 
             if (_depsCB.SelectedIndex.Equals(index)) {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
@@ -26,7 +25,6 @@ public partial class PaintingWindow : Window {
     private CentralManager? centralManager;
 
     private int oldBrushSize = -2;
-    private readonly Dictionary<int, WriteableBitmap> imageCache = new();
 
     /*
      * Initializing Functions & Constructor
@@ -262,9 +260,10 @@ public partial class PaintingWindow : Window {
         bool lbmPressed = e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed;
         bool rbmPressed = e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed;
 
-        if (centralManager!.GetMainWindowVM().PaintingVM.PaintModeEnabled
-            && (lbmPressed || rbmPressed) && allowClick) {
-            HandlePaintModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed);
+        if (centralManager!.GetMainWindowVM().PaintingVM.PaintModeEnabled && allowClick) {
+            if (lbmPressed || rbmPressed) {
+                HandlePaintModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed);
+            }
         } else if (centralManager!.GetMainWindowVM().PaintingVM.PencilModeEnabled && canUsePencil) {
             HandlePencilModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed, allowClick);
         } else if (centralManager!.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
@@ -319,6 +318,9 @@ public partial class PaintingWindow : Window {
         ILayoutable imageSource, bool lbmPressed, bool allowClick) {
         if (lbmPressed && allowClick) {
             int idx = GetSelectedPaintIndex();
+            if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
+                centralManager!.GetInputManager().PlaceMarker();
+            }
 
             bool? success = await centralManager?.GetInputManager().ProcessClick((int) Math.Round(posX),
                 (int) Math.Round(posY),
@@ -328,6 +330,14 @@ public partial class PaintingWindow : Window {
             if (success != null && !(bool) success) {
                 centralManager?.GetUIManager().DispatchError(this);
                 canUsePencil = false;
+
+                if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
+                    centralManager!.GetInputManager().RemoveLastMarker();
+                }
+            } else if (success != null && (bool) success) {
+                if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
+                    centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode = true;
+                }
             }
         }
     }
@@ -366,13 +376,17 @@ public partial class PaintingWindow : Window {
     /// <param name="imageHeight">Image height</param>
     /// <param name="imageSource">Source of the mouse movement call</param>
     /// <param name="lbmPressed">Whether the left mouse button is pressed</param>
-    private void HandleTemplatePlaceModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
+    private async void HandleTemplatePlaceModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
         ILayoutable imageSource, bool lbmPressed) {
         if (lbmPressed) {
-            centralManager?.GetInputManager().ProcessClickTemplatePlace((int) Math.Round(posX),
+            centralManager!.GetInputManager().PlaceMarker();
+            bool success = await centralManager!.GetInputManager().ProcessClickTemplatePlace((int) Math.Round(posX),
                 (int) Math.Round(posY),
                 (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
                 (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom));
+            if (!success) {
+                centralManager!.GetInputManager().RemoveLastMarker();
+            }
         }
     }
 
@@ -396,8 +410,8 @@ public partial class PaintingWindow : Window {
         if (centralManager == null) {
             return;
         }
-
-        if (!centralManager.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
+        
+        if (!centralManager.GetPaintingWindow().IsVisible) {
             return;
         }
 
@@ -410,11 +424,6 @@ public partial class PaintingWindow : Window {
         if (brushSizeRaw == -1) {
             centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
                 x == 1 && y == 1 ? Colors.Black : (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
-            return;
-        }
-
-        if (imageCache.ContainsKey(brushSizeRaw)) {
-            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = imageCache[brushSizeRaw];
             return;
         }
 
@@ -454,6 +463,5 @@ public partial class PaintingWindow : Window {
                     (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent;
             });
         centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
-        imageCache[brushSizeRaw] = bm;
     }
 }

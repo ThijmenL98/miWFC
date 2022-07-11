@@ -18,6 +18,8 @@
 		<Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
+		<Image Source="/Assets/WeightMappingHover.png" x:Key="hoverWeightMappingKey" x:Name="hoverWeightMapping" />
+		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
@@ -27,6 +29,8 @@
 		<Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
 		<Image Source="/Assets/InfoClick.png" x:Key="clickInfoKey" x:Name="clickInfo" />
 		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
+		<Image Source="/Assets/WeightMappingClick.png" x:Key="clickWeightMappingKey" x:Name="clickWeightMapping" />
+		<Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -52,7 +56,8 @@
 					<Grid ColumnDefinitions="*, Auto">
 						<Grid RowDefinitions="*" HorizontalAlignment="Left" x:Name="itemImageGrid">
 							<Grid ColumnDefinitions="*" VerticalAlignment="Center">
-								<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
+								<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10"
+								        IsVisible="{Binding !ItemVM.InRegionDefineMenu}">
 									<Grid>
 										<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
 										       x:Name="outputImage" Source="{Binding OutputImage}"
@@ -62,6 +67,8 @@
 										       IsHitTestVisible="False" IsVisible="{Binding !ItemVM.InItemMenu}" />
 									</Grid>
 								</Border>
+								<contentControls:RegionDefineMenu Grid.Column="0" x:Name="regionDefineMenu"
+								                                  IsVisible="{Binding ItemVM.InRegionDefineMenu}" Margin="10" />
 							</Grid>
 
 							<Button Padding="0" Background="Transparent" Command="{Binding OpenInfoPopup}"
@@ -83,7 +90,7 @@
 							</Button>
 						</Grid>
 
-						<contentControls:ItemAddMenu Grid.Column="0" DataContext="{Binding VM}" x:Name="itemAddMenu"
+						<contentControls:ItemAddMenu Grid.Column="0" x:Name="itemAddMenu"
 						                             IsVisible="{Binding ItemVM.InItemMenu}" Margin="10" />
 
 						<Grid Grid.Column="1" RowDefinitions="*, Auto" Margin="10" HorizontalAlignment="Stretch">
@@ -152,18 +159,28 @@
 										           HorizontalAlignment="Center" VerticalAlignment="Center" />
 									</Grid>
 								</DataTemplate>
+
+								<DataTemplate x:Key="ItemLocationDataTemplate">
+									<Border BoxShadow="0 0 15 0.25 Black" Margin="5" Background="#22000000"
+									        CornerRadius="10" ClipToBounds="True" Width="70" Height="70">
+										<Image Width="70" Height="70" Margin="0"
+										       Source="{Binding ItemLocationMapping}"
+										       RenderOptions.BitmapInterpolationMode="Default" />
+									</Border>
+								</DataTemplate>
 							</Grid.Resources>
+							
 							<Border Background="#22000000" Grid.Row="0" CornerRadius="10" ClipToBounds="True"
 							        VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 								<DataGrid Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True"
 								          GridLinesVisibility="All" HorizontalAlignment="Stretch"
 								          Items="{Binding ItemVM.ItemDataGrid}" x:Name="itemsDataGrid">
 									<DataGrid.Columns>
-										<DataGridTemplateColumn Header="Item"
-										                        CellTemplate="{StaticResource ItemNameDataTemplate}"
-										                        MaxWidth="200" />
+										<DataGridTemplateColumn Header="Item" Width="200"
+										                        CellTemplate="{StaticResource ItemNameDataTemplate}" />
 										<DataGridTextColumn Header="#" Binding="{Binding AmountStr}" />
-										<DataGridTemplateColumn Header="Constraints" MaxWidth="500"
+										<DataGridTemplateColumn Header="Area" Width="80" CellTemplate="{StaticResource ItemLocationDataTemplate}" />
+										<DataGridTemplateColumn Header="Constraints" Width="380"
 										                        CellTemplate="{StaticResource ConstraintsDataTemplate}" />
 									</DataGrid.Columns>
 								</DataGrid>
@@ -173,7 +190,7 @@
 								<Grid ColumnDefinitions="Auto, Auto, Auto, *, Auto, *, Auto">
 									<Button Padding="0" Background="Transparent" Grid.Row="0" Grid.Column="0"
 									        Command="{Binding ItemVM.CreateNewItem}"
-									        IsEnabled="{Binding !ItemVM.InItemMenu}"
+									        IsEnabled="{Binding !ItemVM.InAnyMenu}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">
@@ -200,7 +217,7 @@
 									</Button>
 
 									<Button Padding="0" Background="Transparent" Grid.Column="1"
-									        IsEnabled="{Binding !ItemVM.InItemMenu}"
+									        IsEnabled="{Binding !ItemVM.InAnyMenu}"
 									        Command="{Binding ItemVM.EditSelectedItem}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
@@ -228,7 +245,7 @@
 									</Button>
 
 									<Button Padding="0" Background="Transparent" Grid.Column="2"
-									        IsEnabled="{Binding !ItemVM.InItemMenu}"
+									        IsEnabled="{Binding !ItemVM.InAnyMenu}"
 									        Command="{Binding ItemVM.RemoveSelectedItem}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
@@ -259,7 +276,7 @@
 
 									<Button Padding="0" Background="Transparent" Grid.Column="4"
 									        Command="{Binding ItemVM.GenerateItemGrid}"
-									        IsEnabled="{Binding !ItemVM.InItemMenu}"
+									        IsEnabled="{Binding !ItemVM.InAnyMenu}"
 									        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
 										<Button.Styles>
 											<Style Selector="Button:disabled /template/ ContentPresenter">

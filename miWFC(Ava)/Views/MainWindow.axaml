@@ -33,6 +33,7 @@
 		<Image Source="/Assets/ExportHover.png" x:Key="hoverExportKey" x:Name="hoverExport" />
 		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
 		<Image Source="/Assets/RotateSingleHover.png" x:Key="hoverRotationSingleKey" x:Name="hoverRotationSingle" />
+		<Image Source="/Assets/WeightMappingHover.png" x:Key="hoverWeightMappingKey" x:Name="hoverWeightMapping" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
@@ -51,6 +52,7 @@
 		<Image Source="/Assets/ImportClick.png" x:Key="clickImportKey" x:Name="clickImport" />
 		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
 		<Image Source="/Assets/RotateSingleClick.png" x:Key="clickRotationSingleKey" x:Name="clickRotationSingle" />
+		<Image Source="/Assets/WeightMappingClick.png" x:Key="clickWeightMappingKey" x:Name="clickWeightMapping" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -182,19 +184,40 @@
 								<contentControls:InputControl Grid.Row="0" x:Name="inputControl" />
 
 								<Grid Grid.Column="1" RowDefinitions="Auto, Auto, *" x:Name="patternGrid" MinWidth="202">
-									<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, Auto">
-										<TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" Margin="10, 20, 0, 0"
-										           Text="Extracted tiles with the current settings" TextWrapping="Wrap" />
+									<Grid ColumnDefinitions="*, Auto, Auto">
+										<StackPanel Grid.Column="0" Grid.Row="0">
+											<TextBlock HorizontalAlignment="Center" Margin="10, 20, 0, 0"
+											           Text="Extracted tiles with the current settings" TextWrapping="Wrap" />
 
-										<TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 0, 5"
-										           Text="Click on the tile value to edit dynamic value mapping." TextWrapping="Wrap"
-										           IsVisible="{ReflectionBinding SimpleAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
+											<TextBlock HorizontalAlignment="Center" Margin="10, 5, 0, 5"
+											           Text="Click on the pattern to disable it." TextWrapping="Wrap"
+											           IsVisible="{ReflectionBinding OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
+										</StackPanel>
 
-										<TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" Margin="10, 5, 0, 5"
-										           Text="Click on the pattern to disable it." TextWrapping="Wrap"
-										           IsVisible="{ReflectionBinding OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
+										<Button Padding="0" Grid.Column="1" Grid.Row="0" Width="70" Margin="5"
+										        Command="{Binding DynamicWeightClick}"
+										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
+											<Button.Styles>
+												<Style Selector="Button:pointerover /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource hoverWeightMappingKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+												<Style Selector="Button:pressed /template/ ContentPresenter">
+													<Setter Property="Content" Value="{DynamicResource clickWeightMappingKey}" />
+													<Setter Property="Background" Value="Transparent" />
+												</Style>
+											</Button.Styles>
+											<Panel>
+												<Image Source="/Assets/WeightMapping.png" />
+											</Panel>
+											<ToolTip.Tip>
+												<StackPanel>
+													<TextBlock TextWrapping="Wrap">Open the weight mapping window</TextBlock>
+												</StackPanel>
+											</ToolTip.Tip>
+										</Button>
 
-										<Button Padding="0" Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" Width="70" Margin="0"
+										<Button Padding="0" Grid.Column="2" Grid.Row="0" Width="70" Margin="0"
 										        Command="{Binding ResetWeights}"
 										        IsVisible="{Binding SimpleAdvancedEnabled}" Background="Transparent">
 											<Button.Styles>

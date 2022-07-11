@@ -271,9 +271,9 @@ public class InputManager {
     public void ResetMask() {
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
 
-        if (centralManager.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
-            for (int x = 0; x < centralManager.GetMainWindowVM().ImageOutWidth; x++) {
-                for (int y = 0; y < centralManager.GetMainWindowVM().ImageOutHeight; y++) {
+        if (mainWindowVM.PaintingVM.TemplateCreationModeEnabled) {
+            for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
+                for (int y = 0; y < mainWindowVM.ImageOutHeight; y++) {
                     maskColours[x, y] = Colors.Black;
                 }
             }
@@ -286,6 +286,7 @@ public class InputManager {
     /// 
     /// <param name="revertible">Whether the user can revert into the history prior to the placement of this marker</param>
     /// <param name="force">Whether the placement of this marker should be forced</param>
+    /// <param name="overwritePercentage">Value to overwrite the percentage if a marker should be placed post-action</param>
     public void PlaceMarker(bool revertible = true, bool force = false) {
         if (centralManager.GetWFCHandler().IsCollapsed() && !force) {
             return;
@@ -296,18 +297,18 @@ public class InputManager {
             return;
         }
 
+        double percentageCollapsed = centralManager.GetWFCHandler().GetPercentageCollapsed();
+
         if (mainWindowVM.Markers.Count > 0 && mainWindowVM.Markers[^1].MarkerCollapsePercentage
-                .Equals(centralManager.GetWFCHandler().GetPercentageCollapsed())) {
+                .Equals(percentageCollapsed)) {
             return;
         }
 
         mainWindowVM.Markers.Add(new MarkerViewModel(savePoints.Count,
             (mainWindow.IsVisible
                 ? mainWindow.GetOutputControl().GetTimelineWidth()
-                : centralManager.GetPaintingWindow().GetTimelineWidth()) *
-            centralManager.GetWFCHandler().GetPercentageCollapsed() +
-            1, centralManager.GetWFCHandler().GetPercentageCollapsed(),
-            revertible));
+                : centralManager.GetPaintingWindow().GetTimelineWidth()) * percentageCollapsed + 1d,
+            percentageCollapsed, revertible));
 
         while (true) {
             if (savePoints.Count != 0 && curStep < savePoints.Peek()) {
@@ -376,6 +377,14 @@ public class InputManager {
     }
 
     /// <summary>
+    /// Remove the last placed marker from the marker dataset
+    /// </summary>
+    public void RemoveLastMarker() {
+        savePoints.Pop();
+        mainWindowVM.Markers.RemoveAt(mainWindowVM.Markers.Count - 1);
+    }
+
+    /// <summary>
     /// Allow the user to import a pre-existing solution into the application
     /// </summary>
     public async void ImportSolution() {
@@ -426,7 +435,7 @@ public class InputManager {
 
             if (centralManager.GetWFCHandler().IsOverlappingModel()) {
                 bool allowed = allowedColours
-                    .Select(foundColour => !foundColour.A.Equals(255) || centralManager.GetMainWindowVM().PaintTiles
+                    .Select(foundColour => !foundColour.A.Equals(255) || mainWindowVM.PaintTiles
                         .Any(tvm => tvm.PatternColour.Equals(foundColour)))
                     .Aggregate(true, (current, found) => current && found);
 
@@ -437,7 +446,7 @@ public class InputManager {
                 }
             }
 
-            ObservableCollection<TileViewModel> paintTiles = centralManager.GetMainWindowVM().PaintTiles;
+            ObservableCollection<TileViewModel> paintTiles = mainWindowVM.PaintTiles;
 
             if (centralManager.GetWFCHandler().IsOverlappingModel()) {
                 await ImportOverlappingImage(imageWidth, imageHeight, colourArray, paintTiles);
@@ -546,7 +555,7 @@ public class InputManager {
                 }
             }
 
-            centralManager.GetMainWindowVM().SetWeights(inputW.Select(x => (double) x).ToArray());
+            mainWindowVM.SetWeights(inputW.Select(x => (double) x).ToArray());
         } catch (AggregateException exception) {
             // TODO pre processing?
             centralManager.GetUIManager().DispatchError(mainWindow);
@@ -575,7 +584,7 @@ public class InputManager {
         if (settingsFileName != null) {
             bool hasItems = mainWindow.GetInputControl().GetCategory().Equals("Worlds Top-Down")
                             && centralManager.GetWFCHandler().IsCollapsed()
-                            && centralManager.GetMainWindowVM().ItemVM.ItemDataGrid.Count > 0;
+                            && mainWindowVM.ItemVM.ItemDataGrid.Count > 0;
 
             if (hasItems) {
                 centralManager.GetWFCHandler().GetLatestOutputBm(false)
@@ -615,7 +624,7 @@ public class InputManager {
                         centralManager.GetWFCHandler().GetPropagatorOutputA().toArray2d(), true);
 
                     await AppendPictureData(settingsFileName,
-                        centralManager.GetMainWindowVM().PaintTiles.Select(x => (int) x.PatternWeight).ToArray(),
+                        mainWindowVM.PaintTiles.Select(x => (int) x.PatternWeight).ToArray(),
                         false);
                 }
             }
@@ -820,7 +829,7 @@ public class InputManager {
             return;
         }
 
-        TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
+        TemplateViewModel selectedTVM = mainWindowVM.PaintingVM.Templates[templateIndex];
         int startX = x - selectedTVM.CenterPoint.Item1;
         int startY = y - selectedTVM.CenterPoint.Item2;
 
@@ -961,7 +970,9 @@ public class InputManager {
     /// <param name="clickY">Click location on the y axis</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
     /// <param name="imgHeight">Height of the image the user clicked on</param>
-    public async void ProcessClickTemplatePlace(int clickX, int clickY, int imgWidth, int imgHeight) {
+    ///
+    /// <returns>Whether the template was correctly placed</returns>
+    public async Task<bool> ProcessClickTemplatePlace(int clickX, int clickY, int imgWidth, int imgHeight) {
         int placeCount = 0;
         bool error = false;
 
@@ -971,10 +982,10 @@ public class InputManager {
 
             int templateIndex = centralManager.GetPaintingWindow().GetSelectedTemplateIndex();
             if (templateIndex == -1) {
-                return;
+                return false;
             }
 
-            TemplateViewModel selectedTVM = centralManager.GetMainWindowVM().PaintingVM.Templates[templateIndex];
+            TemplateViewModel selectedTVM = mainWindowVM.PaintingVM.Templates[templateIndex];
             int startX = x - selectedTVM.CenterPoint.Item1;
             int startY = y - selectedTVM.CenterPoint.Item2;
             int endX = startX + selectedTVM.Dimension.Item1;
@@ -1039,7 +1050,10 @@ public class InputManager {
             centralManager.GetWFCHandler().StepBackWfc(placeCount);
             mainWindowVM.OutputImage = centralManager.GetWFCHandler().GetLatestOutputBm();
             centralManager.GetUIManager().DispatchError(centralManager.GetPaintingWindow());
+            return false;
         }
+
+        return true;
     }
 
     /// <summary>
@@ -1055,7 +1069,6 @@ public class InputManager {
     /// 
     /// <param name="colors">Mask colours</param>
     /// <param name="updateMain">Whether to update the main image or the preview image</param>
-    /// <param name="invert">Whether to invert the colours found at each position</param>
     private void UpdateMask(Color[,] colors, bool updateMain) {
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 

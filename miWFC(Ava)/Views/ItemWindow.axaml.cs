@@ -46,6 +46,7 @@ public partial class ItemWindow : Window {
     public void SetCentralManager(CentralManager cm) {
         centralManager = cm;
         this.Find<ItemAddMenu>("itemAddMenu").SetCentralManager(cm);
+        this.Find<RegionDefineMenu>("regionDefineMenu").SetCentralManager(cm);
     }
     
     /*
@@ -69,6 +70,15 @@ public partial class ItemWindow : Window {
     /// <returns></returns>
     public ItemAddMenu GetItemAddMenu() {
         return this.Find<ItemAddMenu>("itemAddMenu");
+    }
+
+    /// <summary>
+    /// Get the Region Defining Menu
+    /// </summary>
+    /// 
+    /// <returns></returns>
+    public RegionDefineMenu GetRegionDefineMenu() {
+        return this.Find<RegionDefineMenu>("regionDefineMenu");
     }
 
     /// <summary>

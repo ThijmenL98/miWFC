@@ -292,6 +292,8 @@
 											       PointerMoved="OutputImageOnPointerMoved" />
 											<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default" IsHitTestVisible="False"
 											       x:Name="mapReferenceImage" Source="{Binding OutputImage}" Opacity="0.25" />
+											<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default" IsHitTestVisible="False"
+											       x:Name="mapHoverImage" Source="{Binding MappingVM.HoverImage}" Opacity="0.4" />
 										</Grid>
 									</Border>
 								</Grid>

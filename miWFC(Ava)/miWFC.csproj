@@ -88,5 +88,9 @@
         <Compile Update="ContentControls\SimplePatternItemControl.axaml.cs">
             <DependentUpon>SimplePatternItemControl.axaml</DependentUpon>
         </Compile>
+        <Compile Update="ContentControls\RegionDefineMenu.axaml.cs">
+          <DependentUpon>RegionDefineMenu.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 </Project>

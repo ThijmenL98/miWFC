@@ -18,7 +18,6 @@ using miWFC.ViewModels.Structs;
 
 // ReSharper disable PossibleMultipleEnumeration
 
-
 namespace miWFC.Utils;
 
 /// <summary>
@@ -245,6 +244,22 @@ public static class Util {
         }
 
         return (result, new HashSet<Color>(currentColors.Values.Distinct()));
+    }
+    
+    /// <summary>
+    /// Return the image form of an item
+    /// </summary>
+    /// 
+    /// <param name="itemType">Currently selected item</param>
+    /// <param name="index">Item dependency index, if this item is dependent on another item the index will be
+    /// embedded within the image</param>
+    /// 
+    /// <returns>Item image</returns>
+    public static WriteableBitmap GetItemImage(ItemType itemType, int index = -1) {
+        Color[] rawColours = GetItemImageRaw(itemType, index);
+        WriteableBitmap outputBitmap = CreateBitmapFromData(Dimension, Dimension, 1,
+            (x, y) => rawColours[y % Dimension * Dimension + x % Dimension]);
+        return outputBitmap;
     }
 
     /// <summary>

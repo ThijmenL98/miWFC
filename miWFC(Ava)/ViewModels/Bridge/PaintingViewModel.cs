@@ -27,7 +27,8 @@ public class PaintingViewModel : ReactiveObject {
         _paintModeEnabled,
         templateCreationModeEnabled,
         _isPaintOverrideEnabled,
-        _templatePlaceModeEnabled;
+        _templatePlaceModeEnabled,
+        clickedInCurrentMode;
 
     /*
      * Initializing Functions & Constructor
@@ -91,6 +92,14 @@ public class PaintingViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _isPaintOverrideEnabled, value);
     }
 
+    /// <summary>
+    /// Whether the user has clicked since the current mode has been initialized
+    /// </summary>
+    public bool ClickedInCurrentMode {
+        get => clickedInCurrentMode;
+        set => this.RaiseAndSetIfChanged(ref clickedInCurrentMode, value);
+    }
+    
     // Images
 
     /// <summary>
@@ -127,6 +136,8 @@ public class PaintingViewModel : ReactiveObject {
         TemplateCreationModeEnabled = false;
         TemplatePlaceModeEnabled = false;
         PaintModeEnabled = false;
+
+        clickedInCurrentMode = false;
 
         centralManager!.GetInputManager().ResetMask();
         centralManager!.GetInputManager().UpdateMask();
@@ -166,7 +177,7 @@ public class PaintingViewModel : ReactiveObject {
         TemplateCreationModeEnabled = false;
         PaintModeEnabled = false;
         PencilModeEnabled = false;
-
+        
         centralManager!.GetInputManager().ResetMask();
         centralManager!.GetInputManager().UpdateMask();
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Logging;
 using Avalonia.ReactiveUI;
@@ -11,8 +12,16 @@ internal static class Program {
     // yet and stuff might break.
     [STAThread]
     public static void Main(string[] args) {
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
+#if DEBUG
+        try {
+#endif
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+#if DEBUG
+        } catch (OutOfMemoryException e) {
+            Trace.WriteLine(e);
+        }
+#endif
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.

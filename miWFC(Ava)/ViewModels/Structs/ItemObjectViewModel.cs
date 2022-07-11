@@ -14,13 +14,14 @@ public class ItemObjectViewModel : ReactiveObject {
     private readonly ObservableCollection<TileViewModel> _allowedTiles;
     private readonly WriteableBitmap? _depItemIcon;
     private readonly bool _hasDependentItem;
-    private readonly WriteableBitmap _itemIcon;
+    private readonly WriteableBitmap _itemIcon, _itemLocationBM;
 
     private readonly string _itemName, _depItemString;
     private readonly ItemType _itemType;
     private readonly (int, int) _amount;
     private readonly string _amountStr;
     private readonly Tuple<ItemType?, (int, int)> _dependentItem;
+    private bool[,] _appearanceRegion;
 
     /*
      * Initializing Functions & Constructor
@@ -28,14 +29,18 @@ public class ItemObjectViewModel : ReactiveObject {
 
 #pragma warning disable CS8618
     public ItemObjectViewModel(ItemType itemType, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
-        WriteableBitmap itemIcon, Tuple<ItemType?, WriteableBitmap?, (int, int)>? dependentItem) {
+        WriteableBitmap itemIcon, Tuple<ItemType?, WriteableBitmap?, (int, int)>? dependentItem, bool[,] appRegion, WriteableBitmap locMapping) {
 #pragma warning restore CS8618
         ItemType = itemType;
         Amount = amount;
 
+        AppearanceRegion = appRegion;
+        
         AmountStr = amount.Item1 == amount.Item2 ? @$"{amount.Item2}" : @$"{amount.Item1} - {amount.Item2}";
         AllowedTiles = allowedTiles;
         ItemIcon = itemIcon;
+
+        ItemLocationMapping = locMapping;
 
         if (dependentItem != null) {
             DependentItem = new Tuple<ItemType?, (int, int)>(dependentItem.Item1, dependentItem.Item3);
@@ -112,6 +117,14 @@ public class ItemObjectViewModel : ReactiveObject {
         init => this.RaiseAndSetIfChanged(ref _depItemIcon, value);
     }
 
+    /// <summary>
+    /// Image of the locoational mapping
+    /// </summary>
+    private WriteableBitmap ItemLocationMapping {
+        get => _itemLocationBM;
+        init => this.RaiseAndSetIfChanged(ref _itemLocationBM, value);
+    }
+
     // Objects
 
     /// <summary>
@@ -130,6 +143,14 @@ public class ItemObjectViewModel : ReactiveObject {
     public ObservableCollection<TileViewModel> AllowedTiles {
         get => _allowedTiles;
         private init => this.RaiseAndSetIfChanged(ref _allowedTiles, value);
+    }
+
+    /// <summary>
+    /// Where the items are allowed to appear
+    /// </summary>
+    public bool[,] AppearanceRegion {
+        get => _appearanceRegion;
+        set => this.RaiseAndSetIfChanged(ref _appearanceRegion, value);
     }
 
     // Other

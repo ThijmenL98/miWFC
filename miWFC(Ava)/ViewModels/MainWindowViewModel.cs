@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -432,7 +433,7 @@ public class MainWindowViewModel : ViewModelBase {
         get => _markers;
         set => this.RaiseAndSetIfChanged(ref _markers, value);
     }
-    
+
     /// <summary>
     /// Update the weights based on the user input
     /// </summary>
@@ -565,12 +566,20 @@ public class MainWindowViewModel : ViewModelBase {
                 if (!centralManager!.GetWFCHandler().IsCollapsed()) {
                     centralManager.GetUIManager().DispatchError(centralManager.GetMainWindow());
                 }
+                centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
 
                 await centralManager!.GetUIManager().SwitchWindow(Windows.ITEMS);
                 break;
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    /// <summary>
+    /// Function called when clicking on the dynamic weight mapping button
+    /// </summary>
+    public void DynamicWeightClick() {
+        PatternTiles.First().DynamicWeightClick();
     }
 
     /// <summary>

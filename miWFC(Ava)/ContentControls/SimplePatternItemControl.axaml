@@ -62,7 +62,8 @@
 
 										<ToolTip.Tip>
 											<StackPanel>
-												<TextBlock TextWrapping="Wrap">Set the value of this tile. '~0' means it tries to be 0, but might be forced to place a tile. Click on me to edit dynamic value mapping.</TextBlock>
+												<TextBlock TextWrapping="Wrap">'~0' means it tries to be 0, but might be forced to be placed.</TextBlock>
+												<TextBlock TextWrapping="Wrap">Click to edit my dynamic value mapping.</TextBlock>
 											</StackPanel>
 										</ToolTip.Tip>
 									</Grid>

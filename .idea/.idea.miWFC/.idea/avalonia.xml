@@ -8,6 +8,7 @@
         <entry key="miWFC(Ava)/ContentControls/InputControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/ItemAddMenu.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/OutputControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
+        <entry key="miWFC(Ava)/ContentControls/RegionDefineMenu.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ContentControls/SimplePatternItemControl.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/Styles/CustomNumericUD.axaml" value="miWFC(Ava)/miWFC.csproj" />
         <entry key="miWFC(Ava)/ViewModels/TemplateViewModel.axaml" value="miWFC(Ava)/miWFC.csproj" />

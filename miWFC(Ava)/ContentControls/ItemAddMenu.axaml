@@ -77,7 +77,7 @@
 				</Grid>
 
 				<Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" Margin="5, 0, 5, 110" RowDefinitions="Auto, *"
-				      Width="230"
+				      Width="245"
 				      IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}">
 					<TextBlock Grid.Row="0" Text="Please select the allowed tiles:" Margin="5, 5, 5, 15" />
 
@@ -181,10 +181,37 @@
 					<GridSplitter Grid.Row="1" Grid.Column="1" Width="20"
 					              IsEnabled="False" Background="Transparent"
 					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
+										
+					<Button Padding="0" Grid.Column="2" Grid.Row="1" Width="80" Margin="0, 5"
+					        Command="{Binding ItemVM.EnterRegionEditor}" Background="Transparent">
+						<Button.Styles>
+							<Style Selector="Button:pointerover /template/ ContentPresenter">
+								<Setter Property="Content" Value="{DynamicResource hoverWeightMappingKey}" />
+								<Setter Property="Background" Value="Transparent" />
+							</Style>
+							<Style Selector="Button:pressed /template/ ContentPresenter">
+								<Setter Property="Content" Value="{DynamicResource clickWeightMappingKey}" />
+								<Setter Property="Background" Value="Transparent" />
+							</Style>
+						</Button.Styles>
+						<Panel>
+							<Image Source="/Assets/WeightMapping.png">
+							</Image>
+						</Panel>
+						<ToolTip.Tip>
+							<StackPanel>
+								<TextBlock TextWrapping="Wrap">Define where items are allowed to appear</TextBlock>
+							</StackPanel>
+						</ToolTip.Tip>
+					</Button>
+
+					<GridSplitter Grid.Row="1" Grid.Column="3" Width="15"
+					              IsEnabled="False" Background="Transparent"
+					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 
 					<Button Padding="0" Background="Transparent" Grid.Row="1" VerticalAlignment="Bottom"
-					        Command="{Binding ItemVM.AddItemToDataGrid}" Grid.Column="2"
-					        HorizontalAlignment="Center" Margin="5" MaxWidth="80">
+					        Command="{Binding ItemVM.AddItemToDataGrid}" Grid.Column="4"
+					        HorizontalAlignment="Center" Margin="0, 5" MaxWidth="80">
 						<Button.Styles>
 							<Style Selector="Button:pointerover /template/ ContentPresenter">
 								<Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
@@ -205,13 +232,9 @@
 						</ToolTip.Tip>
 					</Button>
 
-					<GridSplitter Grid.Row="1" Grid.Column="3" Width="20"
-					              IsEnabled="False" Background="Transparent"
-					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
-
-					<Button Grid.Row="1" Grid.Column="4" Padding="0" Background="Transparent"
+					<Button Grid.Row="1" Grid.Column="5" Padding="0" Background="Transparent"
 					        Command="{Binding ItemVM.ExitItemAddition}"
-					        HorizontalAlignment="Center" Margin="5" MaxWidth="80"
+					        HorizontalAlignment="Center" Margin="0, 5" MaxWidth="80"
 					        VerticalAlignment="Bottom">
 						<Button.Styles>
 							<Style Selector="Button:pointerover /template/ ContentPresenter">
@@ -232,10 +255,6 @@
 							</StackPanel>
 						</ToolTip.Tip>
 					</Button>
-
-					<GridSplitter Grid.Row="1" Grid.Column="5" Width="20"
-					              IsEnabled="False" Background="Transparent"
-					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
 				</Grid>
 			</Grid>
 		</Grid>

@@ -1,0 +1,108 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             MaxWidth="850" d:DesignHeight="580" d:DesignWidth="850" MinHeight="580"
+             xmlns:viewModels="clr-namespace:miWFC.ViewModels"
+             x:Class="miWFC.ContentControls.RegionDefineMenu">
+
+	<Design.DataContext>
+		<viewModels:MainWindowViewModel />
+	</Design.DataContext>
+
+	<Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10" ClipToBounds="True">
+		<Grid x:Name="regionDefineGrid" ColumnDefinitions="*, Auto" Margin="10">
+			<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
+				<Grid>
+					<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+					       x:Name="outputImage" Source="{Binding OutputImage}"
+					       IsHitTestVisible="False" />
+					
+					<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+					       x:Name="regionImage" Source="{Binding ItemVM.RegionImage}"
+					       Opacity=".25" PointerPressed="RegionImageOnPointerPressed" 
+					       PointerMoved="RegionImageOnPointerMoved"/>
+				</Grid>
+			</Border>
+
+			<Grid Grid.Column="1" RowDefinitions="Auto, *, Auto" Margin="0, 20" Width="265">
+				<StackPanel Grid.Row="0" VerticalAlignment="Top">
+					<TextBlock HorizontalAlignment="Left" Margin="0, 0, 0, 0"
+					           Foreground="#007700" TextWrapping="Wrap">
+						Left Mouse Button: Paint where items are allowed to appear
+					</TextBlock>
+					<TextBlock HorizontalAlignment="Left" Margin="0, 15, 0, 0"
+					           Foreground="#CC0000" TextWrapping="Wrap">
+						Right Mouse Button: Paint where items are prohibited from appearing
+					</TextBlock>
+				</StackPanel>
+
+				<StackPanel Grid.Row="1" Margin="10" VerticalAlignment="Center">
+					<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+					           Margin="15, 15, 15, 7">
+						Brush Size
+					</TextBlock>
+					<Slider Value="{Binding BrushSize}" Minimum="1" Maximum="30" TickFrequency="1"
+					        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
+					        PropertyChanged="BrushSize_ValueChanged" />
+					<Grid RowDefinitions="*" HorizontalAlignment="Center">
+						<Grid ColumnDefinitions="*" VerticalAlignment="Center">
+							<Border CornerRadius="30" ClipToBounds="True">
+								<Image RenderOptions.BitmapInterpolationMode="Default" Width="125"
+								       Source="{Binding PaintingVM.BrushSizeImage}" />
+							</Border>
+						</Grid>
+					</Grid>
+				</StackPanel>
+
+				<Grid Grid.Row="2" ColumnDefinitions="Auto, Auto" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+					<Button Padding="0" Background="Transparent" Grid.Column="0" VerticalAlignment="Bottom"
+					        Command="{Binding ItemVM.ApplyRegionEditor}"
+					        HorizontalAlignment="Center" Margin="10" MaxWidth="80">
+						<Button.Styles>
+							<Style Selector="Button:pointerover /template/ ContentPresenter">
+								<Setter Property="Content" Value="{DynamicResource hoverApplyKey}" />
+								<Setter Property="Background" Value="Transparent" />
+							</Style>
+							<Style Selector="Button:pressed /template/ ContentPresenter">
+								<Setter Property="Content" Value="{DynamicResource clickApplyKey}" />
+								<Setter Property="Background" Value="Transparent" />
+							</Style>
+						</Button.Styles>
+						<Panel>
+							<Image Source="/Assets/Apply.png" />
+						</Panel>
+						<ToolTip.Tip>
+							<StackPanel>
+								<TextBlock TextWrapping="Wrap">Apply the current region selection</TextBlock>
+							</StackPanel>
+						</ToolTip.Tip>
+					</Button>
+					
+					<Button Grid.Column="1" Padding="0" Background="Transparent"
+					        Command="{Binding ItemVM.ExitRegionEditor}"
+					        HorizontalAlignment="Center" Margin="10" MaxWidth="80"
+					        VerticalAlignment="Bottom">
+						<Button.Styles>
+							<Style Selector="Button:pointerover /template/ ContentPresenter">
+								<Setter Property="Content" Value="{DynamicResource hoverBackKey}" />
+								<Setter Property="Background" Value="Transparent" />
+							</Style>
+							<Style Selector="Button:pressed /template/ ContentPresenter">
+								<Setter Property="Content" Value="{DynamicResource clickBackKey}" />
+								<Setter Property="Background" Value="Transparent" />
+							</Style>
+						</Button.Styles>
+						<Panel>
+							<Image Source="/Assets/Back.png" />
+						</Panel>
+						<ToolTip.Tip>
+							<StackPanel>
+								<TextBlock TextWrapping="Wrap">Exit region editor and discard progress</TextBlock>
+							</StackPanel>
+						</ToolTip.Tip>
+					</Button>
+				</Grid>
+			</Grid>
+		</Grid>
+	</Border>
+</UserControl>

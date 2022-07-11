@@ -13,6 +13,8 @@ using miWFC.Utils;
 using miWFC.ViewModels.Structs;
 using ReactiveUI;
 
+// ReSharper disable IntroduceOptionalParameters.Global
+
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 
@@ -23,11 +25,15 @@ public class ItemViewModel : ReactiveObject {
     private readonly MainWindowViewModel mainWindowViewModel;
 
     private Bitmap _currentItemImage
-        = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+            = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
+        _regionImage
+            = Util.CreateBitmapFromData(1, 1, 1, (_, _) => Colors.Green);
 
     private string _itemDescription = "Placeholder";
 
     private bool _inItemMenu,
+        _inRegionDefineMenu,
+        _inAnyMenu,
         _itemsMayAppearAnywhere,
         _itemIsDependent,
         _itemsInRange,
@@ -132,7 +138,30 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public bool InItemMenu {
         get => _inItemMenu;
-        set => this.RaiseAndSetIfChanged(ref _inItemMenu, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _inItemMenu, value);
+            InAnyMenu = InRegionDefineMenu || InItemMenu;
+        }
+    }
+
+    /// <summary>
+    /// Whether the user is inside of the item appearance region menu menu
+    /// </summary>
+    public bool InRegionDefineMenu {
+        get => _inRegionDefineMenu;
+        set {
+            this.RaiseAndSetIfChanged(ref _inRegionDefineMenu, value);
+            InItemMenu = !InRegionDefineMenu;
+            InAnyMenu = InRegionDefineMenu || InItemMenu;
+        }
+    }
+
+    /// <summary>
+    /// Whether the user is inside of any submenu
+    /// </summary>
+    public bool InAnyMenu {
+        get => _inAnyMenu;
+        set => this.RaiseAndSetIfChanged(ref _inAnyMenu, value);
     }
 
     /// <summary>
@@ -168,6 +197,12 @@ public class ItemViewModel : ReactiveObject {
         get => _currentItemImage;
         set => this.RaiseAndSetIfChanged(ref _currentItemImage, value);
     }
+
+    public Bitmap RegionImage {
+        get => _regionImage;
+        set => this.RaiseAndSetIfChanged(ref _regionImage, value);
+    }
+
 
     // Objects
 
@@ -206,7 +241,6 @@ public class ItemViewModel : ReactiveObject {
         get => _itemDataGrid;
         set => this.RaiseAndSetIfChanged(ref _itemDataGrid, value);
     }
-
     // Other
 
     /*
@@ -253,7 +287,7 @@ public class ItemViewModel : ReactiveObject {
         if (isDependent) {
             ItemType depItemType = centralManager!.GetItemWindow().GetItemAddMenu().GetDependencyItemType();
             (int, int) range = (DepMinDistance, DepMaxDistance);
-            WriteableBitmap depItemBitmap = centralManager!.GetItemWindow().GetItemAddMenu().GetItemImage(depItemType);
+            WriteableBitmap depItemBitmap = Util.GetItemImage(depItemType);
             depItem = new Tuple<ItemType?, WriteableBitmap?, (int, int)>(depItemType, depItemBitmap, range);
         }
 
@@ -261,9 +295,14 @@ public class ItemViewModel : ReactiveObject {
             RemoveIndexedItem(_editingEntry);
         }
 
+        bool[,] itemAllowanceMask = centralManager.GetItemWindow().GetRegionDefineMenu().GetAllowanceMask();
+
         ItemDataGrid.Add(new ItemObjectViewModel(itemType, (amountLower, amountUpper),
             new ObservableCollection<TileViewModel>(allowedTiles),
-            centralManager!.GetItemWindow().GetItemAddMenu().GetItemImage(itemType), depItem));
+            Util.GetItemImage(itemType), depItem, itemAllowanceMask,
+            Util.CreateBitmapFromData(centralManager!.GetMainWindowVM().ImageOutWidth,
+                centralManager!.GetMainWindowVM().ImageOutHeight, 1,
+                (x, y) => itemAllowanceMask[x, y] ? Colors.Green : Colors.Red)));
 
         InItemMenu = false;
         ItemsMayAppearAnywhere = false;
@@ -281,6 +320,7 @@ public class ItemViewModel : ReactiveObject {
         mainWindowViewModel.ItemOverlay
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
+        centralManager.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
         GenerateItemGrid();
     }
 
@@ -309,7 +349,11 @@ public class ItemViewModel : ReactiveObject {
     public void CreateNewItem() {
         centralManager!.GetItemWindow().GetItemAddMenu().UpdateSelectedItemIndex();
         centralManager!.GetItemWindow().GetItemAddMenu().UpdateDependencyIndex();
+        centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
+
         ItemDescription = ItemType.itemTypes[0].Description;
+        CurrentItemImage = Util.GetItemImage(ItemType.itemTypes[0]);
+
         InItemMenu = true;
     }
 
@@ -355,6 +399,8 @@ public class ItemViewModel : ReactiveObject {
                 centralManager!.GetItemWindow().GetItemAddMenu().ForwardAllowedTileChange(index, true);
             }
         }
+
+        centralManager!.GetItemWindow().GetRegionDefineMenu().SetAllowanceMask(itemSelected.AppearanceRegion);
 
         _editingEntry = selectedIndex;
     }
@@ -495,12 +541,13 @@ public class ItemViewModel : ReactiveObject {
                     if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
                         Color colorAtPos = distinctColourCount[xLoc, yLoc];
                         if (mainWindowViewModel.PaintTiles.Where(tvm => tvm.PatternColour.Equals(colorAtPos))
-                            .Any(tvm => allowedAdd.Contains(tvm.PatternIndex))) {
+                                .Any(tvm => allowedAdd.Contains(tvm.PatternIndex)) &&
+                            ivm.AppearanceRegion[xLoc, yLoc]) {
                             allowedAtLoc = true;
                         }
                     } else {
                         int valAtPos = distinctIndexCount[xLoc, yLoc];
-                        allowedAtLoc = allowedAdd.Contains(valAtPos);
+                        allowedAtLoc = allowedAdd.Contains(valAtPos) && ivm.AppearanceRegion[xLoc, yLoc];
                     }
 
                     if (allowedAtLoc) {
@@ -533,7 +580,7 @@ public class ItemViewModel : ReactiveObject {
     private (bool, int) TryPlaceItemAt(int xLoc, int yLoc, ItemObjectViewModel ivm, Tuple<int, int>[,] itemGrid,
         Color[,] distinctColourCount, ICollection<int> allowedAdd
         , int[,] distinctIndexCount, int depItemCount, IList<int> spacesLeft) {
-        if (itemGrid[xLoc, yLoc].Item1 == -1) {
+        if (itemGrid[xLoc, yLoc].Item1 == -1 && ivm.AppearanceRegion[xLoc, yLoc]) {
             bool canContinueDependent = !ivm.HasDependentItem;
             if (ivm.HasDependentItem) {
                 (canContinueDependent, spacesLeft, itemGrid) = TryPlaceDependencyAt(xLoc, yLoc, ivm, itemGrid,
@@ -606,12 +653,13 @@ public class ItemViewModel : ReactiveObject {
                         if (mainWindowViewModel.PaintTiles.Where(tvm =>
                                     tvm.PatternColour.Equals(colorAtPos))
                                 .Any(tvm => allowedAdd.Contains(tvm.PatternIndex)) &&
-                            itemGrid[xx, yy].Item1 == -1) {
+                            itemGrid[xx, yy].Item1 == -1 && ivm.AppearanceRegion[xx, yy]) {
                             possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
                         }
                     } else {
                         int valAtPos = distinctIndexCount[xx, yy];
-                        if (allowedAdd.Contains(valAtPos) && itemGrid[xx, yy].Item1 == -1) {
+                        if (allowedAdd.Contains(valAtPos) && itemGrid[xx, yy].Item1 == -1 &&
+                            ivm.AppearanceRegion[xx, yy]) {
                             possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
                         }
                     }
@@ -650,5 +698,38 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public void ResetDataGrid() {
         ItemDataGrid = new ObservableCollection<ItemObjectViewModel>();
+    }
+
+    /// <summary>
+    /// Called when applying the region mask
+    /// </summary>
+    public void ApplyRegionEditor() {
+        ExitRegionEditorWithReset(false);
+    }
+
+    /// <summary>
+    /// Function called when entering the item spawn region editor
+    /// </summary>
+    public void EnterRegionEditor() {
+        InRegionDefineMenu = true;
+    }
+
+    /// <summary>
+    /// Function called when exiting the item spawn region editor
+    /// </summary>
+    public void ExitRegionEditor() {
+        ExitRegionEditorWithReset(true);
+    }
+
+    /// <summary>
+    /// Function called when exiting the item spawn region editor
+    /// </summary>
+    /// 
+    /// <param name="resetMask">Whether to reset the mask</param>
+    public void ExitRegionEditorWithReset(bool resetMask) {
+        InRegionDefineMenu = false;
+        if (resetMask) {
+            centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
+        }
     }
 }
