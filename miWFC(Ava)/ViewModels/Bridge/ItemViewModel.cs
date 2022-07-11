@@ -29,7 +29,7 @@ public class ItemViewModel : ReactiveObject {
         _regionImage
             = Util.CreateBitmapFromData(1, 1, 1, (_, _) => Colors.Green);
 
-    private string _itemDescription = "Placeholder";
+    private string _displayName = "", _dependentDisplayName = "", _itemColour = "", _depItemColour = "";
 
     private bool _inItemMenu,
         _inRegionDefineMenu,
@@ -46,11 +46,9 @@ public class ItemViewModel : ReactiveObject {
         _depMinDistance = 1,
         _itemsToAddUpper = 2;
 
-    private ItemType _selectedItemToAdd, _selectedItemDependency;
-
     private ObservableCollection<ItemObjectViewModel> _itemDataGrid = new();
 
-    private Tuple<int, int>[,]? _latestItemGrid = new Tuple<int, int>[0, 0];
+    private Tuple<string, int>[,]? _latestItemGrid = new Tuple<string, int>[0, 0];
 
     /*
      * Initializing Functions & Constructor
@@ -58,9 +56,6 @@ public class ItemViewModel : ReactiveObject {
 
     public ItemViewModel(MainWindowViewModel mwvm) {
         mainWindowViewModel = mwvm;
-
-        _selectedItemToAdd = ItemType.GetItemTypeById(0);
-        _selectedItemDependency = ItemType.GetItemTypeById(1);
     }
 
     public void SetCentralManager(CentralManager cm) {
@@ -74,11 +69,35 @@ public class ItemViewModel : ReactiveObject {
     // Strings
 
     /// <summary>
-    /// Description of this item
+    /// User input name of the item to add
     /// </summary>
-    public string ItemDescription {
-        get => _itemDescription;
-        set => this.RaiseAndSetIfChanged(ref _itemDescription, value);
+    public string DisplayName {
+        get => _displayName;
+        set => this.RaiseAndSetIfChanged(ref _displayName, value);
+    }
+
+    /// <summary>
+    /// Dependent item name through user input
+    /// </summary>
+    public string DependentItemName {
+        get => _dependentDisplayName;
+        set => this.RaiseAndSetIfChanged(ref _dependentDisplayName, value);
+    }
+
+    /// <summary>
+    /// Item colour hex string
+    /// </summary>
+    public string ItemColour {
+        get => _itemColour;
+        set => this.RaiseAndSetIfChanged(ref _itemColour, value);
+    }
+
+    /// <summary>
+    /// Dependent Item colour hex string
+    /// </summary>
+    public string DepItemColour {
+        get => _depItemColour;
+        set => this.RaiseAndSetIfChanged(ref _depItemColour, value);
     }
 
     // Numeric (Integer, Double, Float, Long ...)
@@ -203,26 +222,7 @@ public class ItemViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _regionImage, value);
     }
 
-
     // Objects
-
-    // ReSharper disable once UnusedMember.Local
-    /// <summary>
-    /// The window's currently selected item
-    /// </summary>
-    private ItemType SelectedItemToAdd {
-        get => _selectedItemToAdd;
-        set => this.RaiseAndSetIfChanged(ref _selectedItemToAdd, value);
-    }
-
-    // ReSharper disable once UnusedMember.Local
-    /// <summary>
-    /// The window's currently selected dependent item
-    /// </summary>
-    private ItemType SelectedItemDependency {
-        get => _selectedItemDependency;
-        set => this.RaiseAndSetIfChanged(ref _selectedItemDependency, value);
-    }
 
     // Lists
 
@@ -230,7 +230,7 @@ public class ItemViewModel : ReactiveObject {
     /// Get the latest item grid to apply
     /// </summary>
     /// <returns></returns>
-    public Tuple<int, int>[,]? GetLatestItemGrid() {
+    public Tuple<string, int>[,]? GetLatestItemGrid() {
         return _latestItemGrid;
     }
 
@@ -241,6 +241,42 @@ public class ItemViewModel : ReactiveObject {
         get => _itemDataGrid;
         set => this.RaiseAndSetIfChanged(ref _itemDataGrid, value);
     }
+
+    /// <summary>
+    /// Get all colours associated to each item name
+    /// </summary>
+    /// 
+    /// <returns>Colour dictionary</returns>
+    public Dictionary<string, Color> GetItemColours() {
+        Dictionary<string, Color> mainItems = ItemDataGrid.ToDictionary(
+            itemObjectViewModel => itemObjectViewModel.ItemName, itemObjectViewModel => itemObjectViewModel.MyColor);
+        Dictionary<string, Color> depItems = new();
+
+        foreach (ItemObjectViewModel item in ItemDataGrid) {
+            if (item.HasDependentItem) {
+                depItems[item.DependentItem.Item1!] = (Color) item.DepColor!;
+            }
+        }
+
+        Dictionary<string, Color> allItems
+            = mainItems.Union(depItems).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+        return allItems;
+    }
+
+    /// <summary>
+    /// Get all unique item names
+    /// </summary>
+    /// 
+    /// <returns>List of item names</returns>
+    public List<string> GetItemNames() {
+        List<string> mainItems = ItemDataGrid.Select(item => item.ItemName).ToList();
+        List<string> depItems = (from item in ItemDataGrid where item.HasDependentItem select item.DependentItem.Item1)
+            .ToList()!;
+        mainItems.AddRange(depItems);
+        return mainItems;
+    }
+
     // Other
 
     /*
@@ -251,7 +287,6 @@ public class ItemViewModel : ReactiveObject {
     /// Function called when applying the currently created item in the item addition menu
     /// </summary>
     public void AddItemToDataGrid() {
-        ItemType itemType = centralManager!.GetItemWindow().GetItemAddMenu().GetSelectedItemType();
         int amountUpper;
         int amountLower;
 
@@ -277,29 +312,56 @@ public class ItemViewModel : ReactiveObject {
             allowedTiles = new List<TileViewModel>(mainWindowViewModel.PaintTiles);
         }
 
-        if (allowedTiles.Count == 0) {
+        Color itemColour = ItemColour.Equals("") ? Colors.Red : Color.Parse(ItemColour);
+        if (allowedTiles.Count == 0 || DisplayName.Equals("") || (GetItemNames().Contains(DisplayName) && !GetItemColours()[DisplayName].Equals(itemColour))) {
             centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+            // TODO make the outline of the display name red
             return;
         }
 
         bool isDependent = ItemIsDependent;
-        Tuple<ItemType?, WriteableBitmap?, (int, int)>? depItem = null;
+        Tuple<string?, WriteableBitmap?, Color?, (int, int)>? depItem = null;
         if (isDependent) {
-            ItemType depItemType = centralManager!.GetItemWindow().GetItemAddMenu().GetDependencyItemType();
+            Color depColor = DepItemColour.Equals("") ? Colors.Red : Color.Parse(DepItemColour);
+            if (DependentItemName.Equals("") || (GetItemNames().Contains(DependentItemName) && !GetItemColours()[DependentItemName].Equals(depColor))) {
+                centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+                // TODO make the outline of the dependent item name red
+                return;
+            }
+
             (int, int) range = (DepMinDistance, DepMaxDistance);
-            WriteableBitmap depItemBitmap = Util.GetItemImage(depItemType);
-            depItem = new Tuple<ItemType?, WriteableBitmap?, (int, int)>(depItemType, depItemBitmap, range);
+            WriteableBitmap depItemBitmap = Util.GetItemImage(depColor);
+            depItem = new Tuple<string?, WriteableBitmap?, Color?, (int, int)>(DependentItemName, depItemBitmap,
+                depColor, range);
         }
 
         if (_editingEntry != -2) {
             RemoveIndexedItem(_editingEntry);
         }
 
-        bool[,] itemAllowanceMask = centralManager.GetItemWindow().GetRegionDefineMenu().GetAllowanceMask();
+        ObservableCollection<TileViewModel> myAllowedTiles = new(allowedTiles);
 
-        ItemDataGrid.Add(new ItemObjectViewModel(itemType, (amountLower, amountUpper),
-            new ObservableCollection<TileViewModel>(allowedTiles),
-            Util.GetItemImage(itemType), depItem, itemAllowanceMask,
+        foreach (ItemObjectViewModel itemObjectViewModel in ItemDataGrid) {
+            if (itemObjectViewModel.ItemName.Equals(DisplayName) &&
+                itemObjectViewModel.AllowedTiles.SequenceEqual(myAllowedTiles) &&
+                itemObjectViewModel.AllowedTiles.Count == myAllowedTiles.Count) {
+                switch (itemObjectViewModel.HasDependentItem) {
+                    case true when isDependent && itemObjectViewModel.DependentItem.Item1!.Equals(depItem!.Item1) &&
+                                   itemObjectViewModel.DependentItem.Item2.Equals(depItem.Item4):
+                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+                        return;
+                    case false when !isDependent:
+                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+                        return;
+                }
+            }
+        }
+
+        bool[,] itemAllowanceMask = centralManager!.GetItemWindow().GetRegionDefineMenu().GetAllowanceMask();
+
+        ItemDataGrid.Add(new ItemObjectViewModel(DisplayName, (amountLower, amountUpper),
+            myAllowedTiles, itemColour,
+            Util.GetItemImage(itemColour), depItem, itemAllowanceMask,
             Util.CreateBitmapFromData(centralManager!.GetMainWindowVM().ImageOutWidth,
                 centralManager!.GetMainWindowVM().ImageOutHeight, 1,
                 (x, y) => itemAllowanceMask[x, y] ? Colors.Green : Colors.Red)));
@@ -311,6 +373,11 @@ public class ItemViewModel : ReactiveObject {
         DepMinDistance = 1;
         _editingEntry = -2;
         DepMaxDistance = 2;
+        
+        DisplayName = "";
+        ItemColour = "";
+        DependentItemName = "";
+        DepItemColour = "";
 
         foreach (TileViewModel tvm in mainWindowViewModel.PaintTiles) {
             tvm.ItemAddChecked = false;
@@ -335,6 +402,11 @@ public class ItemViewModel : ReactiveObject {
         ItemIsDependent = false;
         DepMinDistance = 1;
         DepMaxDistance = 2;
+        
+        DisplayName = "";
+        ItemColour = "";
+        DependentItemName = "";
+        DepItemColour = "";
 
         foreach (TileViewModel tvm in mainWindowViewModel.PaintTiles) {
             tvm.ItemAddChecked = false;
@@ -347,12 +419,9 @@ public class ItemViewModel : ReactiveObject {
     /// Function called when creating a new item
     /// </summary>
     public void CreateNewItem() {
-        centralManager!.GetItemWindow().GetItemAddMenu().UpdateSelectedItemIndex();
-        centralManager!.GetItemWindow().GetItemAddMenu().UpdateDependencyIndex();
         centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
 
-        ItemDescription = ItemType.itemTypes[0].Description;
-        CurrentItemImage = Util.GetItemImage(ItemType.itemTypes[0]);
+        CurrentItemImage = Util.GetItemImage(Colors.Red);
 
         InItemMenu = true;
     }
@@ -379,18 +448,22 @@ public class ItemViewModel : ReactiveObject {
         ItemsToAddLower = itemSelected.Amount.Item1;
         ItemsToAddUpper = itemSelected.Amount.Item2;
 
-        centralManager!.GetItemWindow().GetItemAddMenu().UpdateSelectedItemIndex(itemSelected.ItemType.ID);
+        DisplayName = itemSelected.ItemName;
+        ItemColour = itemSelected.MyColor.ToString().ToUpper().Replace("#FF", "#");
 
         ItemIsDependent = itemSelected.HasDependentItem;
         if (ItemIsDependent) {
             DepMinDistance = itemSelected.DependentItem.Item2.Item1;
             DepMaxDistance = itemSelected.DependentItem.Item2.Item2;
-            centralManager!.GetItemWindow().GetItemAddMenu()
-                .UpdateDependencyIndex(itemSelected.DependentItem.Item1!.ID);
+
+            DependentItemName = itemSelected.DependentItem.Item1!;
+            DepItemColour = ((Color) itemSelected.DepColor!).ToString().ToUpper().Replace("#FF", "#");
         } else {
             DepMinDistance = 1;
             DepMaxDistance = 2;
-            centralManager!.GetItemWindow().GetItemAddMenu().UpdateDependencyIndex();
+
+            DependentItemName = "";
+            DepItemColour = "";
         }
 
         foreach ((TileViewModel tvm, int index) in mainWindowViewModel.PaintTiles.Select((model, i) => (model, i))) {
@@ -434,19 +507,19 @@ public class ItemViewModel : ReactiveObject {
     public void GenerateItemGrid() {
         if (ItemDataGrid.Count < 1) {
             WriteableBitmap newItemOverlayEmpty
-                = Util.GenerateItemOverlay(new Tuple<int, int>[0, 0], mainWindowViewModel.ImageOutWidth,
-                    mainWindowViewModel.ImageOutHeight);
+                = Util.GenerateItemOverlay(new Tuple<string, int>[0, 0], mainWindowViewModel.ImageOutWidth,
+                    mainWindowViewModel.ImageOutHeight, GetItemColours());
             Util.SetLatestItemBitMap(newItemOverlayEmpty);
             mainWindowViewModel.ItemOverlay = newItemOverlayEmpty;
             return;
         }
 
-        Tuple<int, int>[,]? itemGrid
-            = new Tuple<int, int>[mainWindowViewModel.ImageOutWidth, mainWindowViewModel.ImageOutHeight];
+        Tuple<string, int>[,]? itemGrid
+            = new Tuple<string, int>[mainWindowViewModel.ImageOutWidth, mainWindowViewModel.ImageOutHeight];
 
         for (int x = 0; x < mainWindowViewModel.ImageOutWidth; x++) {
             for (int y = 0; y < mainWindowViewModel.ImageOutHeight; y++) {
-                itemGrid[x, y] = new Tuple<int, int>(-1, -1);
+                itemGrid[x, y] = new Tuple<string, int>("", -1);
             }
         }
 
@@ -491,7 +564,7 @@ public class ItemViewModel : ReactiveObject {
 
         _latestItemGrid = itemGrid;
         WriteableBitmap newItemOverlay = Util.GenerateItemOverlay(itemGrid, mainWindowViewModel.ImageOutWidth,
-            mainWindowViewModel.ImageOutHeight);
+            mainWindowViewModel.ImageOutHeight, GetItemColours());
         Util.SetLatestItemBitMap(newItemOverlay);
         mainWindowViewModel.ItemOverlay = newItemOverlay;
     }
@@ -506,7 +579,7 @@ public class ItemViewModel : ReactiveObject {
     /// <param name="distinctIndexCount">List of distinct indices to place on</param>
     /// 
     /// <returns>Filled item grid, or null if not possible</returns>
-    private Tuple<int, int>[,]? FillItemGrid(Tuple<int, int>[,] itemGrid, IList<int> spacesLeft,
+    private Tuple<string, int>[,]? FillItemGrid(Tuple<string, int>[,] itemGrid, IList<int> spacesLeft,
         Color[,] distinctColourCount, int[,] distinctIndexCount) {
         int depItemCount = 1;
 
@@ -577,10 +650,10 @@ public class ItemViewModel : ReactiveObject {
     /// <param name="spacesLeft">Amount of spaces left for each tile type</param>
     /// 
     /// <returns>Whether the placement of the item has succeeded and the new count of dependent items ids</returns>
-    private (bool, int) TryPlaceItemAt(int xLoc, int yLoc, ItemObjectViewModel ivm, Tuple<int, int>[,] itemGrid,
+    private (bool, int) TryPlaceItemAt(int xLoc, int yLoc, ItemObjectViewModel ivm, Tuple<string, int>[,] itemGrid,
         Color[,] distinctColourCount, ICollection<int> allowedAdd
         , int[,] distinctIndexCount, int depItemCount, IList<int> spacesLeft) {
-        if (itemGrid[xLoc, yLoc].Item1 == -1 && ivm.AppearanceRegion[xLoc, yLoc]) {
+        if (itemGrid[xLoc, yLoc].Item1.Equals("") && ivm.AppearanceRegion[xLoc, yLoc]) {
             bool canContinueDependent = !ivm.HasDependentItem;
             if (ivm.HasDependentItem) {
                 (canContinueDependent, spacesLeft, itemGrid) = TryPlaceDependencyAt(xLoc, yLoc, ivm, itemGrid,
@@ -589,7 +662,7 @@ public class ItemViewModel : ReactiveObject {
             }
 
             if (canContinueDependent) {
-                itemGrid[xLoc, yLoc] = new Tuple<int, int>(ivm.ItemType.ID,
+                itemGrid[xLoc, yLoc] = new Tuple<string, int>(ivm.ItemName,
                     ivm.HasDependentItem ? depItemCount : -1);
 
                 if (ivm.HasDependentItem) {
@@ -632,11 +705,11 @@ public class ItemViewModel : ReactiveObject {
     /// <param name="spacesLeft">Amount of spaces left for each tile type</param>
     /// 
     /// <returns>Whether the dependent item was correctly placed, the updated space availability list and new item grid</returns>
-    private (bool, IList<int>, Tuple<int, int>[,]) TryPlaceDependencyAt(int xLoc, int yLoc, ItemObjectViewModel ivm,
-        Tuple<int, int>[,] itemGrid,
+    private (bool, IList<int>, Tuple<string, int>[,]) TryPlaceDependencyAt(int xLoc, int yLoc, ItemObjectViewModel ivm,
+        Tuple<string, int>[,] itemGrid,
         Color[,] distinctColourCount, ICollection<int> allowedAdd
         , int[,] distinctIndexCount, int depItemCount, IList<int> spacesLeft) {
-        Tuple<ItemType, (int, int)> depItem = ivm.DependentItem!;
+        Tuple<string, (int, int)> depItem = ivm.DependentItem!;
         List<Tuple<int, int>> possibleCoordinates = new();
         (int minDist, int maxDist) = depItem.Item2;
 
@@ -653,12 +726,12 @@ public class ItemViewModel : ReactiveObject {
                         if (mainWindowViewModel.PaintTiles.Where(tvm =>
                                     tvm.PatternColour.Equals(colorAtPos))
                                 .Any(tvm => allowedAdd.Contains(tvm.PatternIndex)) &&
-                            itemGrid[xx, yy].Item1 == -1 && ivm.AppearanceRegion[xx, yy]) {
+                            !itemGrid[xx, yy].Item1.Equals("") && ivm.AppearanceRegion[xx, yy]) {
                             possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
                         }
                     } else {
                         int valAtPos = distinctIndexCount[xx, yy];
-                        if (allowedAdd.Contains(valAtPos) && itemGrid[xx, yy].Item1 == -1 &&
+                        if (allowedAdd.Contains(valAtPos) && itemGrid[xx, yy].Item1.Equals("") &&
                             ivm.AppearanceRegion[xx, yy]) {
                             possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
                         }
@@ -673,7 +746,7 @@ public class ItemViewModel : ReactiveObject {
             Tuple<int, int> depCoords
                 = possibleCoordinates[mainWindowViewModel.R.Next(possibleCoordinates.Count)];
             itemGrid[depCoords.Item1, depCoords.Item2]
-                = new Tuple<int, int>(depItem.Item1!.ID, depItemCount);
+                = new Tuple<string, int>(depItem.Item1!, depItemCount);
 
             if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
                 Color addedLoc = distinctColourCount[depCoords.Item1, depCoords.Item2];

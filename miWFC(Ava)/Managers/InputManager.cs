@@ -286,7 +286,6 @@ public class InputManager {
     /// 
     /// <param name="revertible">Whether the user can revert into the history prior to the placement of this marker</param>
     /// <param name="force">Whether the placement of this marker should be forced</param>
-    /// <param name="overwritePercentage">Value to overwrite the percentage if a marker should be placed post-action</param>
     public void PlaceMarker(bool revertible = true, bool force = false) {
         if (centralManager.GetWFCHandler().IsCollapsed() && !force) {
             return;
@@ -595,8 +594,8 @@ public class InputManager {
                         centralManager.GetWFCHandler().GetPropagatorOutputA().toArray2d(), false);
                 }
 
-                Tuple<int, int>[,]? itemsGrid = mainWindowVM.ItemVM.GetLatestItemGrid();
-                List<Tuple<int, int>> list = new();
+                Tuple<string, int>[,]? itemsGrid = mainWindowVM.ItemVM.GetLatestItemGrid();
+                List<Tuple<string, int>> list = new();
                 if (itemsGrid != null) {
                     for (int i = 0; i < itemsGrid.GetLength(0); i++) {
                         for (int j = 0; j < itemsGrid.GetLength(1); j++) {
@@ -606,8 +605,9 @@ public class InputManager {
                 }
 
                 if (list.Distinct().Count() > 1 ||
-                    (!list.Distinct().Select(x => x.Item1).Contains(-1) && list.Distinct().Any())) {
-                    GenerateRawItemImage(itemsGrid).Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
+                    (!list.Distinct().Select(x => x.Item1).Contains("") && list.Distinct().Any())) {
+                    GenerateRawItemImage(itemsGrid, centralManager.GetMainWindowVM().ItemVM.GetItemColours())
+                        .Save(settingsFileName.Replace(".png", "_itemsLayer.png"));
                     CombineBitmaps(centralManager.GetWFCHandler().GetLatestOutputBm(false),
                             centralManager.GetWFCHandler().IsOverlappingModel()
                                 ? 1

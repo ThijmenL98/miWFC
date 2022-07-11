@@ -123,7 +123,8 @@ public static class Util {
     /// 
     /// <returns>The image</returns>
     public static WriteableBitmap GetSampleFromPath(string name, string category) {
-        return GetImageFromPath($"{AppContext.BaseDirectory}/samples/{(category.Equals("Custom") ? "Custom" : "Default")}/{name}.png");
+        return GetImageFromPath(
+            $"{AppContext.BaseDirectory}/samples/{(category.Equals("Custom") ? "Custom" : "Default")}/{name}.png");
     }
 
     /// <summary>
@@ -245,18 +246,18 @@ public static class Util {
 
         return (result, new HashSet<Color>(currentColors.Values.Distinct()));
     }
-    
+
     /// <summary>
     /// Return the image form of an item
     /// </summary>
     /// 
-    /// <param name="itemType">Currently selected item</param>
+    /// <param name="itemColor">Currently selected item colour</param>
     /// <param name="index">Item dependency index, if this item is dependent on another item the index will be
     /// embedded within the image</param>
     /// 
     /// <returns>Item image</returns>
-    public static WriteableBitmap GetItemImage(ItemType itemType, int index = -1) {
-        Color[] rawColours = GetItemImageRaw(itemType, index);
+    public static WriteableBitmap GetItemImage(Color itemColor, int index = -1) {
+        Color[] rawColours = GetItemImageRaw(itemColor, index);
         WriteableBitmap outputBitmap = CreateBitmapFromData(Dimension, Dimension, 1,
             (x, y) => rawColours[y % Dimension * Dimension + x % Dimension]);
         return outputBitmap;
@@ -373,9 +374,11 @@ public static class Util {
     /// </summary>
     /// 
     /// <param name="itemGrid">Grid of items</param>
+    /// <param name="itemColours">Colours associated to each name</param>
     /// 
     /// <returns>Bitmap</returns>
-    public static WriteableBitmap GenerateRawItemImage(Tuple<int, int>[,]? itemGrid) {
+    public static WriteableBitmap GenerateRawItemImage(Tuple<string, int>[,]? itemGrid,
+        Dictionary<string, Color> itemColours) {
         if (itemGrid == null) {
             return new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         }
@@ -384,8 +387,8 @@ public static class Util {
         int yDimension = itemGrid.GetLength(1);
 
         WriteableBitmap outputBitmap = CreateBitmapFromData(xDimension, yDimension, 1, (x, y) => {
-            int itemId = itemGrid[x, y].Item1;
-            return itemId != -1 ? ItemType.GetItemTypeById(itemId).Color : Colors.Transparent;
+            string itemName = itemGrid[x, y].Item1;
+            return !itemName.Equals("") ? itemColours[itemName] : Colors.Transparent;
         });
 
         return outputBitmap;
@@ -398,9 +401,11 @@ public static class Util {
     /// <param name="itemGrid">Grid of items to place</param>
     /// <param name="imgOutWidth">Width of the current solution</param>
     /// <param name="imgOutHeight">Height of the current solution</param>
+    /// <param name="itemColours">Colours of each item name</param>
     /// 
     /// <returns>Bitmap</returns>
-    public static WriteableBitmap GenerateItemOverlay(Tuple<int, int>[,]? itemGrid, int imgOutWidth, int imgOutHeight) {
+    public static WriteableBitmap GenerateItemOverlay(Tuple<string, int>[,]? itemGrid, int imgOutWidth,
+        int imgOutHeight, Dictionary<string, Color> itemColours) {
         if (itemGrid == null) {
             return new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         }
@@ -409,20 +414,20 @@ public static class Util {
         int xDimension = imgOutWidth * itemDimension;
         int yDimension = imgOutHeight * itemDimension;
 
-        Dictionary<Tuple<int, int>, Color[]> items = new();
+        Dictionary<Tuple<string, int>, Color[]> items = new();
         for (int x = 0; x < imgOutWidth; x++) {
             for (int y = 0; y < imgOutHeight; y++) {
-                int itemId = itemGrid[x, y].Item1;
-                if (itemId != -1 && !items.ContainsKey(itemGrid[x, y])) {
-                    Color[] itemBitmap = GetItemImageRaw(ItemType.GetItemTypeById(itemId), itemGrid[x, y].Item2);
+                string itemName = itemGrid[x, y].Item1;
+                if (!itemName.Equals("") && !items.ContainsKey(itemGrid[x, y])) {
+                    Color[] itemBitmap = GetItemImageRaw(itemColours[itemName], itemGrid[x, y].Item2);
                     items[itemGrid[x, y]] = itemBitmap;
                 }
             }
         }
 
         WriteableBitmap outputBitmap = CreateBitmapFromData(xDimension, yDimension, 1, (x, y) => {
-            Tuple<int, int> curItem = itemGrid[x / itemDimension, y / itemDimension];
-            return curItem.Item1 != -1
+            Tuple<string, int> curItem = itemGrid[x / itemDimension, y / itemDimension];
+            return !curItem.Item1.Equals("")
                 ? items[curItem][y % itemDimension * itemDimension + x % itemDimension]
                 : Colors.Transparent;
         });
@@ -457,11 +462,11 @@ public static class Util {
     /// Create a colour array representation of the item including a possible dependent item linking value
     /// </summary>
     /// 
-    /// <param name="itemType">Item to create an image for</param>
+    /// <param name="itemColor">Item colour to create an image for</param>
     /// <param name="index">Index of the dependent item</param>
     /// 
     /// <returns>Bitmap</returns>
-    public static Color[] GetItemImageRaw(ItemType itemType, int index = -1) {
+    private static Color[] GetItemImageRaw(Color itemColor, int index = -1) {
         bool singleDigit = false;
         bool[][] segments = Array.Empty<bool[]>();
         if (index != -1) {
@@ -469,9 +474,11 @@ public static class Util {
         }
 
         Color[] rawColorData = new Color[Dimension * Dimension];
-        int[] whiteBorders = {5, 7, 8, 9, 10};
-
         HashSet<Tuple<int, int>> border = GetBorder();
+
+        Color contrastColour = itemColor.R * 0.299d + itemColor.G * 0.587d + itemColor.B * 0.114d > 150d
+            ? Colors.Black
+            : Colors.White;
 
         for (int x = 0; x < Dimension; x++) {
             for (int y = 0; y < Dimension; y++) {
@@ -480,8 +487,8 @@ public static class Util {
                 if (distance < Radius + 0.5d) {
                     Tuple<int, int> key = new(x, y);
                     toSet = border.Contains(key)
-                        ? whiteBorders.Contains(itemType.ID) ? Colors.White : Colors.Black
-                        : itemType.Color;
+                        ? contrastColour
+                        : itemColor;
                 } else {
                     toSet = Colors.Transparent;
                 }
@@ -491,7 +498,7 @@ public static class Util {
                         if (x is >= 7 and <= 9 && y is >= 6 and <= 10) {
                             int idx = (x - 7) % 3 + (y - 6) * 3;
                             if (segments[0][idx]) {
-                                toSet = itemType.HasDarkText ? Colors.Black : Colors.White;
+                                toSet = contrastColour;
                             }
                         }
                     } else {
@@ -499,12 +506,12 @@ public static class Util {
                             if (x < 8) {
                                 int idx = (x - 5) % 3 + (y - 6) * 3;
                                 if (segments[1][idx]) {
-                                    toSet = itemType.HasDarkText ? Colors.Black : Colors.White;
+                                    toSet = contrastColour;
                                 }
                             } else {
                                 int idx = (x - 9) % 3 + (y - 6) * 3;
                                 if (segments[0][idx]) {
-                                    toSet = itemType.HasDarkText ? Colors.Black : Colors.White;
+                                    toSet = contrastColour;
                                 }
                             }
                         }

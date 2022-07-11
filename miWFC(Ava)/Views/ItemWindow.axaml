@@ -6,7 +6,7 @@
         xmlns:viewModels="clr-namespace:miWFC.ViewModels"
         xmlns:contentControls="clr-namespace:miWFC.ContentControls"
         xmlns:avaloniaGif="clr-namespace:miWFC.AvaloniaGif"
-        d:DesignHeight="800" d:DesignWidth="1360" MinWidth="1360" MinHeight="800"
+        d:DesignHeight="830" d:DesignWidth="1530" MinWidth="1530" MinHeight="830"
         Icon="/Assets/icon.ico" Title="miWFC - Item Mode">
 
 	<Window.Resources>
@@ -155,13 +155,13 @@
 										<Image Grid.Column="0" Width="51" Height="51" Margin="0"
 										       Source="{Binding ItemIcon}"
 										       RenderOptions.BitmapInterpolationMode="Default" />
-										<TextBlock Grid.Column="1" Text="{Binding Item}" TextWrapping="Wrap" Margin="0, 5, 5, 5"
+										<TextBlock Grid.Column="1" Text="{Binding ItemName}" TextWrapping="Wrap" Margin="0, 5, 5, 5"
 										           HorizontalAlignment="Center" VerticalAlignment="Center" />
 									</Grid>
 								</DataTemplate>
 
 								<DataTemplate x:Key="ItemLocationDataTemplate">
-									<Border BoxShadow="0 0 15 0.25 Black" Margin="5" Background="#22000000"
+									<Border BoxShadow="0 0 15 0.25 Black" Margin="12" Background="#22000000"
 									        CornerRadius="10" ClipToBounds="True" Width="70" Height="70">
 										<Image Width="70" Height="70" Margin="0"
 										       Source="{Binding ItemLocationMapping}"
@@ -179,7 +179,7 @@
 										<DataGridTemplateColumn Header="Item" Width="200"
 										                        CellTemplate="{StaticResource ItemNameDataTemplate}" />
 										<DataGridTextColumn Header="#" Binding="{Binding AmountStr}" />
-										<DataGridTemplateColumn Header="Area" Width="80" CellTemplate="{StaticResource ItemLocationDataTemplate}" />
+										<DataGridTemplateColumn Header="Where" Width="94" CellTemplate="{StaticResource ItemLocationDataTemplate}" />
 										<DataGridTemplateColumn Header="Constraints" Width="380"
 										                        CellTemplate="{StaticResource ConstraintsDataTemplate}" />
 									</DataGrid.Columns>

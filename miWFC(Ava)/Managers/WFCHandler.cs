@@ -873,15 +873,18 @@ public class WFCHandler {
         if (!IsOverlappingModel()) {
             List<double> userWeights
                 = centralManager.GetMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
-            foreach (((int parent, int[] symmetries), int idx) in tileSymmetries.Select((pair, idx) => (pair, idx))) {
-                double weight = userWeights[idx];
-                weight = weight == 0 ? 0.00000000001d : weight;
-                ((AdjacentModel) dbModel).setFrequency(tileCache[parent].Item2, weight);
+            try {
+                foreach (((int parent, int[] symmetries), int idx) in
+                         tileSymmetries.Select((pair, idx) => (pair, idx))) {
+                    double weight = userWeights[idx];
+                    weight = weight == 0 ? 0.00000000001d : weight;
+                    ((AdjacentModel) dbModel).setFrequency(tileCache[parent].Item2, weight);
 
-                foreach (int symmetryIdx in symmetries) {
-                    ((AdjacentModel) dbModel).setFrequency(tileCache[symmetryIdx].Item2, weight);
+                    foreach (int symmetryIdx in symmetries) {
+                        ((AdjacentModel) dbModel).setFrequency(tileCache[symmetryIdx].Item2, weight);
+                    }
                 }
-            }
+            } catch (IndexOutOfRangeException) { }
 
             foreach (TileViewModel tvm in centralManager.GetMainWindowVM().PatternTiles) {
                 if (tvm.WeightHeatMap.Length == 0) {

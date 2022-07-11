@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using miWFC.Utils;
 using ReactiveUI;
 // ReSharper disable UnusedMember.Local
 
@@ -16,11 +16,12 @@ public class ItemObjectViewModel : ReactiveObject {
     private readonly bool _hasDependentItem;
     private readonly WriteableBitmap _itemIcon, _itemLocationBM;
 
-    private readonly string _itemName, _depItemString;
-    private readonly ItemType _itemType;
+    private readonly string itemNameName, _depItemString;
     private readonly (int, int) _amount;
     private readonly string _amountStr;
-    private readonly Tuple<ItemType?, (int, int)> _dependentItem;
+    private readonly Tuple<string?, (int, int)> _dependentItem;
+    private readonly Color _color;
+    private readonly Color? _depColor;
     private bool[,] _appearanceRegion;
 
     /*
@@ -28,10 +29,9 @@ public class ItemObjectViewModel : ReactiveObject {
      */
 
 #pragma warning disable CS8618
-    public ItemObjectViewModel(ItemType itemType, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
-        WriteableBitmap itemIcon, Tuple<ItemType?, WriteableBitmap?, (int, int)>? dependentItem, bool[,] appRegion, WriteableBitmap locMapping) {
+    public ItemObjectViewModel(string itemNameName, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles, Color c,
+        WriteableBitmap itemIcon, Tuple<string?, WriteableBitmap?, Color?,(int, int)>? dependentItem, bool[,] appRegion, WriteableBitmap locMapping) {
 #pragma warning restore CS8618
-        ItemType = itemType;
         Amount = amount;
 
         AppearanceRegion = appRegion;
@@ -40,21 +40,24 @@ public class ItemObjectViewModel : ReactiveObject {
         AllowedTiles = allowedTiles;
         ItemIcon = itemIcon;
 
+        MyColor = c;
+
         ItemLocationMapping = locMapping;
 
         if (dependentItem != null) {
-            DependentItem = new Tuple<ItemType?, (int, int)>(dependentItem.Item1, dependentItem.Item3);
+            DependentItem = new Tuple<string?, (int, int)>(dependentItem.Item1, dependentItem.Item4);
             DepItemIcon = dependentItem.Item2;
             HasDependentItem = true;
-            DepItemString = $@"Appearing distance: {dependentItem.Item3.Item1} to {dependentItem.Item3.Item2}";
+            DepColor = dependentItem.Item3;
+            DepItemString = $@"Appearing distance: {dependentItem.Item4.Item1} to {dependentItem.Item4.Item2}";
         } else {
-            DependentItem = new Tuple<ItemType?, (int, int)>(null, (0, 0));
+            DependentItem = new Tuple<string?, (int, int)>(null, (0, 0));
             DepItemIcon = null;
             HasDependentItem = false;
             DepItemString = "Nothing";
         }
 
-        Item = itemType.DisplayName;
+        ItemName = itemNameName;
     }
 
     /*
@@ -66,9 +69,9 @@ public class ItemObjectViewModel : ReactiveObject {
     /// <summary>
     /// Name of the item
     /// </summary>
-    private string Item {
-        get => _itemName;
-        init => this.RaiseAndSetIfChanged(ref _itemName, value);
+    public string ItemName {
+        get => itemNameName;
+        private init => this.RaiseAndSetIfChanged(ref itemNameName, value);
     }
 
     /// <summary>
@@ -118,7 +121,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Image of the locoational mapping
+    /// Image of the locational mapping
     /// </summary>
     private WriteableBitmap ItemLocationMapping {
         get => _itemLocationBM;
@@ -128,11 +131,19 @@ public class ItemObjectViewModel : ReactiveObject {
     // Objects
 
     /// <summary>
-    /// The item type enumerator object of the main item
+    /// Colour of this item image
     /// </summary>
-    public ItemType ItemType {
-        get => _itemType;
-        private init => this.RaiseAndSetIfChanged(ref _itemType, value);
+    public Color MyColor {
+        get => _color;
+        private init => this.RaiseAndSetIfChanged(ref _color, value);
+    }
+
+    /// <summary>
+    /// Colour of the dependent item image
+    /// </summary>
+    public Color? DepColor {
+        get => _depColor;
+        private init => this.RaiseAndSetIfChanged(ref _depColor, value);
     }
 
     // Lists
@@ -150,7 +161,7 @@ public class ItemObjectViewModel : ReactiveObject {
     /// </summary>
     public bool[,] AppearanceRegion {
         get => _appearanceRegion;
-        set => this.RaiseAndSetIfChanged(ref _appearanceRegion, value);
+        private init => this.RaiseAndSetIfChanged(ref _appearanceRegion, value);
     }
 
     // Other
@@ -167,11 +178,11 @@ public class ItemObjectViewModel : ReactiveObject {
 
     /// <summary>
     /// Storage of the dependent item, and the appearance distance
-    /// T(x, (_, _)) - Represents the item type enumerator object of the dependent item
+    /// T(x, (_, _)) - Represents the item name of the dependent item
     /// T(_, (x, _)) - Represents the minimum distance of this dependent item appearing from the main item
     /// T(_, (_, x)) - Represents the maximum distance of this dependent item appearing from the main item
     /// </summary>
-    public Tuple<ItemType?, (int, int)> DependentItem {
+    public Tuple<string?, (int, int)> DependentItem {
         get => _dependentItem;
         private init => this.RaiseAndSetIfChanged(ref _dependentItem, value);
     }

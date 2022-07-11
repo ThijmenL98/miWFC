@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using miWFC.Managers;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
@@ -18,8 +20,6 @@ namespace miWFC.ContentControls;
 /// Separated control for the item addition menu
 /// </summary>
 public partial class ItemAddMenu : UserControl {
-    private readonly ComboBox _itemsCB, _depsCB;
-
     private CentralManager? centralManager;
 
     private bool[] allowedTiles;
@@ -29,16 +29,6 @@ public partial class ItemAddMenu : UserControl {
      */
     public ItemAddMenu() {
         InitializeComponent();
-        
-        _itemsCB = this.Find<ComboBox>("itemTypesCB");
-        _depsCB = this.Find<ComboBox>("itemDependenciesCB");
-
-        _itemsCB.Items = ItemType.itemTypes;
-        _depsCB.Items = ItemType.itemTypes;
-
-        _itemsCB.SelectedIndex = 0;
-        _depsCB.SelectedIndex = 1;
-
         allowedTiles = Array.Empty<bool>();
     }
 
@@ -64,24 +54,6 @@ public partial class ItemAddMenu : UserControl {
      */
 
     /// <summary>
-    /// Get the currently selected main item
-    /// </summary>
-    /// 
-    /// <returns>The dependent item object</returns>
-    public ItemType GetSelectedItemType() {
-        return ItemType.GetItemTypeById(_itemsCB.SelectedIndex);
-    }
-
-    /// <summary>
-    /// Get the currently selected dependent item
-    /// </summary>
-    /// 
-    /// <returns>The dependent item object</returns>
-    public ItemType GetDependencyItemType() {
-        return ItemType.GetItemTypeById(_depsCB.SelectedIndex);
-    }
-
-    /// <summary>
     /// Get the array of allowed tiles the main item is allowed to be hosted on
     /// </summary>
     /// 
@@ -93,28 +65,6 @@ public partial class ItemAddMenu : UserControl {
     /*
      * Setters
      */
-
-    /// <summary>
-    /// Update the currently selected item 
-    /// </summary>
-    /// 
-    /// <param name="idx">Index, default is the first item</param>
-    public void UpdateSelectedItemIndex(int idx = 0) {
-        _itemsCB.SelectedIndex = idx;
-    }
-
-    /// <summary>
-    /// Update the item dependencies combobox
-    /// </summary>
-    /// 
-    /// <param name="idx">The to be selected index after initialization, default is the first item</param>
-    public void UpdateDependencyIndex(int idx = 0) {
-        _depsCB.SelectedIndex = idx;
-
-        if (_itemsCB.SelectedIndex.Equals(idx)) {
-            _depsCB.SelectedIndex = idx == 0 ? 1 : 0;
-        }
-    }
 
     /// <summary>
     /// Set the tile at index i to be allowed or not
@@ -129,30 +79,6 @@ public partial class ItemAddMenu : UserControl {
     /*
      * UI Callbacks
      */
-
-    /// <summary>
-    /// Callback when the selected main item is changed. This updates the image shown to the user, as well as the
-    /// description and resets the dependency index
-    /// </summary>
-    /// 
-    /// <param name="sender">UI Origin of function call</param>
-    /// <param name="e">SelectionChangedEventArgs</param>
-    private void OnItemChanged(object? sender, SelectionChangedEventArgs e) {
-        if (centralManager == null) {
-            return;
-        }
-
-        int index = _itemsCB.SelectedIndex;
-        if (index >= 0) {
-            ItemType selection = ItemType.GetItemTypeById(index);
-            centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = Util.GetItemImage(selection);
-            centralManager!.GetMainWindowVM().ItemVM.ItemDescription = selection.Description;
-
-            if (_depsCB.SelectedIndex.Equals(index)) {
-                _depsCB.SelectedIndex = index == 0 ? 1 : 0;
-            }
-        }
-    }
 
     /// <summary>
     /// Instead of only allowing the user to click on the physical check box element, clicking on the tile image
@@ -227,6 +153,72 @@ public partial class ItemAddMenu : UserControl {
 
             this.Find<NumericUpDown>("NUDMaxDist").Value = newMax;
             this.Find<NumericUpDown>("NUDMinDist").Value = newMin;
+        }
+    }
+
+    /// <summary>
+    /// Function to update the colour text box to parse for a valid colour
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">RoutedEventArgs</param>
+    private void ItemColour_OnFocusLost(object? sender, RoutedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (!centralManager!.GetMainWindowVM().ItemVM.ItemColour.StartsWith("#")) {
+            try {
+                Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.ItemColour);
+                Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
+                centralManager!.GetMainWindowVM().ItemVM.ItemColour = c.ToString().ToUpper().Replace("#FF", "#");
+                centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = Util.GetItemImage(c);
+                return;
+            } catch (Exception) {
+                // ignored
+            }
+            centralManager!.GetMainWindowVM().ItemVM.ItemColour = "#" + centralManager!.GetMainWindowVM().ItemVM.ItemColour;
+        }
+
+        try {
+            Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.ItemColour);
+            Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
+            centralManager!.GetMainWindowVM().ItemVM.ItemColour = c.ToString().ToUpper().Replace("#FF", "#");
+            centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = Util.GetItemImage(c);
+        } catch (Exception) {
+            centralManager!.GetMainWindowVM().ItemVM.ItemColour = "";
+        }
+    }
+
+    /// <summary>
+    /// Function to update the dependent colour text box to parse for a valid colour
+    /// </summary>
+    /// 
+    /// <param name="sender">UI Origin of function call</param>
+    /// <param name="e">RoutedEventArgs</param>
+    private void DepItemColour_OnFocusLost(object? sender, RoutedEventArgs e) {
+        if (centralManager == null) {
+            return;
+        }
+
+        if (!centralManager!.GetMainWindowVM().ItemVM.DepItemColour.StartsWith("#")) {
+            try {
+                Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.DepItemColour);
+                Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
+                centralManager!.GetMainWindowVM().ItemVM.DepItemColour = c.ToString().ToUpper().Replace("#FF", "#");
+                return;
+            } catch (Exception) {
+                // ignored
+            }
+            centralManager!.GetMainWindowVM().ItemVM.DepItemColour = "#" + centralManager!.GetMainWindowVM().ItemVM.DepItemColour;
+        }
+        
+        try {
+            Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.DepItemColour);
+            Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
+            centralManager!.GetMainWindowVM().ItemVM.DepItemColour = c.ToString().ToUpper().Replace("#FF", "#");
+        } catch (Exception) {
+            centralManager!.GetMainWindowVM().ItemVM.DepItemColour = "";
         }
     }
 }

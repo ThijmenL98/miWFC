@@ -11,21 +11,12 @@
 
 	<Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10">
 		<Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
-			<Grid Grid.Row="0" RowDefinitions="Auto, *" ColumnDefinitions="Auto, Auto, *" Margin="5">
-				<ComboBox Grid.Row="0" Grid.Column="0" Margin="5" HorizontalAlignment="Stretch" Width="300"
-				          MinHeight="40" SelectedItem="{Binding ItemVM.SelectedItemToAdd}" x:Name="itemTypesCB"
-				          SelectionChanged="OnItemChanged">
-					<ComboBox.ItemTemplate>
-						<DataTemplate>
-							<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
-							      VerticalAlignment="Stretch" Margin="0, -3, -8, -3">
-								<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-								<TextBlock Text="{Binding DisplayName}" HorizontalAlignment="Stretch"
-								           VerticalAlignment="Stretch" />
-							</Grid>
-						</DataTemplate>
-					</ComboBox.ItemTemplate>
-				</ComboBox>
+			<Grid Grid.Row="0" RowDefinitions="Auto, *" ColumnDefinitions="Auto, Auto, *" Margin="5"
+			      HorizontalAlignment="Center">
+				<TextBox Grid.Row="0" Grid.Column="0" Watermark="Item Name" MinHeight="40" MinWidth="300"
+				         Margin="5" HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
+				         Text="{Binding ItemVM.DisplayName}"
+				         VerticalContentAlignment="Center" />
 
 				<Grid Grid.Row="1" Grid.Column="0" RowDefinitions="*, Auto">
 					<Grid Grid.Row="0" ColumnDefinitions="Auto, Auto, *" HorizontalAlignment="Center" Margin="0, 10, 0, -2">
@@ -36,7 +27,8 @@
 						<RadioButton Grid.Column="2" Margin="5, 0" IsChecked="{Binding ItemVM.ItemsInRange}" Content="Range" />
 					</Grid>
 
-					<NumericUpDown Grid.Row="1" MaxHeight="10" Value="{Binding ItemVM.ItemsToAddValue}" IsVisible="{Binding !ItemVM.ItemsInRange}"
+					<NumericUpDown Grid.Row="1" MaxHeight="10" Value="{Binding ItemVM.ItemsToAddValue}"
+					               IsVisible="{Binding !ItemVM.ItemsInRange}"
 					               HorizontalAlignment="Center" Minimum="1" />
 
 					<Grid Grid.Row="1" IsVisible="{Binding ItemVM.ItemsInRange}" ColumnDefinitions="Auto, Auto, Auto"
@@ -50,18 +42,23 @@
 					</Grid>
 				</Grid>
 
-				<Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BoxShadow="0 0 15 0.25 Black"
-				        Margin="15, 5, 15, 5"
+				<Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" RowDefinitions="*, Auto" VerticalAlignment="Center" Width="100"
+				      Margin="50, 5">
+					<TextBlock Grid.Row="0" Text="Item Colour:" HorizontalAlignment="Center"
+					           VerticalAlignment="Center" Margin="5"/>
+					<TextBox Grid.Row="1" Watermark="#RRGGBB" Height="40" Margin="5"
+					         HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
+					         Text="{Binding ItemVM.ItemColour}"
+					         LostFocus="ItemColour_OnFocusLost"
+					         VerticalContentAlignment="Center" />
+				</Grid>
+
+				<Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" BoxShadow="0 0 15 0.25 Black"
+				        Margin="50, 5,5,5"
 				        Background="#22000000" CornerRadius="10" HorizontalAlignment="Stretch" ClipToBounds="True">
 					<Image Width="100" Height="100" Source="{Binding ItemVM.CurrentItemImage}"
 					       RenderOptions.BitmapInterpolationMode="Default" />
 				</Border>
-
-				<GridSplitter Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" IsEnabled="False" Background="Transparent"
-				              MinWidth="50" />
-
-				<TextBox Grid.Column="2" Grid.Row="0" Grid.RowSpan="2" Margin="5, 0" Text="{Binding ItemVM.ItemDescription}"
-				         HorizontalAlignment="Stretch" TextWrapping="Wrap" />
 			</Grid>
 
 			<Separator Grid.Row="1" Background="#44000000" Height="4" CornerRadius="2" Margin="5" />
@@ -136,28 +133,27 @@
 					             Content="None" />
 					<Grid Grid.Row="2" Margin="25, 0, 5, 0" ColumnDefinitions="Auto, *">
 						<RadioButton Grid.Column="0" IsChecked="{Binding ItemVM.ItemIsDependent}"
-						             Content="Select:" />
+						             Content="" />
 
-						<ComboBox Grid.Column="1" Margin="25, 5" HorizontalAlignment="Stretch" MinWidth="200" MaxWidth="300"
-						          MinHeight="40" SelectedItem="{Binding ItemVM.SelectedItemDependency}" x:Name="itemDependenciesCB"
-						          IsEnabled="{Binding ItemVM.ItemIsDependent}">
-							<ComboBox.ItemTemplate>
-								<DataTemplate>
-									<Grid ColumnDefinitions="*" HorizontalAlignment="Stretch" Background="Transparent"
-									      VerticalAlignment="Stretch" Margin="0, -3, -8, -3">
-										<!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-										<TextBlock Text="{Binding DisplayName}" HorizontalAlignment="Stretch"
-										           VerticalAlignment="Stretch" />
-									</Grid>
-								</DataTemplate>
-							</ComboBox.ItemTemplate>
-						</ComboBox>
+						<TextBox Grid.Row="0" Grid.Column="1" Watermark="Dependent Item Name" MinHeight="40" MinWidth="200"
+						         MaxWidth="300"
+						         Margin="25, 5" HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
+						         Text="{Binding ItemVM.DependentItemName}" VerticalContentAlignment="Center"
+						         IsEnabled="{Binding ItemVM.ItemIsDependent}" />
 					</Grid>
 
-					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" IsVisible="{Binding ItemVM.ItemIsDependent}">
-						<Image Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left" Margin="15" />
+					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" IsVisible="{Binding ItemVM.ItemIsDependent}">
+						<TextBlock Grid.Row="0" Grid.Column="0" Text="Dependent Item Colour:" HorizontalAlignment="Center"
+						           VerticalAlignment="Center" Margin="5,50,5,5"/>
+						<TextBox Grid.Row="0" Grid.Column="1" Watermark="#RRGGBB (Default is Red)" Height="40" Margin="25, 50, 15, 5"
+						         HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
+						         Text="{Binding ItemVM.DepItemColour}"
+						         LostFocus="DepItemColour_OnFocusLost"
+						         VerticalContentAlignment="Center" />
+						
+						<Image Grid.Row="1" Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left" Margin="15" />
 
-						<Grid Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *"
+						<Grid Grid.Row="1"  Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *"
 						      VerticalAlignment="Center" Margin="15">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="Max distance:" Margin="15, 35" />
 							<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ItemVM.DepMaxDistance}"
@@ -181,7 +177,7 @@
 					<GridSplitter Grid.Row="1" Grid.Column="1" Width="20"
 					              IsEnabled="False" Background="Transparent"
 					              IsVisible="{Binding !ItemVM.ItemsMayAppearAnywhere}" />
-										
+
 					<Button Padding="0" Grid.Column="2" Grid.Row="1" Width="80" Margin="0, 5"
 					        Command="{Binding ItemVM.EnterRegionEditor}" Background="Transparent">
 						<Button.Styles>
