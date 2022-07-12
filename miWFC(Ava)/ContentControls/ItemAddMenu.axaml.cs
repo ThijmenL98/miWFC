@@ -62,6 +62,42 @@ public partial class ItemAddMenu : UserControl {
         return allowedTiles;
     }
 
+    /// <summary>
+    /// Get the Avalonia Control for the item name
+    /// </summary>
+    /// 
+    /// <returns>Avalonia Control</returns>
+    public TextBox GetItemNameTB() {
+        return this.Find<TextBox>("itemName");
+    }
+
+    /// <summary>
+    /// Get the Avalonia Control for the dependent item name
+    /// </summary>
+    /// 
+    /// <returns>Avalonia Control</returns>
+    public TextBox GetDepItemNameTB() {
+        return this.Find<TextBox>("depItemName");
+    }
+
+    /// <summary>
+    /// Get the Avalonia Control for the item colour
+    /// </summary>
+    /// 
+    /// <returns>Avalonia Control</returns>
+    public TextBox GetItemColourTB() {
+        return this.Find<TextBox>("itemColour");
+    }
+
+    /// <summary>
+    /// Get the Avalonia Control for the dependent item colour
+    /// </summary>
+    /// 
+    /// <returns>Avalonia Control</returns>
+    public TextBox GetDepItemColourTB() {
+        return this.Find<TextBox>("depItemColour");
+    }
+
     /*
      * Setters
      */
@@ -153,72 +189,6 @@ public partial class ItemAddMenu : UserControl {
 
             this.Find<NumericUpDown>("NUDMaxDist").Value = newMax;
             this.Find<NumericUpDown>("NUDMinDist").Value = newMin;
-        }
-    }
-
-    /// <summary>
-    /// Function to update the colour text box to parse for a valid colour
-    /// </summary>
-    /// 
-    /// <param name="sender">UI Origin of function call</param>
-    /// <param name="e">RoutedEventArgs</param>
-    private void ItemColour_OnFocusLost(object? sender, RoutedEventArgs e) {
-        if (centralManager == null) {
-            return;
-        }
-
-        if (!centralManager!.GetMainWindowVM().ItemVM.ItemColour.StartsWith("#")) {
-            try {
-                Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.ItemColour);
-                Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
-                centralManager!.GetMainWindowVM().ItemVM.ItemColour = c.ToString().ToUpper().Replace("#FF", "#");
-                centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = Util.GetItemImage(c);
-                return;
-            } catch (Exception) {
-                // ignored
-            }
-            centralManager!.GetMainWindowVM().ItemVM.ItemColour = "#" + centralManager!.GetMainWindowVM().ItemVM.ItemColour;
-        }
-
-        try {
-            Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.ItemColour);
-            Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
-            centralManager!.GetMainWindowVM().ItemVM.ItemColour = c.ToString().ToUpper().Replace("#FF", "#");
-            centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage = Util.GetItemImage(c);
-        } catch (Exception) {
-            centralManager!.GetMainWindowVM().ItemVM.ItemColour = "";
-        }
-    }
-
-    /// <summary>
-    /// Function to update the dependent colour text box to parse for a valid colour
-    /// </summary>
-    /// 
-    /// <param name="sender">UI Origin of function call</param>
-    /// <param name="e">RoutedEventArgs</param>
-    private void DepItemColour_OnFocusLost(object? sender, RoutedEventArgs e) {
-        if (centralManager == null) {
-            return;
-        }
-
-        if (!centralManager!.GetMainWindowVM().ItemVM.DepItemColour.StartsWith("#")) {
-            try {
-                Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.DepItemColour);
-                Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
-                centralManager!.GetMainWindowVM().ItemVM.DepItemColour = c.ToString().ToUpper().Replace("#FF", "#");
-                return;
-            } catch (Exception) {
-                // ignored
-            }
-            centralManager!.GetMainWindowVM().ItemVM.DepItemColour = "#" + centralManager!.GetMainWindowVM().ItemVM.DepItemColour;
-        }
-        
-        try {
-            Color cRaw = Color.Parse(centralManager!.GetMainWindowVM().ItemVM.DepItemColour);
-            Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
-            centralManager!.GetMainWindowVM().ItemVM.DepItemColour = c.ToString().ToUpper().Replace("#FF", "#");
-        } catch (Exception) {
-            centralManager!.GetMainWindowVM().ItemVM.DepItemColour = "";
         }
     }
 }

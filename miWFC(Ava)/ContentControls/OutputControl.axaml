@@ -49,7 +49,7 @@
 				</Panel>
 				<ToolTip.Tip>
 					<StackPanel>
-						<TextBlock TextWrapping="Wrap">Import previously generated output. Partially completed images are allowed.</TextBlock>
+						<TextBlock TextWrapping="Wrap">Import previously generated images using this input images. Partially completed images are allowed.</TextBlock>
 					</StackPanel>
 				</ToolTip.Tip>
 			</Button>
@@ -113,7 +113,7 @@
 				</Panel>
 				<ToolTip.Tip>
 					<StackPanel>
-						<TextBlock TextWrapping="Wrap">Export the current output</TextBlock>
+						<TextBlock TextWrapping="Wrap">Export the current generated image</TextBlock>
 					</StackPanel>
 				</ToolTip.Tip>
 			</Button>

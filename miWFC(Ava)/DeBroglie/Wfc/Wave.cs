@@ -61,9 +61,7 @@ public class Wave {
         patternCounts[index]++;
     }
 
-    // BORIS_TODO: This should respect mask. Maybe move out of Wave
     public double GetProgress() {
-        // BORIS_TODO: Use patternCount info?
         int c = 0;
         foreach (bool b in possibilities) {
             if (!b) {

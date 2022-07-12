@@ -204,7 +204,7 @@
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Toggle whether this tile may rotate. Disabled means the tile is invariant to rotations.</TextBlock>
+													<TextBlock TextWrapping="Wrap">Toggle whether this tile may appear rotated, other than the shown rotation. Disabled means the tile is invariant to rotations.</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>
@@ -230,7 +230,7 @@
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Toggle whether this tile may flip. Disabled means the tile is invariant to flipping.</TextBlock>
+													<TextBlock TextWrapping="Wrap">Toggle whether this tile may appear flipped, other than the shown orientation. Disabled means the tile is invariant to flipping.</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>
@@ -256,7 +256,7 @@
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Rotate the tile when rotations are locked</TextBlock>
+													<TextBlock TextWrapping="Wrap">Rotate the tile when rotations are disabled</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>
@@ -282,7 +282,7 @@
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Flip the tile when flipping is locked</TextBlock>
+													<TextBlock TextWrapping="Wrap">Flip the tile when flipping is disabled</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>

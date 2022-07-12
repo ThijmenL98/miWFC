@@ -1147,7 +1147,7 @@ public class WFCHandler {
 
                 if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
-                    Trace.WriteLine("\nAYOAYOAYO\n");
+                    Trace.WriteLine("Unknown error occured");
 #endif
                     break;
                 }
@@ -1200,7 +1200,7 @@ public class WFCHandler {
 
                 if (oldInputDictSize.Equals(newInputDict.Count)) {
 #if DEBUG
-                    Trace.WriteLine("\nAYOAYOAYO\n");
+                    Trace.WriteLine("Unknown error occured");
 #endif
                     break;
                 }
@@ -1229,7 +1229,7 @@ public class WFCHandler {
         bool returnTrueAlreadyCorrect = false) {
         bool paintOverwrite = !hover && mainWindowVM.PaintingVM.IsPaintOverrideEnabled;
 #if DEBUG
-        const bool internalDebug = false;
+        bool internalDebug = false;
         if (internalDebug) {
             Trace.WriteLine("");
         }

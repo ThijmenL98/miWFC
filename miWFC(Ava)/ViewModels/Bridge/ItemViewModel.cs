@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -73,7 +74,12 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public string DisplayName {
         get => _displayName;
-        set => this.RaiseAndSetIfChanged(ref _displayName, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _displayName, value);
+            if (_displayName == "") {
+                throw new DataValidationException("Name cannot be empty!");
+            }
+        }
     }
 
     /// <summary>
@@ -81,7 +87,12 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public string DependentItemName {
         get => _dependentDisplayName;
-        set => this.RaiseAndSetIfChanged(ref _dependentDisplayName, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _dependentDisplayName, value);
+            if (_dependentDisplayName == "") {
+                throw new DataValidationException("Name cannot be empty!");
+            }
+        }
     }
 
     /// <summary>
@@ -89,7 +100,21 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public string ItemColour {
         get => _itemColour;
-        set => this.RaiseAndSetIfChanged(ref _itemColour, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _itemColour, value);
+            if (!_itemColour.Equals("")) {
+                string? validatedColor = Util.ValidateColor(_itemColour);
+                if (validatedColor == null) {
+                    throw new DataValidationException("Invalid colour hex!");
+                }
+
+                centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage
+                    = Util.GetItemImage(Color.Parse(validatedColor));
+            } else {
+                centralManager!.GetMainWindowVM().ItemVM.CurrentItemImage
+                    = Util.GetItemImage(Colors.Red);
+            }
+        }
     }
 
     /// <summary>
@@ -97,7 +122,15 @@ public class ItemViewModel : ReactiveObject {
     /// </summary>
     public string DepItemColour {
         get => _depItemColour;
-        set => this.RaiseAndSetIfChanged(ref _depItemColour, value);
+        set {
+            this.RaiseAndSetIfChanged(ref _depItemColour, value);
+            if (!_depItemColour.Equals("")) {
+                string? validatedColor = Util.ValidateColor(_depItemColour);
+                if (validatedColor == null) {
+                    throw new DataValidationException("Invalid colour hex!");
+                }
+            }
+        }
     }
 
     // Numeric (Integer, Double, Float, Long ...)
@@ -248,13 +281,39 @@ public class ItemViewModel : ReactiveObject {
     /// 
     /// <returns>Colour dictionary</returns>
     public Dictionary<string, Color> GetItemColours() {
-        Dictionary<string, Color> mainItems = ItemDataGrid.ToDictionary(
-            itemObjectViewModel => itemObjectViewModel.ItemName, itemObjectViewModel => itemObjectViewModel.MyColor);
+        Dictionary<string, Color> mainItems = new();
+        
+        foreach (ItemObjectViewModel model in ItemDataGrid) {
+            string key = model.ItemName;
+            Color val = model.MyColor;
+            if (mainItems.ContainsKey(key) && mainItems[key].Equals(val)) {
+                continue;
+            }
+
+            if (mainItems.ContainsKey(key)) {
+                DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemNameTB(),
+                    new DataValidationException("Name already exists with a different colour"));
+                return new Dictionary<string, Color>();
+            }
+            mainItems.Add(model.ItemName, model.MyColor);
+        }
+
         Dictionary<string, Color> depItems = new();
 
         foreach (ItemObjectViewModel item in ItemDataGrid) {
             if (item.HasDependentItem) {
-                depItems[item.DependentItem.Item1!] = (Color) item.DepColor!;
+                string key = item.DependentItem.Item1!;
+                Color val = (Color) item.DepColor!;
+                if (depItems.ContainsKey(key) && depItems[key].Equals(val)) {
+                    continue;
+                }
+
+                if (depItems.ContainsKey(key)) {
+                    DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemNameTB(),
+                        new DataValidationException("Name already exists with a different colour"));
+                    return new Dictionary<string, Color>();
+                }
+                depItems.Add(key, val);
             }
         }
 
@@ -312,20 +371,66 @@ public class ItemViewModel : ReactiveObject {
             allowedTiles = new List<TileViewModel>(mainWindowViewModel.PaintTiles);
         }
 
-        Color itemColour = ItemColour.Equals("") ? Colors.Red : Color.Parse(ItemColour);
-        if (allowedTiles.Count == 0 || DisplayName.Equals("") || (GetItemNames().Contains(DisplayName) && !GetItemColours()[DisplayName].Equals(itemColour))) {
-            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
-            // TODO make the outline of the display name red
+        Color itemColour;
+        try {
+            itemColour = ItemColour.Equals("") ? Colors.Red : Color.Parse(ItemColour);
+        } catch (FormatException) {
+            DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemColourTB(),
+                new DataValidationException("Invalid colour hex!"));
+            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
+            return;
+        }
+
+        if (allowedTiles.Count == 0 || DisplayName.Equals("") || string.IsNullOrWhiteSpace(DisplayName) ||
+            (GetItemNames().Contains(DisplayName) && !GetItemColours()[DisplayName].Equals(itemColour))) {
+            if (DisplayName.Equals("") || string.IsNullOrWhiteSpace(DisplayName)) {
+                DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemNameTB(),
+                    new DataValidationException("Name cannot be empty"));
+            }
+
+            if (GetItemNames().Contains(DisplayName) && !GetItemColours()[DisplayName].Equals(itemColour)) {
+                DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemNameTB(),
+                    new DataValidationException("Name already exists with a different colour"));
+            }
+
+            string? message = null;
+            
+            if (allowedTiles.Count == 0) {
+                message = "No tiles have been selected";
+            }
+
+            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), message);
             return;
         }
 
         bool isDependent = ItemIsDependent;
         Tuple<string?, WriteableBitmap?, Color?, (int, int)>? depItem = null;
         if (isDependent) {
-            Color depColor = DepItemColour.Equals("") ? Colors.Red : Color.Parse(DepItemColour);
-            if (DependentItemName.Equals("") || (GetItemNames().Contains(DependentItemName) && !GetItemColours()[DependentItemName].Equals(depColor))) {
-                centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
-                // TODO make the outline of the dependent item name red
+            Color depColor;
+            try {
+                depColor = DepItemColour.Equals("") ? Colors.Red : Color.Parse(DepItemColour);
+            } catch (FormatException) {
+                DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemColourTB(),
+                    new DataValidationException("Invalid colour hex!"));
+                centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
+                return;
+            }
+            
+            if (DependentItemName.Equals("") || string.IsNullOrWhiteSpace(DependentItemName) ||
+                (GetItemNames().Contains(DependentItemName) &&
+                 !GetItemColours()[DependentItemName].Equals(depColor))) {
+                if (DependentItemName.Equals("") || string.IsNullOrWhiteSpace(DependentItemName)) {
+                    DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemNameTB(),
+                        new DataValidationException("Name cannot be empty"));
+                }
+
+                if (GetItemNames().Contains(DependentItemName) &&
+                    !GetItemColours()[DependentItemName].Equals(itemColour)) {
+                    DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemNameTB(),
+                        new DataValidationException("Name already exists with a different colour"));
+                }
+
+                centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
                 return;
             }
 
@@ -345,14 +450,18 @@ public class ItemViewModel : ReactiveObject {
             if (itemObjectViewModel.ItemName.Equals(DisplayName) &&
                 itemObjectViewModel.AllowedTiles.SequenceEqual(myAllowedTiles) &&
                 itemObjectViewModel.AllowedTiles.Count == myAllowedTiles.Count) {
-                switch (itemObjectViewModel.HasDependentItem) {
-                    case true when isDependent && itemObjectViewModel.DependentItem.Item1!.Equals(depItem!.Item1) &&
-                                   itemObjectViewModel.DependentItem.Item2.Equals(depItem.Item4):
-                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
-                        return;
-                    case false when !isDependent:
-                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
-                        return;
+                if (itemObjectViewModel.HasDependentItem && isDependent &&
+                    itemObjectViewModel.DependentItem.Item1!.Equals(depItem!.Item1) &&
+                    itemObjectViewModel.DependentItem.Item2.Equals(depItem.Item4)) {
+                    centralManager?.GetUIManager()
+                        .DispatchError(centralManager!.GetItemWindow(), "Item already exists");
+                    return;
+                }
+
+                if (!itemObjectViewModel.HasDependentItem && !isDependent) {
+                    centralManager?.GetUIManager()
+                        .DispatchError(centralManager!.GetItemWindow(), "Item already exists");
+                    return;
                 }
             }
         }
@@ -373,11 +482,13 @@ public class ItemViewModel : ReactiveObject {
         DepMinDistance = 1;
         _editingEntry = -2;
         DepMaxDistance = 5;
-        
-        DisplayName = "";
-        ItemColour = "";
-        DependentItemName = "";
-        DepItemColour = "";
+
+        try {
+            DisplayName = "";
+            ItemColour = "";
+            DependentItemName = "";
+            DepItemColour = "";
+        } catch (DataValidationException) { }
 
         foreach (TileViewModel tvm in mainWindowViewModel.PaintTiles) {
             tvm.ItemAddChecked = false;
@@ -402,11 +513,13 @@ public class ItemViewModel : ReactiveObject {
         ItemIsDependent = false;
         DepMinDistance = 1;
         DepMaxDistance = 5;
-        
-        DisplayName = "";
-        ItemColour = "";
-        DependentItemName = "";
-        DepItemColour = "";
+
+        try {
+            DisplayName = "";
+            ItemColour = "";
+            DependentItemName = "";
+            DepItemColour = "";
+        } catch (DataValidationException) { }
 
         foreach (TileViewModel tvm in mainWindowViewModel.PaintTiles) {
             tvm.ItemAddChecked = false;
@@ -433,7 +546,8 @@ public class ItemViewModel : ReactiveObject {
         DataGrid dg = centralManager!.GetItemWindow().GetDataGrid();
         int selectedIndex = dg.SelectedIndex;
         if (selectedIndex.Equals(-1)) {
-            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(),
+                "You need to select an item to edit first");
             return;
         }
 
@@ -459,11 +573,13 @@ public class ItemViewModel : ReactiveObject {
             DependentItemName = itemSelected.DependentItem.Item1!;
             DepItemColour = ((Color) itemSelected.DepColor!).ToString().ToUpper().Replace("#FF", "#");
         } else {
-            DepMinDistance = 1;
-            DepMaxDistance = 5;
+            try {
+                DepMinDistance = 1;
+                DepMaxDistance = 5;
 
-            DependentItemName = "";
-            DepItemColour = "";
+                DependentItemName = "";
+                DepItemColour = "";
+            } catch (DataValidationException) { }
         }
 
         foreach ((TileViewModel tvm, int index) in mainWindowViewModel.PaintTiles.Select((model, i) => (model, i))) {
@@ -493,7 +609,8 @@ public class ItemViewModel : ReactiveObject {
         DataGrid dg = centralManager!.GetItemWindow().GetDataGrid();
         selectedIndex = selectedIndex == -2 ? dg.SelectedIndex : selectedIndex;
         if (selectedIndex < 0) {
-            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(),
+                "You need to select an item to delete first");
             return;
         }
 
@@ -590,19 +707,24 @@ public class ItemViewModel : ReactiveObject {
             for (int i = 0; i < toAdd; i++) {
                 bool added = false;
                 int retry = 0;
+                List<(int, int)> locToSkip = new();
+                int allowedRetries = allowedAdd.Select(x => spacesLeft[x]).Sum() * allowedAdd.Select(x => spacesLeft[x]).Sum();
+                
                 while (!added) {
                     retry++;
-                    if (retry == 50) {
+                    if (retry >= allowedRetries) {
                         if (i >= ivm.Amount.Item1) {
                             return itemGrid;
                         }
 
-                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(),
+                            $"Addition failed after {allowedRetries} tries");
                         return null;
                     }
 
                     if (allowedAdd.Select(x => spacesLeft[x]).Sum() == 0) {
-                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow());
+                        centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(),
+                            "Item addition failed as no spaces were available");
                         return null;
                     }
 
@@ -610,6 +732,24 @@ public class ItemViewModel : ReactiveObject {
                                                              mainWindowViewModel.ImageOutHeight);
                     int xLoc = randLoc / mainWindowViewModel.ImageOutWidth;
                     int yLoc = randLoc % mainWindowViewModel.ImageOutWidth;
+
+                    int whileRetries = allowedRetries;
+                    
+                    while (whileRetries > 0) {
+                        if (locToSkip.Contains((xLoc, yLoc))) {
+                            randLoc = mainWindowViewModel.R.Next(mainWindowViewModel.ImageOutWidth *
+                                                                 mainWindowViewModel.ImageOutHeight);
+                            xLoc = randLoc / mainWindowViewModel.ImageOutWidth;
+                            yLoc = randLoc % mainWindowViewModel.ImageOutWidth;
+                        } else {
+                            whileRetries = 0;
+                        }
+
+                        whileRetries--;
+                    }
+                    
+                    locToSkip.Add((xLoc, yLoc));
+                    
                     bool allowedAtLoc = false;
                     if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
                         Color colorAtPos = distinctColourCount[xLoc, yLoc];

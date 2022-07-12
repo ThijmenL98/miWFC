@@ -468,7 +468,7 @@ public partial class WeightMapWindow : Window {
                 double distance = dx * dx + dy * dy;
                 return distance <= brushSizeRaw ? centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled
                         ? selected
-                        : Color.FromArgb((byte) (255 * (1d - (distance / brushSizeRaw) * 0.85d)), selected.R,
+                        : Color.FromArgb((byte) (255 * (1d - distance / brushSizeRaw * 0.85d)), selected.R,
                             selected.G, selected.B) :
                     (x + y) % 2 == 0 ? Colors.Transparent : Color.Parse("#11000000");
             });

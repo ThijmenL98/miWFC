@@ -16,7 +16,6 @@ public interface ITracker {
 /// <summary>
 ///     Callback for when choices/backtracks occur on WavePropagator
 /// </summary>
-// BORIS_TODO: Move this class elsewhere?
 public interface IChoiceObserver {
     // Called before the wave propagator is updated for the choice
     void MakeChoice(int index, int pattern);

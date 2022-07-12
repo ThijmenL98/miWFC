@@ -8,6 +8,13 @@
 	<Design.DataContext>
 		<viewModels:MainWindowViewModel />
 	</Design.DataContext>
+	
+	<UserControl.Styles>
+		<Style Selector="DataValidationErrors">
+			<Setter Property="Template" Value="{DynamicResource TooltipDataValidationContentTemplate}" />
+			<Setter Property="ErrorTemplate" Value="{DynamicResource TooltipDataValidationErrorTemplate}" />
+		</Style>
+	</UserControl.Styles>
 
 	<Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10">
 		<Grid x:Name="itemEditorGrid" RowDefinitions="Auto, Auto, *" Margin="15">
@@ -16,7 +23,7 @@
 				<TextBox Grid.Row="0" Grid.Column="0" Watermark="Item Name" MinHeight="40" MinWidth="300"
 				         Margin="5" HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 				         Text="{Binding ItemVM.DisplayName}"
-				         VerticalContentAlignment="Center" />
+				         VerticalContentAlignment="Center" x:Name="itemName"/>
 
 				<Grid Grid.Row="1" Grid.Column="0" RowDefinitions="*, Auto">
 					<Grid Grid.Row="0" ColumnDefinitions="Auto, Auto, *" HorizontalAlignment="Center" Margin="0, 10, 0, -2">
@@ -49,8 +56,7 @@
 					<TextBox Grid.Row="1" Watermark="#RRGGBB" Height="40" Margin="5"
 					         HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 					         Text="{Binding ItemVM.ItemColour}"
-					         LostFocus="ItemColour_OnFocusLost"
-					         VerticalContentAlignment="Center" />
+					         VerticalContentAlignment="Center" Width="100" x:Name="itemColour"/>
 				</Grid>
 
 				<Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" BoxShadow="0 0 15 0.25 Black"
@@ -139,17 +145,16 @@
 						         MaxWidth="300"
 						         Margin="25, 5" HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 						         Text="{Binding ItemVM.DependentItemName}" VerticalContentAlignment="Center"
-						         IsEnabled="{Binding ItemVM.ItemIsDependent}" />
+						         IsEnabled="{Binding ItemVM.ItemIsDependent}" x:Name="depItemName"/>
 					</Grid>
 
-					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" IsVisible="{Binding ItemVM.ItemIsDependent}">
+					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" IsVisible="{Binding !ItemVM.ItemIsDependent}">
 						<TextBlock Grid.Row="0" Grid.Column="0" Text="Dependent Item Colour:" HorizontalAlignment="Center"
 						           VerticalAlignment="Center" Margin="5,50,5,5"/>
 						<TextBox Grid.Row="0" Grid.Column="1" Watermark="#RRGGBB (Default is Red)" Height="40" Margin="25, 50, 15, 5"
 						         HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 						         Text="{Binding ItemVM.DepItemColour}"
-						         LostFocus="DepItemColour_OnFocusLost"
-						         VerticalContentAlignment="Center" />
+						         VerticalContentAlignment="Center" x:Name="depItemColour" />
 						
 						<Image Grid.Row="1" Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left" Margin="15" />
 
@@ -196,7 +201,7 @@
 						</Panel>
 						<ToolTip.Tip>
 							<StackPanel>
-								<TextBlock TextWrapping="Wrap">Define where items are allowed to appear</TextBlock>
+								<TextBlock TextWrapping="Wrap">Define where items are allowed to appear in the output</TextBlock>
 							</StackPanel>
 						</ToolTip.Tip>
 					</Button>
@@ -247,7 +252,7 @@
 						</Panel>
 						<ToolTip.Tip>
 							<StackPanel>
-								<TextBlock TextWrapping="Wrap">Exit item editor and discard progress</TextBlock>
+								<TextBlock TextWrapping="Wrap">Exit the item editor and discard progress</TextBlock>
 							</StackPanel>
 						</ToolTip.Tip>
 					</Button>

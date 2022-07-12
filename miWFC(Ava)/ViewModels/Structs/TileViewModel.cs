@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Managers;
 using ReactiveUI;
+
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -113,7 +113,7 @@ public class TileViewModel : ReactiveObject {
         get => _patternWeightString;
         set => this.RaiseAndSetIfChanged(ref _patternWeightString, value);
     }
-    
+
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
@@ -140,7 +140,7 @@ public class TileViewModel : ReactiveObject {
         get => _finalRotation;
         set => this.RaiseAndSetIfChanged(ref _finalRotation, value);
     }
-    
+
     /// <summary>
     /// Final pattern flipping used in the UI to show to the user, XOR of the user flipping and the pattern's inherent
     /// flipping
@@ -213,7 +213,7 @@ public class TileViewModel : ReactiveObject {
         get => _changeAmount;
         set => this.RaiseAndSetIfChanged(ref _changeAmount, value);
     }
-    
+
     // Booleans
 
     /// <summary>
@@ -302,7 +302,7 @@ public class TileViewModel : ReactiveObject {
                 _patternWeight == 0d ? "~0" : _patternWeight.ToString(CultureInfo.InvariantCulture);
         }
     }
-    
+
     // Images
 
     /// <summary>
@@ -312,7 +312,7 @@ public class TileViewModel : ReactiveObject {
         get => _patternImage;
         init => this.RaiseAndSetIfChanged(ref _patternImage, value);
     }
-    
+
     // Objects
 
     /// <summary>
@@ -322,7 +322,7 @@ public class TileViewModel : ReactiveObject {
         get => _patternColour;
         init => this.RaiseAndSetIfChanged(ref _patternColour, value);
     }
-    
+
     // Lists
 
     /// <summary>
@@ -333,7 +333,7 @@ public class TileViewModel : ReactiveObject {
         get => _weightHeatmap;
         set => this.RaiseAndSetIfChanged(ref _weightHeatmap, value);
     }
-    
+
     // Other
 
     /*
@@ -360,7 +360,7 @@ public class TileViewModel : ReactiveObject {
     public void OnWeightIncrement() {
         HandleWeightGapChange(true);
     }
-    
+
     /// <summary>
     /// Function to handle an decrease in the amount to change the actual weight with
     /// </summary>
@@ -378,6 +378,8 @@ public class TileViewModel : ReactiveObject {
             case 1d:
                 if (increment) {
                     ChangeAmount = 10;
+                } else {
+                    centralManager!.GetUIManager().DispatchError(centralManager!.GetMainWindow(), "Change amount cannot be decreased further");
                 }
 
                 break;
@@ -440,7 +442,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public async void DynamicWeightClick() {
         await centralManager!.GetUIManager().SwitchWindow(Windows.HEATMAP);
-        
+
         int xDim = centralManager!.GetMainWindowVM().ImageOutWidth,
             yDim = centralManager!.GetMainWindowVM().ImageOutHeight;
         if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
@@ -499,7 +501,7 @@ public class TileViewModel : ReactiveObject {
         await centralManager!.GetInputManager().RestartSolution("User rotate change", true);
         centralManager!.GetWFCHandler().UpdateTransformations();
     }
-    
+
     /// <summary>
     /// Callback when flipping a flip locked tile to alter the output appearance
     /// </summary>

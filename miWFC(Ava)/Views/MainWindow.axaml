@@ -212,7 +212,7 @@
 											</Panel>
 											<ToolTip.Tip>
 												<StackPanel>
-													<TextBlock TextWrapping="Wrap">Open the weight mapping window</TextBlock>
+													<TextBlock TextWrapping="Wrap">Open the dynamic value mapping window</TextBlock>
 												</StackPanel>
 											</ToolTip.Tip>
 										</Button>

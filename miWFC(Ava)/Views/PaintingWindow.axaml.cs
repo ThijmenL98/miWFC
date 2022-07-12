@@ -198,6 +198,14 @@ public partial class PaintingWindow : Window {
 
                 e.Handled = true;
                 break;
+            case Key.T:
+                if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
+                    centralManager.GetMainWindowVM().PaintingVM.ActivateTemplatePlacementMode();
+                } else {
+                    centralManager.GetMainWindowVM().PaintingVM.ActivateTemplateCreationMode();
+                }
+
+                break;
             case Key.S:
             case Key.M:
                 centralManager.GetInputManager().PlaceMarker();
@@ -328,7 +336,7 @@ public partial class PaintingWindow : Window {
                 (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
                 idx)!;
             if (success != null && !(bool) success) {
-                centralManager?.GetUIManager().DispatchError(this);
+                centralManager?.GetUIManager().DispatchError(this, null);
                 canUsePencil = false;
 
                 if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
@@ -410,7 +418,7 @@ public partial class PaintingWindow : Window {
         if (centralManager == null) {
             return;
         }
-        
+
         if (!centralManager.GetPaintingWindow().IsVisible) {
             return;
         }

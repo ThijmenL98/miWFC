@@ -14,7 +14,7 @@ namespace miWFC.Views;
 /// </summary>
 public partial class ItemWindow : Window {
     private CentralManager? centralManager;
-    
+
     /*
      * Initializing Functions & Constructor
      */
@@ -34,7 +34,7 @@ public partial class ItemWindow : Window {
             }
         };
     }
-    
+
     private void InitializeComponent() {
         AvaloniaXamlLoader.Load(this);
 
@@ -48,7 +48,7 @@ public partial class ItemWindow : Window {
         this.Find<ItemAddMenu>("itemAddMenu").SetCentralManager(cm);
         this.Find<RegionDefineMenu>("regionDefineMenu").SetCentralManager(cm);
     }
-    
+
     /*
      * Getters & Setters
      */
@@ -84,7 +84,7 @@ public partial class ItemWindow : Window {
     /// <summary>
     /// Get the data grid which holds the to-be-added items to the output
     /// </summary>
-    /// 
+    ///
     /// <returns></returns>
     public DataGrid GetDataGrid() {
         return this.Find<DataGrid>("itemsDataGrid");
@@ -110,6 +110,60 @@ public partial class ItemWindow : Window {
         }
 
         switch (e.Key) {
+            case Key.R:
+                if (!centralManager!.GetMainWindowVM().ItemVM.InAnyMenu) {
+                    centralManager!.GetMainWindowVM().ItemVM.GenerateItemGrid();
+                    e.Handled = true;
+                }
+
+                break;
+            case Key.N:
+            case Key.C:
+                if (!centralManager!.GetMainWindowVM().ItemVM.InAnyMenu) {
+                    centralManager!.GetMainWindowVM().ItemVM.CreateNewItem();
+                    e.Handled = true;
+                }
+
+                break;
+            case Key.E:
+                if (!centralManager!.GetMainWindowVM().ItemVM.InAnyMenu) {
+                    centralManager!.GetMainWindowVM().ItemVM.EditSelectedItem();
+                    e.Handled = true;
+                }
+
+                break;
+            case Key.Delete:
+            case Key.Back:
+                if (!centralManager!.GetMainWindowVM().ItemVM.InAnyMenu) {
+                    centralManager!.GetMainWindowVM().ItemVM.RemoveSelectedItem();
+                    e.Handled = true;
+                }
+
+                break;
+            case Key.Escape:
+                if (centralManager.GetUIManager().PopUpOpened()) {
+                    centralManager.GetUIManager().HidePopUp();
+                } else if (centralManager!.GetMainWindowVM().ItemVM.InRegionDefineMenu) {
+                    centralManager!.GetMainWindowVM().ItemVM.InRegionDefineMenu = false;
+                } else if (centralManager!.GetMainWindowVM().ItemVM.InItemMenu) {
+                    centralManager!.GetMainWindowVM().ItemVM.InItemMenu = false;
+                } else {
+                    centralManager?.GetUIManager().SwitchWindow(Windows.MAIN);
+                }
+
+                e.Handled = true;
+                break;
+            case Key.W:
+                bool hasFocusOnTB = GetItemAddMenu().GetItemColourTB().IsFocused ||
+                                    GetItemAddMenu().GetItemNameTB().IsFocused ||
+                                    GetItemAddMenu().GetDepItemNameTB().IsFocused ||
+                                    GetItemAddMenu().GetDepItemColourTB().IsFocused;
+                if (centralManager!.GetMainWindowVM().ItemVM.InItemMenu && !hasFocusOnTB) {
+                    centralManager!.GetMainWindowVM().ItemVM.InRegionDefineMenu = true;
+                    e.Handled = true;
+                }
+
+                break;
             default:
                 base.OnKeyDown(e);
                 break;

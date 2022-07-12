@@ -97,7 +97,7 @@
 						</Panel>
 						<ToolTip.Tip>
 							<StackPanel>
-								<TextBlock TextWrapping="Wrap">Exit region editor and discard progress</TextBlock>
+								<TextBlock TextWrapping="Wrap">Exit the region editor and discard progress</TextBlock>
 							</StackPanel>
 						</ToolTip.Tip>
 					</Button>

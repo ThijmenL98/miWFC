@@ -1008,4 +1008,35 @@ public static class Util {
 
         return (newLower, newUpper);
     }
+
+    /// <summary>
+    /// Function to validate the input string as a colour
+    /// </summary>
+    /// 
+    /// <param name="s">Input string to validate as colour</param>
+    ///
+    /// <returns>S formatted if s was a string, otherwise null</returns>
+    public static string? ValidateColor(string s) {
+        if (!s.StartsWith("#")) {
+            try {
+                Color cRaw = Color.Parse(s);
+                Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
+                s = c.ToString().ToUpper().Replace("#FF", "#");
+                return s;
+            } catch (Exception) {
+                // ignored
+            }
+
+            s = "#" + s;
+        }
+
+        try {
+            Color cRaw = Color.Parse(s);
+            Color c = Color.FromRgb(cRaw.R, cRaw.G, cRaw.B);
+            s = c.ToString().ToUpper().Replace("#FF", "#");
+            return s;
+        } catch (Exception) {
+            return null;
+        }
+    }
 }

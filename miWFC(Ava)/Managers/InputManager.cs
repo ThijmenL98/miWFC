@@ -32,9 +32,7 @@ public class InputManager {
 
     private readonly Bitmap noResultFoundBM;
     private readonly Stack<int> savePoints;
-
-    private int lastPaintedAmountCollapsed;
-
+    
     private int lastProcessedX = -1, lastProcessedY = -1;
 
     private Color[,] maskColours;
@@ -68,8 +66,6 @@ public class InputManager {
         RestartSolution("Constructor");
 #pragma warning restore CS4014
         centralManager.GetUIManager().UpdateInstantCollapse(1);
-
-        lastPaintedAmountCollapsed = 0;
     }
 
     /*
@@ -136,9 +132,7 @@ public class InputManager {
         while (savePoints.Count > 0) {
             savePoints.Pop();
         }
-
-        lastPaintedAmountCollapsed = 0;
-
+        
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
@@ -170,7 +164,7 @@ public class InputManager {
     public async void AdvanceStep() {
         if (centralManager.GetWFCHandler().GetAmountCollapsed()
             .Equals(mainWindowVM.ImageOutWidth * mainWindowVM.ImageOutHeight)) {
-            centralManager.GetUIManager().DispatchError(mainWindow);
+            centralManager.GetUIManager().DispatchError(mainWindow, "Output is already fully generated!");
             return;
         }
 
@@ -212,7 +206,7 @@ public class InputManager {
                                curMarker.MarkerCollapsePercentage) >
                     0.00001d || curMarker.Revertible;
                 if (!canReturn) {
-                    centralManager.GetUIManager().DispatchError(mainWindow);
+                    centralManager.GetUIManager().DispatchError(mainWindow, "Unable to step back any more!");
                     return;
                 }
             }
@@ -338,7 +332,7 @@ public class InputManager {
         if (savePoints.Count != 0) {
             if (!mainWindowVM.Markers[savePoints.Count - 1].Revertible) {
                 if (centralManager.GetWFCHandler().GetAmountCollapsed() == prevAmountCollapsed) {
-                    centralManager.GetUIManager().DispatchError(mainWindow);
+                    centralManager.GetUIManager().DispatchError(mainWindow, "Unable to revert further");
                     return;
                 }
 
@@ -347,7 +341,7 @@ public class InputManager {
         }
 
         if (!skipPop && centralManager.GetWFCHandler().GetAmountCollapsed() == prevAmountCollapsed &&
-            prevAmountCollapsed != lastPaintedAmountCollapsed && savePoints.Count != 0) {
+            prevAmountCollapsed != 0 && savePoints.Count != 0) {
             savePoints.Pop();
 
             foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
@@ -357,12 +351,6 @@ public class InputManager {
             }
 
             prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
-        }
-
-        if (lastPaintedAmountCollapsed != 0 &&
-            prevAmountCollapsed == centralManager.GetWFCHandler().GetAmountCollapsed()) {
-            centralManager.GetUIManager().DispatchError(mainWindow);
-            return;
         }
 
         try {
@@ -417,8 +405,7 @@ public class InputManager {
 
             if (inputImageWidth > maxImageSize || inputImageWidth < 10 || inputImageHeight > maxImageSize ||
                 inputImageHeight < 10 || inputImageWidth % tileSize != 0 || inputImageHeight % tileSize != 0) {
-                centralManager.GetUIManager().DispatchError(mainWindow);
-                // TODO Popup telling user input image was not allowed size
+                centralManager.GetUIManager().DispatchError(mainWindow, "Imported image was of illegal dimensions");
                 return;
             }
 
@@ -439,8 +426,7 @@ public class InputManager {
                     .Aggregate(true, (current, found) => current && found);
 
                 if (!allowed) {
-                    centralManager.GetUIManager().DispatchError(mainWindow);
-                    // TODO Popup telling user input image was not correct colours
+                    centralManager.GetUIManager().DispatchError(mainWindow, "Imported image contained illegal colours");
                     return;
                 }
             }
@@ -488,15 +474,13 @@ public class InputManager {
                         bool? success = ProcessClick(x, y, imageWidth, imageHeight, idx, true).Result;
 
                         if (success != null && !(bool) success) {
-                            centralManager.GetUIManager().DispatchError(mainWindow);
-                            // TODO Popup telling user input image was not following patterns?
+                            centralManager.GetUIManager().DispatchError(mainWindow, "Imported image contained an illegal configuration");
                             await RestartSolution("Imported image failure (pattern)", true);
                             return;
                         }
                     } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
                                !toPaint.Equals(foundAtPos) && retry == 0) {
-                        centralManager.GetUIManager().DispatchError(mainWindow);
-                        // TODO Popup telling user input image is illegal?
+                        centralManager.GetUIManager().DispatchError(mainWindow, "Imported image was not valid");
                         await RestartSolution("Imported image failure (illegal)", true);
                         return;
                     }
@@ -540,14 +524,12 @@ public class InputManager {
                         bool? success = ProcessClick(x, y, imageWidth, imageHeight, toSel, true).Result;
 
                         if (success != null && !(bool) success) {
-                            centralManager.GetUIManager().DispatchError(mainWindow);
-                            // TODO Popup telling user input image was not following patterns?
+                            centralManager.GetUIManager().DispatchError(mainWindow, "Imported image contained an illegal configuration");
                             await RestartSolution("Imported image failure (pattern)", true);
                             return;
                         }
                     } else if (foundAtPos != -1 && toSel != foundAtPos) {
-                        centralManager.GetUIManager().DispatchError(mainWindow);
-                        // TODO Popup telling user input image is illegal?
+                        centralManager.GetUIManager().DispatchError(mainWindow, "Imported image was not valid");
                         await RestartSolution("Imported image failure (illegal)", true);
                         return;
                     }
@@ -556,10 +538,8 @@ public class InputManager {
 
             mainWindowVM.SetWeights(inputW.Select(x => (double) x).ToArray());
         } catch (AggregateException exception) {
-            // TODO pre processing?
-            centralManager.GetUIManager().DispatchError(mainWindow);
+            centralManager.GetUIManager().DispatchError(mainWindow, "Imported image did not match the selected input settings");
             Trace.WriteLine(exception);
-            // TODO Popup telling user input image is mismatching?
             await RestartSolution("Imported image failure (mismatch)", true);
         }
     }
@@ -637,7 +617,7 @@ public class InputManager {
     public async void Animate() {
         if (centralManager.GetWFCHandler().IsCollapsed()) {
             mainWindowVM.IsPlaying = false;
-            centralManager.GetUIManager().DispatchError(mainWindow);
+            centralManager.GetUIManager().DispatchError(mainWindow, "Output is already fully generated!");
             return;
         }
 
@@ -1049,7 +1029,7 @@ public class InputManager {
         if (error) {
             centralManager.GetWFCHandler().StepBackWfc(placeCount);
             mainWindowVM.OutputImage = centralManager.GetWFCHandler().GetLatestOutputBm();
-            centralManager.GetUIManager().DispatchError(centralManager.GetPaintingWindow());
+            centralManager.GetUIManager().DispatchError(centralManager.GetPaintingWindow(), "Template was not able to be placed here");
             return false;
         }
 

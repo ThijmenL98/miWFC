@@ -16,6 +16,7 @@ using Avalonia.Threading;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.BaseWindows.Base;
 using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
 using MessageBox.Avalonia.Models;
 using miWFC.DeBroglie.Models;
 using miWFC.Utils;
@@ -176,7 +177,7 @@ public class UIManager {
                 mainWindowVM.MainInfoPopupVisible = true;
                 break;
             case "I":
-                // TODO mainWindowVM.ItemsInfoPopupVisible = true;
+                mainWindowVM.ItemsInfoPopupVisible = true;
                 break;
             case "P":
                 mainWindowVM.PaintInfoPopupVisible = true;
@@ -272,7 +273,8 @@ public class UIManager {
     /// </summary>
     /// 
     /// <param name="window">Window to shake</param>
-    public void DispatchError(Window window) {
+    /// <param name="errorMessage">The error message to show in a popup</param>
+    public void DispatchError(Window window, string? errorMessage) {
         dt.Stop();
         if (origPos != null) {
             window.Position = (PixelPoint) origPos;
@@ -305,6 +307,16 @@ public class UIManager {
 
         dt.Interval = TimeSpan.FromMilliseconds(30);
         dt.Start();
+
+        if (errorMessage != null) {
+            IMsBoxWindow<ButtonResult>? messageBoxCustomWindow = MessageBoxManager
+                .GetMessageBoxStandardWindow(new MessageBoxStandardParams {
+                        ContentTitle = "Error", ContentMessage = errorMessage + Environment.NewLine,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    }
+                );
+            messageBoxCustomWindow.Show();
+        }
     }
 
     /// <summary>

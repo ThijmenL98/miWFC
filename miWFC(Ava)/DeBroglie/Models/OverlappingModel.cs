@@ -278,7 +278,6 @@ public class OverlappingModel : TileModel {
         // See TestTileMaskWithThinOverlapping for an example of the problem, and
         // https://github.com/BorisTheBrave/DeBroglie/issues/7 for a possible solution.
         if (topology.Mask != null) {
-            // BORIS_TODO: This could probably do with some cleanup
             bool getTopologyMask(int x, int y, int z) {
                 if (!gridTopology.PeriodicX && x >= topology.Width) {
                     return false;

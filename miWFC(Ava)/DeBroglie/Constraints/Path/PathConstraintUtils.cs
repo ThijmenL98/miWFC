@@ -50,7 +50,6 @@ public static class PathConstraintUtils {
             throw new Exception("Length of walkable doesn't match count of nodes");
         }
 
-        // BORIS_TODO: Restructure so we don't need construct these fresh every time.
         int[] low = new int[indices];
         int num = 1;
         int[] dfsNum = new int[indices];

@@ -58,7 +58,7 @@
 								<Border Padding="1">
 									<Grid Margin="5">
 										<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicWeights.png"
-										       Stretch="Uniform" Height="515" />
+										       Stretch="Uniform" Height="610" />
 										<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 										        VerticalAlignment="Top"
 										        x:Name="borderPaddingToggle" Background="Transparent"
@@ -155,7 +155,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Reset the mapping to default</TextBlock>
+										<TextBlock TextWrapping="Wrap">Reset the dynamic mapping to its defaults</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -256,7 +256,7 @@
 									</Panel>
 									<ToolTip.Tip>
 										<StackPanel>
-											<TextBlock TextWrapping="Wrap">Go back to the main screen</TextBlock>
+											<TextBlock TextWrapping="Wrap">Go back to the main window</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>

@@ -38,9 +38,7 @@ public interface ITopology {
     ///     Not all uses of Topology support masks.
     /// </summary>
     bool[] Mask { get; }
-
-    // BORIS_TODO: We do not need all these overloads, surely
-
+    
     /// <summary>
     ///     Given an index and a direction, gives the index that is one step in that direction,
     ///     if it exists and is not masked out. Otherwise, it returns false.

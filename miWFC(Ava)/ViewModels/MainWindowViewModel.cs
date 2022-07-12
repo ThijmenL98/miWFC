@@ -564,7 +564,7 @@ public class MainWindowViewModel : ViewModelBase {
                 break;
             case "I":
                 if (!centralManager!.GetWFCHandler().IsCollapsed()) {
-                    centralManager.GetUIManager().DispatchError(centralManager.GetMainWindow());
+                    centralManager.GetUIManager().DispatchError(centralManager.GetMainWindow(), null);
                 }
                 centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
 

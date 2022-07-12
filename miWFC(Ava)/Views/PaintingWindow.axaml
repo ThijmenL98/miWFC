@@ -71,7 +71,7 @@
 								<Border Padding="1">
 									<Grid Margin="5">
 										<Image HorizontalAlignment="Right" Source="../Assets/InfoGraphicPaint.png"
-										       Stretch="Uniform" Height="515" />
+										       Stretch="Uniform" Height="630" />
 										<Button Padding="0" Margin="8" MaxWidth="60" HorizontalAlignment="Right"
 										        VerticalAlignment="Top"
 										        x:Name="borderPaddingToggle" Background="Transparent"
@@ -153,7 +153,7 @@
 								<ToolTip.Tip>
 									<StackPanel>
 										<TextBlock TextWrapping="Wrap">Paint over areas you would like to re-do</TextBlock>
-										<TextBlock TextWrapping="Wrap">Left Mouse: Add - Right Mouse: Remove</TextBlock>
+										<TextBlock TextWrapping="Wrap">Left Mouse: Keep (Green) - Right Mouse: Remove (Red)</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -179,7 +179,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Create region templates to place as a whole</TextBlock>
+										<TextBlock TextWrapping="Wrap">Create region templates from the output image, to place as a whole elsewhere</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -205,7 +205,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Place created templates on the output</TextBlock>
+										<TextBlock TextWrapping="Wrap">Place created templates onto the output image</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -282,7 +282,7 @@
 								              IsChecked="{Binding PaintingVM.IsPaintOverrideEnabled}">
 									<ToolTip.Tip>
 										<StackPanel>
-											<TextBlock TextWrapping="Wrap">Use with caution! Can only be used for single tile clicking</TextBlock>
+											<TextBlock TextWrapping="Wrap">Use with caution! Can only be used for single cells and may cause nearby regions to reset</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</ToggleSwitch>
@@ -309,7 +309,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Apply the current paint keep/remove selection</TextBlock>
+										<TextBlock TextWrapping="Wrap">Apply the currently painted mask to the output</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -391,7 +391,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Save the current selection of tiles as template</TextBlock>
+										<TextBlock TextWrapping="Wrap">Save the current selection of tiles as a template</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
@@ -682,7 +682,7 @@
 									</Panel>
 									<ToolTip.Tip>
 										<StackPanel>
-											<TextBlock TextWrapping="Wrap">Place a new marker</TextBlock>
+											<TextBlock TextWrapping="Wrap">Place a new save point marker</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>
@@ -710,7 +710,7 @@
 									</Panel>
 									<ToolTip.Tip>
 										<StackPanel>
-											<TextBlock TextWrapping="Wrap">Revert back to last marker (if available)</TextBlock>
+											<TextBlock TextWrapping="Wrap">Revert back to last save point marker</TextBlock>
 										</StackPanel>
 									</ToolTip.Tip>
 								</Button>

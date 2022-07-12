@@ -188,7 +188,7 @@ public class PaintingViewModel : ReactiveObject {
     public async Task ApplyPaintMask() {
         Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
         if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
-            centralManager!.GetUIManager().DispatchError(centralManager.GetPaintingWindow());
+            centralManager!.GetUIManager().DispatchError(centralManager.GetPaintingWindow(), "No mask has been painted");
             return;
         }
 
@@ -234,7 +234,7 @@ public class PaintingViewModel : ReactiveObject {
                     Color atPos = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
 
                     if (atPos.A != 255) {
-                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "Cannot include transparent cells in template");
                         return;
                     }
 
@@ -260,7 +260,7 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         if (!nonEmpty) {
-            centralManager!.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+            centralManager!.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
             return;
         }
 
@@ -299,7 +299,7 @@ public class PaintingViewModel : ReactiveObject {
             for (int b = 0; b < mask.GetLength(1); b++) {
                 if (mask[a, b] == Colors.White) {
                     if (aOutput.get(a, b) < 0) {
-                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "Cannot include transparent cells in template");
                         return;
                     }
 
@@ -325,7 +325,7 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         if (!nonEmpty) {
-            centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow());
+            centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
             return;
         }
 

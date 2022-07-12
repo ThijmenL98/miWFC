@@ -197,9 +197,7 @@ internal class Ac4PatternModelConstraint : IPatternModelConstraint {
                     }
 
                     BitArray patternsDense = propagatorArrayDense[pattern][(int) el];
-
-                    // BORIS_TODO: Special case for when patterns.Length == 1?
-
+                    
                     PropagateSelectCore(patternsDense, i2, (int) id);
                 }
             }
