@@ -42,7 +42,7 @@ public class ItemViewModel : ReactiveObject {
     private int _editingEntry = -2,
         _itemsToAddValue = 1,
         _itemsToAddLower = 1,
-        _depMaxDistance = 2,
+        _depMaxDistance = 5,
         _depMinDistance = 1,
         _itemsToAddUpper = 2;
 
@@ -372,7 +372,7 @@ public class ItemViewModel : ReactiveObject {
         ItemIsDependent = false;
         DepMinDistance = 1;
         _editingEntry = -2;
-        DepMaxDistance = 2;
+        DepMaxDistance = 5;
         
         DisplayName = "";
         ItemColour = "";
@@ -401,7 +401,7 @@ public class ItemViewModel : ReactiveObject {
         ItemsToAddValue = 1;
         ItemIsDependent = false;
         DepMinDistance = 1;
-        DepMaxDistance = 2;
+        DepMaxDistance = 5;
         
         DisplayName = "";
         ItemColour = "";
@@ -460,7 +460,7 @@ public class ItemViewModel : ReactiveObject {
             DepItemColour = ((Color) itemSelected.DepColor!).ToString().ToUpper().Replace("#FF", "#");
         } else {
             DepMinDistance = 1;
-            DepMaxDistance = 2;
+            DepMaxDistance = 5;
 
             DependentItemName = "";
             DepItemColour = "";

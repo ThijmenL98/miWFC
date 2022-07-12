@@ -49,7 +49,7 @@ public class ItemObjectViewModel : ReactiveObject {
             DepItemIcon = dependentItem.Item2;
             HasDependentItem = true;
             DepColor = dependentItem.Item3;
-            DepItemString = $@"Appearing distance: {dependentItem.Item4.Item1} to {dependentItem.Item4.Item2}";
+            DepItemString = $"{dependentItem.Item1!}\nAppearing distance: {dependentItem.Item4.Item1} to {dependentItem.Item4.Item2}";
         } else {
             DependentItem = new Tuple<string?, (int, int)>(null, (0, 0));
             DepItemIcon = null;

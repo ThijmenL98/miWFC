@@ -19,7 +19,7 @@
 					
 					<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
 					       x:Name="regionImage" Source="{Binding ItemVM.RegionImage}"
-					       Opacity=".25" PointerPressed="RegionImageOnPointerPressed" 
+					       Opacity=".5" PointerPressed="RegionImageOnPointerPressed" 
 					       PointerMoved="RegionImageOnPointerMoved"/>
 				</Grid>
 			</Border>
