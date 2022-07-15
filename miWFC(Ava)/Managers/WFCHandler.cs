@@ -283,7 +283,7 @@ public class WFCHandler {
     private List<TileViewModel> InitializeAdjacentModel(string inputImage) {
         dbModel = new AdjacentModel();
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/Default/{inputImage}/data.xml").Root ??
-                new XElement("");
+            new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -529,7 +529,7 @@ public class WFCHandler {
     /// <returns>Boolean</returns>
     public bool IsCollapsed() {
         bool isC = dbPropagator is {Status: Resolution.DECIDED} ||
-                   Math.Abs(GetPercentageCollapsed() - 1d) < 0.0001d;
+            Math.Abs(GetPercentageCollapsed() - 1d) < 0.0001d;
 
         centralManager.GetMainWindowVM().ItemVM.ItemEditorEnabled
             = centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Worlds Top-Down") && isC;
@@ -855,9 +855,9 @@ public class WFCHandler {
     /// </returns>
     private (List<PatternArray> patternList, List<double> patternWeights) SetOverlappingSample(string category,
         string inputImage) {
-        bool hasRotations = (category.Equals("Worlds Top-Down")
-                             || category.Equals("Knots") || category.Equals("Knots") ||
-                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+        bool hasRotations = (category.Equals("Worlds Top-Down") || inputImage.Contains("Map")|| inputImage.Contains("Biome")
+            || inputImage.Contains("City") || category.Equals("Knots") || category.Equals("Knots") ||
+            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
         (List<PatternArray>? patternList, List<double>? patternWeights)
             = ((OverlappingModel) dbModel).addSample(tiles, disabledPatterns,
@@ -998,7 +998,7 @@ public class WFCHandler {
                             for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
                                 toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
                                     where tvmPatt.PatternIndex.Equals(i) &&
-                                          tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
+                                        tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
                                     select tvmPatt.PatternIndex);
                             }
                         }
@@ -1570,7 +1570,7 @@ public class WFCHandler {
             Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
             return outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                 ? ((int) Math.Floor((double) x / tileSize) +
-                   (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                    (int) Math.Floor((double) y / tileSize)) % 2 == 0
                     ? Color.Parse("#11000000")
                     : Color.Parse("#00000000")
                 : Color.Parse("#00000000"));

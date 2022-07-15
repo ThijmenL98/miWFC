@@ -453,9 +453,9 @@ public class WavePropagator {
         int averageSize = (int) ((outWidth + outHeight) / 2d);
 #if DEBUG
         // Debug takes longer due to the console writing and other debugging tools
-        int allowedTime = (int) (5d * (averageSize * averageSize) - 30d * averageSize + 250d);
+        int allowedTime = (int) (12d * (averageSize * averageSize) - 30d * averageSize + 250d);
 #else
-        int allowedTime = (int) (2d * (averageSize * averageSize) - 12d * averageSize + 100d);
+        int allowedTime = (int) (5d * (averageSize * averageSize) - 12d * averageSize + 100d);
 #endif
 
         while (true) {
