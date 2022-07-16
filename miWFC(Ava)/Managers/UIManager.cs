@@ -2,10 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -27,7 +25,7 @@ using miWFC.Views;
 namespace miWFC.Managers;
 
 /// <summary>
-/// Manager to handle (everything) UI Related
+///     Manager to handle (everything) UI Related
 /// </summary>
 public class UIManager {
     private readonly CentralManager centralManager;
@@ -52,6 +50,8 @@ public class UIManager {
     private PixelPoint? origPos;
     private int patternCount;
     private Dictionary<int, List<Bitmap>> similarityMap = new();
+
+    private bool windowClosed = true;
 
     /*
      * Initializing Functions & Constructor
@@ -90,9 +90,8 @@ public class UIManager {
      */
 
     /// <summary>
-    /// Update the categories combo box 
+    ///     Update the categories combo box
     /// </summary>
-    /// 
     /// <param name="values">New Combo Box values</param>
     /// <param name="idx">Index, default is the first item</param>
     public void UpdateCategories(string[]? values, int idx = 0) {
@@ -104,9 +103,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Update the input images combo box
+    ///     Update the input images combo box
     /// </summary>
-    /// 
     /// <param name="values">New Combo Box values</param>
     /// <param name="idx">Index, default is the first item</param>
     public void UpdateInputImages(string[]? values, int idx = 0) {
@@ -114,9 +112,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Update the pattern sizes combo box
+    ///     Update the pattern sizes combo box
     /// </summary>
-    /// 
     /// <param name="values">New Combo Box values</param>
     /// <param name="idx">Index, default is the first item</param>
     public void UpdatePatternSizes(int[]? values, int idx = 0) {
@@ -124,11 +121,9 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Set the input image in the UI to the currently selected image
+    ///     Set the input image in the UI to the currently selected image
     /// </summary>
-    /// 
     /// <param name="newImage">Name of the selected input image</param>
-    ///
     /// <returns>Whether the image was correctly loaded</returns>
     public bool UpdateInputImage(string newImage) {
         try {
@@ -144,9 +139,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Set whether the application should instantly collapse or take steps
+    ///     Set whether the application should instantly collapse or take steps
     /// </summary>
-    /// 
     /// <param name="newValue">Amount of steps to take (>100 = instantly collapse)</param>
     public void UpdateInstantCollapse(int newValue) {
         bool ic = newValue >= 100;
@@ -155,9 +149,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Update the position of the "Current location in time" timestamp marker
+    ///     Update the position of the "Current location in time" timestamp marker
     /// </summary>
-    /// 
     /// <param name="amountCollapsed">Percentage of the output collapsed</param>
     public void UpdateTimeStampPosition(double amountCollapsed) {
         double tWidth = centralManager.GetMainWindow().IsVisible
@@ -167,9 +160,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Show each window's popup to the user
+    ///     Show each window's popup to the user
     /// </summary>
-    ///
     /// <param name="param">Which popup to show, based on the window the user is on</param>
     public void ShowPopUp(string param) {
         switch (param) {
@@ -189,7 +181,7 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Hide all popups, triggered on closing of any popup.
+    ///     Hide all popups, triggered on closing of any popup.
     /// </summary>
     public void HidePopUp() {
         mainWindowVM.MainInfoPopupVisible = false;
@@ -199,9 +191,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Whether one (or more, although design-wise impossible) popups are opened or not
+    ///     Whether one (or more, although design-wise impossible) popups are opened or not
     /// </summary>
-    /// 
     /// <returns>Is any popup opened?</returns>
     public bool PopUpOpened() {
         return mainWindowVM.MainInfoPopupVisible || mainWindowVM.ItemsInfoPopupVisible ||
@@ -209,7 +200,7 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Reset the patterns extracted from the input image to allow for the new input image to load its patterns.
+    ///     Reset the patterns extracted from the input image to allow for the new input image to load its patterns.
     /// </summary>
     public void ResetPatterns() {
         similarityMap = new Dictionary<int, List<Bitmap>>();
@@ -218,14 +209,12 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Add a new tile/pattern to the tile/pattern section of the application
+    ///     Add a new tile/pattern to the tile/pattern section of the application
     /// </summary>
-    /// 
     /// <param name="colors">Colour(s) used in the pattern/tile</param>
     /// <param name="weight">Weight of the pattern/tile</param>
     /// <param name="tileSymmetries">Symmetries of the all tiles keyed by parent tiles</param>
     /// <param name="rawIndex">Raw index of the tile</param>
-    /// 
     /// <returns>The TileViewModel created by the addition of the tile/pattern</returns>
     public TileViewModel? AddPattern(PatternArray colors, double weight, Dictionary<int, int[]>? tileSymmetries,
         int rawIndex) {
@@ -269,12 +258,11 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Function to shake the window if the user has done something erroneous
+    ///     Function to shake the window if the user has done something erroneous
     /// </summary>
-    /// 
     /// <param name="window">Window to shake</param>
     /// <param name="errorMessage">The error message to show in a popup</param>
-    public void DispatchError(Window window, string? errorMessage) {
+    public async void DispatchError(Window window, string? errorMessage) {
         dt.Stop();
         if (origPos != null) {
             window.Position = (PixelPoint) origPos;
@@ -309,23 +297,25 @@ public class UIManager {
         dt.Start();
 
         if (errorMessage != null) {
-            IMsBoxWindow<ButtonResult>? messageBoxCustomWindow = MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams {
-                        ContentTitle = "Error", ContentMessage = errorMessage + Environment.NewLine,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner
-                    }
-                );
-            messageBoxCustomWindow.Show();
+            if (windowClosed) {
+                windowClosed = false;
+                IMsBoxWindow<ButtonResult>? currentWindow = MessageBoxManager
+                    .GetMessageBoxStandardWindow(new MessageBoxStandardParams {
+                            ContentTitle = "Error", ContentMessage = errorMessage + Environment.NewLine,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        }
+                    );
+                Task<ButtonResult> windowResult = currentWindow.Show(window);
+                await windowResult.ContinueWith(_ => { windowClosed = true; });
+            }
         }
     }
 
     /// <summary>
-    /// Function to switch windows
+    ///     Function to switch windows
     /// </summary>
-    /// 
     /// <param name="window">Window to switch to</param>
     /// <param name="checkClicked">Whether the user needs to agree to discard or save unsaved work</param>
-    /// 
     /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
     public async Task SwitchWindow(Windows window, bool checkClicked = false) {
         if (mainWindowVM.ImageOutWidth != (int) centralManager.GetWFCHandler().GetPropagatorSize().Width ||
@@ -403,14 +393,14 @@ public class UIManager {
         target.Show();
 
         target.Position = source.Position;
+
+        centralManager.GetUIManager().HidePopUp();
     }
 
     /// <summary>
-    /// Function to handle the closing of the painting window which might contain unsaved work
+    ///     Function to handle the closing of the painting window which might contain unsaved work
     /// </summary>
-    /// 
     /// <param name="checkClicked">Whether the user has unsaved work</param>
-    /// 
     /// <returns>Task that finishes upon closing the prompt to save or discard unsaved work</returns>
     private async Task<bool> HandlePaintingClose(bool checkClicked) {
         if (!checkClicked) {
@@ -442,9 +432,8 @@ public class UIManager {
     }
 
     /// <summary>
-    /// Reference image record struct
+    ///     Reference image record struct
     /// </summary>
-    /// 
     /// <param name="Size">Size of the image reference</param>
     /// <param name="Data">Data of the image reference</param>
     private record ImageR(Size Size, Dictionary<Point, Color> Data) {
@@ -454,7 +443,7 @@ public class UIManager {
 }
 
 /// <summary>
-/// Enumerator for the different types of windows in this application
+///     Enumerator for the different types of windows in this application
 /// </summary>
 public enum Windows {
     MAIN,

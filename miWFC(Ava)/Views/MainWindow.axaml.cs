@@ -5,12 +5,13 @@ using Avalonia.Input;
 using miWFC.ContentControls;
 using miWFC.Managers;
 using miWFC.Utils;
+
 // ReSharper disable UnusedParameter.Local
 
 namespace miWFC.Views;
 
 /// <summary>
-/// Main window of the application
+///     Main window of the application
 /// </summary>
 public partial class MainWindow : Window {
     private CentralManager? centralManager;
@@ -49,9 +50,8 @@ public partial class MainWindow : Window {
     // Booleans
 
     /// <summary>
-    /// Whether the main window has already been initialized and activated
+    ///     Whether the main window has already been initialized and activated
     /// </summary>
-    /// 
     /// <returns>Boolean</returns>
     public bool IsWindowTriggered() {
         return triggered;
@@ -62,18 +62,16 @@ public partial class MainWindow : Window {
     // Objects
 
     /// <summary>
-    /// Get the input control of the application
+    ///     Get the input control of the application
     /// </summary>
-    /// 
     /// <returns>InputControl</returns>
     public InputControl GetInputControl() {
         return this.Find<InputControl>("inputControl");
     }
 
     /// <summary>
-    /// Get the output control of the application
+    ///     Get the output control of the application
     /// </summary>
-    /// 
     /// <returns>OutputControl</returns>
     public OutputControl GetOutputControl() {
         return this.Find<OutputControl>("outputControl");
@@ -88,9 +86,8 @@ public partial class MainWindow : Window {
      */
 
     /// <summary>
-    /// Callback for changing tabs, causing the mode of the algorithm to change
+    ///     Callback for changing tabs, causing the mode of the algorithm to change
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     private void OnTabChange(object? sender, SelectionChangedEventArgs e) {
@@ -105,9 +102,8 @@ public partial class MainWindow : Window {
     }
 
     /// <summary>
-    /// Custom handler for keyboard input
+    ///     Custom handler for keyboard input
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private async void KeyDownHandler(object? sender, KeyEventArgs e) {
@@ -190,9 +186,8 @@ public partial class MainWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the window has been initialized and activated
+    ///     Callback when the window has been initialized and activated
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">EventArgs</param>
     private async void WindowBase_OnActivated(object? sender, EventArgs e) {
@@ -210,10 +205,9 @@ public partial class MainWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the user clicks anywhere in the application and the informative popup window is opened, causing
-    /// it to close
+    ///     Callback when the user clicks anywhere in the application and the informative popup window is opened, causing
+    ///     it to close
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerPressedEventArgs</param>
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e) {
@@ -224,9 +218,8 @@ public partial class MainWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the user moves their mouse to update whether the output has been collapsed.
+    ///     Callback when the user moves their mouse to update whether the output has been collapsed.
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void InputElement_OnPointerMoved(object? sender, PointerEventArgs e) {

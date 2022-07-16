@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia;
 using Avalonia.Media;
@@ -46,7 +47,8 @@ public class MainWindowViewModel : ViewModelBase {
         _advancedOverlapping,
         simpleAdvanced,
         _advancedOverlappingIW,
-        _isRunning;
+        _isRunning,
+        _customInputSelected;
 
     private ObservableCollection<MarkerViewModel> _markers = new();
 
@@ -60,7 +62,9 @@ public class MainWindowViewModel : ViewModelBase {
         _imgOutHeight,
         _patternSize = 3,
         _selectedTabIndex,
-        _brushSize = 3;
+        _brushSize = 3,
+        _brushSizeMax = 12,
+        _inputImageMinWidth = 200;
 
     private double _timeStampOffset, _timelineWidth = 600d;
 
@@ -68,12 +72,6 @@ public class MainWindowViewModel : ViewModelBase {
     private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
 
     public Random R = new();
-
-    private InputViewModel InputVM { get; }
-    private OutputViewModel OutputVM { get; }
-    public PaintingViewModel PaintingVM { get; }
-    public MappingViewModel MappingVM { get; }
-    public ItemViewModel ItemVM { get; }
 
     /*
      * Initializing Functions & Constructor
@@ -87,6 +85,12 @@ public class MainWindowViewModel : ViewModelBase {
         ItemVM = new ItemViewModel(this);
     }
 
+    public InputViewModel InputVM { get; }
+    private OutputViewModel OutputVM { get; }
+    public PaintingViewModel PaintingVM { get; }
+    public MappingViewModel MappingVM { get; }
+    public ItemViewModel ItemVM { get; }
+
     /*
      * Getters & Setters
      */
@@ -94,7 +98,7 @@ public class MainWindowViewModel : ViewModelBase {
     // Strings
 
     /// <summary>
-    /// String representation of the current category
+    ///     String representation of the current category
     /// </summary>
     private string CategoryDescription {
         get => _categoryDescription;
@@ -102,7 +106,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// String representation of the current input image
+    ///     String representation of the current input image
     /// </summary>
     public string InputImageSelection {
         get => _selectedInputImage;
@@ -110,7 +114,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// String representation of the current amount of steps to take
+    ///     String representation of the current amount of steps to take
     /// </summary>
     public string StepAmountString {
         get => _stepAmountString;
@@ -120,7 +124,7 @@ public class MainWindowViewModel : ViewModelBase {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// The amount of steps currently selected
+    ///     The amount of steps currently selected
     /// </summary>
     public int StepAmount {
         get => _stepAmount;
@@ -128,7 +132,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The speed of the animation in MS
+    ///     The speed of the animation in MS
     /// </summary>
     public int AnimSpeed {
         get => _animSpeed;
@@ -136,7 +140,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The width of the image in cells
+    ///     The width of the image in cells
     /// </summary>
     public int ImageOutWidth {
         get => _imgOutWidth;
@@ -144,7 +148,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The height of the image in cells
+    ///     The height of the image in cells
     /// </summary>
     public int ImageOutHeight {
         get => _imgOutHeight;
@@ -152,7 +156,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The size of the pattern in cells
+    ///     The size of the pattern in cells
     /// </summary>
     public int PatternSize {
         get => _patternSize;
@@ -160,20 +164,39 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The selected index of the tabs, currently 0 or 1 for advanced or simple
+    ///     The selected index of the tabs, currently 0 or 1 for advanced or simple
     /// </summary>
     public int SelectedTabIndex {
         get => _selectedTabIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedTabIndex, value);
     }
 
+    /// <summary>
+    ///     Size of the currently selected brush
+    /// </summary>
     public int BrushSize {
         get => _brushSize;
         set => this.RaiseAndSetIfChanged(ref _brushSize, value);
     }
 
     /// <summary>
-    /// The offset on the timeline in a percentage for the "now" marker.
+    ///     Maximum size of the currently selected brush
+    /// </summary>
+    public int BrushSizeMaximum {
+        get => _brushSizeMax;
+        set => this.RaiseAndSetIfChanged(ref _brushSizeMax, value);
+    }
+
+    /// <summary>
+    ///     Minimum width of the input image combobox
+    /// </summary>
+    public int InputImageMinWidth {
+        get => _inputImageMinWidth;
+        set => this.RaiseAndSetIfChanged(ref _inputImageMinWidth, value);
+    }
+
+    /// <summary>
+    ///     The offset on the timeline in a percentage for the "now" marker.
     /// </summary>
     public double TimeStampOffset {
         get => _timeStampOffset;
@@ -181,7 +204,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The width of the timeline
+    ///     The width of the timeline
     /// </summary>
     public double TimelineWidth {
         get => _timelineWidth;
@@ -191,7 +214,7 @@ public class MainWindowViewModel : ViewModelBase {
     // Booleans
 
     /// <summary>
-    /// Whether the info popup of the main window is visible
+    ///     Whether the info popup of the main window is visible
     /// </summary>
     public bool MainInfoPopupVisible {
         get => _mainInfoPopupVisible;
@@ -199,7 +222,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the info popup of the painting window is visible
+    ///     Whether the info popup of the painting window is visible
     /// </summary>
     public bool PaintInfoPopupVisible {
         get => _paintInfoPopupVisible;
@@ -207,7 +230,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the info popup of the items window is visible
+    ///     Whether the info popup of the items window is visible
     /// </summary>
     public bool ItemsInfoPopupVisible {
         get => _itemsInfoPopupVisible;
@@ -215,7 +238,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the info popup of the heat mapping window is visible
+    ///     Whether the info popup of the heat mapping window is visible
     /// </summary>
     public bool HeatmapInfoPopupVisible {
         get => _heatmapInfoPopupVisible;
@@ -223,15 +246,15 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the application is loading
+    ///     Whether the application is loading
     /// </summary>
     public bool IsLoading {
         get => _isLoading;
         set => this.RaiseAndSetIfChanged(ref _isLoading, value);
     }
-    
+
     /// <summary>
-    /// Whether the advanced mode of the application is enabled
+    ///     Whether the advanced mode of the application is enabled
     /// </summary>
     private bool AdvancedEnabled {
         get => _advancedEnabled;
@@ -246,7 +269,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the advanced mode of the application is enabled AND the overlapping mode is selected
+    ///     Whether the advanced mode of the application is enabled AND the overlapping mode is selected
     /// </summary>
     private bool OverlappingAdvancedEnabled {
         get => _advancedOverlapping;
@@ -254,7 +277,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the advanced mode of the application is enabled AND the adjacent mode is selected
+    ///     Whether the advanced mode of the application is enabled AND the adjacent mode is selected
     /// </summary>
     private bool SimpleAdvancedEnabled {
         get => simpleAdvanced;
@@ -262,8 +285,8 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the advanced mode of the application is enabled AND the overlapping mode is selected AND the input
-    /// category is not Side-View
+    ///     Whether the advanced mode of the application is enabled AND the overlapping mode is selected AND the input
+    ///     category is not Side-View
     /// </summary>
     private bool OverlappingAdvancedEnabledIW {
         get => _advancedOverlappingIW;
@@ -271,7 +294,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the application is currently in progress
+    ///     Whether the application is currently in progress
     /// </summary>
     public bool IsRunning {
         get => _isRunning;
@@ -279,7 +302,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the simple/adjacent model is selected
+    ///     Whether the simple/adjacent model is selected
     /// </summary>
     public bool SimpleModelSelected {
         get => _simpleModel;
@@ -294,7 +317,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the animation is playing
+    ///     Whether the animation is playing
     /// </summary>
     public bool IsPlaying {
         get => _isPlaying;
@@ -302,7 +325,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether seamless output is enabled
+    ///     Whether seamless output is enabled
     /// </summary>
     public bool SeamlessOutput {
         get => _seamlessOutput;
@@ -310,7 +333,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether input wrapping is enabled
+    ///     Whether input wrapping is enabled
     /// </summary>
     public bool InputWrapping {
         get => _inputWrapping;
@@ -318,17 +341,25 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Whether the user has set the output to instantly collapse (or inversely with steps)
+    ///     Whether the user has set the output to instantly collapse (or inversely with steps)
     /// </summary>
     public bool InstantCollapse {
         get => _instantCollapse;
         set => this.RaiseAndSetIfChanged(ref _instantCollapse, value);
     }
 
+    /// <summary>
+    ///     Whether the user has selected the custom category
+    /// </summary>
+    public bool CustomInputSelected {
+        get => _customInputSelected;
+        set => this.RaiseAndSetIfChanged(ref _customInputSelected, value);
+    }
+
     // Images
 
     /// <summary>
-    /// The input image
+    ///     The input image
     /// </summary>
     public Bitmap InputImage {
         get => _inputImage;
@@ -336,7 +367,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The currently (being) generated output image
+    ///     The currently (being) generated output image
     /// </summary>
     public Bitmap OutputImage {
         get => _outputImage;
@@ -344,7 +375,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The items as an overlay for the output image
+    ///     The items as an overlay for the output image
     /// </summary>
     public Bitmap ItemOverlay {
         get => _itemOverlay;
@@ -352,7 +383,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The mask to put over the output image for the painting mode when brushing or creating templates
+    ///     The mask to put over the output image for the painting mode when brushing or creating templates
     /// </summary>
     public Bitmap OutputImageMask {
         get => _outputImageMask;
@@ -360,7 +391,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// The mask to put over the output image when hovering
+    ///     The mask to put over the output image when hovering
     /// </summary>
     public Bitmap OutputPreviewMask {
         get => _outputPreviewMask;
@@ -370,7 +401,7 @@ public class MainWindowViewModel : ViewModelBase {
     // Objects
 
     /// <summary>
-    /// The currently selected category as a hoverable text object
+    ///     The currently selected category as a hoverable text object
     /// </summary>
     public HoverableTextViewModel CategorySelection {
         get => _selectedCategory;
@@ -387,23 +418,14 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Me :)
+    ///     Me :)
     /// </summary>
     public MainWindowViewModel VM => this;
-
-    /// <summary>
-    /// Set my randomness function
-    /// </summary>
-    /// 
-    /// <param name="newRand">The Randomness function</param>
-    public void SetRandomnessFunction(Random newRand) {
-        R = newRand;
-    }
 
     // Lists
 
     /// <summary>
-    /// List of the unique patterns/tiles extracted from the input image, basically PaintTiles without transformations
+    ///     List of the unique patterns/tiles extracted from the input image, basically PaintTiles without transformations
     /// </summary>
     public ObservableCollection<TileViewModel> PatternTiles {
         get => _patternTiles;
@@ -411,7 +433,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// List with all patterns/tiles available at the hovered cell in the painting window
+    ///     List with all patterns/tiles available at the hovered cell in the painting window
     /// </summary>
     public ObservableCollection<TileViewModel> HelperTiles {
         get => _helperTiles;
@@ -419,7 +441,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// List with all the tiles allowed for the user to paint with
+    ///     List with all the tiles allowed for the user to paint with
     /// </summary>
     public ObservableCollection<TileViewModel> PaintTiles {
         get => _paintTiles;
@@ -427,7 +449,7 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// List of all markers set by the user
+    ///     List of all markers set by the user
     /// </summary>
     public ObservableCollection<MarkerViewModel> Markers {
         get => _markers;
@@ -435,9 +457,16 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Update the weights based on the user input
+    ///     Set my randomness function
     /// </summary>
-    /// 
+    /// <param name="newRand">The Randomness function</param>
+    public void SetRandomnessFunction(Random newRand) {
+        R = newRand;
+    }
+
+    /// <summary>
+    ///     Update the weights based on the user input
+    /// </summary>
     /// <param name="weights">New weights to use</param>
     public void SetWeights(double[] weights) {
         for (int i = 0; i < PaintTiles.Count; i++) {
@@ -471,9 +500,8 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Function called when switching models
+    ///     Function called when switching models
     /// </summary>
-    /// 
     /// <param name="newTab">Tab index, currently eiter 0 or 1</param>
     public void ChangeModel(int newTab) {
         centralManager!.GetWFCHandler().SetModelChanging(true);
@@ -521,16 +549,15 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Function called to reset all weights to their default values
+    ///     Function called to reset all weights to their default values
     /// </summary>
     public void ResetWeights() {
         centralManager!.GetWFCHandler().ResetWeights(force: true);
     }
 
     /// <summary>
-    /// Function called when clicking on the info button in any window
+    ///     Function called when clicking on the info button in any window
     /// </summary>
-    /// 
     /// <param name="param">The window the info button was clicked on</param>
     public void OpenInfoPopup(string param) {
         if (IsPlaying) {
@@ -541,11 +568,9 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Function called to switch between the different windows of the application
+    ///     Function called to switch between the different windows of the application
     /// </summary>
-    /// 
     /// <param name="param">Window to switch to</param>
-    /// 
     /// <exception cref="NotImplementedException">If an non-existing window is asked to be opened</exception>
     public async void SwitchWindow(string param) {
         switch (param) {
@@ -566,6 +591,7 @@ public class MainWindowViewModel : ViewModelBase {
                 if (!centralManager!.GetWFCHandler().IsCollapsed()) {
                     centralManager.GetUIManager().DispatchError(centralManager.GetMainWindow(), null);
                 }
+
                 centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
 
                 await centralManager!.GetUIManager().SwitchWindow(Windows.ITEMS);
@@ -576,16 +602,15 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Function called when clicking on the dynamic weight mapping button
+    ///     Function called when clicking on the dynamic weight mapping button
     /// </summary>
     public void DynamicWeightClick() {
         PatternTiles.First().DynamicWeightClick();
     }
 
     /// <summary>
-    /// Function called to toggle the loading animation of the application
+    ///     Function called to toggle the loading animation of the application
     /// </summary>
-    /// 
     /// <param name="value">Toggle value</param>
     public void ToggleLoadingAnimation(bool value) {
         IsLoading = value || centralManager!.GetWFCHandler().IsBrushing();
@@ -593,9 +618,26 @@ public class MainWindowViewModel : ViewModelBase {
     }
 
     /// <summary>
-    /// Function called when closing the popup on any window
+    ///     Function called when closing the popup on any window
     /// </summary>
     public void CloseInfoPopup() {
         centralManager!.GetUIManager().HidePopUp();
+    }
+
+    /// <summary>
+    ///     Function called when clicking on the button to open the folder to the custom images
+    /// </summary>
+    public void OpenCustomFolderPrompt() {
+        Process.Start(new ProcessStartInfo {
+                FileName = $"{AppContext.BaseDirectory}/samples/Custom",
+                UseShellExecute = true,
+                Verb = "open"
+            })
+            ?.WaitForExit();
+
+        string[] inputImageDataSource = Util.GetModelImages(
+            centralManager!.GetWFCHandler().IsOverlappingModel() ? "overlapping" : "simpletiled",
+            centralManager!.GetMainWindow().GetInputControl().GetCategory());
+        centralManager!.GetMainWindow().GetInputControl().SetInputImages(inputImageDataSource);
     }
 }

@@ -23,6 +23,7 @@
 		<Image Source="/Assets/TemplatingAddClick.png" x:Key="clickTemplatingAddKey" x:Name="clickTemplatingAdd" />
 		<Image Source="/Assets/TemplatingPlaceClick.png" x:Key="clickTemplatingPlaceKey" x:Name="clickTemplatingPlace" />
 		<Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
+		<Image Source="/Assets/RotateSingleClick.png" x:Key="clickRotationSingleKey" x:Name="clickRotationSingle" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
@@ -38,6 +39,7 @@
 		<Image Source="/Assets/TemplatingAddHover.png" x:Key="hoverTemplatingAddKey" x:Name="hoverTemplatingAdd" />
 		<Image Source="/Assets/TemplatingPlaceHover.png" x:Key="hoverTemplatingPlaceKey" x:Name="hoverTemplatingPlace" />
 		<Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
+		<Image Source="/Assets/RotateSingleHover.png" x:Key="hoverRotationSingleKey" x:Name="hoverRotationSingle" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -357,7 +359,7 @@
 								           Margin="15, 15, 15, 7">
 									Brush Size
 								</TextBlock>
-								<Slider Value="{Binding BrushSize}" Minimum="1" Maximum="30" TickFrequency="1"
+								<Slider Value="{Binding BrushSize}" Minimum="1" Maximum="{Binding BrushSizeMaximum}" TickFrequency="1"
 								        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
 								        PropertyChanged="BrushSize_ValueChanged" />
 								<Grid RowDefinitions="*" HorizontalAlignment="Center">
@@ -435,52 +437,83 @@
 
 							<!-- Tool Options for the Templating Place below -->
 
-							<ComboBox Grid.Column="0" Grid.Row="5" HorizontalAlignment="Center"
-							          x:Name="templateCB" SelectedIndex="0" Items="{Binding PaintingVM.Templates}"
-							          IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}">
-								<ComboBox.ItemsPanel>
-									<ItemsPanelTemplate>
-										<WrapPanel Orientation="Horizontal" MaxWidth="400" />
-									</ItemsPanelTemplate>
-								</ComboBox.ItemsPanel>
-								<ComboBox.ItemTemplate>
-									<DataTemplate>
-										<Border Width="108" Padding="1" Background="Transparent"
-										        Margin="0, 5, 0, 5">
-											<Border Padding="-4" ClipToBounds="True" Margin="2" Background="Transparent">
-												<Image Width="100" Height="100" Margin="4"
-												       Source="{Binding TemplateImage}"
-												       RenderOptions.BitmapInterpolationMode="Default">
-												</Image>
+							<Grid Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" VerticalAlignment="Center" ColumnDefinitions="*, *"
+							      RowDefinitions="*, *" HorizontalAlignment="Center"
+							      IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}">
+								<ComboBox Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+								          x:Name="templateCB" SelectedIndex="0" Items="{Binding PaintingVM.Templates}">
+									<ComboBox.ItemsPanel>
+										<ItemsPanelTemplate>
+											<WrapPanel Orientation="Horizontal" MaxWidth="400" />
+										</ItemsPanelTemplate>
+									</ComboBox.ItemsPanel>
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<Border Width="108" Padding="1" Background="Transparent"
+											        Margin="0, 5, 0, 5">
+												<Border Padding="-4" ClipToBounds="True" Margin="2" Background="Transparent">
+													<Image Width="100" Height="100" Margin="4"
+													       Source="{Binding TemplateImage}"
+													       RenderOptions.BitmapInterpolationMode="Default">
+														<Image.RenderTransform>
+															<TransformGroup>
+																<RotateTransform
+																	Angle="{Binding Path=Rotation, TargetNullValue=0, FallbackValue=0}" />
+															</TransformGroup>
+														</Image.RenderTransform>
+													</Image>
+												</Border>
 											</Border>
-										</Border>
-									</DataTemplate>
-								</ComboBox.ItemTemplate>
-							</ComboBox>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
 
-							<Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
-							        Command="{Binding PaintingVM.DeleteTemplate}" Grid.Column="1"
-							        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
-							        IsVisible="{Binding PaintingVM.TemplatePlaceModeEnabled}">
-								<Button.Styles>
-									<Style Selector="Button:pointerover /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource hoverDeleteKey}" />
-										<Setter Property="Background" Value="Transparent" />
-									</Style>
-									<Style Selector="Button:pressed /template/ ContentPresenter">
-										<Setter Property="Content" Value="{DynamicResource clickDeleteKey}" />
-										<Setter Property="Background" Value="Transparent" />
-									</Style>
-								</Button.Styles>
-								<Panel>
-									<Image Source="/Assets/Delete.png" />
-								</Panel>
-								<ToolTip.Tip>
-									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Delete the currently selected template</TextBlock>
-									</StackPanel>
-								</ToolTip.Tip>
-							</Button>
+								<Button Grid.Row="1" Grid.Column="1" Padding="0" Background="Transparent"
+								        Command="{Binding PaintingVM.DeleteTemplate}"
+								        Margin="15" MaxWidth="90">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverDeleteKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickDeleteKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/Delete.png" />
+									</Panel>
+									<ToolTip.Tip>
+										<StackPanel>
+											<TextBlock TextWrapping="Wrap">Delete the currently selected template</TextBlock>
+										</StackPanel>
+									</ToolTip.Tip>
+								</Button>
+
+								<Button Grid.Column="0" Padding="0" Background="Transparent"
+								        Command="{Binding PaintingVM.RotateTemplate}"
+								        Margin="15" MaxWidth="90" Grid.Row="1">
+									<Button.Styles>
+										<Style Selector="Button:pointerover /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource hoverRotationSingleKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+										<Style Selector="Button:pressed /template/ ContentPresenter">
+											<Setter Property="Content" Value="{DynamicResource clickRotationSingleKey}" />
+											<Setter Property="Background" Value="Transparent" />
+										</Style>
+									</Button.Styles>
+									<Panel>
+										<Image Source="/Assets/RotateSingle.png" />
+									</Panel>
+									<ToolTip.Tip>
+										<StackPanel>
+											<TextBlock TextWrapping="Wrap">Rotate the currently selected template 90 degrees</TextBlock>
+										</StackPanel>
+									</ToolTip.Tip>
+								</Button>
+							</Grid>
 						</Grid>
 
 						<!-- Tools End -->

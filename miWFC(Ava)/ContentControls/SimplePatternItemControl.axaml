@@ -300,8 +300,7 @@
 									       Source="{Binding PatternImage}"
 									       RenderOptions.BitmapInterpolationMode="Default" />
 									<Button Width="50" Height="50" Command="{Binding TogglePatternAppearance}" Background="Transparent"
-									        IsVisible="{ReflectionBinding #advancedPatternItemControl.DataContext.OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}">
-									</Button>
+									        IsVisible="{ReflectionBinding #advancedPatternItemControl.DataContext.OverlappingAdvancedEnabled, TargetNullValue=False, FallbackValue=False}" />
 									<Image Width="40" Height="40" IsVisible="{Binding PatternDisabled}"
 									       HorizontalAlignment="Center" VerticalAlignment="Center"
 									       Source="/Assets/Cross.png" IsHitTestVisible="False" Opacity="0.9" />

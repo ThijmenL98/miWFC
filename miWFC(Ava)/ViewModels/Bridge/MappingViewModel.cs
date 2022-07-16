@@ -15,7 +15,6 @@ using ReactiveUI;
 namespace miWFC.ViewModels.Bridge;
 
 public class MappingViewModel : ReactiveObject {
-    private CentralManager? centralManager;
     private readonly MainWindowViewModel mainWindowViewModel;
 
     private Bitmap _currentHeatMap
@@ -26,6 +25,7 @@ public class MappingViewModel : ReactiveObject {
     private bool _hardBrushEnabled = true;
 
     private int _heatmapValue = 50;
+    private CentralManager? centralManager;
 
     /*
      * Initializing Functions & Constructor
@@ -33,10 +33,6 @@ public class MappingViewModel : ReactiveObject {
 
     public MappingViewModel(MainWindowViewModel mwvm) {
         mainWindowViewModel = mwvm;
-    }
-
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
     }
 
     /*
@@ -48,7 +44,7 @@ public class MappingViewModel : ReactiveObject {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Default value for the entire heatmap
+    ///     Default value for the entire heatmap
     /// </summary>
     public int HeatmapValue {
         get => _heatmapValue;
@@ -58,7 +54,7 @@ public class MappingViewModel : ReactiveObject {
     // Booleans
 
     /// <summary>
-    /// Whether the hard brush or soft brush is enabled
+    ///     Whether the hard brush or soft brush is enabled
     /// </summary>
     public bool HardBrushEnabled {
         get => _hardBrushEnabled;
@@ -68,7 +64,7 @@ public class MappingViewModel : ReactiveObject {
     // Images
 
     /// <summary>
-    /// Image associated with the current bitmap
+    ///     Image associated with the current bitmap
     /// </summary>
     public Bitmap CurrentHeatmap {
         get => _currentHeatMap;
@@ -76,11 +72,15 @@ public class MappingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Image associated with the hovering of the mouse
+    ///     Image associated with the hovering of the mouse
     /// </summary>
     public Bitmap HoverImage {
         get => _hoverImage;
         set => this.RaiseAndSetIfChanged(ref _hoverImage, value);
+    }
+
+    public void SetCentralManager(CentralManager cm) {
+        centralManager = cm;
     }
 
     // Objects
@@ -94,14 +94,14 @@ public class MappingViewModel : ReactiveObject {
      */
 
     /// <summary>
-    /// Function called when resetting the weight mapping
+    ///     Function called when resetting the weight mapping
     /// </summary>
     public void ResetWeightMapping() {
         centralManager!.GetWeightMapWindow().ResetCurrentMapping();
     }
 
     /// <summary>
-    /// Function called upon importing a weight map
+    ///     Function called upon importing a weight map
     /// </summary>
     public async void ImportWeightMap() {
         OpenFileDialog ofd = new() {
@@ -149,7 +149,7 @@ public class MappingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called upon exporting a weight map
+    ///     Function called upon exporting a weight map
     /// </summary>
     public async void ExportWeightMap() {
         SaveFileDialog sfd = new() {

@@ -10,7 +10,7 @@ using miWFC.Managers;
 namespace miWFC.Views;
 
 /// <summary>
-/// Window that handles the item addition of the application
+///     Window that handles the item addition of the application
 /// </summary>
 public partial class ItemWindow : Window {
     private CentralManager? centralManager;
@@ -64,27 +64,24 @@ public partial class ItemWindow : Window {
     // Objects
 
     /// <summary>
-    /// Get the Item Add Menu
+    ///     Get the Item Add Menu
     /// </summary>
-    /// 
     /// <returns></returns>
     public ItemAddMenu GetItemAddMenu() {
         return this.Find<ItemAddMenu>("itemAddMenu");
     }
 
     /// <summary>
-    /// Get the Region Defining Menu
+    ///     Get the Region Defining Menu
     /// </summary>
-    /// 
     /// <returns></returns>
     public RegionDefineMenu GetRegionDefineMenu() {
         return this.Find<RegionDefineMenu>("regionDefineMenu");
     }
 
     /// <summary>
-    /// Get the data grid which holds the to-be-added items to the output
+    ///     Get the data grid which holds the to-be-added items to the output
     /// </summary>
-    ///
     /// <returns></returns>
     public DataGrid GetDataGrid() {
         return this.Find<DataGrid>("itemsDataGrid");
@@ -99,9 +96,8 @@ public partial class ItemWindow : Window {
      */
 
     /// <summary>
-    /// Custom handler for keyboard input
+    ///     Custom handler for keyboard input
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private void KeyDownHandler(object? sender, KeyEventArgs e) {

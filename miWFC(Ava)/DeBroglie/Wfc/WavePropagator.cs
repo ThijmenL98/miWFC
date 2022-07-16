@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
 using miWFC.Managers;
@@ -24,6 +23,8 @@ public class WavePropagatorOptions {
 /// </summary>
 public class WavePropagator {
     private readonly IBacktrackPolicy backtrackPolicy;
+
+    private readonly CentralManager cm;
     private readonly IWaveConstraint[] constraints;
 
     private readonly HeapEntropyTracker indexPicker;
@@ -46,8 +47,6 @@ public class WavePropagator {
     private Deque<IndexPatternItem> backtrackItems;
     private Deque<int> backtrackItemsLengths;
     private List<IChoiceObserver> choiceObservers;
-
-    private readonly CentralManager cm;
 
     // We evaluate constraints at the last possible minute, instead of eagerly like the model,
     // As they can potentially be expensive.
@@ -560,7 +559,7 @@ public class WavePropagator {
 
             return false;
         }
-        
+
         bool isContradiction = false;
 
         patternModelConstraint.DoSelect(index, chosenPattern);

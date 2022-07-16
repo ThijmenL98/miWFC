@@ -23,7 +23,7 @@ using static miWFC.Utils.Util;
 namespace miWFC.Managers;
 
 /// <summary>
-/// Input Manager of the application
+///     Input Manager of the application
 /// </summary>
 public class InputManager {
     private readonly CentralManager centralManager;
@@ -32,7 +32,7 @@ public class InputManager {
 
     private readonly Bitmap noResultFoundBM;
     private readonly Stack<int> savePoints;
-    
+
     private int lastProcessedX = -1, lastProcessedY = -1;
 
     private Color[,] maskColours;
@@ -83,9 +83,8 @@ public class InputManager {
     // Objects
 
     /// <summary>
-    /// Get the default image shown to the user if the algorithm contradicts
+    ///     Get the default image shown to the user if the algorithm contradicts
     /// </summary>
-    /// 
     /// <returns>Bitmap</returns>
     public Bitmap GetNoResBm() {
         return noResultFoundBM;
@@ -94,9 +93,8 @@ public class InputManager {
     // Lists
 
     /// <summary>
-    /// Get the colours of the user drawn mask
+    ///     Get the colours of the user drawn mask
     /// </summary>
-    /// 
     /// <returns>Colour matrix</returns>
     public Color[,] GetMaskColours() {
         return maskColours;
@@ -109,9 +107,8 @@ public class InputManager {
      */
 
     /// <summary>
-    /// Restart the output, resetting all values to their defaults
+    ///     Restart the output, resetting all values to their defaults
     /// </summary>
-    /// 
     /// <param name="source">DEBUG: Source of the restart</param>
     /// <param name="force">Whether the restart should be forced, </param>
     /// <param name="keepOutput">Whether the reset output should be shown to the user</param>
@@ -132,14 +129,15 @@ public class InputManager {
         while (savePoints.Count > 0) {
             savePoints.Pop();
         }
-        
+
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
         mainWindowVM.OutputImageMask
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
 
-        if (!GetModelImages(centralManager.GetWFCHandler().IsOverlappingModel() ? "overlapping" : "simpletiled",
-                    mainWindow.GetInputControl().GetCategory())
-                .Contains(mainWindow.GetInputControl().GetInputImage())) {
+        string[] inputImageDataSource = GetModelImages(
+            centralManager.GetWFCHandler().IsOverlappingModel() ? "overlapping" : "simpletiled",
+            mainWindow.GetInputControl().GetCategory());
+        if (!inputImageDataSource.Contains(mainWindow.GetInputControl().GetInputImage())) {
             return;
         }
 
@@ -156,10 +154,17 @@ public class InputManager {
             Trace.WriteLine(exception);
             mainWindowVM.OutputImage = noResultFoundBM;
         }
+
+        mainWindowVM.BrushSizeMaximum
+            = Math.Min(Math.Min(mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight) / 2, 30);
+        mainWindowVM.BrushSize = 3;
+        centralManager.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(3, 3, 1, (x, y) =>
+            x == 1 && y == 1 ? Color.Parse("#424242") :
+            (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
     }
 
     /// <summary>
-    /// Advance a single step in the generation of the algorithm
+    ///     Advance a single step in the generation of the algorithm
     /// </summary>
     public async void AdvanceStep() {
         if (centralManager.GetWFCHandler().GetAmountCollapsed()
@@ -190,7 +195,7 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Revert a single step in the generation of the algorithm
+    ///     Revert a single step in the generation of the algorithm
     /// </summary>
     public void RevertStep() {
         try {
@@ -220,6 +225,10 @@ public class InputManager {
                    prevAmountCollapsed - mainWindowVM.StepAmount) {
                 for (int i = 0; i < mainWindowVM.StepAmount; i++) {
                     curStep = centralManager.GetWFCHandler().GetAmountCollapsed();
+
+                    if (curStep.Equals(0)) {
+                        goto exitOuterLoop;
+                    }
 
                     if (savePoints.Count != 0 && curStep <= savePoints.Peek()) {
                         foreach (MarkerViewModel marker in mainWindowVM.Markers.ToArray()) {
@@ -260,7 +269,7 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Reset the user editable mask to its defaults
+    ///     Reset the user editable mask to its defaults
     /// </summary>
     public void ResetMask() {
         maskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
@@ -268,16 +277,15 @@ public class InputManager {
         if (mainWindowVM.PaintingVM.TemplateCreationModeEnabled) {
             for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
                 for (int y = 0; y < mainWindowVM.ImageOutHeight; y++) {
-                    maskColours[x, y] = Colors.Black;
+                    maskColours[x, y] = Color.Parse("#424242");
                 }
             }
         }
     }
 
     /// <summary>
-    /// Place a marker or save point onto the timeline with the current state of the algorithm
+    ///     Place a marker or save point onto the timeline with the current state of the algorithm
     /// </summary>
-    /// 
     /// <param name="revertible">Whether the user can revert into the history prior to the placement of this marker</param>
     /// <param name="force">Whether the placement of this marker should be forced</param>
     public void PlaceMarker(bool revertible = true, bool force = false) {
@@ -323,7 +331,7 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Load to the first available marker unless the current marker is non-revertible
+    ///     Load to the first available marker unless the current marker is non-revertible
     /// </summary>
     public void LoadMarker() {
         int prevAmountCollapsed = savePoints.Count == 0 ? 0 : savePoints.Peek();
@@ -364,15 +372,17 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Remove the last placed marker from the marker dataset
+    ///     Remove the last placed marker from the marker dataset
     /// </summary>
     public void RemoveLastMarker() {
-        savePoints.Pop();
-        mainWindowVM.Markers.RemoveAt(mainWindowVM.Markers.Count - 1);
+        if (savePoints.Count != 0) {
+            savePoints.Pop();
+            mainWindowVM.Markers.RemoveAt(mainWindowVM.Markers.Count - 1);
+        }
     }
 
     /// <summary>
-    /// Allow the user to import a pre-existing solution into the application
+    ///     Allow the user to import a pre-existing solution into the application
     /// </summary>
     public async void ImportSolution() {
         OpenFileDialog ofd = new() {
@@ -445,9 +455,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Handle the importing of an overlapping mode image
+    ///     Handle the importing of an overlapping mode image
     /// </summary>
-    /// 
     /// <param name="imageWidth">Imported image width</param>
     /// <param name="imageHeight">Imported image height</param>
     /// <param name="colourArray">Array of colours of the imported image</param>
@@ -474,7 +483,8 @@ public class InputManager {
                         bool? success = ProcessClick(x, y, imageWidth, imageHeight, idx, true).Result;
 
                         if (success != null && !(bool) success) {
-                            centralManager.GetUIManager().DispatchError(mainWindow, "Imported image contained an illegal configuration");
+                            centralManager.GetUIManager().DispatchError(mainWindow,
+                                "Imported image contained an illegal configuration");
                             await RestartSolution("Imported image failure (pattern)", true);
                             return;
                         }
@@ -498,9 +508,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Handle the importing of an adjacent mode image
+    ///     Handle the importing of an adjacent mode image
     /// </summary>
-    /// 
     /// <param name="imageWidth">Imported image width</param>
     /// <param name="imageHeight">Imported image height</param>
     /// <param name="worldFile">Source URI of the world file to read weights</param>
@@ -524,7 +533,8 @@ public class InputManager {
                         bool? success = ProcessClick(x, y, imageWidth, imageHeight, toSel, true).Result;
 
                         if (success != null && !(bool) success) {
-                            centralManager.GetUIManager().DispatchError(mainWindow, "Imported image contained an illegal configuration");
+                            centralManager.GetUIManager().DispatchError(mainWindow,
+                                "Imported image contained an illegal configuration");
                             await RestartSolution("Imported image failure (pattern)", true);
                             return;
                         }
@@ -538,14 +548,15 @@ public class InputManager {
 
             mainWindowVM.SetWeights(inputW.Select(x => (double) x).ToArray());
         } catch (AggregateException exception) {
-            centralManager.GetUIManager().DispatchError(mainWindow, "Imported image did not match the selected input settings");
+            centralManager.GetUIManager()
+                .DispatchError(mainWindow, "Imported image did not match the selected input settings");
             Trace.WriteLine(exception);
             await RestartSolution("Imported image failure (mismatch)", true);
         }
     }
 
     /// <summary>
-    /// Allow the user to save the current output to their system
+    ///     Allow the user to save the current output to their system
     /// </summary>
     public async void ExportSolution() {
         SaveFileDialog sfd = new() {
@@ -612,7 +623,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Upon clicking the animate button, a constant looping task is called every few milliseconds, until disabled or collapsed
+    ///     Upon clicking the animate button, a constant looping task is called every few milliseconds, until disabled or
+    ///     collapsed
     /// </summary>
     public async void Animate() {
         if (centralManager.GetWFCHandler().IsCollapsed()) {
@@ -649,9 +661,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// The logic executed at each tick of the animation
+    ///     The logic executed at each tick of the animation
     /// </summary>
-    /// 
     /// <param name="sender">Origin of function call</param>
     /// <param name="e">EventArgs</param>
     private void AnimationTimerTick(object sender, EventArgs e) {
@@ -680,16 +691,14 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Process the user clicking onto the output whilst painting
+    ///     Process the user clicking onto the output whilst painting
     /// </summary>
-    /// 
     /// <param name="a">Click location on the x dimension</param>
     /// <param name="b">Click location on the y dimension</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
     /// <param name="imgHeight">Height of the image the user clicked on</param>
     /// <param name="tileIdx">Index of the tile the user has selected to paint</param>
     /// <param name="skipUI">Whether to show the output affected by the user click to the user</param>
-    /// 
     /// <returns>Task which is completed upon setting the user selected tile at the clicked location</returns>
     public async Task<bool?> ProcessClick(int a, int b, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
         if (!skipUI) {
@@ -713,9 +722,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Update the output hover image based on the user selected value
+    ///     Update the output hover image based on the user selected value
     /// </summary>
-    /// 
     /// <param name="hoverX">Hover location on the x axis</param>
     /// <param name="hoverY">Hover location on the y axis</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
@@ -796,9 +804,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Update the actual mask values of the hover template
+    ///     Update the actual mask values of the hover template
     /// </summary>
-    /// 
     /// <param name="x">Hover location on the x axis</param>
     /// <param name="y">Hover location on the y axis</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
@@ -810,25 +817,61 @@ public class InputManager {
         }
 
         TemplateViewModel selectedTVM = mainWindowVM.PaintingVM.Templates[templateIndex];
-        int startX = x - selectedTVM.CenterPoint.Item1;
-        int startY = y - selectedTVM.CenterPoint.Item2;
-
-        int endX = startX + selectedTVM.Dimension.Item1;
-        int endY = startY + selectedTVM.Dimension.Item2;
+        int rotation = selectedTVM.Rotation / 90;
+        if (centralManager.GetWFCHandler().IsOverlappingModel()) {
+            rotation = rotation switch {
+                3 => 1,
+                1 => 3,
+                _ => rotation
+            };
+        }
 
         Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
+
+        int startX, startY, endX, endY;
+        if (rotation % 2 == 0) {
+            startX = x - selectedTVM.CenterPoint.Item1;
+            startY = y - selectedTVM.CenterPoint.Item2;
+
+            endX = startX + selectedTVM.Dimension.Item1;
+            endY = startY + selectedTVM.Dimension.Item2;
+        } else {
+            startX = x - selectedTVM.CenterPoint.Item2;
+            startY = y - selectedTVM.CenterPoint.Item1;
+
+            endX = startX + selectedTVM.Dimension.Item2;
+            endY = startY + selectedTVM.Dimension.Item1;
+        }
 
         for (int placeY = startY; placeY < endY; placeY++) {
             for (int placeX = startX; placeX < endX; placeX++) {
                 if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
-                    int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
+                    int mappedX;
+                    int mappedY;
+                    if (rotation % 2 == 0) {
+                        mappedX = placeX - x + selectedTVM.CenterPoint.Item1;
                         mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
+                    } else {
+                        mappedX = placeX - x + selectedTVM.CenterPoint.Item2;
+                        mappedY = placeY - y + selectedTVM.CenterPoint.Item1;
+                    }
+
                     if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                        if (selectedTVM.TemplateDataO[mappedY, mappedX].A == 255) {
+                        Color[,] usedData = selectedTVM.TemplateDataO;
+                        for (int i = 0; i < rotation; i++) {
+                            usedData = RotateArrayClockwise(usedData);
+                        }
+
+                        if (usedData[mappedY, mappedX].A == 255) {
                             hoverMaskColours[placeX, placeY] = Colors.Gold;
                         }
                     } else {
-                        if (selectedTVM.TemplateDataA[mappedX, mappedY] >= 0) {
+                        int[,] usedData = selectedTVM.TemplateDataA;
+                        for (int i = 0; i < rotation; i++) {
+                            usedData = RotateArrayClockwise(usedData);
+                        }
+
+                        if (usedData[mappedX, mappedY] >= 0) {
                             hoverMaskColours[placeX, placeY] = Colors.Gold;
                         }
                     }
@@ -840,9 +883,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Update the actual mask values of the hover template in the painting mode
+    ///     Update the actual mask values of the hover template in the painting mode
     /// </summary>
-    /// 
     /// <param name="a">Hover location on the x axis</param>
     /// <param name="b">Hover location on the y axis</param>
     /// <param name="overrideSize">Size of the brush, overwritten by the function if not set</param>
@@ -851,7 +893,7 @@ public class InputManager {
 
         Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
 
-        if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+        if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (brushSize == -1) {
                 hoverMaskColours[a, b] = Colors.Yellow;
             } else {
@@ -873,9 +915,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Update the mask upon clicking in the brushing mode(s)
+    ///     Update the mask upon clicking in the brushing mode(s)
     /// </summary>
-    /// 
     /// <param name="clickX">Click location on the x axis</param>
     /// <param name="clickY">Click location on the y axis</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
@@ -889,7 +930,7 @@ public class InputManager {
 
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+        if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (brushSize == -1) {
                 maskColours[a, b] = add ? Colors.Green : Colors.Red;
                 for (int x = 0; x < outputWidth; x++) {
@@ -920,9 +961,8 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Update the mask when clicking in the template creation mode
+    ///     Update the mask when clicking in the template creation mode
     /// </summary>
-    /// 
     /// <param name="clickX">Click location on the x axis</param>
     /// <param name="clickY">Click location on the y axis</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
@@ -933,9 +973,9 @@ public class InputManager {
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
         const int rawBrushSize = -1;
-        if (a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+        if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (rawBrushSize == -1) {
-                maskColours[a, b] = add ? Colors.White : Colors.Black;
+                maskColours[a, b] = add ? Colors.White : Color.Parse("#424242");
             }
         }
 
@@ -943,14 +983,12 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Update the output when clicking with a template onto the output
+    ///     Update the output when clicking with a template onto the output
     /// </summary>
-    /// 
     /// <param name="clickX">Click location on the x axis</param>
     /// <param name="clickY">Click location on the y axis</param>
     /// <param name="imgWidth">Width of the image the user clicked on</param>
     /// <param name="imgHeight">Height of the image the user clicked on</param>
-    ///
     /// <returns>Whether the template was correctly placed</returns>
     public async Task<bool> ProcessClickTemplatePlace(int clickX, int clickY, int imgWidth, int imgHeight) {
         int placeCount = 0;
@@ -966,19 +1004,51 @@ public class InputManager {
             }
 
             TemplateViewModel selectedTVM = mainWindowVM.PaintingVM.Templates[templateIndex];
-            int startX = x - selectedTVM.CenterPoint.Item1;
-            int startY = y - selectedTVM.CenterPoint.Item2;
-            int endX = startX + selectedTVM.Dimension.Item1;
-            int endY = startY + selectedTVM.Dimension.Item2;
+            int rotation = selectedTVM.Rotation / 90;
+            if (centralManager.GetWFCHandler().IsOverlappingModel()) {
+                rotation = rotation switch {
+                    3 => 1,
+                    1 => 3,
+                    _ => rotation
+                };
+            }
+
+            int startX, startY, endX, endY;
+            if (rotation % 2 == 0) {
+                startX = x - selectedTVM.CenterPoint.Item1;
+                startY = y - selectedTVM.CenterPoint.Item2;
+
+                endX = startX + selectedTVM.Dimension.Item1;
+                endY = startY + selectedTVM.Dimension.Item2;
+            } else {
+                startX = x - selectedTVM.CenterPoint.Item2;
+                startY = y - selectedTVM.CenterPoint.Item1;
+
+                endX = startX + selectedTVM.Dimension.Item2;
+                endY = startY + selectedTVM.Dimension.Item1;
+            }
 
             for (int placeX = startX; placeX < endX; placeX++) {
                 for (int placeY = startY; placeY < endY; placeY++) {
                     if (!error) {
                         if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
-                            int mappedX = placeX - x + selectedTVM.CenterPoint.Item1,
+                            int mappedX;
+                            int mappedY;
+                            if (rotation % 2 == 0) {
+                                mappedX = placeX - x + selectedTVM.CenterPoint.Item1;
                                 mappedY = placeY - y + selectedTVM.CenterPoint.Item2;
+                            } else {
+                                mappedX = placeX - x + selectedTVM.CenterPoint.Item2;
+                                mappedY = placeY - y + selectedTVM.CenterPoint.Item1;
+                            }
+
                             if (centralManager.GetWFCHandler().IsOverlappingModel()) {
-                                Color toPlace = selectedTVM.TemplateDataO[mappedY, mappedX];
+                                Color[,] usedData = selectedTVM.TemplateDataO;
+                                for (int i = 0; i < rotation; i++) {
+                                    usedData = RotateArrayClockwise(usedData);
+                                }
+
+                                Color toPlace = usedData[mappedY, mappedX];
                                 if (toPlace.A == 255) {
                                     int idx = centralManager.GetWFCHandler().GetColours()
                                         .TakeWhile(tileVM => !tileVM.PatternColour.Equals(toPlace)).Count();
@@ -998,15 +1068,21 @@ public class InputManager {
                                     }
                                 }
                             } else {
-                                int indexToPlace = selectedTVM.TemplateDataA[mappedX, mappedY];
+                                int[,] usedData = selectedTVM.TemplateDataA;
+                                for (int i = 0; i < rotation; i++) {
+                                    usedData = RotateArrayClockwise(usedData);
+                                }
+
+                                int indexToPlace = centralManager.GetWFCHandler()
+                                    .GetRotatedIndex(usedData[mappedX, mappedY], selectedTVM.Rotation);
                                 if (indexToPlace > 0) {
                                     int valAt = centralManager.GetWFCHandler().GetPropagatorOutputA().toArray2d()[
-                                        placeX,
-                                        placeY];
+                                        placeX, placeY];
                                     if (valAt.Equals(indexToPlace)) { } else if (valAt < 0) {
                                         (WriteableBitmap? writeableBitmap, bool? showPixel) = await centralManager
                                             .GetWFCHandler()
                                             .SetTile(placeX, placeY, indexToPlace, false);
+
                                         if (showPixel != null && (bool) showPixel) {
                                             mainWindowVM.OutputImage = writeableBitmap!;
                                             placeCount++;
@@ -1019,17 +1095,21 @@ public class InputManager {
                                 }
                             }
                         }
+                    } else {
+                        break;
                     }
                 }
             }
-        } catch (Exception) {
+        } catch (Exception e) {
+            Trace.WriteLine(e);
             error = true;
         }
 
         if (error) {
             centralManager.GetWFCHandler().StepBackWfc(placeCount);
             mainWindowVM.OutputImage = centralManager.GetWFCHandler().GetLatestOutputBm();
-            centralManager.GetUIManager().DispatchError(centralManager.GetPaintingWindow(), "Template was not able to be placed here");
+            centralManager.GetUIManager().DispatchError(centralManager.GetPaintingWindow(),
+                "Template was not able to be placed here");
             return false;
         }
 
@@ -1037,16 +1117,15 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Forwarding function with default values to updateMask(Color[,], bool, bool)
+    ///     Forwarding function with default values to updateMask(Color[,], bool, bool)
     /// </summary>
     public void UpdateMask() {
         UpdateMask(maskColours, true);
     }
 
     /// <summary>
-    /// Create and apply image representation of the user created mask
+    ///     Create and apply image representation of the user created mask
     /// </summary>
-    /// 
     /// <param name="colors">Mask colours</param>
     /// <param name="updateMain">Whether to update the main image or the preview image</param>
     private void UpdateMask(Color[,] colors, bool updateMain) {
@@ -1069,7 +1148,7 @@ public class InputManager {
     }
 
     /// <summary>
-    /// Reset the hovering mask
+    ///     Reset the hovering mask
     /// </summary>
     public void ResetHoverAvailability() {
         mainWindowVM.OutputPreviewMask = new WriteableBitmap(new PixelSize(1, 1), Vector.One,

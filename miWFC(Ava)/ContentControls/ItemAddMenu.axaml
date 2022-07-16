@@ -8,7 +8,7 @@
 	<Design.DataContext>
 		<viewModels:MainWindowViewModel />
 	</Design.DataContext>
-	
+
 	<UserControl.Styles>
 		<Style Selector="DataValidationErrors">
 			<Setter Property="Template" Value="{DynamicResource TooltipDataValidationContentTemplate}" />
@@ -23,7 +23,7 @@
 				<TextBox Grid.Row="0" Grid.Column="0" Watermark="Item Name" MinHeight="40" MinWidth="300"
 				         Margin="5" HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 				         Text="{Binding ItemVM.DisplayName}"
-				         VerticalContentAlignment="Center" x:Name="itemName"/>
+				         VerticalContentAlignment="Center" x:Name="itemName" />
 
 				<Grid Grid.Row="1" Grid.Column="0" RowDefinitions="*, Auto">
 					<Grid Grid.Row="0" ColumnDefinitions="Auto, Auto, *" HorizontalAlignment="Center" Margin="0, 10, 0, -2">
@@ -52,11 +52,11 @@
 				<Grid Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" RowDefinitions="*, Auto" VerticalAlignment="Center" Width="100"
 				      Margin="50, 5">
 					<TextBlock Grid.Row="0" Text="Item Colour:" HorizontalAlignment="Center"
-					           VerticalAlignment="Center" Margin="5"/>
+					           VerticalAlignment="Center" Margin="5" />
 					<TextBox Grid.Row="1" Watermark="#RRGGBB" Height="40" Margin="5"
 					         HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 					         Text="{Binding ItemVM.ItemColour}"
-					         VerticalContentAlignment="Center" Width="100" x:Name="itemColour"/>
+					         VerticalContentAlignment="Center" Width="100" x:Name="itemColour" />
 				</Grid>
 
 				<Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" BoxShadow="0 0 15 0.25 Black"
@@ -145,20 +145,22 @@
 						         MaxWidth="300"
 						         Margin="25, 5" HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 						         Text="{Binding ItemVM.DependentItemName}" VerticalContentAlignment="Center"
-						         IsEnabled="{Binding ItemVM.ItemIsDependent}" x:Name="depItemName"/>
+						         IsEnabled="{Binding ItemVM.ItemIsDependent}" x:Name="depItemName" />
 					</Grid>
 
-					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" IsVisible="{Binding !ItemVM.ItemIsDependent}">
+					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto"
+					      IsVisible="{Binding !ItemVM.ItemIsDependent}">
 						<TextBlock Grid.Row="0" Grid.Column="0" Text="Dependent Item Colour:" HorizontalAlignment="Center"
-						           VerticalAlignment="Center" Margin="5,50,5,5"/>
+						           VerticalAlignment="Center" Margin="5,50,5,5" />
 						<TextBox Grid.Row="0" Grid.Column="1" Watermark="#RRGGBB (Default is Red)" Height="40" Margin="25, 50, 15, 5"
 						         HorizontalAlignment="Stretch" AcceptsReturn="False" AcceptsTab="False"
 						         Text="{Binding ItemVM.DepItemColour}"
 						         VerticalContentAlignment="Center" x:Name="depItemColour" />
-						
-						<Image Grid.Row="1" Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left" Margin="15" />
 
-						<Grid Grid.Row="1"  Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *"
+						<Image Grid.Row="1" Grid.Column="0" Height="175" Source="/Assets/Goldilock.png" HorizontalAlignment="Left"
+						       Margin="15" />
+
+						<Grid Grid.Row="1" Grid.Column="1" RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *"
 						      VerticalAlignment="Center" Margin="15">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="Max distance:" Margin="15, 35" />
 							<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ItemVM.DepMaxDistance}"
@@ -196,8 +198,7 @@
 							</Style>
 						</Button.Styles>
 						<Panel>
-							<Image Source="/Assets/WeightMapping.png">
-							</Image>
+							<Image Source="/Assets/WeightMapping.png" />
 						</Panel>
 						<ToolTip.Tip>
 							<StackPanel>

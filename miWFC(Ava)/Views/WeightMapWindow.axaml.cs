@@ -7,7 +7,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using miWFC.Managers;
-using miWFC.Utils;
 using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
 using static miWFC.Utils.Util;
@@ -17,15 +16,15 @@ using static miWFC.Utils.Util;
 namespace miWFC.Views;
 
 /// <summary>
-/// Window that handles the dynamic weight mapping of the application
+///     Window that handles the dynamic weight mapping of the application
 /// </summary>
 public partial class WeightMapWindow : Window {
     private readonly ComboBox _selectedTileCB;
     private CentralManager? centralManager;
 
-    private int lastPosX = -1, lastPosY = -1;
-
     private double[,] currentHeatMap = new double[0, 0];
+
+    private int lastPosX = -1, lastPosY = -1;
 
     private int oldBrushSize = -2, oldColourValue = -2;
     private bool oldHardnessValue;
@@ -66,23 +65,20 @@ public partial class WeightMapWindow : Window {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Get the selected size of the brush, these values are diameters, not radii
+    ///     Get the selected size of the brush, these values are diameters, not radii
     /// </summary>
-    /// 
     /// <returns>Selected brush size</returns>
     private int GetPaintBrushSize() {
         int brushSize = centralManager!.GetMainWindowVM().BrushSize;
-        double mappingValue = 0.7d * Math.Exp(0.6d * brushSize) - 0.675d;
+        double mappingValue = 13.2d * Math.Exp(0.125 * brushSize) - 15.95d;
         return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
     }
 
     /// <summary>
-    /// Get the value of the weight mapping at the desired position
+    ///     Get the value of the weight mapping at the desired position
     /// </summary>
-    /// 
     /// <param name="x">X position</param>
     /// <param name="y">Y position</param>
-    /// 
     /// <returns>Value of the gradient at the desired position</returns>
     public double GetGradientValue(int x, int y) {
         if (currentHeatMap.GetLength(0) <= x || currentHeatMap.GetLength(1) <= y) {
@@ -99,11 +95,9 @@ public partial class WeightMapWindow : Window {
     // Objects
 
     /// <summary>
-    /// Get a colour representation of a 0-1 value on the inferno colour spectrum
+    ///     Get a colour representation of a 0-1 value on the inferno colour spectrum
     /// </summary>
-    /// 
     /// <param name="value">Value to get a colour representation of</param>
-    /// 
     /// <returns>Hex-colour representation of the input value</returns>
     private static Color GetGradientColor(double value) {
         Color[] intermediatePoints = {
@@ -141,9 +135,8 @@ public partial class WeightMapWindow : Window {
      */
 
     /// <summary>
-    /// Custom handler for keyboard input
+    ///     Custom handler for keyboard input
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private void KeyDownHandler(object? sender, KeyEventArgs e) {
@@ -159,9 +152,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
+    ///     Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerPressedEventArgs</param>
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
@@ -169,23 +161,25 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the user moves or clicks on the output image to adjust weights depending on the brush size at
-    /// the clicked location
+    ///     Callback when the user moves or clicks on the output image to adjust weights depending on the brush size at
+    ///     the clicked location
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
-        (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
+        Image imageSource = (sender as Image)!;
 
         MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
-        int a = (int) Math.Floor(Math.Round(posX) * mainWindowVM.ImageOutWidth / Math.Round(imgWidth)),
-            b = (int) Math.Floor(Math.Round(posY) * mainWindowVM.ImageOutHeight / Math.Round(imgHeight));
+        double imgWidth = imageSource.DesiredSize.Width - imageSource.Margin.Right - imageSource.Margin.Left;
+        double imgHeight = imageSource.DesiredSize.Height - imageSource.Margin.Top - imageSource.Margin.Bottom;
 
-        if (lastPosX == a && lastPosY == b) {
+        int a = (int) Math.Floor(Math.Round(posX) * outputWidth / Math.Round(imgWidth)),
+            b = (int) Math.Floor(Math.Round(posY) * outputHeight / Math.Round(imgHeight));
+
+        if (lastPosX == a && lastPosY == b && !e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed) {
             return;
         }
 
@@ -276,9 +270,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the user changes the currently selected tile to set the mapping for
+    ///     Callback when the user changes the currently selected tile to set the mapping for
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     private void SelectedTileCB_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
@@ -317,7 +310,7 @@ public partial class WeightMapWindow : Window {
      */
 
     /// <summary>
-    /// Function to reset the current mapping and update the output image shown to the user
+    ///     Function to reset the current mapping and update the output image shown to the user
     /// </summary>
     public void ResetCurrentMapping() {
         if (_selectedTileCB.SelectedItem != null) {
@@ -341,9 +334,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Function to set the currently selected tile forcibly based on index
+    ///     Function to set the currently selected tile forcibly based on index
     /// </summary>
-    ///
     /// <param name="patternIndex">index to select</param>
     public void SetSelectedTile(int patternIndex) {
         foreach (TileViewModel tvm in _selectedTileCB.Items) {
@@ -354,9 +346,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Function to update the output image based on the current mapping
+    ///     Function to update the output image based on the current mapping
     /// </summary>
-    /// 
     /// <param name="newCurrentHeatMap">Current weight mapping</param>
     public void UpdateOutput(double[,] newCurrentHeatMap) {
         currentHeatMap = newCurrentHeatMap;
@@ -370,9 +361,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Function to forcibly set the weight mapping of the currently selected tile to a new mapping
+    ///     Function to forcibly set the weight mapping of the currently selected tile to a new mapping
     /// </summary>
-    /// 
     /// <param name="maskValues">The new weight mapping</param>
     public void SetCurrentMapping(double[,] maskValues) {
         if (_selectedTileCB.SelectedItem != null) {
@@ -395,9 +385,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Callback to update the brush size image shown to the user
+    ///     Callback to update the brush size image shown to the user
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
@@ -405,9 +394,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Callback to update the brush size image shown to the user
+    ///     Callback to update the brush size image shown to the user
     /// </summary>
-    /// 
     /// <param name="force">Whether to force the creation of the bitmap</param>
     private void BrushSize_ValueChanged(bool force) {
         if (centralManager == null) {
@@ -475,9 +463,8 @@ public partial class WeightMapWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the colour slider value is changed
+    ///     Callback when the colour slider value is changed
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void ColourSlider_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
@@ -496,9 +483,8 @@ public partial class WeightMapWindow : Window {
 
 
     /// <summary>
-    /// Callback when the hardness toggle value is changed
+    ///     Callback when the hardness toggle value is changed
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void AvaloniaObject_OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {

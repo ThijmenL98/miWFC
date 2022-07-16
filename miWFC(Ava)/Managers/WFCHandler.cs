@@ -28,11 +28,13 @@ using static miWFC.Utils.Util;
 namespace miWFC.Managers;
 
 /// <summary>
-/// Main handler for communicating to and from the algorithm
+///     Main handler for communicating to and from the algorithm
 /// </summary>
 public class WFCHandler {
     private static HashSet<Color>? currentColors;
     private readonly CentralManager centralManager;
+
+    private readonly List<Color[]> disabledPatterns = new();
 
     private readonly FixedSizeQueue<Tuple<int, int, int>> fsqAdj = new(10);
     private readonly MainWindow mainWindow;
@@ -46,11 +48,9 @@ public class WFCHandler {
     private TileModel dbModel;
 
     private TilePropagator dbPropagator;
-
-    private List<double> originalWeights;
     private List<PatternArray> originalPatterns;
 
-    private readonly List<Color[]> disabledPatterns = new();
+    private List<double> originalWeights;
 
     private double percentageCollapsed;
     private Dictionary<int, Tuple<Color[], Tile>> tileCache;
@@ -97,14 +97,12 @@ public class WFCHandler {
      */
 
     /// <summary>
-    /// Function that is called for every step of the algorithm, if the algorithm is not initialized, it will take
-    /// care of it as well, otherwise it will just forward the call to the logic
+    ///     Function that is called for every step of the algorithm, if the algorithm is not initialized, it will take
+    ///     care of it as well, otherwise it will just forward the call to the logic
     /// </summary>
-    /// 
     /// <param name="reset">Whether to reset the algorithm</param>
     /// <param name="steps">The amount of steps to proceed in the algorithm</param>
     /// <param name="force">Whether to force the algorithm to continue if other checks fail</param>
-    /// 
     /// <returns>A task with the new output image and whether the algorithm is done</returns>
     public async Task<(WriteableBitmap, bool)> RunWFCAlgorithm(bool reset, int steps, bool force = false) {
         if (IsChangingModels() || (!mainWindow.IsActive && !force)) {
@@ -127,11 +125,20 @@ public class WFCHandler {
 
         (WriteableBitmap latestOutput, bool decided) = RunWfcDB(steps);
         IsCollapsed();
+
+        if (reset) {
+            if (IsOverlappingModel() && (mainWindow.GetInputControl().GetCategory().Contains("Side") ||
+                                         (mainWindowVM.InputVM.InputIsSideView &&
+                                          mainWindowVM.CustomInputSelected))) {
+                centralManager.GetInputManager().PlaceMarker(false);
+            }
+        }
+
         return (latestOutput, decided);
     }
 
     /// <summary>
-    /// Reset and reinitialize the algorithm to the default state
+    ///     Reset and reinitialize the algorithm to the default state
     /// </summary>
     private async Task ResetWFCAlgorithm() {
         string inputImage = mainWindow.GetInputControl().GetInputImage();
@@ -177,14 +184,16 @@ public class WFCHandler {
         Random rand = new(curSeed);
         mainWindowVM.SetRandomnessFunction(rand);
 
-        await Task.Run(() => {
+        await Task.Run(async () => {
             CreatePropagator(outputWidth, outputHeight, seamlessOutput, rand);
 
-            if (IsOverlappingModel() && inputWrappingEnabled) {
+            if (IsOverlappingModel() && (inputWrappingEnabled ||
+                                         (mainWindowVM.InputVM.InputIsSideView && mainWindowVM.CustomInputSelected))) {
                 bool success = false;
                 while (!success) {
                     try {
-                        HandleOrientedInput(outputHeight, inputImage);
+                        await HandleOrientedInput(outputHeight, outputWidth, inputImage,
+                            CalculateGroundTileIndex(currentBitmap!));
                         success = true;
                     } catch (TargetException) { }
                 }
@@ -195,7 +204,7 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Function to initialize values related to the algorithm progression
+    ///     Function to initialize values related to the algorithm progression
     /// </summary>
     private void InitializeValues() {
         currentBitmap = GetSampleFromPath(mainWindow.GetInputControl().GetInputImage(),
@@ -209,14 +218,12 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Function dedicated to initializing the overlapping model of the algorithm, if used
+    ///     Function dedicated to initializing the overlapping model of the algorithm, if used
     /// </summary>
-    /// 
     /// <param name="category">Category of the input image</param>
     /// <param name="inputImage">Name of the input image</param>
     /// <param name="patternSize">Size of the pattern</param>
     /// <param name="inputPaddingEnabled">Whether input padding is enabled</param>
-    /// 
     /// <returns>List of tiles extracted from the input image</returns>
     private List<TileViewModel> InitializeOverlappingModel(string category, string inputImage, int patternSize,
         bool inputPaddingEnabled) {
@@ -229,6 +236,12 @@ public class WFCHandler {
         dbModel = new OverlappingModel(patternSize);
 
         (List<PatternArray> patternList, List<double> patternWeights) = SetOverlappingSample(category, inputImage);
+
+        if (patternList.Count.Equals(0)) {
+            patternSize = Math.Max(patternSize - 1, 2);
+            dbModel = new OverlappingModel(patternSize);
+            (patternList, patternWeights) = SetOverlappingSample(category, inputImage);
+        }
 
         originalWeights = patternWeights;
 
@@ -274,16 +287,14 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Function dedicated to initializing the adjacent model of the algorithm, if used
+    ///     Function dedicated to initializing the adjacent model of the algorithm, if used
     /// </summary>
-    /// 
     /// <param name="inputImage">Name of the input image</param>
-    /// 
     /// <returns>List of tiles extracted from the input image</returns>
     private List<TileViewModel> InitializeAdjacentModel(string inputImage) {
         dbModel = new AdjacentModel();
         xRoot = XDocument.Load($"{AppContext.BaseDirectory}/samples/Default/{inputImage}/data.xml").Root ??
-            new XElement("");
+                new XElement("");
 
         tileSize = int.Parse(xRoot.Attribute("size")?.Value ?? "16", CultureInfo.InvariantCulture);
 
@@ -320,11 +331,9 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Load the adjacent tiles into the algorithm memory
+    ///     Load the adjacent tiles into the algorithm memory
     /// </summary>
-    /// 
     /// <param name="inputImage">Name of the input image</param>
-    /// 
     /// <returns>(t, w) -> t = Found tiles, w = Associated weights</returns>
     private (List<TileViewModel>, List<double>) LoadTiles(string inputImage) {
         List<TileViewModel> toAdd = new();
@@ -385,7 +394,7 @@ public class WFCHandler {
             tileSymmetries.Add(val, symmetries.ToArray());
 
             TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager,
-                card: cardinality);
+                cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
         }
@@ -394,9 +403,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Function used to create a new propagator for the algorithm to use
+    ///     Function used to create a new propagator for the algorithm to use
     /// </summary>
-    /// 
     /// <param name="outputWidth">Width of the output image</param>
     /// <param name="outputHeight">Height of the output image</param>
     /// <param name="seamlessOutput">Whether the output is required to be seamless</param>
@@ -410,39 +418,33 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Function dedicated to initialize images under the category "Worlds Side-View", as they are a special case
-    /// due to these images having an orientation, whereas other images are orientation invariant.
+    ///     Function dedicated to initialize images under the category "Worlds Side-View", as they are a special case
+    ///     due to these images having an orientation, whereas other images are orientation invariant.
     /// </summary>
-    /// 
     /// <param name="outputHeight">Height of the output</param>
+    /// <param name="outputWidth">Width of the output</param>
     /// <param name="inputImage">Input image used</param>
-    private void HandleOrientedInput(int outputHeight, string inputImage) {
-        switch (inputImage.ToLower()) {
-            case "flowers": {
-                // Set the bottom last 2 rows to be the ground tile
-                dbPropagator.select(0, outputHeight - 1, 0,
-                    new Tile(currentColors!.ElementAt(currentColors!.Count - 1)));
+    /// <param name="groundTileIndex">Index of the ground tile extracted from the input image</param>
+    private Task HandleOrientedInput(int outputHeight, int outputWidth, string inputImage, int groundTileIndex) {
+        for (int x = 0; x < outputWidth - 1; x++) {
+            dbPropagator.select(x, outputHeight - 1, 0,
+                new Tile(currentColors!.ElementAt(groundTileIndex)));
+        }
 
-                // And ban it elsewhere
-                for (int y = 0; y < outputHeight - 2; y++) {
-                    dbPropagator?.ban(0, y, 0, new Tile(currentColors.ElementAt(currentColors.Count - 1)));
-                }
-
-                break;
-            }
-            case "skyline": {
-                // Set the bottom last row to be the ground tile
-                dbPropagator.select(0, outputHeight - 1, 0,
-                    new Tile(currentColors!.ElementAt(currentColors!.Count - 1)));
-
-                // And ban it elsewhere
-                for (int y = 0; y < outputHeight - 1; y++) {
-                    dbPropagator.ban(0, y, 0, new Tile(currentColors.ElementAt(currentColors.Count - 1)));
-                }
-
-                break;
+        if (inputImage.ToLower().Contains("flower") || inputImage.ToLower().Contains("skyline")) {
+            for (int y = 0; y < outputHeight - 1; y++) {
+                dbPropagator.ban(0, y, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
             }
         }
+
+        if (inputImage.ToLower() == "platformer") {
+            for (int x = 0; x < outputWidth - 1; x++) {
+                dbPropagator.select(x, 0, 0,
+                    new Tile(currentColors!.ElementAt(0)));
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     /*
@@ -454,58 +456,91 @@ public class WFCHandler {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Get the amount of cells that are collapsed
+    ///     Get the amount of cells that are collapsed
     /// </summary>
-    /// 
     /// <returns>Integer</returns>
     public int GetAmountCollapsed() {
         return amountCollapsed;
     }
 
     /// <summary>
-    /// Get the amount of actions taken by the user and the algorithm
+    ///     Get the amount of actions taken by the user and the algorithm
     /// </summary>
-    /// 
     /// <returns>Integer</returns>
     public int GetActionsTaken() {
         return actionsTaken;
     }
 
     /// <summary>
-    /// Get the tile size used with the current input image
+    ///     Get the tile size used with the current input image
     /// </summary>
-    /// 
     /// <returns>Integer >= 1</returns>
     public int GetTileSize() {
         return tileSize;
     }
 
     /// <summary>
-    /// Due to the algorithm not requiring to keep track on which patterns have which index, but displaying it to the
-    /// user does require this, we need to descramble the user index to the algorithm index by mapping the index we
-    /// assigned to the index the algorithm designed
+    ///     Due to the algorithm not requiring to keep track on which patterns have which index, but displaying it to the
+    ///     user does require this, we need to descramble the user index to the algorithm index by mapping the index we
+    ///     assigned to the index the algorithm designed
     /// </summary>
-    /// 
     /// <param name="raw">Raw tile index created by us</param>
-    /// 
     /// <returns>Algorithm tile index</returns>
     public int GetDescrambledIndex(int raw) {
         return dbPropagator.getTMM().GetPatterns(tileCache[raw].Item2, 0).First();
     }
 
     /// <summary>
-    /// Get the percentage of cells to the whole of which are collapsed and which aren't (yet)
+    ///     Get the index of the regular tile rotated by rotation degrees.
     /// </summary>
-    /// 
+    /// <param name="regular">Default non rotated tile</param>
+    /// <param name="rotation">Rotation required</param>
+    /// <returns>Index of the rotated tile</returns>
+    public int GetRotatedIndex(int regular, int rotation) {
+        if (rotation == 0 || regular < 0) {
+            return regular;
+        }
+
+        int parentIndex = -1, cardinality = -1;
+        foreach (TileViewModel tvmPatt in mainWindowVM.PaintTiles.Reverse()) {
+            if (tvmPatt.RawPatternIndex != -1 && tvmPatt.PatternIndex >= regular) {
+                parentIndex = tvmPatt.PatternIndex;
+                cardinality = tvmPatt.PatternIndex - tvmPatt.RawPatternIndex + 1;
+            }
+        }
+
+        switch (cardinality) {
+            case 1:
+                return regular;
+            case 2:
+            case 4: {
+                return parentIndex - (rotation / 90 + parentIndex - regular) % cardinality;
+            }
+            default: {
+                int rotIndexed = rotation / 90;
+                int parentOffset = (parentIndex - regular) % 4;
+                return parentIndex - (parentIndex - regular > 3
+                    ? (rotIndexed + parentOffset) % 4 + 4
+                    : (rotIndexed switch {
+                        3 => 1,
+                        1 => 3,
+                        _ => rotIndexed
+                    } + parentOffset) % 4);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Get the percentage of cells to the whole of which are collapsed and which aren't (yet)
+    /// </summary>
     /// <returns>Double</returns>
     public double GetPercentageCollapsed() {
         return percentageCollapsed;
     }
 
     /// <summary>
-    /// Get the size of the propagator, this might differ to the output image due to tile sizes
+    ///     Get the size of the propagator, this might differ to the output image due to tile sizes
     /// </summary>
-    /// 
     /// <returns>Size(int, int)</returns>
     public Size GetPropagatorSize() {
         return new Size(dbPropagator.Topology.Width, dbPropagator.Topology.Height);
@@ -514,22 +549,20 @@ public class WFCHandler {
     // Booleans
 
     /// <summary>
-    /// Whether the algorithm is currently in an overlapping mode (or adjacent)
+    ///     Whether the algorithm is currently in an overlapping mode (or adjacent)
     /// </summary>
-    /// 
     /// <returns>Boolean</returns>
     public bool IsOverlappingModel() {
         return !mainWindowVM.SimpleModelSelected;
     }
 
     /// <summary>
-    /// Whether the output is collapsed entirely
+    ///     Whether the output is collapsed entirely
     /// </summary>
-    /// 
     /// <returns>Boolean</returns>
     public bool IsCollapsed() {
         bool isC = dbPropagator is {Status: Resolution.DECIDED} ||
-            Math.Abs(GetPercentageCollapsed() - 1d) < 0.0001d;
+                   Math.Abs(GetPercentageCollapsed() - 1d) < 0.0001d;
 
         centralManager.GetMainWindowVM().ItemVM.ItemEditorEnabled
             = centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Worlds Top-Down") && isC;
@@ -538,27 +571,24 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Whether we are in the midst of changing models, hence the algorithm shouldn't progress accidentally
+    ///     Whether we are in the midst of changing models, hence the algorithm shouldn't progress accidentally
     /// </summary>
-    /// 
     /// <returns>Boolean</returns>
     public bool IsChangingModels() {
         return _isChangingModels;
     }
 
     /// <summary>
-    /// Whether we are in the midst of changing images, hence the algorithm shouldn't progress accidentally
+    ///     Whether we are in the midst of changing images, hence the algorithm shouldn't progress accidentally
     /// </summary>
-    /// 
     /// <returns>Boolean</returns>
     public bool IsChangingImages() {
         return _isChangingImages;
     }
 
     /// <summary>
-    /// Whether the user is currently brushing
+    ///     Whether the user is currently brushing
     /// </summary>
-    /// 
     /// <returns>Boolean</returns>
     public bool IsBrushing() {
         return _isBrushing;
@@ -567,11 +597,9 @@ public class WFCHandler {
     // Images
 
     /// <summary>
-    /// Generate the latest output image
+    ///     Generate the latest output image
     /// </summary>
-    /// 
     /// <param name="grid">Whether to create a grid or a transparent background</param>
-    /// 
     /// <returns>Latest output image</returns>
     public WriteableBitmap GetLatestOutputBm(bool grid = true) {
         WriteableBitmap outputBitmap;
@@ -589,25 +617,21 @@ public class WFCHandler {
     // Objects
 
     /// <summary>
-    /// When painting in the overlapping mode, we need to place colours rather than tile indices, hence we need to get
-    /// the colour associated with the user selected tile
+    ///     When painting in the overlapping mode, we need to place colours rather than tile indices, hence we need to get
+    ///     the colour associated with the user selected tile
     /// </summary>
-    /// 
     /// <param name="index">Index of the colour</param>
-    /// 
     /// <returns>Colour associated</returns>
     public Color GetColorFromIndex(int index) {
         return toAddPaint[index].PatternColour;
     }
 
     /// <summary>
-    /// Get the colour located at a coordinate
+    ///     Get the colour located at a coordinate
     /// </summary>
-    /// 
     /// <param name="x">X coordinate</param>
     /// <param name="y">Y coordinate</param>
     /// <param name="grid">Whether to return transparency or a grid</param>
-    /// 
     /// <returns>Colour associated</returns>
     public Color GetOverlappingOutputAt(int x, int y, bool grid = false) {
         Color c = dbPropagator.toValueArray<Color>().get(x, y);
@@ -622,9 +646,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Get the propagator
+    ///     Get the propagator
     /// </summary>
-    /// 
     /// <returns>TilePropagator</returns>
     private TilePropagator GetDbPropagator() {
         return dbPropagator;
@@ -633,57 +656,50 @@ public class WFCHandler {
     // Lists
 
     /// <summary>
-    /// Get the tile cache of the adjacent mode of the algorithm
-    /// Structure: (tile index, Tuple(Pattern colours, Tile Object))
+    ///     Get the tile cache of the adjacent mode of the algorithm
+    ///     Structure: (tile index, Tuple(Pattern colours, Tile Object))
     /// </summary>
-    /// 
     /// <returns>The tile cache</returns>
     public Dictionary<int, Tuple<Color[], Tile>> GetTileCache() {
         return tileCache;
     }
 
     /// <summary>
-    /// Get all tiles used in the overlapping mode of the algorithm
+    ///     Get all tiles used in the overlapping mode of the algorithm
     /// </summary>
-    /// 
     /// <returns>List of tiles</returns>
     public IEnumerable<TileViewModel> GetColours() {
         return toAddPaint;
     }
 
     /// <summary>
-    /// Get all current colours used in the output
+    ///     Get all current colours used in the output
     /// </summary>
-    /// 
     /// <returns>Colours</returns>
     private static HashSet<Color>? GetCurrentColors() {
         return currentColors;
     }
 
     /// <summary>
-    /// Get the output of the overlapping mode of the algorithm
+    ///     Get the output of the overlapping mode of the algorithm
     /// </summary>
-    /// 
     /// <returns>Raw algorithm output</returns>
     public ITopoArray<Color> GetPropagatorOutputO() {
         return dbPropagator.toValueArray<Color>();
     }
 
     /// <summary>
-    /// Get the output of the adjacent mode of the algorithm
+    ///     Get the output of the adjacent mode of the algorithm
     /// </summary>
-    /// 
     /// <returns>Raw algorithm output</returns>
     public ITopoArray<int> GetPropagatorOutputA() {
         return dbPropagator.toValueArray(-1, -2);
     }
 
     /// <summary>
-    /// Get all weights at a given output cell
+    ///     Get all weights at a given output cell
     /// </summary>
-    /// 
     /// <param name="index">Cell index</param>
-    /// 
     /// <returns>Weights by tile index</returns>
     // ReSharper disable once UnusedMember.Global
     public double[] GetWeightsAt(int index) {
@@ -721,13 +737,11 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Get the available tiles or patterns at a given coordinate
+    ///     Get the available tiles or patterns at a given coordinate
     /// </summary>
-    /// 
     /// <param name="a">X Coordinate</param>
     /// <param name="b">Y Coordinate</param>
     /// <typeparam name="T">Type used by the algorithm</typeparam>
-    /// 
     /// <returns>List of available patterns associated</returns>
     public List<T> GetAvailablePatternsAtLocation<T>(int a, int b) {
         List<T> availableAtLoc;
@@ -758,9 +772,8 @@ public class WFCHandler {
     // Strings
 
     /// <summary>
-    /// Set whether an outer source has changed the input in any way
+    ///     Set whether an outer source has changed the input in any way
     /// </summary>
-    /// 
     /// <param name="source">Source of the change</param>
     public void SetInputChanged(string source) {
 #if DEBUG
@@ -776,9 +789,8 @@ public class WFCHandler {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Set the new amount of actions taken, not a simple increment due to multiple steps being allowed at once
+    ///     Set the new amount of actions taken, not a simple increment due to multiple steps being allowed at once
     /// </summary>
-    /// 
     /// <param name="newValue">New amount of steps</param>
     public void SetActionsTaken(int newValue) {
         actionsTaken = newValue;
@@ -787,27 +799,24 @@ public class WFCHandler {
     // Booleans
 
     /// <summary>
-    /// Set whether the image is being changed
+    ///     Set whether the image is being changed
     /// </summary>
-    /// 
     /// <param name="isChanging">Boolean</param>
     public void SetImageChanging(bool isChanging) {
         _isChangingImages = isChanging;
     }
 
     /// <summary>
-    /// Set whether the Model is being changed
+    ///     Set whether the Model is being changed
     /// </summary>
-    /// 
     /// <param name="isChanging">Boolean</param>
     public void SetModelChanging(bool isChanging) {
         _isChangingModels = isChanging;
     }
 
     /// <summary>
-    /// Disable (or enable) a pattern in the output
+    ///     Disable (or enable) a pattern in the output
     /// </summary>
-    /// 
     /// <param name="disabled">Whether to disable</param>
     /// <param name="patternIndex">Index of the pattern</param>
     public async void SetPatternDisabled(bool disabled, int patternIndex) {
@@ -843,31 +852,34 @@ public class WFCHandler {
     // Lists
 
     /// <summary>
-    /// Insert the sample associated with the current input into the model and return the patterns generated
+    ///     Insert the sample associated with the current input into the model and return the patterns generated
     /// </summary>
-    /// 
     /// <param name="category">Input category</param>
     /// <param name="inputImage">Input image</param>
-    /// 
     /// <returns>
-    /// (x, _) -> list of patterns extracted from the input
-    /// (_, x) -> list of weights extracted from the input
+    ///     (x, _) -> list of patterns extracted from the input
+    ///     (_, x) -> list of weights extracted from the input
     /// </returns>
     private (List<PatternArray> patternList, List<double> patternWeights) SetOverlappingSample(string category,
         string inputImage) {
-        bool hasRotations = (category.Equals("Worlds Top-Down") || inputImage.Contains("Map")|| inputImage.Contains("Biome")
-            || inputImage.Contains("City") || category.Equals("Knots") || category.Equals("Knots") ||
-            inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
+        bool hasRotations = (category.Equals("Worlds Top-Down") || inputImage.Contains("Map") ||
+                             inputImage.Contains("Biome")
+                             || inputImage.Contains("City") || category.Equals("Knots") || category.Equals("Knots") ||
+                             inputImage.Equals("Mazelike")) && !inputImage.Equals("Village");
 
-        (List<PatternArray>? patternList, List<double>? patternWeights)
-            = ((OverlappingModel) dbModel).addSample(tiles, disabledPatterns,
-                new TileRotation(hasRotations ? 4 : 1, true));
+        List<PatternArray> patternList = new();
+        List<double> patternWeights = new();
+        try {
+            (patternList, patternWeights)
+                = ((OverlappingModel) dbModel).addSample(tiles, disabledPatterns,
+                    new TileRotation(hasRotations ? 4 : 1, true));
+        } catch (ArgumentOutOfRangeException) { }
 
         return (patternList, patternWeights);
     }
 
     /// <summary>
-    /// Insert the weights set by the user into the model
+    ///     Insert the weights set by the user into the model
     /// </summary>
     public void UpdateWeights() {
         if (!IsOverlappingModel()) {
@@ -903,7 +915,7 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Update the transformations allowed or disallowed by the user in the model
+    ///     Update the transformations allowed or disallowed by the user in the model
     /// </summary>
     public void UpdateTransformations() {
         foreach (TileViewModel tvm in mainWindowVM.PatternTiles) {
@@ -938,7 +950,7 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Generate the banned tiles based on the current tile view model, cardinality of the tile and its raw rotation
+    ///     Generate the banned tiles based on the current tile view model, cardinality of the tile and its raw rotation
     /// </summary>
     /// <param name="tvm"></param>
     /// <param name="patternCardinality"></param>
@@ -948,14 +960,18 @@ public class WFCHandler {
         List<int> toBan = new();
 
         switch (patternCardinality) {
+            case 2:
             case 4: {
                 List<int> idsToSkip = new();
 
-                rotRaw = rotRaw switch {
-                    1 => 3,
-                    3 => 1,
-                    _ => rotRaw
-                };
+                if (patternCardinality.Equals(4)) {
+                    rotRaw = rotRaw switch {
+                        1 => 3,
+                        3 => 1,
+                        _ => rotRaw
+                    };
+                }
+
                 idsToSkip.Add(tvm.RawPatternIndex + rotRaw);
 
                 for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
@@ -998,7 +1014,7 @@ public class WFCHandler {
                             for (int i = tvm.RawPatternIndex; i <= tvm.PatternIndex; i++) {
                                 toBan.AddRange(from tvmPatt in mainWindowVM.PaintTiles.Reverse()
                                     where tvmPatt.PatternIndex.Equals(i) &&
-                                        tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
+                                          tvmPatt.PatternFlipping.Equals(tvm.UserFlipping)
                                     select tvmPatt.PatternIndex);
                             }
                         }
@@ -1020,13 +1036,10 @@ public class WFCHandler {
      */
 
     /// <summary>
-    /// Actually progress in the algorithm given a number of steps.
+    ///     Actually progress in the algorithm given a number of steps.
     /// </summary>
-    /// 
     /// <param name="steps">Amount of steps to progress</param>
-    /// 
     /// <returns>New output bitmap with the steps progressed</returns>
-    /// 
     /// <exception cref="TimeoutException">Exception caused by the algorithm taking too long and stalling</exception>
     private (WriteableBitmap, bool) RunWfcDB(int steps = 1) {
         Resolution dbStatus = Resolution.UNDECIDED;
@@ -1061,11 +1074,9 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Revert a set number of steps in the algorithm, also called backtracking
+    ///     Revert a set number of steps in the algorithm, also called backtracking
     /// </summary>
-    /// 
     /// <param name="steps">Amount of steps to backtrack</param>
-    /// 
     /// <returns>Updated output image</returns>
     public WriteableBitmap StepBackWfc(int steps = 1) {
         IsCollapsed();
@@ -1080,9 +1091,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Apply the painted mask to the output to exclude certain areas of interest
+    ///     Apply the painted mask to the output to exclude certain areas of interest
     /// </summary>
-    /// 
     /// <param name="colors">User created mask</param>
     public async Task HandlePaintBrush(Color[,] colors) {
         _isBrushing = true;
@@ -1098,9 +1108,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Handle the application of the mask to the overlapping model
+    ///     Handle the application of the mask to the overlapping model
     /// </summary>
-    /// 
     /// <param name="imageWidth">Width of the image</param>
     /// <param name="imageHeight">Height of the image</param>
     /// <param name="colors">Mask created by the user</param>
@@ -1161,9 +1170,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Handle the application of the mask to the adjacent model
+    ///     Handle the application of the mask to the adjacent model
     /// </summary>
-    /// 
     /// <param name="imageWidth">Width of the image</param>
     /// <param name="imageHeight">Height of the image</param>
     /// <param name="colors">Mask created by the user</param>
@@ -1214,16 +1222,16 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Set a given value on a given cell, usually used for painting cells
+    ///     Set a given value on a given cell, usually used for painting cells
     /// </summary>
-    /// 
     /// <param name="a">X Coordinate</param>
     /// <param name="b">Y Coordinate</param>
     /// <param name="toSet">Value to set at the coordinate</param>
     /// <param name="hover">Whether this is a hover operation or actual click operation</param>
-    /// <param name="returnTrueAlreadyCorrect">Whether to return success if the clicked location already contains the
-    /// desired value</param>
-    /// 
+    /// <param name="returnTrueAlreadyCorrect">
+    ///     Whether to return success if the clicked location already contains the
+    ///     desired value
+    /// </param>
     /// <returns>Updated output image and whether the output has converged</returns>
     public async Task<(WriteableBitmap?, bool?)> SetTile(int a, int b, int toSet, bool hover,
         bool returnTrueAlreadyCorrect = false) {
@@ -1243,16 +1251,16 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Set a given value on a given cell, usually used for painting cells, in the overlapping model
+    ///     Set a given value on a given cell, usually used for painting cells, in the overlapping model
     /// </summary>
-    /// 
     /// <param name="a">X Coordinate</param>
     /// <param name="b">Y Coordinate</param>
     /// <param name="toSet">Value to set at the coordinate</param>
     /// <param name="paintOverwrite">Whether the logic should overwrite the cell if it already contains a value</param>
-    /// <param name="returnTrueAlreadyCorrect">Whether to return success if the clicked location already contains the
-    /// desired value</param>
-    /// 
+    /// <param name="returnTrueAlreadyCorrect">
+    ///     Whether to return success if the clicked location already contains the
+    ///     desired value
+    /// </param>
     /// <returns>Updated output image and whether the output has converged</returns>
     private async Task<(WriteableBitmap?, bool?)> SetOverlappingTile(int a, int b, int toSet, bool paintOverwrite,
         bool returnTrueAlreadyCorrect) {
@@ -1401,16 +1409,16 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Set a given value on a given cell, usually used for painting cells, in the overlapping model
+    ///     Set a given value on a given cell, usually used for painting cells, in the overlapping model
     /// </summary>
-    /// 
     /// <param name="a">X Coordinate</param>
     /// <param name="b">Y Coordinate</param>
     /// <param name="toSet">Value to set at the coordinate</param>
     /// <param name="paintOverwrite">Whether the logic should overwrite the cell if it already contains a value</param>
-    /// <param name="returnTrueAlreadyCorrect">Whether to return success if the clicked location already contains the
-    /// desired value</param>
-    /// 
+    /// <param name="returnTrueAlreadyCorrect">
+    ///     Whether to return success if the clicked location already contains the
+    ///     desired value
+    /// </param>
     /// <returns>Updated output image and whether the output has converged</returns>
     private async Task<(WriteableBitmap?, bool?)> SetAdjacentTile(int a, int b, int toSet, bool paintOverwrite,
         bool returnTrueAlreadyCorrect) {
@@ -1527,9 +1535,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Generate a new image for the overlapping model
+    ///     Generate a new image for the overlapping model
     /// </summary>
-    /// 
     /// <param name="outputBitmap">Output: Image</param>
     /// <param name="grid">Whether to add a grid instead of transparency</param>
     private void GenerateOverlappingBitmap(out WriteableBitmap outputBitmap, bool grid) {
@@ -1554,9 +1561,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Generate a new image for the adjacent model
+    ///     Generate a new image for the adjacent model
     /// </summary>
-    /// 
     /// <param name="outputBitmap">Output: Image</param>
     /// <param name="grid">Whether to add a grid instead of transparency</param>
     private void GenerateAdjacentBitmap(out WriteableBitmap outputBitmap, bool grid) {
@@ -1570,7 +1576,7 @@ public class WFCHandler {
             Color[]? outputPattern = isCollapsed ? tileCache.ElementAt(value).Value.Item1 : null;
             return outputPattern?[y % tileSize * tileSize + x % tileSize] ?? (grid
                 ? ((int) Math.Floor((double) x / tileSize) +
-                    (int) Math.Floor((double) y / tileSize)) % 2 == 0
+                   (int) Math.Floor((double) y / tileSize)) % 2 == 0
                     ? Color.Parse("#11000000")
                     : Color.Parse("#00000000")
                 : Color.Parse("#00000000"));
@@ -1584,9 +1590,8 @@ public class WFCHandler {
     }
 
     /// <summary>
-    /// Reset the weights of all tiles.
+    ///     Reset the weights of all tiles.
     /// </summary>
-    /// 
     /// <param name="updateStaticWeight">Whether to skip the update of the dynamic weights, reverting to static</param>
     /// <param name="force">Whether to force the resetting </param>
     public void ResetWeights(bool updateStaticWeight = true, bool force = false) {

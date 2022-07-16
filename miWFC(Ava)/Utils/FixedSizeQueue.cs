@@ -4,9 +4,8 @@ using System.Collections.Generic;
 namespace miWFC.Utils;
 
 /// <summary>
-/// Custom Queue that automatically pops if the size is exceeded
+///     Custom Queue that automatically pops if the size is exceeded
 /// </summary>
-/// 
 /// <typeparam name="T">Object Type of the Queue</typeparam>
 public class FixedSizeQueue<T> {
     private readonly object lockObject = new();
@@ -19,7 +18,7 @@ public class FixedSizeQueue<T> {
     public FixedSizeQueue(int length) {
         Limit = length;
     }
-    
+
     /*
      * Getters & Setters
      */
@@ -29,7 +28,7 @@ public class FixedSizeQueue<T> {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Size limit of the Queue
+    ///     Size limit of the Queue
     /// </summary>
     private int Limit { get; }
 
@@ -42,15 +41,14 @@ public class FixedSizeQueue<T> {
     // Lists
 
     // Other
-    
+
     /*
      * Functions
      */
 
     /// <summary>
-    /// Custom enqueue function that auto pops values if the size is exceeded
+    ///     Custom enqueue function that auto pops values if the size is exceeded
     /// </summary>
-    /// 
     /// <param name="obj">Object to enqueue</param>
     public void Enqueue(T obj) {
         lock (lockObject) {
@@ -60,9 +58,8 @@ public class FixedSizeQueue<T> {
     }
 
     /// <summary>
-    /// Custom list representation of the Queue
+    ///     Custom list representation of the Queue
     /// </summary>
-    /// 
     /// <returns>List representation of the Queue</returns>
     public List<T> ToList() {
         lock (lockObject) {

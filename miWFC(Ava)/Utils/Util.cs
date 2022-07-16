@@ -13,6 +13,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using DynamicData;
 using miWFC.DeBroglie;
 using miWFC.ViewModels.Structs;
 
@@ -21,7 +22,7 @@ using miWFC.ViewModels.Structs;
 namespace miWFC.Utils;
 
 /// <summary>
-/// Util function, multiple static functions to handle common calculations
+///     Util function, multiple static functions to handle common calculations
 /// </summary>
 public static class Util {
     /*
@@ -40,12 +41,10 @@ public static class Util {
      */
 
     /// <summary>
-    /// Converter that converts a mapping coordinates to colour function into an actual colour array based on these coords 
+    ///     Converter that converts a mapping coordinates to colour function into an actual colour array based on these coords
     /// </summary>
-    /// 
     /// <param name="f">Mapping function</param>
     /// <param name="tilesize">Size (both width and height) of the tile</param>
-    /// 
     /// <returns>Linear array representation of the tile</returns>
     private static Color[] ImTile(Func<int, int, Color> f, int tilesize) {
         Color[] result = new Color[tilesize * tilesize];
@@ -59,24 +58,20 @@ public static class Util {
     }
 
     /// <summary>
-    /// Converter which rotates a linear colour array clockwise
+    ///     Converter which rotates a linear colour array clockwise
     /// </summary>
-    /// 
     /// <param name="array">Array to rotate</param>
     /// <param name="tilesize">Size (both width and height) of the tile</param>
-    /// 
     /// <returns>Rotated array</returns>
     public static Color[] Rotate(IReadOnlyList<Color> array, int tilesize) {
         return ImTile((x, y) => array[tilesize - 1 - y + x * tilesize], tilesize);
     }
 
     /// <summary>
-    /// Converter which flips a linear colour array
+    ///     Converter which flips a linear colour array
     /// </summary>
-    /// 
     /// <param name="array">Array to flip</param>
     /// <param name="tilesize">Size (both width and height) of the tile</param>
-    /// 
     /// <returns>Flipped array</returns>
     public static Color[] Reflect(IReadOnlyList<Color> array, int tilesize) {
         return ImTile((x, y) => array[tilesize - 1 - x + y * tilesize], tilesize);
@@ -87,12 +82,10 @@ public static class Util {
      */
 
     /// <summary>
-    /// Get all input images associated with the selected category
+    ///     Get all input images associated with the selected category
     /// </summary>
-    /// 
     /// <param name="modelType">overlapping or simpletiled model</param>
     /// <param name="category">category of images</param>
-    /// 
     /// <returns>List of images associated with the input category</returns>
     public static string[] GetModelImages(string modelType, string category) {
         List<string> images = new();
@@ -106,7 +99,7 @@ public static class Util {
             images.Sort();
         } else {
             try {
-                images.AddRange(from file in Directory.GetFiles($"{AppContext.BaseDirectory}/samples/Custom", $"*.png")
+                images.AddRange(from file in Directory.GetFiles($"{AppContext.BaseDirectory}/samples/Custom", "*.png")
                     select Path.GetFileName(file.Replace(".png", "")));
             } catch (DirectoryNotFoundException) { }
         }
@@ -115,12 +108,10 @@ public static class Util {
     }
 
     /// <summary>
-    /// Forwarding function based on a sample input image to getImageFromPath(string)
+    ///     Forwarding function based on a sample input image to getImageFromPath(string)
     /// </summary>
-    /// 
     /// <param name="name">Name of the input sample</param>
     /// <param name="category">Name of the input category</param>
-    /// 
     /// <returns>The image</returns>
     public static WriteableBitmap GetSampleFromPath(string name, string category) {
         return GetImageFromPath(
@@ -128,11 +119,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Return an image from a machine path
+    ///     Return an image from a machine path
     /// </summary>
-    /// 
     /// <param name="path">Path location of the image</param>
-    ///
     /// <returns>WriteableBitmap</returns>
     private static WriteableBitmap GetImageFromPath(string path) {
         MemoryStream ms = new(File.ReadAllBytes(path));
@@ -141,11 +130,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Get the allowed tile sizes for the given input image
+    ///     Get the allowed tile sizes for the given input image
     /// </summary>
-    /// 
     /// <param name="imageName">Name of the input image</param>
-    /// 
     /// <returns>The pattern sizes, and the amount of pattern sizes found (minus 2 default sizes, 2 and 3)</returns>
     public static (int[], int) GetImagePatternDimensions(string imageName) {
         if (xDoc.Root == null) {
@@ -171,15 +158,13 @@ public static class Util {
             }
         }
 
-        return (patternDimensionsList.ToArray(), j - 2);
+        return (patternDimensionsList.ToArray(), j == 0 ? 1 : j - 2);
     }
 
     /// <summary>
-    /// Get all categories based on the selected model
+    ///     Get all categories based on the selected model
     /// </summary>
-    /// 
     /// <param name="modelType">Selected model</param>
-    /// 
     /// <returns>List of categories</returns>
     public static string[] GetCategories(string modelType) {
         return modelType.Equals("overlapping")
@@ -188,11 +173,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Get a description of each category
+    ///     Get a description of each category
     /// </summary>
-    /// 
     /// <param name="category">Category to get a description of</param>
-    /// 
     /// <returns>Description</returns>
     public static string GetDescription(string category) {
         return category switch {
@@ -213,11 +196,9 @@ public static class Util {
      */
 
     /// <summary>
-    /// Function that reads an input image and converts it into an matrix of colours, and a list of distinct colours
+    ///     Function that reads an input image and converts it into an matrix of colours, and a list of distinct colours
     /// </summary>
-    /// 
     /// <param name="bmp">Input Image</param>
-    /// 
     /// <returns>(matrix of colours, list of distinct colours)</returns>
     public static (Color[][], HashSet<Color>) ImageToColourArray(WriteableBitmap bmp) {
         int width = (int) bmp.Size.Width;
@@ -248,13 +229,13 @@ public static class Util {
     }
 
     /// <summary>
-    /// Return the image form of an item
+    ///     Return the image form of an item
     /// </summary>
-    /// 
     /// <param name="itemColor">Currently selected item colour</param>
-    /// <param name="index">Item dependency index, if this item is dependent on another item the index will be
-    /// embedded within the image</param>
-    /// 
+    /// <param name="index">
+    ///     Item dependency index, if this item is dependent on another item the index will be
+    ///     embedded within the image
+    /// </param>
     /// <returns>Item image</returns>
     public static WriteableBitmap GetItemImage(Color itemColor, int index = -1) {
         Color[] rawColours = GetItemImageRaw(itemColor, index);
@@ -264,11 +245,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Function to convert a matrix of colours to a bitmap
+    ///     Function to convert a matrix of colours to a bitmap
     /// </summary>
-    /// 
     /// <param name="colours">Matrix of colours</param>
-    /// 
     /// <returns>Bitmap</returns>
     public static WriteableBitmap ColourArrayToImage(Color[,] colours) {
         int width = colours.GetLength(0);
@@ -280,13 +259,11 @@ public static class Util {
     }
 
     /// <summary>
-    /// Function that converts a matrix of tile indices to a bitmap
+    ///     Function that converts a matrix of tile indices to a bitmap
     /// </summary>
-    /// 
     /// <param name="values">Matrix of tile indices</param>
     /// <param name="tileSize">Tile Dimension</param>
     /// <param name="tiles">Tiles allowed to place</param>
-    /// 
     /// <returns>Bitmap</returns>
     public static WriteableBitmap ValueArrayToImage(int[,] values, int tileSize,
         Dictionary<int, Tuple<Color[], Tile>> tiles) {
@@ -306,11 +283,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Convert a bitmap into a 1D Array of Colours
+    ///     Convert a bitmap into a 1D Array of Colours
     /// </summary>
-    /// 
     /// <param name="writeableBitmap">Input Bitmap</param>
-    /// 
     /// <returns>1D array representation in Colours of the input bitmap</returns>
     public static Color[] ExtractColours(WriteableBitmap writeableBitmap) {
         (Color[][] colourArray, HashSet<Color> _) = ImageToColourArray(writeableBitmap);
@@ -318,16 +293,14 @@ public static class Util {
     }
 
     /// <summary>
-    /// Convert two bitmaps into a single bitmap, overlaying with the use of transparency
+    ///     Convert two bitmaps into a single bitmap, overlaying with the use of transparency
     /// </summary>
-    /// 
     /// <param name="bottom">Bottom Bitmap</param>
     /// <param name="tileSizeB">Size of cells in the bottom bitmap</param>
     /// <param name="top">Overlaid Bitmap</param>
     /// <param name="tileSizeT">Size of cells in the top bitmap</param>
     /// <param name="imgInWidth">Width of the largest input bitmap</param>
     /// <param name="imgInHeight">Height of the largest input bitmap</param>
-    /// 
     /// <returns>Combined Bitmap</returns>
     public static WriteableBitmap CombineBitmaps(WriteableBitmap bottom, int tileSizeB, WriteableBitmap top,
         int tileSizeT, int imgInWidth, int imgInHeight) {
@@ -370,12 +343,10 @@ public static class Util {
     }
 
     /// <summary>
-    /// Create item grid image, with a single pixel representing a single output cell
+    ///     Create item grid image, with a single pixel representing a single output cell
     /// </summary>
-    /// 
     /// <param name="itemGrid">Grid of items</param>
     /// <param name="itemColours">Colours associated to each name</param>
-    /// 
     /// <returns>Bitmap</returns>
     public static WriteableBitmap GenerateRawItemImage(Tuple<string, int>[,]? itemGrid,
         Dictionary<string, Color> itemColours) {
@@ -395,14 +366,12 @@ public static class Util {
     }
 
     /// <summary>
-    /// Generate a bitmap that only has the items, rest being transparent
+    ///     Generate a bitmap that only has the items, rest being transparent
     /// </summary>
-    /// 
     /// <param name="itemGrid">Grid of items to place</param>
     /// <param name="imgOutWidth">Width of the current solution</param>
     /// <param name="imgOutHeight">Height of the current solution</param>
     /// <param name="itemColours">Colours of each item name</param>
-    /// 
     /// <returns>Bitmap</returns>
     public static WriteableBitmap GenerateItemOverlay(Tuple<string, int>[,]? itemGrid, int imgOutWidth,
         int imgOutHeight, Dictionary<string, Color> itemColours) {
@@ -437,21 +406,37 @@ public static class Util {
     }
 
     /// <summary>
-    /// Return the latest generated item bitmap
+    ///     Return the latest generated item bitmap
     /// </summary>
-    /// 
     /// <returns>WriteableBitmap</returns>
     public static WriteableBitmap GetLatestItemBitMap() {
         return latestItemBitmap;
     }
 
     /// <summary>
-    /// Set the latest generated item bitmap
+    ///     Set the latest generated item bitmap
     /// </summary>
-    /// 
     /// <param name="newLatestItemBitmap">Latest item bitmap</param>
     public static void SetLatestItemBitMap(WriteableBitmap newLatestItemBitmap) {
         latestItemBitmap = newLatestItemBitmap;
+    }
+
+
+    /// <summary>
+    ///     Get the index of the most occuring colour in an image's bottom vertical row
+    /// </summary>
+    /// <param name="inputBitmap">Input bitmap</param>
+    /// <returns>index of the most occuring colour in an image's bottom vertical row</returns>
+    public static int CalculateGroundTileIndex(WriteableBitmap inputBitmap) {
+        (Color[][] colourArray, HashSet<Color> allowedColours) = ImageToColourArray(inputBitmap);
+        List<Color> colorCount = new();
+        for (int y = 0; y < colourArray[0].Length; y++) {
+            colorCount.Add(colourArray[^1][y]);
+        }
+
+        Color most = colorCount.GroupBy(i => i).OrderByDescending(grp => grp.Count())
+            .Select(grp => grp.Key).First();
+        return allowedColours.IndexOf(most);
     }
 
     /*
@@ -459,12 +444,10 @@ public static class Util {
      */
 
     /// <summary>
-    /// Create a colour array representation of the item including a possible dependent item linking value
+    ///     Create a colour array representation of the item including a possible dependent item linking value
     /// </summary>
-    /// 
     /// <param name="itemColor">Item colour to create an image for</param>
     /// <param name="index">Index of the dependent item</param>
-    /// 
     /// <returns>Bitmap</returns>
     private static Color[] GetItemImageRaw(Color itemColor, int index = -1) {
         bool singleDigit = false;
@@ -477,7 +460,7 @@ public static class Util {
         HashSet<Tuple<int, int>> border = GetBorder();
 
         Color contrastColour = itemColor.R * 0.299d + itemColor.G * 0.587d + itemColor.B * 0.114d > 150d
-            ? Colors.Black
+            ? Color.Parse("#424242")
             : Colors.White;
 
         for (int x = 0; x < Dimension; x++) {
@@ -526,9 +509,8 @@ public static class Util {
     }
 
     /// <summary>
-    /// Get the circular border of the item image representation
+    ///     Get the circular border of the item image representation
     /// </summary>
-    /// 
     /// <returns>Set of coordinates that are part of the border</returns>
     private static HashSet<Tuple<int, int>> GetBorder() {
         HashSet<Tuple<int, int>> border = new();
@@ -543,11 +525,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Get the boolean 3x5 segments related to the input integer
+    ///     Get the boolean 3x5 segments related to the input integer
     /// </summary>
-    /// 
     /// <param name="i">Integer to represent</param>
-    /// 
     /// <returns>Segments</returns>
     private static (bool, bool[][]) GetSegments(int i) {
         int digits = i <= 9 ? 1 : 2;
@@ -561,11 +541,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Get a single 3x5 segment related to the input integer
+    ///     Get a single 3x5 segment related to the input integer
     /// </summary>
-    /// 
     /// <param name="i">Integer to represent</param>
-    /// 
     /// <returns>Segment</returns>
     private static bool[] GetSegment(int i) {
         bool[] segment = {
@@ -582,13 +560,11 @@ public static class Util {
      */
 
     /// <summary>
-    /// Get the user created templates from this input image
+    ///     Get the user created templates from this input image
     /// </summary>
-    /// 
     /// <param name="inputImage">Input image</param>
     /// <param name="isOverlapping">Whether the input image is overlapping or not</param>
     /// <param name="tileSize">The size of the tiles</param>
-    /// 
     /// <returns></returns>
     public static ObservableCollection<TemplateViewModel> GetTemplates(string inputImage, bool isOverlapping,
         int tileSize) {
@@ -642,12 +618,10 @@ public static class Util {
      */
 
     /// <summary>
-    /// Conversion function to change a 2 dimensional array to a single dimensional array
+    ///     Conversion function to change a 2 dimensional array to a single dimensional array
     /// </summary>
-    /// 
     /// <param name="source">Source array</param>
     /// <typeparam name="T">Type of the array</typeparam>
-    /// 
     /// <returns>1D array representation</returns>
     private static T[] Convert2DArrayTo1D<T>(IEnumerable<T[]> source) {
         List<T> lst = new();
@@ -659,12 +633,10 @@ public static class Util {
     }
 
     /// <summary>
-    /// Conversion function to change a single dimensional array to a 2 dimensional array
+    ///     Conversion function to change a single dimensional array to a 2 dimensional array
     /// </summary>
-    /// 
     /// <param name="source">Source array</param>
     /// <typeparam name="T">Type of the array</typeparam>
-    /// 
     /// <returns>2D array representation</returns>
     private static T[,] Convert1DArrayTo2D<T>(IReadOnlyList<T[]> source) {
         try {
@@ -685,12 +657,10 @@ public static class Util {
     }
 
     /// <summary>
-    /// Rotate a 2D array of values clockwise
+    ///     Rotate a 2D array of values clockwise
     /// </summary>
-    /// 
     /// <param name="src">2D array to rotate</param>
     /// <typeparam name="T">Type of the array</typeparam>
-    /// 
     /// <returns>Rotated array</returns>
     public static T[,] RotateArrayClockwise<T>(T[,] src) {
         int width = src.GetUpperBound(0) + 1;
@@ -709,13 +679,11 @@ public static class Util {
     }
 
     /// <summary>
-    /// Append an item to a fixed-length array, increasing its size
+    ///     Append an item to a fixed-length array, increasing its size
     /// </summary>
-    /// 
     /// <param name="array">Array to append to</param>
     /// <param name="item">Item to append with</param>
     /// <typeparam name="T">Type of the array</typeparam>
-    /// 
     /// <returns>Appended array</returns>
     private static T[] Append<T>(T[] array, T item) {
         T[] result = new T[array.Length + 1];
@@ -725,14 +693,12 @@ public static class Util {
     }
 
     /// <summary>
-    /// Split an array into two separate arrays based on an index separator
+    ///     Split an array into two separate arrays based on an index separator
     /// </summary>
-    /// 
     /// <param name="source">Array to split</param>
     /// <param name="index">Index to split at, also the starting index of the second array</param>
     /// <param name="first">Out: Left side of the array</param>
     /// <param name="last">Out: Right side of the array</param>
-    /// 
     /// <typeparam name="T">Type of the array</typeparam>
     public static void Split<T>(T[] source, int index, out T[] first, out T[] last) {
         int len2 = source.Length - index;
@@ -743,12 +709,10 @@ public static class Util {
     }
 
     /// <summary>
-    /// Create the transpose of a matrix
+    ///     Create the transpose of a matrix
     /// </summary>
-    /// 
     /// <param name="matrix">Matrix to transpose</param>
     /// <typeparam name="T">Type of the matrix</typeparam>
-    /// 
     /// <returns>Transposed Matrix</returns>
     public static T[,] TransposeMatrix<T>(T[,] matrix) {
         int rows = matrix.GetLength(0);
@@ -770,14 +734,12 @@ public static class Util {
      */
 
     /// <summary>
-    /// Create a bitmap from the given conversion function
+    ///     Create a bitmap from the given conversion function
     /// </summary>
-    /// 
     /// <param name="imageWidth">Width of the image</param>
     /// <param name="imageHeight">Height of the image</param>
     /// <param name="tileSize">Size of the cells in pixels</param>
     /// <param name="conversionFunction">Function that maps a coordinate in the image to a colour</param>
-    /// 
     /// <returns>Image</returns>
     public static WriteableBitmap CreateBitmapFromData(int imageWidth, int imageHeight, int tileSize,
         Func<int, int, Color> conversionFunction) {
@@ -785,14 +747,12 @@ public static class Util {
     }
 
     /// <summary>
-    /// Create a bitmap from the given conversion function, including the count of nontransparent pixels
+    ///     Create a bitmap from the given conversion function, including the count of nontransparent pixels
     /// </summary>
-    /// 
     /// <param name="imageWidth">Width of the image</param>
     /// <param name="imageHeight">Height of the image</param>
     /// <param name="tileSize">Size of the cells in pixels</param>
     /// <param name="conversionFunction">Function that maps a coordinate in the image to a colour</param>
-    /// 
     /// <returns>(w, i) -> w = Image, i = count</returns>
     public static (WriteableBitmap, int) CreateBitmapFromDataFull(int imageWidth, int imageHeight, int tileSize,
         Func<int, int, Color> conversionFunction) {
@@ -826,13 +786,14 @@ public static class Util {
     }
 
     /// <summary>
-    /// Extended version of AppendPictureData(string, IEnumerable, bool) which first converts a 2D integer matrix to 1D
+    ///     Extended version of AppendPictureData(string, IEnumerable, bool) which first converts a 2D integer matrix to 1D
     /// </summary>
-    /// 
     /// <param name="fileName">Name of the file to append data to</param>
     /// <param name="appendData">Data to append</param>
-    /// <param name="mapData">Whether the data to be added is map data, which adds 2 to each integer,
-    /// as -1 and -2 cannot be converted to an unsigned byte</param>
+    /// <param name="mapData">
+    ///     Whether the data to be added is map data, which adds 2 to each integer,
+    ///     as -1 and -2 cannot be converted to an unsigned byte
+    /// </param>
     public static async Task AppendPictureData(string fileName, int[,] appendData, bool mapData) {
         int[] output1D = new int[appendData.Length];
         Buffer.BlockCopy(appendData, 0, output1D, 0, appendData.Length * 4);
@@ -840,13 +801,14 @@ public static class Util {
     }
 
     /// <summary>
-    /// Append data to a png, hidden, and not affecting the image itself
+    ///     Append data to a png, hidden, and not affecting the image itself
     /// </summary>
-    /// 
     /// <param name="fileName">Name of the file to append data to</param>
     /// <param name="appendData">Data to append</param>
-    /// <param name="mapData">Whether the data to be added is map data, which adds 2 to each integer,
-    /// as -1 and -2 cannot be converted to an unsigned byte</param>
+    /// <param name="mapData">
+    ///     Whether the data to be added is map data, which adds 2 to each integer,
+    ///     as -1 and -2 cannot be converted to an unsigned byte
+    /// </param>
     public static async Task AppendPictureData(string fileName, IEnumerable<int> appendData, bool mapData) {
         byte[] data = await File.ReadAllBytesAsync(fileName);
         data = appendData.Aggregate(data, (current, val) => Append(current, (byte) (val + (mapData ? 2 : 0))));
@@ -858,7 +820,7 @@ public static class Util {
      */
 
     /// <summary>
-    /// Mathematical function to normalize any value from its old range to 0-1
+    ///     Mathematical function to normalize any value from its old range to 0-1
     /// </summary>
     /// <param name="value"></param>
     /// <param name="fromOld"></param>
@@ -869,13 +831,11 @@ public static class Util {
     }
 
     /// <summary>
-    /// Clamp a value between two other value, if it exceeds at either side, it is scaled down or up.
+    ///     Clamp a value between two other value, if it exceeds at either side, it is scaled down or up.
     /// </summary>
-    /// 
     /// <param name="value">Value to clamp</param>
     /// <param name="min">Minimum value to take</param>
     /// <param name="max">Maximum value to take</param>
-    /// 
     /// <returns>Clamped value</returns>
     private static double Clamp(double value, double min, double max) {
         if (value < min) {
@@ -888,13 +848,11 @@ public static class Util {
     }
 
     /// <summary>
-    /// Interpolate between two colours based on a percentage
+    ///     Interpolate between two colours based on a percentage
     /// </summary>
-    /// 
     /// <param name="c1">Colour one</param>
     /// <param name="c2">Colour two</param>
     /// <param name="percentage">Percentage</param>
-    /// 
     /// <returns>Interpolated Colour</returns>
     public static Color Interpolate(Color c1, Color c2, double percentage) {
         (double h1, double s1, double v1) = RgBtoHsv(c1);
@@ -914,11 +872,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Convert RGB to HSV Colours
+    ///     Convert RGB to HSV Colours
     /// </summary>
-    /// 
     /// <param name="rgb">RGB Colour</param>
-    /// 
     /// <returns>HSV Colour</returns>
     private static (double, double, double) RgBtoHsv(Color rgb) {
         double h = 0, s;
@@ -957,13 +913,11 @@ public static class Util {
     }
 
     /// <summary>
-    /// Convert HSV to RGB Colours
+    ///     Convert HSV to RGB Colours
     /// </summary>
-    /// 
     /// <param name="hue">Hue</param>
     /// <param name="saturation">Saturation</param>
     /// <param name="value">Value</param>
-    /// 
     /// <returns>RGB Colour</returns>
     private static Color HsVtoRgb(double hue, double saturation, double value) {
         int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
@@ -986,14 +940,12 @@ public static class Util {
     }
 
     /// <summary>
-    /// Balancing function that makes sure that the lower is never bigger than or equal to the upper value
+    ///     Balancing function that makes sure that the lower is never bigger than or equal to the upper value
     /// </summary>
-    /// 
     /// <param name="lower">The lower bound</param>
     /// <param name="upper">The upper bound</param>
     /// <param name="change">Amount of value to change</param>
     /// <param name="lowerAdapted">Whether the lower or upper bound is changed</param>
-    /// 
     /// <returns>Balanced values (lower, higher)</returns>
     public static (int, int) BalanceValues(int lower, int upper, int change, bool lowerAdapted) {
         int newLower, newUpper;
@@ -1010,11 +962,9 @@ public static class Util {
     }
 
     /// <summary>
-    /// Function to validate the input string as a colour
+    ///     Function to validate the input string as a colour
     /// </summary>
-    /// 
     /// <param name="s">Input string to validate as colour</param>
-    ///
     /// <returns>S formatted if s was a string, otherwise null</returns>
     public static string? ValidateColor(string s) {
         if (!s.StartsWith("#")) {

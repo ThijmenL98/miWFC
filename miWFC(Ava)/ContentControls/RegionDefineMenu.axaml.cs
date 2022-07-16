@@ -19,14 +19,14 @@ using miWFC.ViewModels;
 namespace miWFC.ContentControls;
 
 /// <summary>
-/// Separated control for the item addition menu
+///     Separated control for the item addition menu
 /// </summary>
 public partial class RegionDefineMenu : UserControl {
     private CentralManager? centralManager;
 
-    private int oldBrushSize = -2;
-
     private bool[,] maskAllowances;
+
+    private int oldBrushSize = -2;
 
     /*
      * Initializing Functions & Constructor
@@ -50,9 +50,8 @@ public partial class RegionDefineMenu : UserControl {
      */
 
     /// <summary>
-    /// Get the selected size of the brush, these values are diameters, not radii
+    ///     Get the selected size of the brush, these values are diameters, not radii
     /// </summary>
-    /// 
     /// <returns>Selected brush size</returns>
     private int GetPaintBrushSize() {
         int brushSize = centralManager!.GetMainWindowVM().BrushSize;
@@ -61,9 +60,8 @@ public partial class RegionDefineMenu : UserControl {
     }
 
     /// <summary>
-    /// Get the allowance of the image appearing on each coordinate
+    ///     Get the allowance of the image appearing on each coordinate
     /// </summary>
-    /// 
     /// <returns>Colour matrix</returns>
     public bool[,] GetAllowanceMask() {
         return maskAllowances;
@@ -74,7 +72,7 @@ public partial class RegionDefineMenu : UserControl {
      */
 
     /// <summary>
-    /// Reset the user editable mask to its defaults
+    ///     Reset the user editable mask to its defaults
     /// </summary>
     public void ResetAllowanceMask() {
         MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
@@ -88,7 +86,7 @@ public partial class RegionDefineMenu : UserControl {
     }
 
     /// <summary>
-    /// Set the user editable mask to an item preset
+    ///     Set the user editable mask to an item preset
     /// </summary>
     public void SetAllowanceMask(bool[,] itemSelectedAppearanceRegion) {
         maskAllowances = itemSelectedAppearanceRegion;
@@ -99,9 +97,8 @@ public partial class RegionDefineMenu : UserControl {
      */
 
     /// <summary>
-    /// Callback to update the brush size image shown to the user
+    ///     Callback to update the brush size image shown to the user
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
@@ -121,7 +118,8 @@ public partial class RegionDefineMenu : UserControl {
 
         if (brushSizeRaw == -1) {
             centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
-                x == 1 && y == 1 ? Colors.Black : (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
+                x == 1 && y == 1 ? Color.Parse("#424242") :
+                (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
             return;
         }
 
@@ -157,16 +155,15 @@ public partial class RegionDefineMenu : UserControl {
             (x, y) => {
                 double dx = x - cp / 2d - 1;
                 double dy = y - cp / 2d - 1;
-                return dx * dx + dy * dy <= brushSizeRaw ? Colors.Black :
+                return dx * dx + dy * dy <= brushSizeRaw ? Color.Parse("#424242") :
                     (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent;
             });
         centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
     }
 
     /// <summary>
-    /// Callback when the user clicks on the region image, this function is called
+    ///     Callback when the user clicks on the region image, this function is called
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerPressedEventArgs</param>
     private void RegionImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
@@ -184,9 +181,8 @@ public partial class RegionDefineMenu : UserControl {
     }
 
     /// <summary>
-    /// Callback when the user moves while clicking clicks on the region image, this function is called
+    ///     Callback when the user moves while clicking clicks on the region image, this function is called
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerPressedEventArgs</param>
     private void RegionImageOnPointerMoved(object? sender, PointerEventArgs e) {
@@ -204,9 +200,8 @@ public partial class RegionDefineMenu : UserControl {
     }
 
     /// <summary>
-    /// Handling of the clicking the mouse on the output
+    ///     Handling of the clicking the mouse on the output
     /// </summary>
-    /// 
     /// <param name="clickX">X position of the mouse</param>
     /// <param name="clickY">Y position of the mouse</param>
     /// <param name="imgWidth">Image width</param>
@@ -245,9 +240,8 @@ public partial class RegionDefineMenu : UserControl {
     }
 
     /// <summary>
-    /// Create and apply image representation of the user created mask
+    ///     Create and apply image representation of the user created mask
     /// </summary>
-    /// 
     /// <param name="colors">Mask colours</param>
     private void UpdateMask(bool[,] colors) {
         MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();

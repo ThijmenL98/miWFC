@@ -22,7 +22,6 @@ using ReactiveUI;
 namespace miWFC.ViewModels.Bridge;
 
 public class ItemViewModel : ReactiveObject {
-    private CentralManager? centralManager;
     private readonly MainWindowViewModel mainWindowViewModel;
 
     private Bitmap _currentItemImage
@@ -32,6 +31,13 @@ public class ItemViewModel : ReactiveObject {
 
     private string _displayName = "", _dependentDisplayName = "", _itemColour = "", _depItemColour = "";
 
+    private int _editingEntry = -2,
+        _itemsToAddValue = 1,
+        _itemsToAddLower = 1,
+        _depMaxDistance = 5,
+        _depMinDistance = 1,
+        _itemsToAddUpper = 2;
+
     private bool _inItemMenu,
         _inRegionDefineMenu,
         _inAnyMenu,
@@ -40,16 +46,10 @@ public class ItemViewModel : ReactiveObject {
         _itemsInRange,
         _itemEditorEnabled;
 
-    private int _editingEntry = -2,
-        _itemsToAddValue = 1,
-        _itemsToAddLower = 1,
-        _depMaxDistance = 5,
-        _depMinDistance = 1,
-        _itemsToAddUpper = 2;
-
     private ObservableCollection<ItemObjectViewModel> _itemDataGrid = new();
 
     private Tuple<string, int>[,]? _latestItemGrid = new Tuple<string, int>[0, 0];
+    private CentralManager? centralManager;
 
     /*
      * Initializing Functions & Constructor
@@ -59,10 +59,6 @@ public class ItemViewModel : ReactiveObject {
         mainWindowViewModel = mwvm;
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
-    }
-
     /*
      * Getters & Setters
      */
@@ -70,7 +66,7 @@ public class ItemViewModel : ReactiveObject {
     // Strings
 
     /// <summary>
-    /// User input name of the item to add
+    ///     User input name of the item to add
     /// </summary>
     public string DisplayName {
         get => _displayName;
@@ -83,7 +79,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Dependent item name through user input
+    ///     Dependent item name through user input
     /// </summary>
     public string DependentItemName {
         get => _dependentDisplayName;
@@ -96,7 +92,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Item colour hex string
+    ///     Item colour hex string
     /// </summary>
     public string ItemColour {
         get => _itemColour;
@@ -118,7 +114,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Dependent Item colour hex string
+    ///     Dependent Item colour hex string
     /// </summary>
     public string DepItemColour {
         get => _depItemColour;
@@ -136,7 +132,7 @@ public class ItemViewModel : ReactiveObject {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Amount of this item to add to the world
+    ///     Amount of this item to add to the world
     /// </summary>
     public int ItemsToAddValue {
         get => _itemsToAddValue;
@@ -144,7 +140,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Maximum amount of this item to add to the world
+    ///     Maximum amount of this item to add to the world
     /// </summary>
     public int ItemsToAddUpper {
         get => _itemsToAddUpper;
@@ -152,7 +148,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Minimum amount of this item to add to the world
+    ///     Minimum amount of this item to add to the world
     /// </summary>
     public int ItemsToAddLower {
         get => _itemsToAddLower;
@@ -160,7 +156,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Maximum distance of the dependent item to spawn from this item
+    ///     Maximum distance of the dependent item to spawn from this item
     /// </summary>
     public int DepMaxDistance {
         get => _depMaxDistance;
@@ -168,7 +164,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Minimum distance of the dependent item to spawn from this item
+    ///     Minimum distance of the dependent item to spawn from this item
     /// </summary>
     public int DepMinDistance {
         get => _depMinDistance;
@@ -178,7 +174,7 @@ public class ItemViewModel : ReactiveObject {
     // Booleans
 
     /// <summary>
-    /// Whether the item editor window is allowed to be opened (only on a fully collapsed Top-Down World)
+    ///     Whether the item editor window is allowed to be opened (only on a fully collapsed Top-Down World)
     /// </summary>
     public bool ItemEditorEnabled {
         get => _itemEditorEnabled;
@@ -186,7 +182,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the user is inside of the item addition menu
+    ///     Whether the user is inside of the item addition menu
     /// </summary>
     public bool InItemMenu {
         get => _inItemMenu;
@@ -197,7 +193,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the user is inside of the item appearance region menu menu
+    ///     Whether the user is inside of the item appearance region menu menu
     /// </summary>
     public bool InRegionDefineMenu {
         get => _inRegionDefineMenu;
@@ -209,7 +205,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the user is inside of any submenu
+    ///     Whether the user is inside of any submenu
     /// </summary>
     public bool InAnyMenu {
         get => _inAnyMenu;
@@ -217,7 +213,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the current item may appear anywhere in the world
+    ///     Whether the current item may appear anywhere in the world
     /// </summary>
     public bool ItemsMayAppearAnywhere {
         get => _itemsMayAppearAnywhere;
@@ -225,7 +221,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the current item has a dependent item
+    ///     Whether the current item has a dependent item
     /// </summary>
     public bool ItemIsDependent {
         get => _itemIsDependent;
@@ -233,7 +229,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the current item has a fixed amount or a range amount (min-max)
+    ///     Whether the current item has a fixed amount or a range amount (min-max)
     /// </summary>
     public bool ItemsInRange {
         get => _itemsInRange;
@@ -243,7 +239,7 @@ public class ItemViewModel : ReactiveObject {
     // Images
 
     /// <summary>
-    /// The image associated with this item
+    ///     The image associated with this item
     /// </summary>
     public Bitmap CurrentItemImage {
         get => _currentItemImage;
@@ -255,12 +251,24 @@ public class ItemViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _regionImage, value);
     }
 
+    /// <summary>
+    ///     The data grid on the right side of the window to show the user which items are being added
+    /// </summary>
+    public ObservableCollection<ItemObjectViewModel> ItemDataGrid {
+        get => _itemDataGrid;
+        set => this.RaiseAndSetIfChanged(ref _itemDataGrid, value);
+    }
+
+    public void SetCentralManager(CentralManager cm) {
+        centralManager = cm;
+    }
+
     // Objects
 
     // Lists
 
     /// <summary>
-    /// Get the latest item grid to apply
+    ///     Get the latest item grid to apply
     /// </summary>
     /// <returns></returns>
     public Tuple<string, int>[,]? GetLatestItemGrid() {
@@ -268,21 +276,12 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// The data grid on the right side of the window to show the user which items are being added
+    ///     Get all colours associated to each item name
     /// </summary>
-    public ObservableCollection<ItemObjectViewModel> ItemDataGrid {
-        get => _itemDataGrid;
-        set => this.RaiseAndSetIfChanged(ref _itemDataGrid, value);
-    }
-
-    /// <summary>
-    /// Get all colours associated to each item name
-    /// </summary>
-    /// 
     /// <returns>Colour dictionary</returns>
     public Dictionary<string, Color> GetItemColours() {
         Dictionary<string, Color> mainItems = new();
-        
+
         foreach (ItemObjectViewModel model in ItemDataGrid) {
             string key = model.ItemName;
             Color val = model.MyColor;
@@ -295,6 +294,7 @@ public class ItemViewModel : ReactiveObject {
                     new DataValidationException("Name already exists with a different colour"));
                 return new Dictionary<string, Color>();
             }
+
             mainItems.Add(model.ItemName, model.MyColor);
         }
 
@@ -313,6 +313,7 @@ public class ItemViewModel : ReactiveObject {
                         new DataValidationException("Name already exists with a different colour"));
                     return new Dictionary<string, Color>();
                 }
+
                 depItems.Add(key, val);
             }
         }
@@ -324,9 +325,8 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Get all unique item names
+    ///     Get all unique item names
     /// </summary>
-    /// 
     /// <returns>List of item names</returns>
     public List<string> GetItemNames() {
         List<string> mainItems = ItemDataGrid.Select(item => item.ItemName).ToList();
@@ -343,7 +343,7 @@ public class ItemViewModel : ReactiveObject {
      */
 
     /// <summary>
-    /// Function called when applying the currently created item in the item addition menu
+    ///     Function called when applying the currently created item in the item addition menu
     /// </summary>
     public void AddItemToDataGrid() {
         int amountUpper;
@@ -394,7 +394,7 @@ public class ItemViewModel : ReactiveObject {
             }
 
             string? message = null;
-            
+
             if (allowedTiles.Count == 0) {
                 message = "No tiles have been selected";
             }
@@ -415,7 +415,7 @@ public class ItemViewModel : ReactiveObject {
                 centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
                 return;
             }
-            
+
             if (DependentItemName.Equals("") || string.IsNullOrWhiteSpace(DependentItemName) ||
                 (GetItemNames().Contains(DependentItemName) &&
                  !GetItemColours()[DependentItemName].Equals(depColor))) {
@@ -503,7 +503,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when exiting the item addition menu
+    ///     Function called when exiting the item addition menu
     /// </summary>
     public void ExitItemAddition() {
         InItemMenu = false;
@@ -529,7 +529,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when creating a new item
+    ///     Function called when creating a new item
     /// </summary>
     public void CreateNewItem() {
         centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
@@ -540,7 +540,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when editing the currently selected existing item from the data grid
+    ///     Function called when editing the currently selected existing item from the data grid
     /// </summary>
     public void EditSelectedItem() {
         DataGrid dg = centralManager!.GetItemWindow().GetDataGrid();
@@ -595,14 +595,14 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when removing the currently selected existing item from the data grid
+    ///     Function called when removing the currently selected existing item from the data grid
     /// </summary>
     public void RemoveSelectedItem() {
         RemoveIndexedItem(-2);
     }
 
     /// <summary>
-    /// Function called when removing an existing item by index from the data grid
+    ///     Function called when removing an existing item by index from the data grid
     /// </summary>
     /// <param name="selectedIndex"></param>
     public void RemoveIndexedItem(int selectedIndex) {
@@ -619,7 +619,7 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when applying the current items from the data grid
+    ///     Function called when applying the current items from the data grid
     /// </summary>
     public void GenerateItemGrid() {
         if (ItemDataGrid.Count < 1) {
@@ -687,14 +687,12 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Fill the item grid with all found items, if possible, if not all items could be added, an error is returned
+    ///     Fill the item grid with all found items, if possible, if not all items could be added, an error is returned
     /// </summary>
-    /// 
     /// <param name="itemGrid">Predefined item grid, empty</param>
     /// <param name="spacesLeft">Amount of spaces left available to place items on for each type of tile</param>
     /// <param name="distinctColourCount">List of distinct colours</param>
     /// <param name="distinctIndexCount">List of distinct indices to place on</param>
-    /// 
     /// <returns>Filled item grid, or null if not possible</returns>
     private Tuple<string, int>[,]? FillItemGrid(Tuple<string, int>[,] itemGrid, IList<int> spacesLeft,
         Color[,] distinctColourCount, int[,] distinctIndexCount) {
@@ -708,8 +706,9 @@ public class ItemViewModel : ReactiveObject {
                 bool added = false;
                 int retry = 0;
                 List<(int, int)> locToSkip = new();
-                int allowedRetries = allowedAdd.Select(x => spacesLeft[x]).Sum() * allowedAdd.Select(x => spacesLeft[x]).Sum();
-                
+                int allowedRetries = allowedAdd.Select(x => spacesLeft[x]).Sum() *
+                                     allowedAdd.Select(x => spacesLeft[x]).Sum();
+
                 while (!added) {
                     retry++;
                     if (retry >= allowedRetries) {
@@ -734,7 +733,7 @@ public class ItemViewModel : ReactiveObject {
                     int yLoc = randLoc % mainWindowViewModel.ImageOutWidth;
 
                     int whileRetries = allowedRetries;
-                    
+
                     while (whileRetries > 0) {
                         if (locToSkip.Contains((xLoc, yLoc))) {
                             randLoc = mainWindowViewModel.R.Next(mainWindowViewModel.ImageOutWidth *
@@ -747,9 +746,9 @@ public class ItemViewModel : ReactiveObject {
 
                         whileRetries--;
                     }
-                    
+
                     locToSkip.Add((xLoc, yLoc));
-                    
+
                     bool allowedAtLoc = false;
                     if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
                         Color colorAtPos = distinctColourCount[xLoc, yLoc];
@@ -776,9 +775,8 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Try to actually place an item at the desired position
+    ///     Try to actually place an item at the desired position
     /// </summary>
-    ///
     /// <param name="xLoc">X location to place at</param>
     /// <param name="yLoc">Y location to place at</param>
     /// <param name="ivm">Item object to place</param>
@@ -788,7 +786,6 @@ public class ItemViewModel : ReactiveObject {
     /// <param name="distinctIndexCount">List of distinct tile indices to place on</param>
     /// <param name="depItemCount">ID count of the dependent item identifier</param>
     /// <param name="spacesLeft">Amount of spaces left for each tile type</param>
-    /// 
     /// <returns>Whether the placement of the item has succeeded and the new count of dependent items ids</returns>
     private (bool, int) TryPlaceItemAt(int xLoc, int yLoc, ItemObjectViewModel ivm, Tuple<string, int>[,] itemGrid,
         Color[,] distinctColourCount, ICollection<int> allowedAdd
@@ -831,9 +828,8 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Check and place the dependent item if possible
+    ///     Check and place the dependent item if possible
     /// </summary>
-    ///
     /// <param name="xLoc">X location to place at</param>
     /// <param name="yLoc">Y location to place at</param>
     /// <param name="ivm">Item object to place</param>
@@ -843,7 +839,6 @@ public class ItemViewModel : ReactiveObject {
     /// <param name="distinctIndexCount">List of distinct tile indices to place on</param>
     /// <param name="depItemCount">ID count of the dependent item identifier</param>
     /// <param name="spacesLeft">Amount of spaces left for each tile type</param>
-    /// 
     /// <returns>Whether the dependent item was correctly placed, the updated space availability list and new item grid</returns>
     private (bool, IList<int>, Tuple<string, int>[,]) TryPlaceDependencyAt(int xLoc, int yLoc, ItemObjectViewModel ivm,
         Tuple<string, int>[,] itemGrid,
@@ -907,37 +902,36 @@ public class ItemViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called to reset the items in the image
+    ///     Function called to reset the items in the image
     /// </summary>
     public void ResetDataGrid() {
         ItemDataGrid = new ObservableCollection<ItemObjectViewModel>();
     }
 
     /// <summary>
-    /// Called when applying the region mask
+    ///     Called when applying the region mask
     /// </summary>
     public void ApplyRegionEditor() {
         ExitRegionEditorWithReset(false);
     }
 
     /// <summary>
-    /// Function called when entering the item spawn region editor
+    ///     Function called when entering the item spawn region editor
     /// </summary>
     public void EnterRegionEditor() {
         InRegionDefineMenu = true;
     }
 
     /// <summary>
-    /// Function called when exiting the item spawn region editor
+    ///     Function called when exiting the item spawn region editor
     /// </summary>
     public void ExitRegionEditor() {
         ExitRegionEditorWithReset(true);
     }
 
     /// <summary>
-    /// Function called when exiting the item spawn region editor
+    ///     Function called when exiting the item spawn region editor
     /// </summary>
-    /// 
     /// <param name="resetMask">Whether to reset the mask</param>
     public void ExitRegionEditorWithReset(bool resetMask) {
         InRegionDefineMenu = false;

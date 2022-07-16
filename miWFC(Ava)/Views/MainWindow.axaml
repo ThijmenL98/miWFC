@@ -34,6 +34,7 @@
 		<Image Source="/Assets/ImportHover.png" x:Key="hoverImportKey" x:Name="hoverImport" />
 		<Image Source="/Assets/RotateSingleHover.png" x:Key="hoverRotationSingleKey" x:Name="hoverRotationSingle" />
 		<Image Source="/Assets/WeightMappingHover.png" x:Key="hoverWeightMappingKey" x:Name="hoverWeightMapping" />
+		<Image Source="/Assets/FolderHover.png" x:Key="hoverFolderKey" x:Name="hoverFolder" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/AnimateClick.png" x:Key="clickAnimateKey" x:Name="clickAnimate" />
@@ -53,6 +54,7 @@
 		<Image Source="/Assets/ExportClick.png" x:Key="clickExportKey" x:Name="clickExport" />
 		<Image Source="/Assets/RotateSingleClick.png" x:Key="clickRotationSingleKey" x:Name="clickRotationSingle" />
 		<Image Source="/Assets/WeightMappingClick.png" x:Key="clickWeightMappingKey" x:Name="clickWeightMapping" />
+		<Image Source="/Assets/FolderClick.png" x:Key="clickFolderKey" x:Name="clickFolder" />
 	</Window.Resources>
 
 	<Window.Styles>

@@ -197,7 +197,7 @@ internal class Ac4PatternModelConstraint : IPatternModelConstraint {
                     }
 
                     BitArray patternsDense = propagatorArrayDense[pattern][(int) el];
-                    
+
                     PropagateSelectCore(patternsDense, i2, (int) id);
                 }
             }

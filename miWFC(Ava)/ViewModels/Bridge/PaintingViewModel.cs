@@ -15,13 +15,10 @@ using ReactiveUI;
 namespace miWFC.ViewModels.Bridge;
 
 public class PaintingViewModel : ReactiveObject {
-    private CentralManager? centralManager;
     private readonly MainWindowViewModel mainWindowViewModel;
 
     private Bitmap _brushSizeImage
         = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
-
-    private ObservableCollection<TemplateViewModel> _templates = new();
 
     private bool _pencilModeEnabled,
         _paintModeEnabled,
@@ -30,16 +27,15 @@ public class PaintingViewModel : ReactiveObject {
         _templatePlaceModeEnabled,
         clickedInCurrentMode;
 
+    private ObservableCollection<TemplateViewModel> _templates = new();
+    private CentralManager? centralManager;
+
     /*
      * Initializing Functions & Constructor
      */
 
     public PaintingViewModel(MainWindowViewModel mwvm) {
         mainWindowViewModel = mwvm;
-    }
-
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
     }
 
     /*
@@ -53,7 +49,7 @@ public class PaintingViewModel : ReactiveObject {
     // Booleans
 
     /// <summary>
-    /// Whether the pencil mode is selected
+    ///     Whether the pencil mode is selected
     /// </summary>
     public bool PencilModeEnabled {
         get => _pencilModeEnabled;
@@ -61,7 +57,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the painting mode is selected
+    ///     Whether the painting mode is selected
     /// </summary>
     public bool PaintModeEnabled {
         get => _paintModeEnabled;
@@ -69,7 +65,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the template creation mode is selected
+    ///     Whether the template creation mode is selected
     /// </summary>
     public bool TemplateCreationModeEnabled {
         get => templateCreationModeEnabled;
@@ -77,7 +73,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the template placing mode is selected
+    ///     Whether the template placing mode is selected
     /// </summary>
     public bool TemplatePlaceModeEnabled {
         get => _templatePlaceModeEnabled;
@@ -85,7 +81,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the painting override mode is enabled, meaning you can paint on collapsed cells
+    ///     Whether the painting override mode is enabled, meaning you can paint on collapsed cells
     /// </summary>
     public bool IsPaintOverrideEnabled {
         get => _isPaintOverrideEnabled;
@@ -93,17 +89,17 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the user has clicked since the current mode has been initialized
+    ///     Whether the user has clicked since the current mode has been initialized
     /// </summary>
     public bool ClickedInCurrentMode {
         get => clickedInCurrentMode;
         set => this.RaiseAndSetIfChanged(ref clickedInCurrentMode, value);
     }
-    
+
     // Images
 
     /// <summary>
-    /// Image shown to the user depending on the size of the brush they're using
+    ///     Image shown to the user depending on the size of the brush they're using
     /// </summary>
     public Bitmap BrushSizeImage {
         get => _brushSizeImage;
@@ -115,11 +111,15 @@ public class PaintingViewModel : ReactiveObject {
     // Lists
 
     /// <summary>
-    /// All templates associated with the current input image
+    ///     All templates associated with the current input image
     /// </summary>
     public ObservableCollection<TemplateViewModel> Templates {
         get => _templates;
         set => this.RaiseAndSetIfChanged(ref _templates, value);
+    }
+
+    public void SetCentralManager(CentralManager cm) {
+        centralManager = cm;
     }
 
     // Other
@@ -129,7 +129,7 @@ public class PaintingViewModel : ReactiveObject {
      */
 
     /// <summary>
-    /// Function called when switching to the pencil mode
+    ///     Function called when switching to the pencil mode
     /// </summary>
     public void ActivatePencilMode() {
         PencilModeEnabled = !PencilModeEnabled;
@@ -144,7 +144,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when switching to the paint mode
+    ///     Function called when switching to the paint mode
     /// </summary>
     public void ActivatePaintMode() {
         PaintModeEnabled = !PaintModeEnabled;
@@ -157,7 +157,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when switching to the template creation mode
+    ///     Function called when switching to the template creation mode
     /// </summary>
     public void ActivateTemplateCreationMode() {
         TemplateCreationModeEnabled = !TemplateCreationModeEnabled;
@@ -170,25 +170,26 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when switching to the template placement mode
+    ///     Function called when switching to the template placement mode
     /// </summary>
     public void ActivateTemplatePlacementMode() {
         TemplatePlaceModeEnabled = !TemplatePlaceModeEnabled;
         TemplateCreationModeEnabled = false;
         PaintModeEnabled = false;
         PencilModeEnabled = false;
-        
+
         centralManager!.GetInputManager().ResetMask();
         centralManager!.GetInputManager().UpdateMask();
     }
 
     /// <summary>
-    /// Function called applying the current paint mask
+    ///     Function called applying the current paint mask
     /// </summary>
     public async Task ApplyPaintMask() {
         Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
         if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
-            centralManager!.GetUIManager().DispatchError(centralManager.GetPaintingWindow(), "No mask has been painted");
+            centralManager!.GetUIManager()
+                .DispatchError(centralManager.GetPaintingWindow(), "No mask has been painted");
             return;
         }
 
@@ -201,7 +202,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called applying the current template
+    ///     Function called applying the current template
     /// </summary>
     public async void CreateTemplate() {
         Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
@@ -218,9 +219,8 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Create a template with the current mask in the overlapping mode
+    ///     Create a template with the current mask in the overlapping mode
     /// </summary>
-    /// 
     /// <param name="mask">User created mask</param>
     private async Task CreateOverlappingTemplate(Color[,] mask) {
         int minX = int.MaxValue, maxX = int.MinValue;
@@ -234,7 +234,8 @@ public class PaintingViewModel : ReactiveObject {
                     Color atPos = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
 
                     if (atPos.A != 255) {
-                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "Cannot include transparent cells in template");
+                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(),
+                            "Cannot include transparent cells in template");
                         return;
                     }
 
@@ -260,7 +261,8 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         if (!nonEmpty) {
-            centralManager!.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
+            centralManager!.GetUIManager()
+                .DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
             return;
         }
 
@@ -284,9 +286,8 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Create a template with the current mask in the adjacent mode
+    ///     Create a template with the current mask in the adjacent mode
     /// </summary>
-    /// 
     /// <param name="mask">User created mask</param>
     private async Task CreateAdjacentTemplate(Color[,] mask) {
         int minX = int.MaxValue, maxX = int.MinValue;
@@ -299,7 +300,8 @@ public class PaintingViewModel : ReactiveObject {
             for (int b = 0; b < mask.GetLength(1); b++) {
                 if (mask[a, b] == Colors.White) {
                     if (aOutput.get(a, b) < 0) {
-                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "Cannot include transparent cells in template");
+                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(),
+                            "Cannot include transparent cells in template");
                         return;
                     }
 
@@ -325,7 +327,8 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         if (!nonEmpty) {
-            centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
+            centralManager.GetUIManager()
+                .DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
             return;
         }
 
@@ -351,7 +354,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called to reset the mask that is being painted on
+    ///     Function called to reset the mask that is being painted on
     /// </summary>
     public void ResetMask() {
         centralManager!.GetInputManager().ResetMask();
@@ -359,7 +362,7 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when deleting the current template from the user system
+    ///     Function called when deleting the current template from the user system
     /// </summary>
     public void DeleteTemplate() {
         int templateIndex = centralManager!.GetPaintingWindow().GetSelectedTemplateIndex();
@@ -374,5 +377,18 @@ public class PaintingViewModel : ReactiveObject {
         centralManager!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
             centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
             centralManager.GetWFCHandler().GetTileSize()));
+    }
+
+    /// <summary>
+    ///     Function called when rotating the currently selected template
+    /// </summary>
+    public void RotateTemplate() {
+        int templateIndex = centralManager!.GetPaintingWindow().GetSelectedTemplateIndex();
+        if (templateIndex == -1) {
+            return;
+        }
+
+        TemplateViewModel tvm = Templates[templateIndex];
+        tvm.Rotation = (tvm.Rotation + 90) % 360;
     }
 }

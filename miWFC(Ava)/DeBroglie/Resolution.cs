@@ -20,6 +20,6 @@ public enum Resolution {
     ///     It was not possible to find a successful value.
     /// </summary>
     CONTRADICTION = -2,
-    
+
     TIMEOUT = -3
 }

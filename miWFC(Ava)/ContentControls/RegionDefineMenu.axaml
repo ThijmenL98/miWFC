@@ -10,19 +10,22 @@
 	</Design.DataContext>
 
 	<Border BorderBrush="#66000000" BorderThickness="5" CornerRadius="10" ClipToBounds="True">
-		<Grid x:Name="regionDefineGrid" ColumnDefinitions="*, Auto" Margin="10">
-			<Border Grid.Column="0" Margin="10" Background="#11000000" CornerRadius="10">
-				<Grid>
-					<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
-					       x:Name="outputImage" Source="{Binding OutputImage}"
-					       IsHitTestVisible="False" />
-					
-					<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
-					       x:Name="regionImage" Source="{Binding ItemVM.RegionImage}"
-					       Opacity=".5" PointerPressed="RegionImageOnPointerPressed" 
-					       PointerMoved="RegionImageOnPointerMoved"/>
-				</Grid>
-			</Border>
+		<Grid x:Name="regionDefineGrid" ColumnDefinitions="*, Auto" Margin="10" RowDefinitions="*"
+		      HorizontalAlignment="Center" VerticalAlignment="Center">
+			<Grid>
+				<Border Margin="10" Background="#11000000" CornerRadius="10" MinHeight="10" MinWidth="10">
+					<Grid>
+						<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+						       x:Name="outputImage" Source="{Binding OutputImage}"
+						       IsHitTestVisible="False" />
+
+						<Image Margin="5" RenderOptions.BitmapInterpolationMode="Default"
+						       x:Name="regionImage" Source="{Binding ItemVM.RegionImage}"
+						       Opacity=".5" PointerPressed="RegionImageOnPointerPressed"
+						       PointerMoved="RegionImageOnPointerMoved" />
+					</Grid>
+				</Border>
+			</Grid>
 
 			<Grid Grid.Column="1" RowDefinitions="Auto, *, Auto" Margin="0, 20" Width="265">
 				<StackPanel Grid.Row="0" VerticalAlignment="Top">
@@ -41,7 +44,7 @@
 					           Margin="15, 15, 15, 7">
 						Brush Size
 					</TextBlock>
-					<Slider Value="{Binding BrushSize}" Minimum="1" Maximum="30" TickFrequency="1"
+					<Slider Value="{Binding BrushSize}" Minimum="1" Maximum="{Binding BrushSizeMaximum}" TickFrequency="1"
 					        IsSnapToTickEnabled="True" IsDirectionReversed="False" Margin="0, -5, 0, 0"
 					        PropertyChanged="BrushSize_ValueChanged" />
 					<Grid RowDefinitions="*" HorizontalAlignment="Center">
@@ -77,7 +80,7 @@
 							</StackPanel>
 						</ToolTip.Tip>
 					</Button>
-					
+
 					<Button Grid.Column="1" Padding="0" Background="Transparent"
 					        Command="{Binding ItemVM.ExitRegionEditor}"
 					        HorizontalAlignment="Center" Margin="10" MaxWidth="80"

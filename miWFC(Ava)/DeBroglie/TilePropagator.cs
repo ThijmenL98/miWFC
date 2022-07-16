@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
@@ -20,11 +18,10 @@ namespace miWFC.DeBroglie;
 ///     an output array using those parameters.
 /// </summary>
 public class TilePropagator {
+    private readonly CentralManager cm;
     public readonly TileModelMapping tileModelMapping;
 
     private readonly WavePropagator wavePropagator;
-
-    private readonly CentralManager cm;
 
     public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, CentralManager _cm) {
         TileModel = tileModel;

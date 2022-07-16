@@ -1,16 +1,16 @@
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using miWFC.Managers;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
+
 // ReSharper disable UnusedParameter.Local
 // ReSharper disable SuggestBaseTypeForParameter
 
 namespace miWFC.ContentControls;
 
 /// <summary>
-/// Separated control for the input side of the application
+///     Separated control for the input side of the application
 /// </summary>
 public partial class InputControl : UserControl {
     private readonly ComboBox _categoryCB, _inputCB, _patternSizeCB;
@@ -42,27 +42,24 @@ public partial class InputControl : UserControl {
      */
 
     /// <summary>
-    /// Get the currently selected input category as string
+    ///     Get the currently selected input category as string
     /// </summary>
-    /// 
     /// <returns>Input Category String, default "Textures"</returns>
     public string GetCategory() {
         return (_categoryCB.SelectedItem as HoverableTextViewModel)?.DisplayText ?? "Textures";
     }
 
     /// <summary>
-    /// Get the currently selected input image as string
+    ///     Get the currently selected input image as string
     /// </summary>
-    /// 
     /// <returns>Input Image String, default "3Bricks"</returns>
     public string GetInputImage() {
         return _inputCB.SelectedItem as string ?? "3Bricks";
     }
 
     /// <summary>
-    /// Get the currently selected pattern size
+    ///     Get the currently selected pattern size
     /// </summary>
-    /// 
     /// <returns>Pattern Size, default 3</returns>
     public int GetPatternSize() {
         return (int) (_patternSizeCB.SelectedItem ?? 3);
@@ -73,9 +70,8 @@ public partial class InputControl : UserControl {
      */
 
     /// <summary>
-    /// Set the input categories
+    ///     Set the input categories
     /// </summary>
-    /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
     public void SetCategories(HoverableTextViewModel[]? values, int idx = 0) {
@@ -87,9 +83,8 @@ public partial class InputControl : UserControl {
     }
 
     /// <summary>
-    /// Set the input images, decided by the selected input category
+    ///     Set the input images, decided by the selected input category
     /// </summary>
-    /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
     public void SetInputImages(string[]? values, int idx = 0) {
@@ -101,9 +96,8 @@ public partial class InputControl : UserControl {
     }
 
     /// <summary>
-    /// Set the pattern sizes, decided by the selected input image
+    ///     Set the pattern sizes, decided by the selected input image
     /// </summary>
-    /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
     public void SetPatternSizes(int[]? values, int idx = 0) {
@@ -119,9 +113,8 @@ public partial class InputControl : UserControl {
      */
 
     /// <summary>
-    /// Callback for when the user changes the input category
+    ///     Callback for when the user changes the input category
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     private void CatCBChangeHandler(object sender, SelectionChangedEventArgs e) {
@@ -135,14 +128,16 @@ public partial class InputControl : UserControl {
         string[] inputImageDataSource
             = Util.GetModelImages(isOverlapping ? "overlapping" : "simpletiled", newValue);
         SetInputImages(inputImageDataSource);
-        
+
+        centralManager.GetMainWindowVM().CustomInputSelected = newValue.Equals("Custom");
+        centralManager.GetMainWindowVM().InputImageMinWidth = newValue.Equals("Custom") ? 130 : 200;
+
         e.Handled = true;
     }
 
     /// <summary>
-    /// Callback for when the user changes the input image
+    ///     Callback for when the user changes the input image
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     public async void InImgCBChangeHandler(object? sender, SelectionChangedEventArgs? e) {
@@ -178,9 +173,8 @@ public partial class InputControl : UserControl {
     }
 
     /// <summary>
-    /// Callback for when the user changes the pattern size
+    ///     Callback for when the user changes the pattern size
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     private async void PattSizeCBChangeHandler(object? sender, SelectionChangedEventArgs e) {

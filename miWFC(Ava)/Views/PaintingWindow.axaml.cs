@@ -16,7 +16,7 @@ using miWFC.ViewModels.Structs;
 namespace miWFC.Views;
 
 /// <summary>
-/// Window that handles the painting features of the application
+///     Window that handles the painting features of the application
 /// </summary>
 public partial class PaintingWindow : Window {
     private readonly ComboBox _paintingPatternsCB, _templatesCB;
@@ -66,27 +66,24 @@ public partial class PaintingWindow : Window {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Get the index of the currently selected tile or pattern to paint with
+    ///     Get the index of the currently selected tile or pattern to paint with
     /// </summary>
-    /// 
     /// <returns>Selected pattern index</returns>
     public int GetSelectedPaintIndex() {
         return _paintingPatternsCB.SelectedIndex;
     }
 
     /// <summary>
-    /// Get the index of the currently selected pattern to place in the output
+    ///     Get the index of the currently selected pattern to place in the output
     /// </summary>
-    /// 
     /// <returns>Selected template index</returns>
     public int GetSelectedTemplateIndex() {
         return _templatesCB.SelectedIndex;
     }
 
     /// <summary>
-    /// Get the selected size of the brush, these values are diameters, not radii
+    ///     Get the selected size of the brush, these values are diameters, not radii
     /// </summary>
-    /// 
     /// <returns>Selected brush size</returns>
     public int GetPaintBrushSize() {
         int brushSize = centralManager!.GetMainWindowVM().BrushSize;
@@ -95,9 +92,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Get the width of the timeline UI element
+    ///     Get the width of the timeline UI element
     /// </summary>
-    /// 
     /// <returns>Width</returns>
     public double GetTimelineWidth() {
         return this.Find<Grid>("timeline").Bounds.Width;
@@ -118,9 +114,8 @@ public partial class PaintingWindow : Window {
      */
 
     /// <summary>
-    /// Set the painting patterns, decided by the selected input image
+    ///     Set the painting patterns, decided by the selected input image
     /// </summary>
-    /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
     public void SetPaintingPatterns(TileViewModel[]? values, int idx = 0) {
@@ -134,9 +129,8 @@ public partial class PaintingWindow : Window {
 
 
     /// <summary>
-    /// Set the placeable templates, decided by the selected input image
+    ///     Set the placeable templates, decided by the selected input image
     /// </summary>
-    /// 
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
     public void SetTemplates(ObservableCollection<TemplateViewModel> values, int idx = 0) {
@@ -154,9 +148,8 @@ public partial class PaintingWindow : Window {
      */
 
     /// <summary>
-    /// Custom handler for keyboard input
+    ///     Custom handler for keyboard input
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private async void KeyDownHandler(object? sender, KeyEventArgs e) {
@@ -222,9 +215,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
+    ///     Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerPressedEventArgs</param>
     public void OutputImageOnPointerPressed(object sender, PointerPressedEventArgs e) {
@@ -232,10 +224,9 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Callback when the user releases their left mouse button, once again allowing painting to make sure that the user
-    /// cannot paint outside of the image borders
+    ///     Callback when the user releases their left mouse button, once again allowing painting to make sure that the user
+    ///     cannot paint outside of the image borders
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerReleasedEventArgs</param>
     public void OutputImageOnPointerReleased(object sender, PointerReleasedEventArgs e) {
@@ -243,9 +234,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
+    ///     Forwarding function to OutputImageOnPointerMoved(object, PointerEventArgs, bool)
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e"></param>
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e) {
@@ -254,9 +244,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Handle all clicking onto the output image, both painting, brushing and template placing
+    ///     Handle all clicking onto the output image, both painting, brushing and template placing
     /// </summary>
-    /// 
     /// <param name="sender"></param>
     /// <param name="e">PointerEventArgs</param>
     /// <param name="mouseClicked">Whether this function was called from a mouse click or mouse move</param>
@@ -291,9 +280,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Handle the movement of the mouse in the Paint Mode
+    ///     Handle the movement of the mouse in the Paint Mode
     /// </summary>
-    /// 
     /// <param name="posX">X position of the mouse</param>
     /// <param name="posY">Y position of the mouse</param>
     /// <param name="imageWidth">Image width</param>
@@ -312,9 +300,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Handle the movement of the mouse in the Pencil Mode
+    ///     Handle the movement of the mouse in the Pencil Mode
     /// </summary>
-    /// 
     /// <param name="posX">X position of the mouse</param>
     /// <param name="posY">Y position of the mouse</param>
     /// <param name="imageWidth">Image width</param>
@@ -351,9 +338,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Handle the movement of the mouse in the Template Creation Mode
+    ///     Handle the movement of the mouse in the Template Creation Mode
     /// </summary>
-    /// 
     /// <param name="posX">X position of the mouse</param>
     /// <param name="posY">Y position of the mouse</param>
     /// <param name="imageWidth">Image width</param>
@@ -375,9 +361,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Handle the movement of the mouse in the Template Placement Mode
+    ///     Handle the movement of the mouse in the Template Placement Mode
     /// </summary>
-    /// 
     /// <param name="posX">X position of the mouse</param>
     /// <param name="posY">Y position of the mouse</param>
     /// <param name="imageWidth">Image width</param>
@@ -399,9 +384,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Callback to reset the mask to allow an updated version of the mask to be recalculated
+    ///     Callback to reset the mask to allow an updated version of the mask to be recalculated
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void OnPointerMoved(object sender, PointerEventArgs e) {
@@ -409,9 +393,8 @@ public partial class PaintingWindow : Window {
     }
 
     /// <summary>
-    /// Callback to update the brush size image shown to the user
+    ///     Callback to update the brush size image shown to the user
     /// </summary>
-    /// 
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
@@ -431,7 +414,8 @@ public partial class PaintingWindow : Window {
 
         if (brushSizeRaw == -1) {
             centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
-                x == 1 && y == 1 ? Colors.Black : (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
+                x == 1 && y == 1 ? Color.Parse("#424242") :
+                (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
             return;
         }
 
@@ -467,7 +451,7 @@ public partial class PaintingWindow : Window {
             (x, y) => {
                 double dx = x - cp / 2d - 1;
                 double dy = y - cp / 2d - 1;
-                return dx * dx + dy * dy <= brushSizeRaw ? Colors.Black :
+                return dx * dx + dy * dy <= brushSizeRaw ? Color.Parse("#424242") :
                     (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent;
             });
         centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;

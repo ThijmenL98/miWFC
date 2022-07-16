@@ -10,7 +10,6 @@
     <overlapping category="Knots" name="SimpleKnot" patternSize="3" periodic="True"/>
     <overlapping category="Knots" name="TrickKnot" patternSize="3" periodic="True"/>
 
-    <overlapping category="Shapes" name="Cave" patternSize="4" periodic="True"/>
     <overlapping category="Shapes" name="Chess" patternSize="2" periodic="True"/>
     <overlapping category="Shapes" name="Circle" patternSize="3" periodic="True"/>
     <overlapping category="Shapes" name="Circle" patternSize="4" periodic="True"/>

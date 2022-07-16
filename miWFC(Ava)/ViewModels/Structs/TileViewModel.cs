@@ -11,13 +11,15 @@ using ReactiveUI;
 namespace miWFC.ViewModels.Structs;
 
 /// <summary>
-/// View model for the tiles used in the application, whether it be an overlapping pattern or an adjacent tile
+///     View model for the tiles used in the application, whether it be an overlapping pattern or an adjacent tile
 /// </summary>
 public class TileViewModel : ReactiveObject {
+    private readonly bool _mayFlip, _mayRotate;
     private readonly Color _patternColour;
     private readonly WriteableBitmap _patternImage = null!;
     private readonly int _patternIndex, _patternRotation, _patternFlipping, _rawPatternIndex;
-    private int _userRotation, _finalRotation, _userFlipping = 1, _finalFlipping = 1;
+
+    private readonly int cardin = -1;
 
     private readonly CentralManager? centralManager;
 
@@ -27,17 +29,14 @@ public class TileViewModel : ReactiveObject {
         _itemAddChecked,
         _dynamicWeight;
 
-    private readonly bool _mayFlip, _mayRotate;
-
     private bool _mayTransform,
         _patternDisabled;
 
     private double _patternWeight, _changeAmount = 1.0d;
     private string _patternWeightString;
+    private int _userRotation, _finalRotation, _userFlipping = 1, _finalFlipping = 1;
 
     private double[,] _weightHeatmap = new double[0, 0];
-
-    private readonly int cardin = -1;
 
     /*
      * Initializing Functions & Constructor
@@ -107,7 +106,7 @@ public class TileViewModel : ReactiveObject {
     // Strings
 
     /// <summary>
-    /// String representation of the pattern weight value
+    ///     String representation of the pattern weight value
     /// </summary>
     public string PatternWeightString {
         get => _patternWeightString;
@@ -117,7 +116,7 @@ public class TileViewModel : ReactiveObject {
     // Numeric (Integer, Double, Float, Long ...)
 
     /// <summary>
-    /// Index of the pattern
+    ///     Index of the pattern
     /// </summary>
     public int PatternIndex {
         get => _patternIndex;
@@ -125,7 +124,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Index of the pattern, set to -1 if this pattern is a transformed version of a parent pattern
+    ///     Index of the pattern, set to -1 if this pattern is a transformed version of a parent pattern
     /// </summary>
     public int RawPatternIndex {
         get => _rawPatternIndex;
@@ -133,8 +132,8 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Final pattern rotation used in the UI to show to the user, sum of the user rotation and the pattern's inherent
-    /// rotation
+    ///     Final pattern rotation used in the UI to show to the user, sum of the user rotation and the pattern's inherent
+    ///     rotation
     /// </summary>
     public int FinalRotation {
         get => _finalRotation;
@@ -142,8 +141,8 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Final pattern flipping used in the UI to show to the user, XOR of the user flipping and the pattern's inherent
-    /// flipping
+    ///     Final pattern flipping used in the UI to show to the user, XOR of the user flipping and the pattern's inherent
+    ///     flipping
     /// </summary>
     public int FinalFlipping {
         get => _finalFlipping;
@@ -151,7 +150,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// User defined pattern rotation
+    ///     User defined pattern rotation
     /// </summary>
     public int UserRotation {
         get => _userRotation;
@@ -162,7 +161,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// User defined pattern flipping value
+    ///     User defined pattern flipping value
     /// </summary>
     public int UserFlipping {
         get => _userFlipping;
@@ -173,7 +172,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// The pattern's inherent rotation
+    ///     The pattern's inherent rotation
     /// </summary>
     public int PatternRotation {
         get => _patternRotation + 90;
@@ -184,7 +183,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// The pattern's inherent flipping value
+    ///     The pattern's inherent flipping value
     /// </summary>
     public int PatternFlipping {
         get => _patternFlipping;
@@ -195,7 +194,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Weight of the pattern, extracted from the input image or overwritten by the user
+    ///     Weight of the pattern, extracted from the input image or overwritten by the user
     /// </summary>
     public double PatternWeight {
         get => _patternWeight;
@@ -207,7 +206,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Current value the pattern's weight will increment or decrement on user input, this can be changed by the user
+    ///     Current value the pattern's weight will increment or decrement on user input, this can be changed by the user
     /// </summary>
     public double ChangeAmount {
         get => _changeAmount;
@@ -217,7 +216,7 @@ public class TileViewModel : ReactiveObject {
     // Booleans
 
     /// <summary>
-    /// Whether this tile has their rotation(s) locked in the output.
+    ///     Whether this tile has their rotation(s) locked in the output.
     /// </summary>
     public bool RotateDisabled {
         get => _rotateDisabled;
@@ -229,7 +228,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether this tile has their flipping locked in the output.
+    ///     Whether this tile has their flipping locked in the output.
     /// </summary>
     public bool FlipDisabled {
         get => _flipDisabled;
@@ -237,8 +236,8 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether this tile is highlighted in the painting editor, which is true if the user has this tile selected on
-    /// their brush. This is added to more transparently indicate whether the selected tile may be placed beforehand.
+    ///     Whether this tile is highlighted in the painting editor, which is true if the user has this tile selected on
+    ///     their brush. This is added to more transparently indicate whether the selected tile may be placed beforehand.
     /// </summary>
     public bool Highlighted {
         get => _highlighted;
@@ -246,7 +245,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether this item is selected to be a host for a user created item in the output.
+    ///     Whether this item is selected to be a host for a user created item in the output.
     /// </summary>
     public bool ItemAddChecked {
         get => _itemAddChecked;
@@ -254,7 +253,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the tile is, by default, allowed to rotate, this is only true for tiles with a cardinality > 1
+    ///     Whether the tile is, by default, allowed to rotate, this is only true for tiles with a cardinality > 1
     /// </summary>
     public bool MayRotate {
         get => _mayRotate;
@@ -265,7 +264,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the tile is, by default, allowed to be flipped, this is only true for tiles with a cardinality > 4
+    ///     Whether the tile is, by default, allowed to be flipped, this is only true for tiles with a cardinality > 4
     /// </summary>
     public bool MayFlip {
         get => _mayFlip;
@@ -276,7 +275,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether the tile is, by default, allowed to be transformed, AND operation between MayRotate and MayFlip
+    ///     Whether the tile is, by default, allowed to be transformed, AND operation between MayRotate and MayFlip
     /// </summary>
     public bool MayTransform {
         get => _mayTransform;
@@ -284,7 +283,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether this pattern is disabled, hence forcibly prohibited from appearing in the output
+    ///     Whether this pattern is disabled, hence forcibly prohibited from appearing in the output
     /// </summary>
     public bool PatternDisabled {
         get => _patternDisabled;
@@ -292,7 +291,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Whether this tile has a dynamic weight, meaning it is based on a map of values instead of a single flat value
+    ///     Whether this tile has a dynamic weight, meaning it is based on a map of values instead of a single flat value
     /// </summary>
     public bool DynamicWeight {
         get => _dynamicWeight;
@@ -306,7 +305,7 @@ public class TileViewModel : ReactiveObject {
     // Images
 
     /// <summary>
-    /// Image representation of the pattern or tile
+    ///     Image representation of the pattern or tile
     /// </summary>
     public WriteableBitmap PatternImage {
         get => _patternImage;
@@ -316,7 +315,7 @@ public class TileViewModel : ReactiveObject {
     // Objects
 
     /// <summary>
-    /// The hex-code colour of the tile in the overlapping mode
+    ///     The hex-code colour of the tile in the overlapping mode
     /// </summary>
     public Color PatternColour {
         get => _patternColour;
@@ -326,8 +325,8 @@ public class TileViewModel : ReactiveObject {
     // Lists
 
     /// <summary>
-    /// If the user has selected dynamic weight mapping, this weight heatmap is used, having a distinct value for each
-    /// coordinate in the output.
+    ///     If the user has selected dynamic weight mapping, this weight heatmap is used, having a distinct value for each
+    ///     coordinate in the output.
     /// </summary>
     public double[,] WeightHeatMap {
         get => _weightHeatmap;
@@ -341,36 +340,36 @@ public class TileViewModel : ReactiveObject {
      */
 
     /// <summary>
-    /// Function to handle a weight increase
+    ///     Function to handle a weight increase
     /// </summary>
     public void OnIncrement() {
         HandleWeightChange(true);
     }
 
     /// <summary>
-    /// Function to handle a weight decrease
+    ///     Function to handle a weight decrease
     /// </summary>
     public void OnDecrement() {
         HandleWeightChange(false);
     }
 
     /// <summary>
-    /// Function to handle an increase in the amount to change the actual weight with
+    ///     Function to handle an increase in the amount to change the actual weight with
     /// </summary>
     public void OnWeightIncrement() {
         HandleWeightGapChange(true);
     }
 
     /// <summary>
-    /// Function to handle an decrease in the amount to change the actual weight with
+    ///     Function to handle an decrease in the amount to change the actual weight with
     /// </summary>
     public void OnWeightDecrement() {
         HandleWeightGapChange(false);
     }
 
     /// <summary>
-    /// Actual logic behind changing the amount to change the actual weight with, which is done in fixed steps:
-    /// 1, 10, 20, 30...
+    ///     Actual logic behind changing the amount to change the actual weight with, which is done in fixed steps:
+    ///     1, 10, 20, 30...
     /// </summary>
     /// <param name="increment">Whether to increase or decrease the gap to change the actual weight with</param>
     private void HandleWeightGapChange(bool increment) {
@@ -379,7 +378,8 @@ public class TileViewModel : ReactiveObject {
                 if (increment) {
                     ChangeAmount = 10;
                 } else {
-                    centralManager!.GetUIManager().DispatchError(centralManager!.GetMainWindow(), "Change amount cannot be decreased further");
+                    centralManager!.GetUIManager().DispatchError(centralManager!.GetMainWindow(),
+                        "Change amount cannot be decreased further");
                 }
 
                 break;
@@ -406,9 +406,8 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Actual logic behind changing the weight of this tile.
+    ///     Actual logic behind changing the weight of this tile.
     /// </summary>
-    /// 
     /// <param name="increment">Whether to increment (inverse decrement) the weight</param>
     private void HandleWeightChange(bool increment) {
         switch (increment) {
@@ -438,7 +437,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Callback when clicking on the weight value of the tile, opening the weight mapping window.
+    ///     Callback when clicking on the weight value of the tile, opening the weight mapping window.
     /// </summary>
     public async void DynamicWeightClick() {
         await centralManager!.GetUIManager().SwitchWindow(Windows.HEATMAP);
@@ -454,7 +453,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Callback when clicking the button to toggle rotations
+    ///     Callback when clicking the button to toggle rotations
     /// </summary>
     public async void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
@@ -463,7 +462,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Callback when clicking the button to toggle flipping
+    ///     Callback when clicking the button to toggle flipping
     /// </summary>
     public async void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
@@ -472,14 +471,14 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Forward the selection of the current pattern to be used as a host for the currently selected item to the menu
+    ///     Forward the selection of the current pattern to be used as a host for the currently selected item to the menu
     /// </summary>
     public void ForwardSelectionToggle() {
         centralManager!.GetItemWindow().GetItemAddMenu().ForwardAllowedTileChange(PatternIndex, ItemAddChecked);
     }
 
     /// <summary>
-    /// Toggle whether the current pattern may appear in the output
+    ///     Toggle whether the current pattern may appear in the output
     /// </summary>
     public void TogglePatternAppearance() {
         PatternDisabled = !PatternDisabled;
@@ -487,7 +486,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Callback when rotating a rotationally locked tile to alter the output appearance
+    ///     Callback when rotating a rotationally locked tile to alter the output appearance
     /// </summary>
     public async void OnRotateUserRepresentation() {
         UserRotation += 90;
@@ -503,7 +502,7 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Callback when flipping a flip locked tile to alter the output appearance
+    ///     Callback when flipping a flip locked tile to alter the output appearance
     /// </summary>
     public async void OnFlipUserRepresentation() {
         if (UserFlipping == 1) {

@@ -11,9 +11,8 @@
 	</Design.DataContext>
 
 	<Grid Margin="10" RowDefinitions="Auto, Auto, Auto, *, Auto">
-		<Grid
-			ColumnDefinitions="Auto, Auto"
-			Grid.Row="0" Margin="4" RowDefinitions="Auto,Auto">
+		<Grid ColumnDefinitions="Auto, Auto, Auto"
+		      Grid.Row="0" Margin="4" RowDefinitions="Auto,Auto">
 			<Grid.Styles>
 				<Style Selector="TextBlock">
 					<Setter Property="Margin" Value="4" />
@@ -32,7 +31,7 @@
 				Category
 			</TextBlock>
 
-			<ComboBox Grid.Column="1" Grid.Row="0" SelectedIndex="0" MinHeight="40"
+			<ComboBox Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2" SelectedIndex="0" MinHeight="40"
 			          SelectedItem="{Binding CategorySelection}"
 			          SelectionChanged="CatCBChangeHandler" x:Name="categoryCB">
 				<ComboBox.ItemTemplate>
@@ -57,18 +56,40 @@
 				Input Image
 			</TextBlock>
 
-			<ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0" MinHeight="40"
+			<ComboBox Grid.Column="1" Grid.Row="1" SelectedIndex="0" MinHeight="40" MinWidth="{Binding InputImageMinWidth}"
 			          SelectedItem="{Binding InputImageSelection}"
 			          SelectionChanged="InImgCBChangeHandler" x:Name="inputCB" />
+
+			<Button Padding="0" Grid.Column="2" Grid.Row="1" Width="70" Margin="5" IsVisible="{Binding CustomInputSelected}"
+			        Command="{Binding OpenCustomFolderPrompt}" Background="Transparent">
+				<Button.Styles>
+					<Style Selector="Button:pointerover /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource hoverFolderKey}" />
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+					<Style Selector="Button:pressed /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource clickFolderKey}" />
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+				</Button.Styles>
+				<Panel>
+					<Image Source="/Assets/Folder.png" />
+				</Panel>
+				<ToolTip.Tip>
+					<StackPanel>
+						<TextBlock TextWrapping="Wrap">Open the custom input images folder, this button also refreshes the application</TextBlock>
+					</StackPanel>
+				</ToolTip.Tip>
+			</Button>
 		</Grid>
 
-		<Border Grid.Column="0" Grid.Row="1" BoxShadow="0 0 15 0.25 Black" Margin="10" MaxWidth="300"
+		<Border Grid.Column="0" Grid.Row="1" BoxShadow="0 0 15 0.25 Black" Margin="10" MaxWidth="300" MaxHeight="300"
 		        Background="#22000000">
 			<Image RenderOptions.BitmapInterpolationMode="Default"
 			       Source="{Binding InputImage}" x:Name="inputImage" />
 		</Border>
 
-		<Grid ColumnDefinitions="Auto, *" Grid.Row="2" RowDefinitions="Auto, Auto"
+		<Grid ColumnDefinitions="Auto, *" Grid.Row="2" RowDefinitions="Auto, Auto, Auto"
 		      HorizontalAlignment="Center"
 		      VerticalAlignment="Center">
 			<Grid.Styles>
@@ -103,7 +124,15 @@
 			<TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Text="Input Wrapping" TextAlignment="Center"
 			           VerticalAlignment="Center" />
 
-			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" Command="{Binding InputVM.ToggleInputWrapping}" />
+			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent=""
+			              Command="{Binding InputVM.ToggleInputWrapping}" />
+
+			<TextBlock Grid.Row="2" Grid.Column="0" TextWrapping="Wrap" Text="Custom input image is 'side-view'"
+			           TextAlignment="Center"
+			           VerticalAlignment="Center" IsVisible="{Binding CustomInputSelected}" />
+
+			<ToggleSwitch Grid.Row="2" Grid.Column="1" OffContent="" OnContent="" IsVisible="{Binding CustomInputSelected}"
+			              Command="{Binding InputVM.ToggleCustomSideView}" />
 		</Grid>
 
 		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300" />

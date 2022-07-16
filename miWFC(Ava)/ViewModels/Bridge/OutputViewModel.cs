@@ -6,8 +6,8 @@ using ReactiveUI;
 namespace miWFC.ViewModels.Bridge;
 
 public class OutputViewModel : ReactiveObject {
-    private CentralManager? centralManager;
     private readonly MainWindowViewModel mainWindowViewModel;
+    private CentralManager? centralManager;
 
     /*
      * Initializing Functions & Constructor
@@ -42,9 +42,9 @@ public class OutputViewModel : ReactiveObject {
     /*
      * UI Callbacks
      */
-    
+
     /// <summary>
-    /// Function called when starting or stopping the animation
+    ///     Function called when starting or stopping the animation
     /// </summary>
     public void ToggleAnimation() {
         mainWindowViewModel.IsPlaying = !mainWindowViewModel.IsPlaying;
@@ -52,7 +52,7 @@ public class OutputViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when advancing a single step
+    ///     Function called when advancing a single step
     /// </summary>
     public void AdvanceStep() {
         if (mainWindowViewModel.IsPlaying) {
@@ -63,14 +63,14 @@ public class OutputViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when placing a marker
+    ///     Function called when placing a marker
     /// </summary>
     public void PlaceMarker() {
         centralManager!.GetInputManager().PlaceMarker();
     }
 
     /// <summary>
-    /// Function called when loading to the most recent previous marker
+    ///     Function called when loading to the most recent previous marker
     /// </summary>
     public void RevertToMarker() {
         if (mainWindowViewModel.IsPlaying) {
@@ -81,7 +81,7 @@ public class OutputViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when stepping a single step back
+    ///     Function called when stepping a single step back
     /// </summary>
     public void BacktrackStep() {
         if (mainWindowViewModel.IsPlaying) {
@@ -92,7 +92,7 @@ public class OutputViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when toggling the seamless output of the image
+    ///     Function called when toggling the seamless output of the image
     /// </summary>
     public async void ToggleSeamlessness() {
         if (mainWindowViewModel.IsPlaying) {
@@ -104,14 +104,14 @@ public class OutputViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when importing an image
+    ///     Function called when importing an image
     /// </summary>
     public void ImportFromDevice() {
         centralManager!.GetInputManager().ImportSolution();
     }
 
     /// <summary>
-    /// Function called when exporting an image
+    ///     Function called when exporting an image
     /// </summary>
     public void ExportToDevice() {
         if (mainWindowViewModel.IsPlaying) {
@@ -122,7 +122,7 @@ public class OutputViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Function called when restarting the solution
+    ///     Function called when restarting the solution
     /// </summary>
     public async void Restart() {
         if (mainWindowViewModel.IsPlaying) {

@@ -95,7 +95,7 @@
 							</Border>
 						</Border>
 					</Popup>
-					
+
 					<Grid ColumnDefinitions="*, Auto">
 						<Grid RowDefinitions="*" HorizontalAlignment="Left" x:Name="itemImageGrid">
 							<Grid ColumnDefinitions="*" VerticalAlignment="Center">
@@ -212,7 +212,7 @@
 									</Border>
 								</DataTemplate>
 							</Grid.Resources>
-							
+
 							<Border Background="#22000000" Grid.Row="0" CornerRadius="10" ClipToBounds="True"
 							        VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 								<DataGrid Name="MyDataGrid" AutoGenerateColumns="False" IsReadOnly="True"

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia.Media;
 using miWFC.DeBroglie.Rot;
@@ -15,10 +14,10 @@ namespace miWFC.DeBroglie.Models;
 /// </summary>
 public class OverlappingModel : TileModel {
     public List<double> frequencies;
+    public List<double> originalFrequencies;
     public List<PatternArray> patternArrays;
 
-    private Dictionary<PatternArray, int> patternIndices;
-    public List<double> originalFrequencies;
+    private readonly Dictionary<PatternArray, int> patternIndices;
 
     private IReadOnlyDictionary<int, Tile> patternsToTiles;
     private List<int[][]> propagator;
@@ -77,11 +76,10 @@ public class OverlappingModel : TileModel {
         bool periodicZ = topology.PeriodicZ;
 
         foreach (ITopoArray<Tile> s in OverlappingAnalysis.GetRotatedSamples(sample, tileRotation)) {
-            
             OverlappingAnalysis.GetPatterns(s, NX, NY, NZ, periodicX, periodicY, periodicZ, patternIndices,
                 patternArrays, frequencies, disabledPatterns);
         }
-        
+
         originalFrequencies = new List<double>(frequencies);
 
         sampleTopologyDirections = topology.Directions;

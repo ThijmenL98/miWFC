@@ -3,7 +3,7 @@
 namespace miWFC.ViewModels.Structs;
 
 /// <summary>
-/// View model for the markers shown on the application timeline
+///     View model for the markers shown on the application timeline
 /// </summary>
 public class MarkerViewModel : ReactiveObject {
     private readonly int _index;
@@ -20,17 +20,17 @@ public class MarkerViewModel : ReactiveObject {
         MarkerCollapsePercentage = collapsePercentage;
         Revertible = revertible;
     }
-    
+
     /*
      * Getters & Setters
      */
 
     // Strings
-    
+
     // Numeric (Integer, Double, Float, Long ...)
-    
+
     /// <summary>
-    /// Index of this marker object
+    ///     Index of this marker object
     /// </summary>
     public int MarkerIndex {
         get => _index;
@@ -38,7 +38,7 @@ public class MarkerViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Horizontal offset of this marker object on the timeline
+    ///     Horizontal offset of this marker object on the timeline
     /// </summary>
     public double MarkerOffset {
         get => _widthOffset;
@@ -46,29 +46,29 @@ public class MarkerViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Percentage of output collapse this marker object represents
+    ///     Percentage of output collapse this marker object represents
     /// </summary>
     public double MarkerCollapsePercentage {
         get => _collapsePercentage;
         private init => this.RaiseAndSetIfChanged(ref _collapsePercentage, value);
     }
-    
+
     // Booleans
 
     /// <summary>
-    /// Whether this marker allows the user to revert further into the history of the generation prior to this marker
+    ///     Whether this marker allows the user to revert further into the history of the generation prior to this marker
     /// </summary>
     public bool Revertible {
         get => _revertible;
         init => this.RaiseAndSetIfChanged(ref _revertible, value);
     }
-    
+
     // Images
-    
+
     // Objects
-    
+
     // Lists
-    
+
     // Other
 
     /*

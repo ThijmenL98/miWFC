@@ -3,39 +3,42 @@ using System.Collections.ObjectModel;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ReactiveUI;
+
 // ReSharper disable UnusedMember.Local
 
 namespace miWFC.ViewModels.Structs;
 
 /// <summary>
-/// View model for the items in the item addition side of the application
+///     View model for the items in the item addition side of the application
 /// </summary>
 public class ItemObjectViewModel : ReactiveObject {
     private readonly ObservableCollection<TileViewModel> _allowedTiles;
+    private readonly (int, int) _amount;
+    private readonly string _amountStr;
+    private readonly Color _color;
+    private readonly Color? _depColor;
+    private readonly Tuple<string?, (int, int)> _dependentItem;
     private readonly WriteableBitmap? _depItemIcon;
     private readonly bool _hasDependentItem;
     private readonly WriteableBitmap _itemIcon, _itemLocationBM;
 
     private readonly string itemNameName, _depItemString;
-    private readonly (int, int) _amount;
-    private readonly string _amountStr;
-    private readonly Tuple<string?, (int, int)> _dependentItem;
-    private readonly Color _color;
-    private readonly Color? _depColor;
-    private bool[,] _appearanceRegion;
+    private readonly bool[,] _appearanceRegion;
 
     /*
      * Initializing Functions & Constructor
      */
 
 #pragma warning disable CS8618
-    public ItemObjectViewModel(string itemNameName, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles, Color c,
-        WriteableBitmap itemIcon, Tuple<string?, WriteableBitmap?, Color?,(int, int)>? dependentItem, bool[,] appRegion, WriteableBitmap locMapping) {
+    public ItemObjectViewModel(string itemNameName, (int, int) amount, ObservableCollection<TileViewModel> allowedTiles,
+        Color c,
+        WriteableBitmap itemIcon, Tuple<string?, WriteableBitmap?, Color?, (int, int)>? dependentItem,
+        bool[,] appRegion, WriteableBitmap locMapping) {
 #pragma warning restore CS8618
         Amount = amount;
 
         AppearanceRegion = appRegion;
-        
+
         AmountStr = amount.Item1 == amount.Item2 ? @$"{amount.Item2}" : @$"{amount.Item1} - {amount.Item2}";
         AllowedTiles = allowedTiles;
         ItemIcon = itemIcon;
@@ -49,7 +52,8 @@ public class ItemObjectViewModel : ReactiveObject {
             DepItemIcon = dependentItem.Item2;
             HasDependentItem = true;
             DepColor = dependentItem.Item3;
-            DepItemString = $"{dependentItem.Item1!}{Environment.NewLine}Appearing distance: {dependentItem.Item4.Item1} to {dependentItem.Item4.Item2}";
+            DepItemString
+                = $"{dependentItem.Item1!}{Environment.NewLine}Appearing distance: {dependentItem.Item4.Item1} to {dependentItem.Item4.Item2}";
         } else {
             DependentItem = new Tuple<string?, (int, int)>(null, (0, 0));
             DepItemIcon = null;
@@ -67,7 +71,7 @@ public class ItemObjectViewModel : ReactiveObject {
     // Strings
 
     /// <summary>
-    /// Name of the item
+    ///     Name of the item
     /// </summary>
     public string ItemName {
         get => itemNameName;
@@ -75,7 +79,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Name of the dependent item
+    ///     Name of the dependent item
     /// </summary>
     private string DepItemString {
         get => _depItemString;
@@ -83,7 +87,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// String representation of the amount of appearance
+    ///     String representation of the amount of appearance
     /// </summary>
     private string AmountStr {
         get => _amountStr;
@@ -95,7 +99,7 @@ public class ItemObjectViewModel : ReactiveObject {
     // Booleans
 
     /// <summary>
-    /// Whether the item has an associated dependent item
+    ///     Whether the item has an associated dependent item
     /// </summary>
     public bool HasDependentItem {
         get => _hasDependentItem;
@@ -105,7 +109,7 @@ public class ItemObjectViewModel : ReactiveObject {
     // Images
 
     /// <summary>
-    /// Image of the item
+    ///     Image of the item
     /// </summary>
     private WriteableBitmap ItemIcon {
         get => _itemIcon;
@@ -113,7 +117,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Image of the dependent item
+    ///     Image of the dependent item
     /// </summary>
     private WriteableBitmap? DepItemIcon {
         get => _depItemIcon;
@@ -121,7 +125,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Image of the locational mapping
+    ///     Image of the locational mapping
     /// </summary>
     private WriteableBitmap ItemLocationMapping {
         get => _itemLocationBM;
@@ -131,7 +135,7 @@ public class ItemObjectViewModel : ReactiveObject {
     // Objects
 
     /// <summary>
-    /// Colour of this item image
+    ///     Colour of this item image
     /// </summary>
     public Color MyColor {
         get => _color;
@@ -139,7 +143,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Colour of the dependent item image
+    ///     Colour of the dependent item image
     /// </summary>
     public Color? DepColor {
         get => _depColor;
@@ -149,7 +153,7 @@ public class ItemObjectViewModel : ReactiveObject {
     // Lists
 
     /// <summary>
-    /// List of all tiles this item is allowed to be hosted on
+    ///     List of all tiles this item is allowed to be hosted on
     /// </summary>
     public ObservableCollection<TileViewModel> AllowedTiles {
         get => _allowedTiles;
@@ -157,7 +161,7 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Where the items are allowed to appear
+    ///     Where the items are allowed to appear
     /// </summary>
     public bool[,] AppearanceRegion {
         get => _appearanceRegion;
@@ -167,9 +171,9 @@ public class ItemObjectViewModel : ReactiveObject {
     // Other
 
     /// <summary>
-    /// Appearance amount tuple
-    /// (x, _) - Represents the minimum amount of appearing
-    /// (_, x) - Represents the maximum amount of appearing
+    ///     Appearance amount tuple
+    ///     (x, _) - Represents the minimum amount of appearing
+    ///     (_, x) - Represents the maximum amount of appearing
     /// </summary>
     public (int, int) Amount {
         get => _amount;
@@ -177,10 +181,10 @@ public class ItemObjectViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Storage of the dependent item, and the appearance distance
-    /// T(x, (_, _)) - Represents the item name of the dependent item
-    /// T(_, (x, _)) - Represents the minimum distance of this dependent item appearing from the main item
-    /// T(_, (_, x)) - Represents the maximum distance of this dependent item appearing from the main item
+    ///     Storage of the dependent item, and the appearance distance
+    ///     T(x, (_, _)) - Represents the item name of the dependent item
+    ///     T(_, (x, _)) - Represents the minimum distance of this dependent item appearing from the main item
+    ///     T(_, (_, x)) - Represents the maximum distance of this dependent item appearing from the main item
     /// </summary>
     public Tuple<string?, (int, int)> DependentItem {
         get => _dependentItem;

@@ -1,10 +1,11 @@
 ﻿using ReactiveUI;
+
 // ReSharper disable UnusedMember.Local
 
 namespace miWFC.ViewModels.Structs;
 
 /// <summary>
-/// View Model element for combobox string entries, allows the element to be hovered instead of being pure text
+///     View Model element for combobox string entries, allows the element to be hovered instead of being pure text
 /// </summary>
 public class HoverableTextViewModel : ReactiveObject {
     private readonly string _displayText = "";
@@ -22,11 +23,11 @@ public class HoverableTextViewModel : ReactiveObject {
     /*
      * Getters & Setters
      */
-    
+
     // Strings
-    
+
     /// <summary>
-    /// Text shown to the user by default
+    ///     Text shown to the user by default
     /// </summary>
     public string DisplayText {
         get => _displayText;
@@ -34,23 +35,23 @@ public class HoverableTextViewModel : ReactiveObject {
     }
 
     /// <summary>
-    /// Text shown to the user when hovering
+    ///     Text shown to the user when hovering
     /// </summary>
     private string ToolTipText {
         get => _toolTipText;
         init => this.RaiseAndSetIfChanged(ref _toolTipText, value);
     }
-    
+
     // Numeric (Integer, Double, Float, Long ...)
-    
+
     // Booleans
-    
+
     // Images
-    
+
     // Objects
-    
+
     // Lists
-    
+
     // Other
 
     /*
