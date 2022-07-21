@@ -68,7 +68,7 @@ public partial class WeightMapWindow : Window {
     ///     Get the selected size of the brush, these values are diameters, not radii
     /// </summary>
     /// <returns>Selected brush size</returns>
-    private int GetPaintBrushSize() {
+    public int GetPaintBrushSize() {
         int brushSize = centralManager!.GetMainWindowVM().BrushSize;
         double mappingValue = 13.2d * Math.Exp(0.125 * brushSize) - 15.95d;
         return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
@@ -208,15 +208,19 @@ public partial class WeightMapWindow : Window {
                             double dy = (double) y - b;
                             double distanceSquared = dx * dx + dy * dy;
 
-                            if (mainWindowVM.MappingVM.HardBrushEnabled) {
-                                if (distanceSquared <= brushSize) {
-                                    maskValues[x, y] = selectedValue;
-                                }
+                            if (brushSize == -1 && distanceSquared == 0) {
+                                maskValues[x, y] = selectedValue;
                             } else {
-                                if (distanceSquared <= brushSize) {
-                                    double percentage = Math.Min(1d, 1.2d - distanceSquared / brushSize);
-                                    maskValues[x, y] = Math.Round(percentage * selectedValue
-                                                                  + (1d - percentage) * maskValues[x, y]);
+                                if (mainWindowVM.MappingVM.HardBrushEnabled) {
+                                    if (distanceSquared <= brushSize) {
+                                        maskValues[x, y] = selectedValue;
+                                    }
+                                } else {
+                                    if (distanceSquared <= brushSize) {
+                                        double percentage = Math.Min(1d, 1.2d - distanceSquared / brushSize);
+                                        maskValues[x, y] = Math.Round(percentage * selectedValue
+                                                                      + (1d - percentage) * maskValues[x, y]);
+                                    }
                                 }
                             }
                         }
@@ -251,16 +255,20 @@ public partial class WeightMapWindow : Window {
                 double dx = (double) x - a;
                 double dy = (double) y - b;
                 double distanceSquared = dx * dx + dy * dy;
-
-                if (mainWindowVM.MappingVM.HardBrushEnabled) {
-                    if (distanceSquared <= brushSize) {
-                        return Colors.Yellow;
-                    }
+                
+                if (brushSize == -1 && distanceSquared == 0) {
+                    return Colors.Yellow;
                 } else {
-                    if (distanceSquared <= brushSize) {
-                        double percentage = distanceSquared / brushSize;
-                        double percentageMapped = 1d - (percentage * 0.5d + 0.5d);
-                        return Color.FromArgb((byte) (percentageMapped * 255), 255, 255, 0);
+                    if (mainWindowVM.MappingVM.HardBrushEnabled) {
+                        if (distanceSquared <= brushSize) {
+                            return Colors.Yellow;
+                        }
+                    } else {
+                        if (distanceSquared <= brushSize) {
+                            double percentage = distanceSquared / brushSize;
+                            double percentageMapped = 1d - (percentage * 0.5d + 0.5d);
+                            return Color.FromArgb((byte) (percentageMapped * 255), 255, 255, 0);
+                        }
                     }
                 }
 
@@ -407,23 +415,32 @@ public partial class WeightMapWindow : Window {
         }
 
         int brushSizeRaw = GetPaintBrushSize();
-
         if (oldBrushSize.Equals(brushSizeRaw) && !force) {
             return;
         }
-
-        oldBrushSize = brushSizeRaw;
 
         if (brushSizeRaw == -1) {
             centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(3, 3, 1, (x, y) =>
                 x == 1 && y == 1 ? GetGradientColor(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue) :
                 (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
+            oldBrushSize = brushSizeRaw;
             return;
         }
 
-        int brushSize = Math.Max(5, brushSizeRaw);
-        bool[,] brushImageRaw = new bool[brushSize, brushSize];
+        UpdateBrushImage(brushSizeRaw);
+    }
+
+    /// <summary>
+    /// Function to update the brush size visual with the current brush size
+    /// </summary>
+    /// 
+    /// <param name="rawBrushSize">Raw brush size selected by the user</param>
+    public void UpdateBrushImage(int rawBrushSize) {
+        oldBrushSize = rawBrushSize;
+
+        int brushSize = Math.Max(5, rawBrushSize);
         int centerPoint = (int) Math.Round(brushSize / 2d);
+
         int minX = int.MaxValue, maxX = int.MinValue;
 
         for (int x = 0; x < brushSize; x++) {
@@ -432,9 +449,7 @@ public partial class WeightMapWindow : Window {
                 double dy = (double) y - centerPoint;
                 double distanceSquared = dx * dx + dy * dy;
 
-                if (distanceSquared <= brushSizeRaw) {
-                    brushImageRaw[x, y] = true;
-
+                if (distanceSquared <= rawBrushSize) {
                     if (x < minX) {
                         minX = x;
                     }
@@ -446,17 +461,18 @@ public partial class WeightMapWindow : Window {
             }
         }
 
-        int cp = maxX - minX;
-        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(cp + 3,
-            cp + 3, 1,
+        int centrePoint = maxX - minX;
+
+        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(centrePoint + 3,
+            centrePoint + 3, 1,
             (x, y) => {
-                double dx = x - cp / 2d - 1;
-                double dy = y - cp / 2d - 1;
+                double dx = x - centrePoint / 2d - 1;
+                double dy = y - centrePoint / 2d - 1;
                 Color selected = GetGradientColor(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue);
                 double distance = dx * dx + dy * dy;
-                return distance <= brushSizeRaw ? centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled
+                return distance <= rawBrushSize ? centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled
                         ? selected
-                        : Color.FromArgb((byte) (255 * (1d - distance / brushSizeRaw * 0.85d)), selected.R,
+                        : Color.FromArgb((byte) (255 * (1d - distance / rawBrushSize * 0.85d)), selected.R,
                             selected.G, selected.B) :
                     (x + y) % 2 == 0 ? Colors.Transparent : Color.Parse("#11000000");
             });

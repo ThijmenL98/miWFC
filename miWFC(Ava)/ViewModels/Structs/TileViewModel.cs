@@ -32,7 +32,7 @@ public class TileViewModel : ReactiveObject {
     private bool _mayTransform,
         _patternDisabled;
 
-    private double _patternWeight, _changeAmount = 1.0d;
+    private double _patternWeight;
     private string _patternWeightString;
     private int _userRotation, _finalRotation, _userFlipping = 1, _finalFlipping = 1;
 
@@ -205,14 +205,6 @@ public class TileViewModel : ReactiveObject {
         }
     }
 
-    /// <summary>
-    ///     Current value the pattern's weight will increment or decrement on user input, this can be changed by the user
-    /// </summary>
-    public double ChangeAmount {
-        get => _changeAmount;
-        set => this.RaiseAndSetIfChanged(ref _changeAmount, value);
-    }
-
     // Booleans
 
     /// <summary>
@@ -354,58 +346,6 @@ public class TileViewModel : ReactiveObject {
     }
 
     /// <summary>
-    ///     Function to handle an increase in the amount to change the actual weight with
-    /// </summary>
-    public void OnWeightIncrement() {
-        HandleWeightGapChange(true);
-    }
-
-    /// <summary>
-    ///     Function to handle an decrease in the amount to change the actual weight with
-    /// </summary>
-    public void OnWeightDecrement() {
-        HandleWeightGapChange(false);
-    }
-
-    /// <summary>
-    ///     Actual logic behind changing the amount to change the actual weight with, which is done in fixed steps:
-    ///     1, 10, 20, 30...
-    /// </summary>
-    /// <param name="increment">Whether to increase or decrease the gap to change the actual weight with</param>
-    private void HandleWeightGapChange(bool increment) {
-        switch (ChangeAmount) {
-            case 1d:
-                if (increment) {
-                    ChangeAmount = 10;
-                } else {
-                    centralManager!.GetUIManager().DispatchError(centralManager!.GetMainWindow(),
-                        "Change amount cannot be decreased further");
-                }
-
-                break;
-            case 10d:
-                if (increment) {
-                    ChangeAmount += 10;
-                } else {
-                    ChangeAmount = 1;
-                }
-
-                break;
-            default:
-                if (increment) {
-                    ChangeAmount += 10;
-                    ChangeAmount = Math.Min(ChangeAmount, 100d);
-                } else {
-                    ChangeAmount -= 10;
-                }
-
-                break;
-        }
-
-        ChangeAmount = Math.Round(ChangeAmount, 1);
-    }
-
-    /// <summary>
     ///     Actual logic behind changing the weight of this tile.
     /// </summary>
     /// <param name="increment">Whether to increment (inverse decrement) the weight</param>
@@ -414,10 +354,10 @@ public class TileViewModel : ReactiveObject {
             case false when !(PatternWeight > 0):
                 return;
             case true:
-                PatternWeight += ChangeAmount;
+                PatternWeight += centralManager!.GetMainWindow().ChangeAmount;
                 break;
             default:
-                PatternWeight -= ChangeAmount;
+                PatternWeight -= centralManager!.GetMainWindow().ChangeAmount;
                 PatternWeight = Math.Max(0, PatternWeight);
                 break;
         }

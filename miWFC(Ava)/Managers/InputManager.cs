@@ -12,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using miWFC.DeBroglie.Topo;
+using miWFC.Utils;
 using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
 using miWFC.Views;
@@ -523,6 +524,8 @@ public class InputManager {
         byte[] inputBUntrimmed = trimmedInputB as byte[] ?? trimmedInputB.ToArray();
         Split(inputBUntrimmed, imageWidth * imageHeight, out byte[] inputB, out byte[] inputW);
 
+        mainWindowVM.SetWeights(inputW.Select(x => (double) x).ToArray());
+
         try {
             for (int x = 0; x < imageWidth; x++) {
                 for (int y = 0; y < imageHeight; y++) {
@@ -545,8 +548,6 @@ public class InputManager {
                     }
                 }
             }
-
-            mainWindowVM.SetWeights(inputW.Select(x => (double) x).ToArray());
         } catch (AggregateException exception) {
             centralManager.GetUIManager()
                 .DispatchError(mainWindow, "Imported image did not match the selected input settings");
@@ -932,11 +933,11 @@ public class InputManager {
 
         if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
             if (brushSize == -1) {
-                maskColours[a, b] = add ? Colors.Green : Colors.Red;
+                maskColours[a, b] = add ? positiveColour : negativeColour;
                 for (int x = 0; x < outputWidth; x++) {
                     for (int y = 0; y < outputHeight; y++) {
                         if (maskColours[x, y] == default) {
-                            maskColours[x, y] = add ? Colors.Red : Colors.Green;
+                            maskColours[x, y] = add ? negativeColour : positiveColour;
                         }
                     }
                 }
@@ -948,9 +949,9 @@ public class InputManager {
                         double distanceSquared = dx * dx + dy * dy;
 
                         if (distanceSquared <= brushSize) {
-                            maskColours[x, y] = add ? Colors.Green : Colors.Red;
+                            maskColours[x, y] = add ? positiveColour : negativeColour;
                         } else if (maskColours[x, y] == default) {
-                            maskColours[x, y] = add ? Colors.Red : Colors.Green;
+                            maskColours[x, y] = add ? negativeColour : positiveColour;
                         }
                     }
                 }

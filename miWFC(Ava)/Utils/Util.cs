@@ -35,6 +35,13 @@ public static class Util {
 
     private static WriteableBitmap latestItemBitmap
         = new(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
+    
+    /*
+     * Public Constants
+     */
+
+    public static readonly Color negativeColour = Color.Parse("#FF0064");
+    public static readonly Color positiveColour = Color.Parse("#00FF69");
 
     /*
      * Functions related to pattern initialization

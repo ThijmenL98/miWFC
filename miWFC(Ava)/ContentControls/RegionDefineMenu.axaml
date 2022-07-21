@@ -30,11 +30,11 @@
 			<Grid Grid.Column="1" RowDefinitions="Auto, *, Auto" Margin="0, 20" Width="265">
 				<StackPanel Grid.Row="0" VerticalAlignment="Top">
 					<TextBlock HorizontalAlignment="Left" Margin="0, 0, 0, 0"
-					           Foreground="#007700" TextWrapping="Wrap">
+					           Foreground="#229939" TextWrapping="Wrap">
 						Left Mouse Button: Paint where items are allowed to appear
 					</TextBlock>
 					<TextBlock HorizontalAlignment="Left" Margin="0, 15, 0, 0"
-					           Foreground="#CC0000" TextWrapping="Wrap">
+					           Foreground="#FF0064" TextWrapping="Wrap">
 						Right Mouse Button: Paint where items are prohibited from appearing
 					</TextBlock>
 				</StackPanel>

@@ -62,7 +62,7 @@ public class MainWindowViewModel : ViewModelBase {
         _imgOutHeight,
         _patternSize = 3,
         _selectedTabIndex,
-        _brushSize = 3,
+        _brushSize = 1,
         _brushSizeMax = 12,
         _inputImageMinWidth = 200;
 
@@ -584,7 +584,7 @@ public class MainWindowViewModel : ViewModelBase {
             case "M":
                 Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
                 await centralManager!.GetUIManager().SwitchWindow(Windows.MAIN,
-                    !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+                    !(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour));
                 centralManager!.GetInputManager().ResetMask();
                 break;
             case "I":
@@ -627,17 +627,11 @@ public class MainWindowViewModel : ViewModelBase {
     /// <summary>
     ///     Function called when clicking on the button to open the folder to the custom images
     /// </summary>
-    public void OpenCustomFolderPrompt() {
+    public static void OpenCustomFolderPrompt() {
         Process.Start(new ProcessStartInfo {
-                FileName = $"{AppContext.BaseDirectory}/samples/Custom",
-                UseShellExecute = true,
-                Verb = "open"
-            })
-            ?.WaitForExit();
-
-        string[] inputImageDataSource = Util.GetModelImages(
-            centralManager!.GetWFCHandler().IsOverlappingModel() ? "overlapping" : "simpletiled",
-            centralManager!.GetMainWindow().GetInputControl().GetCategory());
-        centralManager!.GetMainWindow().GetInputControl().SetInputImages(inputImageDataSource);
+            FileName = $"{AppContext.BaseDirectory}/samples/Custom",
+            UseShellExecute = true,
+            Verb = "open"
+        });
     }
 }

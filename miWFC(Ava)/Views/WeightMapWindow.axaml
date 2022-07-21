@@ -134,7 +134,7 @@
 								</Grid>
 							</StackPanel>
 
-							<ToggleSwitch Grid.Row="2" OffContent="Hard Brush" OnContent="Soft Brush" Margin="5"
+							<ToggleSwitch Grid.Row="2" OffContent="Current: Soft Brush" OnContent="Current: Hard Brush" Margin="5"
 							              IsChecked="{Binding !MappingVM.HardBrushEnabled}"
 							              PropertyChanged="AvaloniaObject_OnPropertyChanged" />
 

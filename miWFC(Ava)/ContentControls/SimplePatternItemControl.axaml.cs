@@ -1,5 +1,8 @@
-﻿using Avalonia.Controls;
+﻿using System.Diagnostics;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
+using miWFC.Managers;
 
 namespace miWFC.ContentControls;
 

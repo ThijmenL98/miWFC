@@ -27,7 +27,7 @@ public class ItemViewModel : ReactiveObject {
     private Bitmap _currentItemImage
             = new WriteableBitmap(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul),
         _regionImage
-            = Util.CreateBitmapFromData(1, 1, 1, (_, _) => Colors.Green);
+            = Util.CreateBitmapFromData(1, 1, 1, (_, _) => Util.positiveColour);
 
     private string _displayName = "", _dependentDisplayName = "", _itemColour = "", _depItemColour = "";
 
@@ -291,7 +291,7 @@ public class ItemViewModel : ReactiveObject {
 
             if (mainItems.ContainsKey(key)) {
                 DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemNameTB(),
-                    new DataValidationException("Name already exists with a different colour"));
+                    new DataValidationException($"Name already exists with a different colour: {mainItems[key]}"));
                 return new Dictionary<string, Color>();
             }
 
@@ -310,7 +310,7 @@ public class ItemViewModel : ReactiveObject {
 
                 if (depItems.ContainsKey(key)) {
                     DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemNameTB(),
-                        new DataValidationException("Name already exists with a different colour"));
+                        new DataValidationException($"Name already exists with a different colour: {depItems[key]}"));
                     return new Dictionary<string, Color>();
                 }
 
@@ -371,14 +371,23 @@ public class ItemViewModel : ReactiveObject {
             allowedTiles = new List<TileViewModel>(mainWindowViewModel.PaintTiles);
         }
 
-        Color itemColour;
+        Color? itemColour;
         try {
-            itemColour = ItemColour.Equals("") ? Colors.Red : Color.Parse(ItemColour);
+            itemColour = ItemColour.Equals("") ? Colors.Red :
+                ItemColour.StartsWith("#") ? Color.Parse(ItemColour) : Color.Parse("#" + ItemColour);
         } catch (FormatException) {
-            DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemColourTB(),
-                new DataValidationException("Invalid colour hex!"));
-            centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
-            return;
+            itemColour = null;
+        }
+
+        if (itemColour == null) {
+            try { 
+                itemColour = ItemColour.Equals("") ? Colors.Red : Color.Parse(ItemColour);
+            } catch (FormatException) {
+                DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemColourTB(),
+                    new DataValidationException("Invalid colour hex!"));
+                centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
+                return;
+            }
         }
 
         if (allowedTiles.Count == 0 || DisplayName.Equals("") || string.IsNullOrWhiteSpace(DisplayName) ||
@@ -390,7 +399,7 @@ public class ItemViewModel : ReactiveObject {
 
             if (GetItemNames().Contains(DisplayName) && !GetItemColours()[DisplayName].Equals(itemColour)) {
                 DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetItemNameTB(),
-                    new DataValidationException("Name already exists with a different colour"));
+                    new DataValidationException($"Name already exists with a different colour: {GetItemColours()[DisplayName]}"));
             }
 
             string? message = null;
@@ -406,14 +415,23 @@ public class ItemViewModel : ReactiveObject {
         bool isDependent = ItemIsDependent;
         Tuple<string?, WriteableBitmap?, Color?, (int, int)>? depItem = null;
         if (isDependent) {
-            Color depColor;
+            Color? depColor;
             try {
-                depColor = DepItemColour.Equals("") ? Colors.Red : Color.Parse(DepItemColour);
+                depColor = DepItemColour.Equals("") ? Colors.Red :
+                    DepItemColour.StartsWith("#") ? Color.Parse(DepItemColour) : Color.Parse("#" + DepItemColour);
             } catch (FormatException) {
-                DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemColourTB(),
-                    new DataValidationException("Invalid colour hex!"));
-                centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
-                return;
+                depColor = null;
+            }
+
+            if (depColor == null) {
+                try { 
+                    depColor = DepItemColour.Equals("") ? Colors.Red : Color.Parse(DepItemColour);
+                } catch (FormatException) {
+                    DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemColourTB(),
+                        new DataValidationException("Invalid colour hex!"));
+                    centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
+                    return;
+                }
             }
 
             if (DependentItemName.Equals("") || string.IsNullOrWhiteSpace(DependentItemName) ||
@@ -427,7 +445,7 @@ public class ItemViewModel : ReactiveObject {
                 if (GetItemNames().Contains(DependentItemName) &&
                     !GetItemColours()[DependentItemName].Equals(itemColour)) {
                     DataValidationErrors.SetError(centralManager!.GetItemWindow().GetItemAddMenu().GetDepItemNameTB(),
-                        new DataValidationException("Name already exists with a different colour"));
+                        new DataValidationException($"Name already exists with a different colour: {GetItemColours()[DependentItemName]}"));
                 }
 
                 centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(), null);
@@ -435,7 +453,7 @@ public class ItemViewModel : ReactiveObject {
             }
 
             (int, int) range = (DepMinDistance, DepMaxDistance);
-            WriteableBitmap depItemBitmap = Util.GetItemImage(depColor);
+            WriteableBitmap depItemBitmap = Util.GetItemImage((Color) depColor);
             depItem = new Tuple<string?, WriteableBitmap?, Color?, (int, int)>(DependentItemName, depItemBitmap,
                 depColor, range);
         }
@@ -469,11 +487,11 @@ public class ItemViewModel : ReactiveObject {
         bool[,] itemAllowanceMask = centralManager!.GetItemWindow().GetRegionDefineMenu().GetAllowanceMask();
 
         ItemDataGrid.Add(new ItemObjectViewModel(DisplayName, (amountLower, amountUpper),
-            myAllowedTiles, itemColour,
-            Util.GetItemImage(itemColour), depItem, itemAllowanceMask,
+            myAllowedTiles, (Color) itemColour,
+            Util.GetItemImage((Color) itemColour), depItem, itemAllowanceMask,
             Util.CreateBitmapFromData(centralManager!.GetMainWindowVM().ImageOutWidth,
                 centralManager!.GetMainWindowVM().ImageOutHeight, 1,
-                (x, y) => itemAllowanceMask[x, y] ? Colors.Green : Colors.Red)));
+                (x, y) => itemAllowanceMask[x, y] ? Util.positiveColour : Util.negativeColour)));
 
         InItemMenu = false;
         ItemsMayAppearAnywhere = false;
@@ -706,18 +724,18 @@ public class ItemViewModel : ReactiveObject {
                 bool added = false;
                 int retry = 0;
                 List<(int, int)> locToSkip = new();
-                int allowedRetries = allowedAdd.Select(x => spacesLeft[x]).Sum() *
-                                     allowedAdd.Select(x => spacesLeft[x]).Sum();
+                int allowedRetries = allowedAdd.Select(x => spacesLeft[x]).Sum() * 2;
 
                 while (!added) {
                     retry++;
-                    if (retry >= allowedRetries) {
+                    if (retry >= allowedRetries || locToSkip.Count == mainWindowViewModel.ImageOutWidth *
+                        mainWindowViewModel.ImageOutHeight) {
                         if (i >= ivm.Amount.Item1) {
                             return itemGrid;
                         }
 
                         centralManager?.GetUIManager().DispatchError(centralManager!.GetItemWindow(),
-                            $"Addition failed after {allowedRetries} tries");
+                            $"Addition failed after timing out");
                         return null;
                     }
 
@@ -788,14 +806,13 @@ public class ItemViewModel : ReactiveObject {
     /// <param name="spacesLeft">Amount of spaces left for each tile type</param>
     /// <returns>Whether the placement of the item has succeeded and the new count of dependent items ids</returns>
     private (bool, int) TryPlaceItemAt(int xLoc, int yLoc, ItemObjectViewModel ivm, Tuple<string, int>[,] itemGrid,
-        Color[,] distinctColourCount, ICollection<int> allowedAdd
-        , int[,] distinctIndexCount, int depItemCount, IList<int> spacesLeft) {
+        Color[,] distinctColourCount, ICollection<int> allowedAdd, int[,] distinctIndexCount, int depItemCount,
+        IList<int> spacesLeft) {
         if (itemGrid[xLoc, yLoc].Item1.Equals("") && ivm.AppearanceRegion[xLoc, yLoc]) {
             bool canContinueDependent = !ivm.HasDependentItem;
             if (ivm.HasDependentItem) {
                 (canContinueDependent, spacesLeft, itemGrid) = TryPlaceDependencyAt(xLoc, yLoc, ivm, itemGrid,
-                    distinctColourCount, allowedAdd,
-                    distinctIndexCount, depItemCount, spacesLeft);
+                    distinctColourCount, allowedAdd, distinctIndexCount, depItemCount, spacesLeft);
             }
 
             if (canContinueDependent) {
@@ -858,10 +875,8 @@ public class ItemViewModel : ReactiveObject {
                 if (depDist <= maxDist && depDist >= minDist) {
                     if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
                         Color colorAtPos = distinctColourCount[xx, yy];
-                        if (mainWindowViewModel.PaintTiles.Where(tvm =>
-                                    tvm.PatternColour.Equals(colorAtPos))
-                                .Any(tvm => allowedAdd.Contains(tvm.PatternIndex)) &&
-                            !itemGrid[xx, yy].Item1.Equals("") && ivm.AppearanceRegion[xx, yy]) {
+                        if (mainWindowViewModel.PaintTiles.Where(tvm => tvm.PatternColour.Equals(colorAtPos)).Any(tvm => allowedAdd.Contains(tvm.PatternIndex)) 
+                            && itemGrid[xx, yy].Item1.Equals("") && ivm.AppearanceRegion[xx, yy]) {
                             possibleCoordinates.Add(new Tuple<int, int>(xx, yy));
                         }
                     } else {
@@ -878,10 +893,8 @@ public class ItemViewModel : ReactiveObject {
         bool canContinueDependent = possibleCoordinates.Count > 0;
 
         if (canContinueDependent) {
-            Tuple<int, int> depCoords
-                = possibleCoordinates[mainWindowViewModel.R.Next(possibleCoordinates.Count)];
-            itemGrid[depCoords.Item1, depCoords.Item2]
-                = new Tuple<string, int>(depItem.Item1!, depItemCount);
+            Tuple<int, int> depCoords = possibleCoordinates[mainWindowViewModel.R.Next(possibleCoordinates.Count)];
+            itemGrid[depCoords.Item1, depCoords.Item2] = new Tuple<string, int>(depItem.Item1!, depItemCount);
 
             if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
                 Color addedLoc = distinctColourCount[depCoords.Item1, depCoords.Item2];

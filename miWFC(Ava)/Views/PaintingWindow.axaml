@@ -219,22 +219,22 @@
 							<StackPanel Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="2">
 								<TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0"
 								           IsVisible="{Binding PaintingVM.PaintModeEnabled}"
-								           Foreground="#007700">
+								           Foreground="#00FF69">
 									Left Mouse Button: Add tile(s)
 								</TextBlock>
 								<TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0"
 								           IsVisible="{Binding PaintingVM.PaintModeEnabled}"
-								           Foreground="#CC0000">
+								           Foreground="#FF0064">
 									Right Mouse Button: Remove tile(s)
 								</TextBlock>
 								<TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0"
 								           IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}"
-								           Foreground="#007700">
+								           Foreground="#00FF69">
 									Left Mouse Button: Add tile(s)
 								</TextBlock>
 								<TextBlock HorizontalAlignment="Left" Margin="0, 5, 0, 0"
 								           IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}"
-								           Foreground="#CC0000">
+								           Foreground="#FF0064">
 									Right Mouse Button: Remove tile(s)
 								</TextBlock>
 								<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -554,7 +554,7 @@
 									<Border Margin="10" CornerRadius="10">
 										<Image Margin="10" RenderOptions.BitmapInterpolationMode="Default"
 										       Source="{Binding OutputPreviewMask}"
-										       IsHitTestVisible="False" Opacity=".40" />
+										       IsHitTestVisible="False" Opacity=".70" />
 									</Border>
 								</Grid>
 							</Grid>

@@ -187,7 +187,7 @@ public class PaintingViewModel : ReactiveObject {
     /// </summary>
     public async Task ApplyPaintMask() {
         Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
-        if (!(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green)) {
+        if (!(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour)) {
             centralManager!.GetUIManager()
                 .DispatchError(centralManager.GetPaintingWindow(), "No mask has been painted");
             return;

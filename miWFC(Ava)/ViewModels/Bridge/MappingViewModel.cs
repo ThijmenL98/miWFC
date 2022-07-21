@@ -108,8 +108,8 @@ public class MappingViewModel : ReactiveObject {
             Title = @"Select export location & file name",
             Filters = new List<FileDialogFilter> {
                 new() {
-                    Extensions = new List<string> {"wMap"},
-                    Name = "Weight Mapping (*.wMap)"
+                    Extensions = new List<string> {"png"},
+                    Name = "Weight Mapping (*.png)"
                 }
             }
         };
@@ -154,11 +154,11 @@ public class MappingViewModel : ReactiveObject {
     public async void ExportWeightMap() {
         SaveFileDialog sfd = new() {
             Title = @"Select export location & file name",
-            DefaultExtension = "wMap",
+            DefaultExtension = "png",
             Filters = new List<FileDialogFilter> {
                 new() {
-                    Extensions = new List<string> {"wMap"},
-                    Name = "Weight Mapping (*.wMap)"
+                    Extensions = new List<string> {"png"},
+                    Name = "Weight Mapping (*.png)"
                 }
             }
         };

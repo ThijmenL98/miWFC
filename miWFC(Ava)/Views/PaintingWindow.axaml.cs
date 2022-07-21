@@ -37,7 +37,7 @@ public partial class PaintingWindow : Window {
         Closing += (_, e) => {
             Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
             centralManager?.GetUIManager()
-                .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+                .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour));
             e.Cancel = true;
         };
 
@@ -186,7 +186,7 @@ public partial class PaintingWindow : Window {
                 } else {
                     Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
                     centralManager?.GetUIManager()
-                        .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Colors.Red || mask[0, 0] == Colors.Green));
+                        .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour));
                 }
 
                 e.Handled = true;

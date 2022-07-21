@@ -135,7 +135,7 @@
 			              Command="{Binding InputVM.ToggleCustomSideView}" />
 		</Grid>
 
-		<Image Grid.Row="3" Margin="10" Source="/Assets/icon.png" MaxHeight="300" />
+		<GridSplitter Grid.Row="3" IsEnabled="False" Background="Transparent" />
 
 		<Grid ColumnDefinitions="Auto, *, Auto" Grid.Row="4" Margin="5, -30, 5, 5">
 			<Button Padding="0" Background="Transparent" Grid.Column="0" Command="{Binding OpenInfoPopup}"

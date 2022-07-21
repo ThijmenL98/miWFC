@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -361,8 +362,10 @@ public class UIManager {
                 target = centralManager.GetItemWindow();
                 break;
             case Windows.HEATMAP:
-                // Goto Items
+                // Goto weight mapping
                 target = centralManager.GetWeightMapWindow();
+                centralManager.GetWeightMapWindow()
+                    .UpdateBrushImage(centralManager.GetWeightMapWindow().GetPaintBrushSize());
                 break;
             default:
                 throw new NotImplementedException();

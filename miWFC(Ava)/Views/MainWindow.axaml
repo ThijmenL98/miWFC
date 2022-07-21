@@ -7,13 +7,10 @@
         xmlns:viewModels="clr-namespace:miWFC.ViewModels"
         xmlns:contentControls="clr-namespace:miWFC.ContentControls"
         xmlns:avaloniaGif="clr-namespace:miWFC.AvaloniaGif"
-        d:DesignHeight="800" d:DesignWidth="1476"
-        MinWidth="1256" MinHeight="600"
-        Width="1476" Height="800"
-        WindowStartupLocation="CenterOwner"
-        Activated="WindowBase_OnActivated"
-        PointerPressed="InputElement_OnPointerPressed"
-        PointerMoved="InputElement_OnPointerMoved">
+        d:DesignHeight="800" d:DesignWidth="1476" MinWidth="1256" MinHeight="660"
+        Width="1476" Height="800" KeyDown="InputElement_OnKeyDown" KeyUp="InputElement_OnKeyUp"
+        WindowStartupLocation="CenterOwner" Activated="WindowBase_OnActivated"
+        PointerPressed="InputElement_OnPointerPressed" PointerMoved="InputElement_OnPointerMoved">
 
 	<Window.Resources>
 		<!-- Hover resources -->
@@ -259,7 +256,7 @@
 
 									<Border Grid.Row="2" Background="#22000000" BoxShadow="0 0 15 0.25 Black" Margin="10"
 									        CornerRadius="15">
-										<contentControls:SimplePatternItemControl />
+										<contentControls:SimplePatternItemControl x:Name="simplePatternItemControl" />
 									</Border>
 								</Grid>
 							</Grid>

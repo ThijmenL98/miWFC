@@ -34,7 +34,7 @@ public class WFCHandler {
     private static HashSet<Color>? currentColors;
     private readonly CentralManager centralManager;
 
-    private readonly List<Color[]> disabledPatterns = new();
+    private List<Color[]> disabledPatterns = new();
 
     private readonly FixedSizeQueue<Tuple<int, int, int>> fsqAdj = new(10);
     private readonly MainWindow mainWindow;
@@ -178,17 +178,16 @@ public class WFCHandler {
         }
 
         int outputHeight = mainWindowVM.ImageOutHeight, outputWidth = mainWindowVM.ImageOutWidth;
-        bool seamlessOutput = mainWindowVM.SeamlessOutput || category.Contains("Side");
+        bool seamlessOutput = mainWindowVM.SeamlessOutput;
 
         int curSeed = Environment.TickCount;
         Random rand = new(curSeed);
         mainWindowVM.SetRandomnessFunction(rand);
 
         await Task.Run(async () => {
-            CreatePropagator(outputWidth, outputHeight, seamlessOutput, rand);
+            CreatePropagator(outputWidth, outputHeight, seamlessOutput, category.Contains("Side"), rand);
 
-            if (IsOverlappingModel() && (inputWrappingEnabled ||
-                                         (mainWindowVM.InputVM.InputIsSideView && mainWindowVM.CustomInputSelected))) {
+            if (IsOverlappingModel() && (mainWindowVM.InputVM.InputIsSideView && mainWindowVM.CustomInputSelected)) {
                 bool success = false;
                 while (!success) {
                     try {
@@ -408,9 +407,15 @@ public class WFCHandler {
     /// <param name="outputWidth">Width of the output image</param>
     /// <param name="outputHeight">Height of the output image</param>
     /// <param name="seamlessOutput">Whether the output is required to be seamless</param>
+    /// <param name="isSideView">Whether the input is a side view world, only having horizontal seamlessness</param>
     /// <param name="rand">The randomness parameter, forwarded for reproducibility using seeds (if used)</param>
-    private void CreatePropagator(int outputWidth, int outputHeight, bool seamlessOutput, Random rand) {
-        GridTopology dbTopology = new(outputWidth, outputHeight, seamlessOutput);
+    private void CreatePropagator(int outputWidth, int outputHeight, bool seamlessOutput, bool isSideView,
+        Random rand) {
+        GridTopology dbTopology = isSideView
+            ? new GridTopology(DirectionSet.cartesian2d, outputWidth, outputHeight, 1, seamlessOutput, true,
+                seamlessOutput)
+            : new GridTopology(outputWidth, outputHeight, seamlessOutput);
+
         dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
             RandomDouble = rand.NextDouble,
             IndexPickerType = IndexPickerType.HEAP_MIN_ENTROPY
@@ -804,6 +809,9 @@ public class WFCHandler {
     /// <param name="isChanging">Boolean</param>
     public void SetImageChanging(bool isChanging) {
         _isChangingImages = isChanging;
+        if (isChanging) {
+            disabledPatterns = new List<Color[]>();
+        }
     }
 
     /// <summary>
@@ -869,6 +877,7 @@ public class WFCHandler {
 
         List<PatternArray> patternList = new();
         List<double> patternWeights = new();
+
         try {
             (patternList, patternWeights)
                 = ((OverlappingModel) dbModel).addSample(tiles, disabledPatterns,
@@ -1119,7 +1128,7 @@ public class WFCHandler {
         await Task.Run(() => {
             for (int y = 0; y < imageHeight; y++) {
                 for (int x = 0; x < imageWidth; x++) {
-                    if (colors[x, y].Equals(Colors.Green)) {
+                    if (colors[x, y].Equals(positiveColour)) {
                         Color toSet = GetOverlappingOutputAt(x, y);
 
                         if (toSet.A == 255) {
@@ -1184,7 +1193,7 @@ public class WFCHandler {
                     int value = dbOutput.get(x, y);
                     bool isCollapsed = value >= 0;
 
-                    if (isCollapsed && colors[x, y].Equals(Colors.Green)) {
+                    if (isCollapsed && colors[x, y].Equals(positiveColour)) {
                         newInputDict.Add(new Tuple<int, int>(x, y), value);
                     }
                 }

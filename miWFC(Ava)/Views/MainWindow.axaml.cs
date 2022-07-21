@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -16,6 +17,8 @@ namespace miWFC.Views;
 public partial class MainWindow : Window {
     private CentralManager? centralManager;
     private bool triggered;
+
+    public int ChangeAmount = 1;
 
     /*
      * Initializing Functions & Constructor
@@ -75,6 +78,10 @@ public partial class MainWindow : Window {
     /// <returns>OutputControl</returns>
     public OutputControl GetOutputControl() {
         return this.Find<OutputControl>("outputControl");
+    }
+
+    public SimplePatternItemControl GetSimplePatternItemControl() {
+        return this.Find<SimplePatternItemControl>("simplePatternItemControl");
     }
 
     // Lists
@@ -224,5 +231,17 @@ public partial class MainWindow : Window {
     /// <param name="e">PointerEventArgs</param>
     private void InputElement_OnPointerMoved(object? sender, PointerEventArgs e) {
         centralManager!.GetWFCHandler().IsCollapsed();
+    }
+
+    private void InputElement_OnKeyDown(object? sender, KeyEventArgs e) {
+        ChangeAmount = e.Key switch {
+            Key.LeftShift or Key.RightShift => 50,
+            Key.LeftCtrl or Key.RightCtrl => 10,
+            _ => 1
+        };
+    }
+
+    private void InputElement_OnKeyUp(object? sender, KeyEventArgs e) {
+        ChangeAmount = 1;
     }
 }

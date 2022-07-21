@@ -184,8 +184,6 @@ public partial class InputControl : UserControl {
 
         centralManager.GetWFCHandler().SetInputChanged("Pattern Size CB");
         e.Handled = true;
-        if (centralManager.GetMainWindowVM().SelectedTabIndex > 1) {
-            await centralManager.GetInputManager().RestartSolution("Pattern CB Handler");
-        }
+        await centralManager.GetInputManager().RestartSolution("Pattern CB Handler");
     }
 }

@@ -246,6 +246,6 @@ public partial class RegionDefineMenu : UserControl {
     private void UpdateMask(bool[,] colors) {
         MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
         mainWindowVM.ItemVM.RegionImage = Util.CreateBitmapFromData(mainWindowVM.ImageOutWidth,
-            mainWindowVM.ImageOutHeight, 1, (x, y) => colors[x, y] ? Colors.Green : Colors.Red);
+            mainWindowVM.ImageOutHeight, 1, (x, y) => colors[x, y] ? Util.positiveColour : Util.negativeColour);
     }
 }

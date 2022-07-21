@@ -149,7 +149,7 @@
 					</Grid>
 
 					<Grid Grid.Column="0" Grid.Row="3" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto"
-					      IsVisible="{Binding !ItemVM.ItemIsDependent}">
+					      IsVisible="{Binding ItemVM.ItemIsDependent}">
 						<TextBlock Grid.Row="0" Grid.Column="0" Text="Dependent Item Colour:" HorizontalAlignment="Center"
 						           VerticalAlignment="Center" Margin="5,50,5,5" />
 						<TextBox Grid.Row="0" Grid.Column="1" Watermark="#RRGGBB (Default is Red)" Height="40" Margin="25, 50, 15, 5"

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Topo;
