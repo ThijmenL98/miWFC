@@ -187,7 +187,8 @@ public class WFCHandler {
         await Task.Run(async () => {
             CreatePropagator(outputWidth, outputHeight, seamlessOutput, category.Contains("Side"), rand);
 
-            if (IsOverlappingModel() && (mainWindowVM.InputVM.InputIsSideView && mainWindowVM.CustomInputSelected)) {
+            if (IsOverlappingModel() && (category.Contains("Side") ||
+                                         (mainWindowVM.InputVM.InputIsSideView && mainWindowVM.CustomInputSelected))) {
                 bool success = false;
                 while (!success) {
                     try {
@@ -431,12 +432,18 @@ public class WFCHandler {
     /// <param name="inputImage">Input image used</param>
     /// <param name="groundTileIndex">Index of the ground tile extracted from the input image</param>
     private Task HandleOrientedInput(int outputHeight, int outputWidth, string inputImage, int groundTileIndex) {
+        Trace.WriteLine(currentColors!.ElementAt(groundTileIndex));
         for (int x = 0; x < outputWidth - 1; x++) {
-            dbPropagator.select(x, outputHeight - 1, 0,
-                new Tile(currentColors!.ElementAt(groundTileIndex)));
+            dbPropagator.select(x, outputHeight - 1, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
         }
 
-        if (inputImage.ToLower().Contains("flower") || inputImage.ToLower().Contains("skyline")) {
+        if (inputImage.ToLower().Contains("flower")) {
+            for (int y = 0; y < outputHeight - 2; y++) {
+                dbPropagator.ban(0, y, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
+            }
+        }
+
+        if (inputImage.ToLower().Contains("skyline")) {
             for (int y = 0; y < outputHeight - 1; y++) {
                 dbPropagator.ban(0, y, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
             }
@@ -444,8 +451,7 @@ public class WFCHandler {
 
         if (inputImage.ToLower() == "platformer") {
             for (int x = 0; x < outputWidth - 1; x++) {
-                dbPropagator.select(x, 0, 0,
-                    new Tile(currentColors!.ElementAt(0)));
+                dbPropagator.select(x, 0, 0, new Tile(currentColors!.ElementAt(0)));
             }
         }
 
