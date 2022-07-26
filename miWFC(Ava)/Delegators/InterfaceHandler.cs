@@ -320,6 +320,26 @@ public class InterfaceHandler {
     }
 
     /// <summary>
+    ///     Function send a popup to the user with information
+    /// </summary>
+    /// 
+    /// <param name="window">Window to show the message in</param>
+    /// <param name="message">The message to show in a popup</param>
+    public async void DispatchMessage(Window window, string message) {
+        if (windowClosed) {
+            windowClosed = false;
+            IMsBoxWindow<ButtonResult>? currentWindow = MessageBoxManager
+                .GetMessageBoxStandardWindow(new MessageBoxStandardParams {
+                        ContentTitle = "Success!", ContentMessage = message + Environment.NewLine,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    }
+                );
+            Task<ButtonResult> windowResult = currentWindow.Show(window);
+            await windowResult.ContinueWith(_ => { windowClosed = true; });
+        }
+    }
+
+    /// <summary>
     ///     Function to switch windows
     /// </summary>
     /// <param name="window">Window to switch to</param>

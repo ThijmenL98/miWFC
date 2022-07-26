@@ -283,6 +283,7 @@ public class PaintingViewModel : ReactiveObject {
 
         TemplateViewModel tvm = new(Util.ColourArrayToImage(offsetMask), offsetMask);
         await tvm.Save(mainWindowViewModel.InputImageSelection, centralDelegator!);
+        centralDelegator!.GetInterfaceHandler().DispatchMessage(centralDelegator!.GetPaintingWindow(),"Template successfully saved!");
     }
 
     /// <summary>
@@ -351,6 +352,7 @@ public class PaintingViewModel : ReactiveObject {
                 Util.ValueArrayToImage(offsetMask, centralDelegator!.GetWFCHandler().GetTileSize(),
                     centralDelegator!.GetWFCHandler().GetTileCache()), offsetMask);
         await tvm.Save(mainWindowViewModel.InputImageSelection, centralDelegator!);
+        centralDelegator!.GetInterfaceHandler().DispatchMessage(centralDelegator!.GetPaintingWindow(),"Template successfully saved!");
     }
 
     /// <summary>
