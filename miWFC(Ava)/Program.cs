@@ -16,6 +16,7 @@ internal static class Program {
             BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
         } catch (OutOfMemoryException e) {
+            Trace.WriteLine("UNKNOWN EXCEPTION:");
             Trace.WriteLine(e);
         }
     }

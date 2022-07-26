@@ -151,7 +151,8 @@ public class OutputHandler {
         } catch (InvalidOperationException) {
             // Error caused by multithreading which will be ignored
         } catch (Exception exception) {
-            Trace.WriteLine(exception);
+            StackTrace st = new(exception, true);
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
 
@@ -189,7 +190,8 @@ public class OutputHandler {
                     mainWindowVM.ImageOutHeight != (int) currentHeight || weightReset, mainWindowVM.StepAmount);
             mainWindowVM.OutputImage = result2;
         } catch (Exception exception) {
-            Trace.WriteLine(exception);
+            StackTrace st = new(exception, true);
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -263,7 +265,8 @@ public class OutputHandler {
                 }
             }
         } catch (Exception exception) {
-            Trace.WriteLine(exception);
+            StackTrace st = new(exception, true);
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -366,7 +369,8 @@ public class OutputHandler {
                 mainWindowVM.OutputImage = centralDelegator.GetWFCHandler().StepBackWfc();
             }
         } catch (Exception exception) {
-            Trace.WriteLine(exception);
+            StackTrace st = new(exception, true);
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -550,7 +554,6 @@ public class OutputHandler {
         } catch (AggregateException exception) {
             centralDelegator.GetInterfaceHandler()
                 .DispatchError(mainWindow, "Imported image did not match the selected input settings");
-            Trace.WriteLine(exception);
             await RestartSolution("Imported image failure (mismatch)", true);
         }
     }
@@ -681,7 +684,8 @@ public class OutputHandler {
                         return;
                     }
                 } catch (Exception exception) {
-                    Trace.WriteLine(exception);
+                    StackTrace st = new(exception, true);
+                    Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
                     mainWindowVM.OutputImage = noResultFoundBM;
                 }
 
@@ -1100,8 +1104,9 @@ public class OutputHandler {
                     }
                 }
             }
-        } catch (Exception e) {
-            Trace.WriteLine(e);
+        } catch (Exception exception) {
+            StackTrace st = new(exception, true);
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
             error = true;
         }
 
