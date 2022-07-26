@@ -364,6 +364,34 @@ public class PaintingViewModel : ReactiveObject {
     }
 
     /// <summary>
+    ///     Function called to select all nontransparent tiles in the mask 
+    /// </summary>
+    public void MaskSelectAll() {
+        Color[,] mask = centralDelegator!.GetOutputHandler().GetMaskColours();
+
+        if (centralDelegator!.GetWFCHandler().IsOverlappingModel()) {
+            for (int a = 0; a < mask.GetLength(0); a++) {
+                for (int b = 0; b < mask.GetLength(1); b++) {
+                    Color atPos = centralDelegator!.GetWFCHandler().GetOverlappingOutputAt(a, b);
+                    
+                    mask[a, b] = atPos.A <= 20 ? Color.Parse("#424242") : Colors.White;
+                }
+            }
+        } else {
+            ITopoArray<int> aOutput = centralDelegator!.GetWFCHandler().GetPropagatorOutputA();
+
+            for (int a = 0; a < mask.GetLength(0); a++) {
+                for (int b = 0; b < mask.GetLength(1); b++) {
+                    mask[a, b] = aOutput.get(a, b) < 0 ? Color.Parse("#424242") : Colors.White;
+                }
+            }
+        }
+        
+        centralDelegator!.GetOutputHandler().SetMask(mask);
+        centralDelegator!.GetOutputHandler().UpdateMask();
+    }
+
+    /// <summary>
     ///     Function called when deleting the current template from the user system
     /// </summary>
     public void DeleteTemplate() {

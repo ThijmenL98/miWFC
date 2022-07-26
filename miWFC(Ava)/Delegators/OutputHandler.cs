@@ -1124,6 +1124,15 @@ public class OutputHandler {
     }
 
     /// <summary>
+    ///     Function to overwrite the current mask, used for select all
+    /// </summary>
+    /// 
+    /// <param name="newMask">New mask to be overwritten</param>
+    public void SetMask(Color[,] newMask) {
+        maskColours = newMask;
+    }
+
+    /// <summary>
     ///     Create and apply image representation of the user created mask
     /// </summary>
     /// <param name="colors">Mask colours</param>

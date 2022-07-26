@@ -19,11 +19,12 @@
 		<Image Source="/Assets/ApplyHover.png" x:Key="hoverApplyKey" x:Name="hoverApply" />
 		<Image Source="/Assets/InfoHover.png" x:Key="hoverInfoKey" x:Name="hoverInfo" />
 		<Image Source="/Assets/RestartHover.png" x:Key="hoverRestartKey" x:Name="hoverRestart" />
-		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
-		<Image Source="/Assets/TemplatingAddClick.png" x:Key="clickTemplatingAddKey" x:Name="clickTemplatingAdd" />
-		<Image Source="/Assets/TemplatingPlaceClick.png" x:Key="clickTemplatingPlaceKey" x:Name="clickTemplatingPlace" />
-		<Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
-		<Image Source="/Assets/RotateSingleClick.png" x:Key="clickRotationSingleKey" x:Name="clickRotationSingle" />
+		<Image Source="/Assets/TemplatingAddHover.png" x:Key="hoverTemplatingAddKey" x:Name="hoverTemplatingAdd" />
+		<Image Source="/Assets/TemplatingPlaceHover.png" x:Key="hoverTemplatingPlaceKey" x:Name="hoverTemplatingPlace" />
+		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
+		<Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
+		<Image Source="/Assets/RotateSingleHover.png" x:Key="hoverRotationSingleKey" x:Name="hoverRotationSingle" />
+		<Image Source="/Assets/SelectAllHover.png" x:Key="hoverSelectAllKey" x:Name="hoverSelectAll" />
 
 		<!-- Click resources -->
 		<Image Source="/Assets/BackClick.png" x:Key="clickBackKey" x:Name="clickBack" />
@@ -35,11 +36,12 @@
 		<Image Source="/Assets/SaveClick.png" x:Key="clickSaveKey" x:Name="clickSave" />
 		<Image Source="/Assets/ApplyClick.png" x:Key="clickApplyKey" x:Name="clickApply" />
 		<Image Source="/Assets/RestartClick.png" x:Key="clickRestartKey" x:Name="clickRestart" />
-		<Image Source="/Assets/CloseHover.png" x:Key="hoverCloseKey" x:Name="hoverClose" />
-		<Image Source="/Assets/TemplatingAddHover.png" x:Key="hoverTemplatingAddKey" x:Name="hoverTemplatingAdd" />
-		<Image Source="/Assets/TemplatingPlaceHover.png" x:Key="hoverTemplatingPlaceKey" x:Name="hoverTemplatingPlace" />
-		<Image Source="/Assets/DeleteHover.png" x:Key="hoverDeleteKey" x:Name="hoverDelete" />
-		<Image Source="/Assets/RotateSingleHover.png" x:Key="hoverRotationSingleKey" x:Name="hoverRotationSingle" />
+		<Image Source="/Assets/TemplatingAddClick.png" x:Key="clickTemplatingAddKey" x:Name="clickTemplatingAdd" />
+		<Image Source="/Assets/TemplatingPlaceClick.png" x:Key="clickTemplatingPlaceKey" x:Name="clickTemplatingPlace" />
+		<Image Source="/Assets/CloseClick.png" x:Key="clickCloseKey" x:Name="clickClose" />
+		<Image Source="/Assets/DeleteClick.png" x:Key="clickDeleteKey" x:Name="clickDelete" />
+		<Image Source="/Assets/RotateSingleClick.png" x:Key="clickRotationSingleKey" x:Name="clickRotationSingle" />
+		<Image Source="/Assets/SelectAllClick.png" x:Key="clickSelectAllKey" x:Name="clickSelectAll" />
 	</Window.Resources>
 
 	<Window.Styles>
@@ -373,7 +375,7 @@
 							</StackPanel>
 
 							<!-- Tool Options for the Templating Create below -->
-
+							
 							<Button Padding="0" Background="Transparent" Grid.Row="5" VerticalAlignment="Bottom"
 							        Command="{Binding PaintingVM.CreateTemplate}" Grid.Column="1"
 							        HorizontalAlignment="Center" Margin="10" MaxWidth="110"
@@ -431,6 +433,29 @@
 								<ToolTip.Tip>
 									<StackPanel>
 										<TextBlock TextWrapping="Wrap">Reset the template creator mask</TextBlock>
+									</StackPanel>
+								</ToolTip.Tip>
+							</Button>
+
+							<Button Padding="0" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2" Margin="10" MaxWidth="80"
+							        HorizontalAlignment="Center" IsVisible="{Binding PaintingVM.TemplateCreationModeEnabled}"
+							        Command="{Binding PaintingVM.MaskSelectAll}" Background="Transparent">
+								<Button.Styles>
+									<Style Selector="Button:pointerover /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource hoverSelectAllKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+									<Style Selector="Button:pressed /template/ ContentPresenter">
+										<Setter Property="Content" Value="{DynamicResource clickSelectAllKey}" />
+										<Setter Property="Background" Value="Transparent" />
+									</Style>
+								</Button.Styles>
+								<Panel>
+									<Image Source="/Assets/SelectAll.png"/>
+								</Panel>
+								<ToolTip.Tip>
+									<StackPanel>
+										<TextBlock TextWrapping="Wrap">Select all non-transparent tiles</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>
 							</Button>
