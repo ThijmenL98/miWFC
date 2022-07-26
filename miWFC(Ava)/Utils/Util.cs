@@ -35,7 +35,7 @@ public static class Util {
 
     private static WriteableBitmap latestItemBitmap
         = new(new PixelSize(1, 1), Vector.One, PixelFormat.Bgra8888, AlphaFormat.Unpremul);
-    
+
     /*
      * Public Constants
      */
@@ -106,7 +106,9 @@ public static class Util {
             images.Sort();
         } else {
             try {
-                images.AddRange(from file in Directory.GetFiles($"{AppContext.BaseDirectory}/samples/Custom", "*.png")
+                images.AddRange(
+                    from file in Directory.GetFiles($"{AppContext.BaseDirectory}/samples/Custom", "*.png",
+                        SearchOption.AllDirectories)
                     select Path.GetFileName(file.Replace(".png", "")));
             } catch (DirectoryNotFoundException) { }
         }
@@ -117,12 +119,24 @@ public static class Util {
     /// <summary>
     ///     Forwarding function based on a sample input image to getImageFromPath(string)
     /// </summary>
+    /// 
     /// <param name="name">Name of the input sample</param>
     /// <param name="category">Name of the input category</param>
+    /// <param name="isCustomSideView">Whether the currently selected input image is custom AND a side view image</param>
+    /// 
     /// <returns>The image</returns>
-    public static WriteableBitmap GetSampleFromPath(string name, string category) {
-        return GetImageFromPath(
-            $"{AppContext.BaseDirectory}/samples/{(category.Equals("Custom") ? "Custom" : "Default")}/{name}.png");
+    public static WriteableBitmap GetSampleFromPath(string name, string category, out bool isCustomSideView) {
+        bool isCustom = category.Equals("Custom");
+        string subFolder = isCustom ? "Custom" : "Default";
+
+        if (isCustom) {
+            isCustomSideView = File.Exists($"{AppContext.BaseDirectory}/samples/{subFolder}/SideView/{name}.png");
+            subFolder += isCustomSideView ? "/SideView" : "/TopDown";
+        } else {
+            isCustomSideView = false;
+        }
+
+        return GetImageFromPath($"{AppContext.BaseDirectory}/samples/{subFolder}/{name}.png");
     }
 
     /// <summary>

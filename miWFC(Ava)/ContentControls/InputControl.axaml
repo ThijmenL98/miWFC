@@ -126,13 +126,6 @@
 
 			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent=""
 			              Command="{Binding InputVM.ToggleInputWrapping}" />
-
-			<TextBlock Grid.Row="2" Grid.Column="0" TextWrapping="Wrap" Text="Custom input image is 'side-view'"
-			           TextAlignment="Center"
-			           VerticalAlignment="Center" IsVisible="{Binding CustomInputSelected}" />
-
-			<ToggleSwitch Grid.Row="2" Grid.Column="1" OffContent="" OnContent="" IsVisible="{Binding CustomInputSelected}"
-			              Command="{Binding InputVM.ToggleCustomSideView}" />
 		</Grid>
 
 		<GridSplitter Grid.Row="3" IsEnabled="False" Background="Transparent" />

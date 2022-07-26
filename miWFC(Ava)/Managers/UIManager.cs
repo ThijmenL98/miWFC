@@ -128,9 +128,16 @@ public class UIManager {
     /// <returns>Whether the image was correctly loaded</returns>
     public bool UpdateInputImage(string newImage) {
         try {
-            mainWindowVM.InputImage
-                = new Bitmap(
-                    $"{AppContext.BaseDirectory}/samples/{(centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Custom") ? "Custom" : "Default")}/{newImage}.png");
+            bool isCustom = centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Custom");
+            string subFolder = isCustom ? "Custom" : "Default";
+
+            if (isCustom) {
+                subFolder += File.Exists($"{AppContext.BaseDirectory}/samples/{subFolder}/SideView/{newImage}.png")
+                    ? "/SideView"
+                    : "/TopDown";
+            }
+
+            mainWindowVM.InputImage = new Bitmap($"{AppContext.BaseDirectory}/samples/{subFolder}/{newImage}.png");
             return true;
         } catch (FileNotFoundException) {
             return false;

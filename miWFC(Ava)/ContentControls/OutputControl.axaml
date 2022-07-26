@@ -60,11 +60,9 @@
 
 			<Grid Grid.Column="2" RowDefinitions="*, *" ColumnDefinitions="Auto, *">
 				<TextBlock Grid.Column="0" Grid.Row="0" Text="Width:" />
-				<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutWidth}"
-				               IsEnabled="{Binding !IsRunning}" />
+				<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutWidth}"/>
 				<TextBlock Grid.Column="0" Grid.Row="1" Text="Height:" />
-				<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" IsEnabled="{Binding !IsRunning}"
-				               Value="{Binding ImageOutHeight}" />
+				<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutHeight}" />
 			</Grid>
 
 			<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />

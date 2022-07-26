@@ -193,7 +193,7 @@ public class WFCHandler {
                 while (!success) {
                     try {
                         await HandleOrientedInput(outputHeight, outputWidth, inputImage,
-                            CalculateGroundTileIndex(currentBitmap!));
+                            CalculateGroundTileIndex(currentBitmap!), rand);
                         success = true;
                     } catch (TargetException) { }
                 }
@@ -208,7 +208,8 @@ public class WFCHandler {
     /// </summary>
     private void InitializeValues() {
         currentBitmap = GetSampleFromPath(mainWindow.GetInputControl().GetInputImage(),
-            centralManager.GetMainWindow().GetInputControl().GetCategory());
+            centralManager.GetMainWindow().GetInputControl().GetCategory(), out bool isCustomSideView);
+        mainWindowVM.InputVM.InputIsSideView = isCustomSideView;
         mainWindowVM.PatternTiles.Clear();
         mainWindowVM.PaintTiles.Clear();
         toAddPaint = new List<TileViewModel>();
@@ -431,25 +432,27 @@ public class WFCHandler {
     /// <param name="outputWidth">Width of the output</param>
     /// <param name="inputImage">Input image used</param>
     /// <param name="groundTileIndex">Index of the ground tile extracted from the input image</param>
-    private Task HandleOrientedInput(int outputHeight, int outputWidth, string inputImage, int groundTileIndex) {
-        Trace.WriteLine(currentColors!.ElementAt(groundTileIndex));
+    /// <param name="random"></param>
+    private Task HandleOrientedInput(int outputHeight, int outputWidth, string inputImage, int groundTileIndex,
+        Random random) {
         for (int x = 0; x < outputWidth - 1; x++) {
             dbPropagator.select(x, outputHeight - 1, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
         }
-
+        
         if (inputImage.ToLower().Contains("flower")) {
+            for (int r = 0; r < random.Next(1, 5); r++) {
+                int loc = random.Next(0, outputWidth - 1);
+                dbPropagator.select(loc, outputHeight - 2, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
+            }
+
             for (int y = 0; y < outputHeight - 2; y++) {
                 dbPropagator.ban(0, y, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
             }
-        }
-
-        if (inputImage.ToLower().Contains("skyline")) {
+        } else if (inputImage.ToLower().Contains("skyline")) {
             for (int y = 0; y < outputHeight - 1; y++) {
                 dbPropagator.ban(0, y, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
             }
-        }
-
-        if (inputImage.ToLower() == "platformer") {
+        } else if (inputImage.ToLower().Contains("platformer")) {
             for (int x = 0; x < outputWidth - 1; x++) {
                 dbPropagator.select(x, 0, 0, new Tile(currentColors!.ElementAt(0)));
             }

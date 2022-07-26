@@ -113,7 +113,21 @@ public class OutputViewModel : ReactiveObject {
     /// <summary>
     ///     Function called when exporting an image
     /// </summary>
-    public void ExportToDevice() {
+    public async void ExportToDevice() {
+        if (centralManager == null) {
+            return;
+        }
+        
+        if (centralManager.GetMainWindowVM().ImageOutWidth != (int) centralManager.GetWFCHandler().GetPropagatorSize().Width ||
+            centralManager.GetMainWindowVM().ImageOutHeight != (int) centralManager.GetWFCHandler().GetPropagatorSize().Height) {
+            if (!centralManager.GetMainWindowVM().IsRunning && !centralManager.GetWFCHandler().IsCollapsed()) {
+                await centralManager.GetInputManager().RestartSolution("Export non-equal input");
+            } else {
+                centralManager.GetMainWindowVM().ImageOutWidth = (int) centralManager.GetWFCHandler().GetPropagatorSize().Width;
+                centralManager.GetMainWindowVM().ImageOutHeight = (int) centralManager.GetWFCHandler().GetPropagatorSize().Height;
+            }
+        }
+        
         if (mainWindowViewModel.IsPlaying) {
             ToggleAnimation();
         }

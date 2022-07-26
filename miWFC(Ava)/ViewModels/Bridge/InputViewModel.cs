@@ -61,13 +61,4 @@ public class InputViewModel : ReactiveObject {
         centralManager!.GetWFCHandler().SetInputChanged("Input Wrapping Change");
         await centralManager!.GetInputManager().RestartSolution("Input Wrapping Change");
     }
-
-    /// <summary>
-    ///     Function called from the UI once the side-view toggle is changed
-    /// </summary>
-    public async void ToggleCustomSideView() {
-        InputIsSideView = !InputIsSideView;
-        centralManager!.GetWFCHandler().SetInputChanged("Input Side-View Change");
-        await centralManager!.GetInputManager().RestartSolution("Input Side-View Change");
-    }
 }
