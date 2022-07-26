@@ -13,5 +13,5 @@ Through the development of an application, a test-bench is created to validate t
 
 ## Publications related to this Repository 
 
-- Paper:  miWFC - Designer empowerment through mixed-initiative Wave Function Collapse (Link)
-- Thesis: Designer empowerment through mixed-initiative Wave Function Collapse (Link)
+- Paper:  ***miWFC - Designer empowerment through mixed-initiative Wave Function Collapse*** (Link TBD)
+- Thesis: ***Designer empowerment through mixed-initiative Wave Function Collapse*** (Link TBD)
