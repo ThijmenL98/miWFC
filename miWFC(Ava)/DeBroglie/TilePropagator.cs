@@ -6,7 +6,7 @@ using miWFC.DeBroglie.Models;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
 using miWFC.DeBroglie.Wfc;
-using miWFC.Managers;
+using miWFC.Delegators;
 
 namespace miWFC.DeBroglie;
 
@@ -19,12 +19,12 @@ namespace miWFC.DeBroglie;
 ///     an output array using those parameters.
 /// </summary>
 public class TilePropagator {
-    private readonly CentralManager cm;
+    private readonly CentralDelegator centralDelegator;
     public readonly TileModelMapping tileModelMapping;
 
     private readonly WavePropagator wavePropagator;
 
-    public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, CentralManager _cm) {
+    public TilePropagator(TileModel tileModel, ITopology topology, TilePropagatorOptions options, CentralDelegator centralDelegator) {
         TileModel = tileModel;
         Topology = topology;
 
@@ -51,7 +51,7 @@ public class TilePropagator {
             ModelConstraintAlgorithm = options.ModelConstraintAlgorithm
         };
 
-        cm = _cm;
+        centralDelegator = centralDelegator;
 
         wavePropagator = new WavePropagator(
             patternModel,
@@ -59,7 +59,7 @@ public class TilePropagator {
             topology.Width,
             topology.Height,
             wavePropagatorOptions,
-            cm);
+            centralDelegator);
         wavePropagator.Clear();
     }
 

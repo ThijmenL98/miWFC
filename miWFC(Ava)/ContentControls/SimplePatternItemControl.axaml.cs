@@ -2,7 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using miWFC.Managers;
 
 namespace miWFC.ContentControls;
 

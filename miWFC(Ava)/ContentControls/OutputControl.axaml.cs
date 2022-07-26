@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using miWFC.Managers;
+using miWFC.Delegators;
 
 namespace miWFC.ContentControls;
 
@@ -9,7 +9,7 @@ namespace miWFC.ContentControls;
 ///     Separated control for the output side of the application
 /// </summary>
 public partial class OutputControl : UserControl {
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     /*
      * Initializing Functions & Constructor
@@ -23,8 +23,8 @@ public partial class OutputControl : UserControl {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     /*
@@ -55,7 +55,7 @@ public partial class OutputControl : UserControl {
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     public void SpeedSliderChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
         if (e.Property.ToString().Equals("Value") && e.NewValue != null) {
-            centralManager?.GetUIManager().UpdateInstantCollapse((int) (double) e.NewValue);
+            centralDelegator?.GetInterfaceHandler().UpdateInstantCollapse((int) (double) e.NewValue);
         }
     }
 }

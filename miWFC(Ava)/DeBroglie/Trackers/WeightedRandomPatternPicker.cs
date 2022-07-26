@@ -1,22 +1,22 @@
 ﻿using System;
 using miWFC.DeBroglie.Wfc;
-using miWFC.Managers;
+using miWFC.Delegators;
 
 namespace miWFC.DeBroglie.Trackers;
 
 public class WeightedRandomPatternPicker {
-    private CentralManager cm;
+    private CentralDelegator cd;
     private double[] frequencies;
     private Wave wave;
 
-    public void Init(WavePropagator wavePropagator, CentralManager _cm) {
+    public void Init(WavePropagator wavePropagator, CentralDelegator _cd) {
         wave = wavePropagator.Wave;
         frequencies = wavePropagator.Frequencies;
-        cm = _cm;
+        cd = _cd;
     }
 
     public int GetRandomPossiblePatternAt(int index, Func<double> randomDouble) {
         return RandomPickerUtils.GetRandomPossiblePattern(wave, randomDouble, index,
-            cm.GetWFCHandler().IsOverlappingModel() ? frequencies : cm.GetWFCHandler().GetWeightsAt(index));
+            cd.GetWFCHandler().IsOverlappingModel() ? frequencies : cd.GetWFCHandler().GetWeightsAt(index));
     }
 }

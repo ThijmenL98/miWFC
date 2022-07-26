@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using miWFC.DeBroglie.Topo;
 using miWFC.DeBroglie.Trackers;
-using miWFC.Managers;
+using miWFC.Delegators;
 
 namespace miWFC.DeBroglie.Wfc;
 
@@ -24,7 +24,7 @@ public class WavePropagatorOptions {
 public class WavePropagator {
     private readonly IBacktrackPolicy backtrackPolicy;
 
-    private readonly CentralManager cm;
+    private readonly CentralDelegator centralDelegator;
     private readonly IWaveConstraint[] constraints;
 
     private readonly HeapEntropyTracker indexPicker;
@@ -69,7 +69,7 @@ public class WavePropagator {
         int outputWidth,
         int outputHeight,
         WavePropagatorOptions options,
-        CentralManager _cm) {
+        CentralDelegator _centralDelegator) {
         PatternCount = model.PatternCount;
         Frequencies = model.Frequencies;
 
@@ -85,7 +85,7 @@ public class WavePropagator {
         patternPicker = options.PatternPicker;
         patternModelConstraint = new Ac4PatternModelConstraint(this, model);
 
-        cm = _cm;
+        centralDelegator = _centralDelegator;
 
         if (options.Clear) {
             Clear();
@@ -166,7 +166,7 @@ public class WavePropagator {
         trackers = new List<ITracker>();
         choiceObservers = new List<IChoiceObserver>();
         indexPicker.Init(this);
-        patternPicker.Init(this, cm);
+        patternPicker.Init(this, centralDelegator);
         backtrackPolicy?.Init(this);
 
         patternModelConstraint.Clear();

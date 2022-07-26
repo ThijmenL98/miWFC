@@ -1,20 +1,20 @@
 ﻿using miWFC.ViewModels;
 using miWFC.Views;
 
-namespace miWFC.Managers;
+namespace miWFC.Delegators;
 
 /// <summary>
-///     Central manager of the application, tying all windows and managers together for communication of data
+///     Central delegator of the application, tying all windows and handlers together for communication of data
 /// </summary>
-public class CentralManager {
-    private readonly InputManager inputManager;
+public class CentralDelegator {
+    private readonly OutputHandler outputHandler;
     private readonly ItemWindow itemWindow;
 
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowViewModel;
     private readonly PaintingWindow paintingWindow;
-    private readonly UIManager uiManager;
+    private readonly InterfaceHandler interfaceHandler;
     private readonly WeightMapWindow weightMapWindow;
     private readonly WFCHandler wfcHandler;
 
@@ -22,7 +22,7 @@ public class CentralManager {
      * Initializing Functions & Constructor
      */
 
-    public CentralManager(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,
+    public CentralDelegator(MainWindowViewModel mWVM, MainWindow mW, PaintingWindow pW, ItemWindow iW,
         WeightMapWindow wMW) {
         mainWindow = mW;
         paintingWindow = pW;
@@ -32,8 +32,8 @@ public class CentralManager {
         mainWindowViewModel = mWVM;
 
         wfcHandler = new WFCHandler(this);
-        uiManager = new UIManager(this);
-        inputManager = new InputManager(this);
+        interfaceHandler = new InterfaceHandler(this);
+        outputHandler = new OutputHandler(this);
     }
 
     /*
@@ -41,24 +41,27 @@ public class CentralManager {
      */
 
     /// <summary>
-    ///     Get the application's input manager
+    ///     Get the application's output handler
     /// </summary>
-    /// <returns>InputManager</returns>
-    public InputManager GetInputManager() {
-        return inputManager;
+    /// 
+    /// <returns>OutputHandler</returns>
+    public OutputHandler GetOutputHandler() {
+        return outputHandler;
     }
 
     /// <summary>
-    ///     Get the application's UI manager
+    ///     Get the application's UI Handler
     /// </summary>
-    /// <returns>UIManager</returns>
-    public UIManager GetUIManager() {
-        return uiManager;
+    /// 
+    /// <returns>InterfaceHandler</returns>
+    public InterfaceHandler GetInterfaceHandler() {
+        return interfaceHandler;
     }
 
     /// <summary>
-    ///     Get the application's WFC Algorithm manager
+    ///     Get the application's WFC Algorithm handler
     /// </summary>
+    /// 
     /// <returns>WFCHandler</returns>
     public WFCHandler GetWFCHandler() {
         return wfcHandler;

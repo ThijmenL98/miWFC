@@ -23,13 +23,13 @@ using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
 using miWFC.Views;
 
-namespace miWFC.Managers;
+namespace miWFC.Delegators;
 
 /// <summary>
-///     Manager to handle (everything) UI Related
+///     Handler to handle (everything) UI Related
 /// </summary>
-public class UIManager {
-    private readonly CentralManager centralManager;
+public class InterfaceHandler {
+    private readonly CentralDelegator centralDelegator;
     private readonly MainWindow mainWindow;
 
     private readonly MainWindowViewModel mainWindowVM;
@@ -58,8 +58,8 @@ public class UIManager {
      * Initializing Functions & Constructor
      */
 
-    public UIManager(CentralManager parent) {
-        centralManager = parent;
+    public InterfaceHandler(CentralDelegator parent) {
+        centralDelegator = parent;
         mainWindowVM = parent.GetMainWindowVM();
         mainWindow = parent.GetMainWindow();
     }
@@ -128,7 +128,7 @@ public class UIManager {
     /// <returns>Whether the image was correctly loaded</returns>
     public bool UpdateInputImage(string newImage) {
         try {
-            bool isCustom = centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Custom");
+            bool isCustom = centralDelegator.GetMainWindow().GetInputControl().GetCategory().Equals("Custom");
             string subFolder = isCustom ? "Custom" : "Default";
 
             if (isCustom) {
@@ -161,9 +161,9 @@ public class UIManager {
     /// </summary>
     /// <param name="amountCollapsed">Percentage of the output collapsed</param>
     public void UpdateTimeStampPosition(double amountCollapsed) {
-        double tWidth = centralManager.GetMainWindow().IsVisible
+        double tWidth = centralDelegator.GetMainWindow().IsVisible
             ? mainWindow.GetOutputControl().GetTimelineWidth()
-            : centralManager.GetPaintingWindow().GetTimelineWidth();
+            : centralDelegator.GetPaintingWindow().GetTimelineWidth();
         mainWindowVM.TimeStampOffset = tWidth * amountCollapsed - 9;
     }
 
@@ -258,7 +258,7 @@ public class UIManager {
 
         curBitmaps.Add(cur);
         similarityMap[patternCount] = new List<Bitmap> {pattern};
-        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, centralManager, 0);
+        TileViewModel tvm = new(pattern, weight, patternCount, rawIndex, centralDelegator, 0);
 
         patternCount++;
 
@@ -326,17 +326,17 @@ public class UIManager {
     /// <param name="checkClicked">Whether the user needs to agree to discard or save unsaved work</param>
     /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
     public async Task SwitchWindow(Windows window, bool checkClicked = false) {
-        if (mainWindowVM.ImageOutWidth != (int) centralManager.GetWFCHandler().GetPropagatorSize().Width ||
-            mainWindowVM.ImageOutHeight != (int) centralManager.GetWFCHandler().GetPropagatorSize().Height) {
-            if (!mainWindowVM.IsRunning && !centralManager.GetWFCHandler().IsCollapsed()) {
-                await centralManager.GetInputManager().RestartSolution("Window switch nonequal input");
+        if (mainWindowVM.ImageOutWidth != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width ||
+            mainWindowVM.ImageOutHeight != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height) {
+            if (!mainWindowVM.IsRunning && !centralDelegator.GetWFCHandler().IsCollapsed()) {
+                await centralDelegator.GetOutputHandler().RestartSolution("Window switch nonequal input");
             } else {
-                mainWindowVM.ImageOutWidth = (int) centralManager.GetWFCHandler().GetPropagatorSize().Width;
-                mainWindowVM.ImageOutHeight = (int) centralManager.GetWFCHandler().GetPropagatorSize().Height;
+                mainWindowVM.ImageOutWidth = (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width;
+                mainWindowVM.ImageOutHeight = (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height;
             }
         }
 
-        mainWindowVM.OutputImage = centralManager.GetWFCHandler().GetLatestOutputBm();
+        mainWindowVM.OutputImage = centralDelegator.GetWFCHandler().GetLatestOutputBm();
 
 #if DEBUG
         Trace.WriteLine(@$"We want to switch to {window}");
@@ -346,57 +346,57 @@ public class UIManager {
         switch (window) {
             case Windows.MAIN:
                 // Goto main
-                source = centralManager.GetPaintingWindow().IsVisible
-                    ? centralManager.GetPaintingWindow()
-                    : centralManager.GetItemWindow().IsVisible
-                        ? centralManager.GetItemWindow()
-                        : centralManager.GetWeightMapWindow();
+                source = centralDelegator.GetPaintingWindow().IsVisible
+                    ? centralDelegator.GetPaintingWindow()
+                    : centralDelegator.GetItemWindow().IsVisible
+                        ? centralDelegator.GetItemWindow()
+                        : centralDelegator.GetWeightMapWindow();
 
                 bool stillApply = await HandlePaintingClose(checkClicked);
 
                 if (stillApply) {
-                    await centralManager.GetMainWindowVM().PaintingVM.ApplyPaintMask();
+                    await centralDelegator.GetMainWindowVM().PaintingVM.ApplyPaintMask();
                 }
 
                 break;
             case Windows.PAINTING:
                 // Goto paint
                 mainWindowVM.PaintingVM.PencilModeEnabled = true;
-                target = centralManager.GetPaintingWindow();
+                target = centralDelegator.GetPaintingWindow();
                 break;
             case Windows.ITEMS:
                 // Goto items
-                target = centralManager.GetItemWindow();
+                target = centralDelegator.GetItemWindow();
                 break;
             case Windows.HEATMAP:
                 // Goto weight mapping
-                target = centralManager.GetWeightMapWindow();
-                centralManager.GetWeightMapWindow()
-                    .UpdateBrushImage(centralManager.GetWeightMapWindow().GetPaintBrushSize());
+                target = centralDelegator.GetWeightMapWindow();
+                centralDelegator.GetWeightMapWindow()
+                    .UpdateBrushImage(centralDelegator.GetWeightMapWindow().GetPaintBrushSize());
                 break;
             default:
                 throw new NotImplementedException();
         }
 
-        if (!window.Equals(Windows.HEATMAP) && !source.Equals(centralManager.GetWeightMapWindow())) {
+        if (!window.Equals(Windows.HEATMAP) && !source.Equals(centralDelegator.GetWeightMapWindow())) {
             target.Width = source.Width;
             target.Height = source.Height;
         }
 
-        if (!Equals(target, centralManager.GetItemWindow()) && !Equals(source, centralManager.GetItemWindow())) {
+        if (!Equals(target, centralDelegator.GetItemWindow()) && !Equals(source, centralDelegator.GetItemWindow())) {
             ObservableCollection<MarkerViewModel> mvmListCopy = new(mainWindowVM.Markers);
 
             mainWindowVM.Markers.Clear();
             foreach (MarkerViewModel mvm in mvmListCopy) {
-                double offset = (centralManager.GetMainWindow().IsVisible
+                double offset = (centralDelegator.GetMainWindow().IsVisible
                         ? mainWindow.GetOutputControl().GetTimelineWidth()
-                        : centralManager.GetPaintingWindow().GetTimelineWidth()) *
+                        : centralDelegator.GetPaintingWindow().GetTimelineWidth()) *
                     mvm.MarkerCollapsePercentage + 1;
                 mainWindowVM.Markers.Add(new MarkerViewModel(mvm.MarkerIndex,
                     offset, mvm.MarkerCollapsePercentage, mvm.Revertible));
             }
 
-            UpdateTimeStampPosition(centralManager.GetWFCHandler().GetPercentageCollapsed());
+            UpdateTimeStampPosition(centralDelegator.GetWFCHandler().GetPercentageCollapsed());
         }
 
         source.Hide();
@@ -404,7 +404,7 @@ public class UIManager {
 
         target.Position = source.Position;
 
-        centralManager.GetUIManager().HidePopUp();
+        centralDelegator.GetInterfaceHandler().HidePopUp();
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
 
@@ -22,7 +22,7 @@ public partial class PaintingWindow : Window {
     private readonly ComboBox _paintingPatternsCB, _templatesCB;
 
     private bool canUsePencil = true;
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     private int oldBrushSize = -2;
 
@@ -35,8 +35,8 @@ public partial class PaintingWindow : Window {
 
         KeyDown += KeyDownHandler;
         Closing += (_, e) => {
-            Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
-            centralManager?.GetUIManager()
+            Color[,] mask = centralDelegator!.GetOutputHandler().GetMaskColours();
+            centralDelegator?.GetInterfaceHandler()
                 .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour));
             e.Cancel = true;
         };
@@ -53,8 +53,8 @@ public partial class PaintingWindow : Window {
 #endif
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     /*
@@ -86,7 +86,7 @@ public partial class PaintingWindow : Window {
     /// </summary>
     /// <returns>Selected brush size</returns>
     public int GetPaintBrushSize() {
-        int brushSize = centralManager!.GetMainWindowVM().BrushSize;
+        int brushSize = centralDelegator!.GetMainWindowVM().BrushSize;
         double mappingValue = 13.2d * Math.Exp(0.125 * brushSize) - 15.95d;
         return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
     }
@@ -121,7 +121,7 @@ public partial class PaintingWindow : Window {
     public void SetPaintingPatterns(TileViewModel[]? values, int idx = 0) {
         if (values != null) {
             _paintingPatternsCB.Items = values;
-            centralManager!.GetMainWindowVM().PaintTiles = new ObservableCollection<TileViewModel>(values);
+            centralDelegator!.GetMainWindowVM().PaintTiles = new ObservableCollection<TileViewModel>(values);
         }
 
         _paintingPatternsCB.SelectedIndex = idx;
@@ -134,12 +134,12 @@ public partial class PaintingWindow : Window {
     /// <param name="idx">Index</param>
     /// <param name="values">New Combo Box Values</param>
     public void SetTemplates(ObservableCollection<TemplateViewModel> values, int idx = 0) {
-        if (centralManager == null || centralManager.GetWFCHandler().IsChangingModels()) {
+        if (centralDelegator == null || centralDelegator.GetWFCHandler().IsChangingModels()) {
             return;
         }
 
         _templatesCB.Items = values;
-        centralManager!.GetMainWindowVM().PaintingVM.Templates = new ObservableCollection<TemplateViewModel>(values);
+        centralDelegator!.GetMainWindowVM().PaintingVM.Templates = new ObservableCollection<TemplateViewModel>(values);
         _templatesCB.SelectedIndex = idx;
     }
 
@@ -153,39 +153,39 @@ public partial class PaintingWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private async void KeyDownHandler(object? sender, KeyEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
         switch (e.Key) {
             case Key.P:
-                centralManager.GetMainWindowVM().PaintingVM.ActivatePencilMode();
+                centralDelegator.GetMainWindowVM().PaintingVM.ActivatePencilMode();
                 e.Handled = true;
                 break;
             case Key.B:
-                centralManager.GetMainWindowVM().PaintingVM.ActivatePaintMode();
+                centralDelegator.GetMainWindowVM().PaintingVM.ActivatePaintMode();
                 e.Handled = true;
                 break;
             case Key.R:
-                centralManager.GetMainWindowVM().PaintingVM.ResetMask();
+                centralDelegator.GetMainWindowVM().PaintingVM.ResetMask();
                 e.Handled = true;
                 break;
             case Key.A:
-                if (centralManager.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
-                    await centralManager.GetMainWindowVM().PaintingVM.ApplyPaintMask();
-                } else if (centralManager.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
-                    centralManager.GetMainWindowVM().PaintingVM.CreateTemplate();
+                if (centralDelegator.GetMainWindowVM().PaintingVM.PaintModeEnabled) {
+                    await centralDelegator.GetMainWindowVM().PaintingVM.ApplyPaintMask();
+                } else if (centralDelegator.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
+                    centralDelegator.GetMainWindowVM().PaintingVM.CreateTemplate();
                 }
 
                 e.Handled = true;
                 break;
             case Key.Back:
             case Key.Escape:
-                if (centralManager.GetUIManager().PopUpOpened()) {
-                    centralManager.GetUIManager().HidePopUp();
+                if (centralDelegator.GetInterfaceHandler().PopUpOpened()) {
+                    centralDelegator.GetInterfaceHandler().HidePopUp();
                 } else {
-                    Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
-                    centralManager?.GetUIManager()
+                    Color[,] mask = centralDelegator!.GetOutputHandler().GetMaskColours();
+                    centralDelegator?.GetInterfaceHandler()
                         .SwitchWindow(Windows.MAIN, !(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour));
                 }
 
@@ -193,19 +193,19 @@ public partial class PaintingWindow : Window {
                 break;
             case Key.T:
                 if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
-                    centralManager.GetMainWindowVM().PaintingVM.ActivateTemplatePlacementMode();
+                    centralDelegator.GetMainWindowVM().PaintingVM.ActivateTemplatePlacementMode();
                 } else {
-                    centralManager.GetMainWindowVM().PaintingVM.ActivateTemplateCreationMode();
+                    centralDelegator.GetMainWindowVM().PaintingVM.ActivateTemplateCreationMode();
                 }
 
                 break;
             case Key.S:
             case Key.M:
-                centralManager.GetInputManager().PlaceMarker();
+                centralDelegator.GetOutputHandler().PlaceMarker();
                 e.Handled = true;
                 break;
             case Key.L:
-                centralManager.GetInputManager().LoadMarker();
+                centralDelegator.GetOutputHandler().LoadMarker();
                 e.Handled = true;
                 break;
             default:
@@ -252,29 +252,29 @@ public partial class PaintingWindow : Window {
     private void OutputImageOnPointerMoved(object sender, PointerEventArgs e, bool mouseClicked) {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         (double imgWidth, double imgHeight) = (sender as Image)!.DesiredSize;
-        bool allowClick = !centralManager!.GetMainWindowVM().PaintingVM.IsPaintOverrideEnabled || mouseClicked;
+        bool allowClick = !centralDelegator!.GetMainWindowVM().PaintingVM.IsPaintOverrideEnabled || mouseClicked;
 
         bool lbmPressed = e.GetCurrentPoint(e.Source as Image).Properties.IsLeftButtonPressed;
         bool rbmPressed = e.GetCurrentPoint(e.Source as Image).Properties.IsRightButtonPressed;
 
-        if (centralManager!.GetMainWindowVM().PaintingVM.PaintModeEnabled && allowClick) {
+        if (centralDelegator!.GetMainWindowVM().PaintingVM.PaintModeEnabled && allowClick) {
             if (lbmPressed || rbmPressed) {
                 HandlePaintModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed);
             }
-        } else if (centralManager!.GetMainWindowVM().PaintingVM.PencilModeEnabled && canUsePencil) {
+        } else if (centralDelegator!.GetMainWindowVM().PaintingVM.PencilModeEnabled && canUsePencil) {
             HandlePencilModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed, allowClick);
-        } else if (centralManager!.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
+        } else if (centralDelegator!.GetMainWindowVM().PaintingVM.TemplateCreationModeEnabled) {
             HandleTemplateCreationModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed,
                 rbmPressed);
-        } else if (centralManager!.GetMainWindowVM().PaintingVM.TemplatePlaceModeEnabled) {
+        } else if (centralDelegator!.GetMainWindowVM().PaintingVM.TemplatePlaceModeEnabled) {
             HandleTemplatePlaceModeMouseMove(posX, posY, imgWidth, imgHeight, (sender as Image)!, lbmPressed);
         }
 
-        centralManager?.GetInputManager().ProcessHoverAvailability((int) Math.Round(posX),
+        centralDelegator?.GetOutputHandler().ProcessHoverAvailability((int) Math.Round(posX),
             (int) Math.Round(posY),
             (int) Math.Round(imgWidth - (sender as Image)!.Margin.Right - (sender as Image)!.Margin.Left),
             (int) Math.Round(imgHeight - (sender as Image)!.Margin.Top - (sender as Image)!.Margin.Bottom),
-            _paintingPatternsCB.SelectedIndex, centralManager!.GetMainWindowVM().PaintingVM.PencilModeEnabled);
+            _paintingPatternsCB.SelectedIndex, centralDelegator!.GetMainWindowVM().PaintingVM.PencilModeEnabled);
 
         e.Handled = true;
     }
@@ -291,7 +291,7 @@ public partial class PaintingWindow : Window {
     private void HandlePaintModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
         ILayoutable imageSource, bool lbmPressed) {
         try {
-            centralManager?.GetInputManager().ProcessClickMask((int) Math.Round(posX),
+            centralDelegator?.GetOutputHandler().ProcessClickMask((int) Math.Round(posX),
                 (int) Math.Round(posY),
                 (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
                 (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
@@ -313,25 +313,25 @@ public partial class PaintingWindow : Window {
         ILayoutable imageSource, bool lbmPressed, bool allowClick) {
         if (lbmPressed && allowClick) {
             int idx = GetSelectedPaintIndex();
-            if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
-                centralManager!.GetInputManager().PlaceMarker();
+            if (!centralDelegator!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
+                centralDelegator!.GetOutputHandler().PlaceMarker();
             }
 
-            bool? success = await centralManager?.GetInputManager().ProcessClick((int) Math.Round(posX),
+            bool? success = await centralDelegator?.GetOutputHandler().ProcessClick((int) Math.Round(posX),
                 (int) Math.Round(posY),
                 (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
                 (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
                 idx)!;
             if (success != null && !(bool) success) {
-                centralManager?.GetUIManager().DispatchError(this, null);
+                centralDelegator?.GetInterfaceHandler().DispatchError(this, null);
                 canUsePencil = false;
 
-                if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
-                    centralManager!.GetInputManager().RemoveLastMarker();
+                if (!centralDelegator!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
+                    centralDelegator!.GetOutputHandler().RemoveLastMarker();
                 }
             } else if (success != null && (bool) success) {
-                if (!centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
-                    centralManager!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode = true;
+                if (!centralDelegator!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode) {
+                    centralDelegator!.GetMainWindowVM().PaintingVM.ClickedInCurrentMode = true;
                 }
             }
         }
@@ -351,7 +351,7 @@ public partial class PaintingWindow : Window {
         ILayoutable imageSource, bool lbmPressed, bool rbmPressed) {
         if (lbmPressed || rbmPressed) {
             try {
-                centralManager?.GetInputManager().ProcessClickTemplateCreation((int) Math.Round(posX),
+                centralDelegator?.GetOutputHandler().ProcessClickTemplateCreation((int) Math.Round(posX),
                     (int) Math.Round(posY),
                     (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
                     (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom),
@@ -372,13 +372,13 @@ public partial class PaintingWindow : Window {
     private async void HandleTemplatePlaceModeMouseMove(double posX, double posY, double imageWidth, double imageHeight,
         ILayoutable imageSource, bool lbmPressed) {
         if (lbmPressed) {
-            centralManager!.GetInputManager().PlaceMarker();
-            bool success = await centralManager!.GetInputManager().ProcessClickTemplatePlace((int) Math.Round(posX),
+            centralDelegator!.GetOutputHandler().PlaceMarker();
+            bool success = await centralDelegator!.GetOutputHandler().ProcessClickTemplatePlace((int) Math.Round(posX),
                 (int) Math.Round(posY),
                 (int) Math.Round(imageWidth - imageSource.Margin.Right - imageSource.Margin.Left),
                 (int) Math.Round(imageHeight - imageSource.Margin.Top - imageSource.Margin.Bottom));
             if (!success) {
-                centralManager!.GetInputManager().RemoveLastMarker();
+                centralDelegator!.GetOutputHandler().RemoveLastMarker();
             }
         }
     }
@@ -389,7 +389,7 @@ public partial class PaintingWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void OnPointerMoved(object sender, PointerEventArgs e) {
-        centralManager?.GetInputManager().ResetHoverAvailability();
+        centralDelegator?.GetOutputHandler().ResetHoverAvailability();
     }
 
     /// <summary>
@@ -398,11 +398,11 @@ public partial class PaintingWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
-        if (!centralManager.GetPaintingWindow().IsVisible) {
+        if (!centralDelegator.GetPaintingWindow().IsVisible) {
             return;
         }
 
@@ -413,7 +413,7 @@ public partial class PaintingWindow : Window {
         }
 
         if (brushSizeRaw == -1) {
-            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
+            centralDelegator!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
                 x == 1 && y == 1 ? Color.Parse("#424242") :
                 (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
             return;
@@ -454,6 +454,6 @@ public partial class PaintingWindow : Window {
                 return dx * dx + dy * dy <= brushSizeRaw ? Color.Parse("#424242") :
                     (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent;
             });
-        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
+        centralDelegator!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
     }
 }

@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
 
@@ -19,7 +19,7 @@ namespace miWFC.ContentControls;
 /// </summary>
 public partial class ItemAddMenu : UserControl {
     private bool[] allowedTiles;
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     /*
      * Initializing Functions & Constructor
@@ -33,17 +33,17 @@ public partial class ItemAddMenu : UserControl {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
 
-        allowedTiles = new bool[centralManager!.GetMainWindowVM().PaintTiles.Count];
+        allowedTiles = new bool[centralDelegator!.GetMainWindowVM().PaintTiles.Count];
     }
 
     /// <summary>
     ///     Reset the allowed tiles array, which has a boolean for each tile whether they are allowed to host the item
     /// </summary>
     public void UpdateAllowedTiles() {
-        allowedTiles = new bool[centralManager!.GetMainWindowVM().PaintTiles.Count];
+        allowedTiles = new bool[centralDelegator!.GetMainWindowVM().PaintTiles.Count];
     }
 
     /*
@@ -129,13 +129,13 @@ public partial class ItemAddMenu : UserControl {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">NumericUpDownValueChangedEventArgs</param>
     private void AmountRange_OnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
         if (e.Source is NumericUpDown source) {
-            int oldUpper = centralManager!.GetMainWindowVM().ItemVM.ItemsToAddUpper;
-            int oldLower = centralManager!.GetMainWindowVM().ItemVM.ItemsToAddLower;
+            int oldUpper = centralDelegator!.GetMainWindowVM().ItemVM.ItemsToAddUpper;
+            int oldLower = centralDelegator!.GetMainWindowVM().ItemVM.ItemsToAddLower;
             bool lowerAdapted = source.Name!.Equals("NUDLower");
 
             (int newLower, int newUpper) = Util.BalanceValues(oldLower, oldUpper,
@@ -143,8 +143,8 @@ public partial class ItemAddMenu : UserControl {
                     ? (int) this.Find<NumericUpDown>("NUDLower").Value - oldLower
                     : (int) this.Find<NumericUpDown>("NUDUpper").Value - oldUpper, lowerAdapted);
 
-            centralManager!.GetMainWindowVM().ItemVM.ItemsToAddUpper = newUpper;
-            centralManager!.GetMainWindowVM().ItemVM.ItemsToAddLower = newLower;
+            centralDelegator!.GetMainWindowVM().ItemVM.ItemsToAddUpper = newUpper;
+            centralDelegator!.GetMainWindowVM().ItemVM.ItemsToAddLower = newLower;
 
             this.Find<NumericUpDown>("NUDUpper").Value = newUpper;
             this.Find<NumericUpDown>("NUDLower").Value = newLower;
@@ -158,13 +158,13 @@ public partial class ItemAddMenu : UserControl {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">NumericUpDownValueChangedEventArgs</param>
     private void DependencyDistance_OnValueChanged(object? sender, NumericUpDownValueChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
         if (e.Source is NumericUpDown source) {
-            int oldMax = centralManager!.GetMainWindowVM().ItemVM.DepMaxDistance;
-            int oldMin = centralManager!.GetMainWindowVM().ItemVM.DepMinDistance;
+            int oldMax = centralDelegator!.GetMainWindowVM().ItemVM.DepMaxDistance;
+            int oldMin = centralDelegator!.GetMainWindowVM().ItemVM.DepMinDistance;
             bool minAdapted = source.Name!.Equals("NUDMinDist");
 
             (int newMin, int newMax) = Util.BalanceValues(oldMin, oldMax,
@@ -172,8 +172,8 @@ public partial class ItemAddMenu : UserControl {
                     ? (int) this.Find<NumericUpDown>("NUDMinDist").Value - oldMin
                     : (int) this.Find<NumericUpDown>("NUDMaxDist").Value - oldMax, minAdapted);
 
-            centralManager!.GetMainWindowVM().ItemVM.DepMaxDistance = newMax;
-            centralManager!.GetMainWindowVM().ItemVM.DepMinDistance = newMin;
+            centralDelegator!.GetMainWindowVM().ItemVM.DepMaxDistance = newMax;
+            centralDelegator!.GetMainWindowVM().ItemVM.DepMinDistance = newMin;
 
             this.Find<NumericUpDown>("NUDMaxDist").Value = newMax;
             this.Find<NumericUpDown>("NUDMinDist").Value = newMin;

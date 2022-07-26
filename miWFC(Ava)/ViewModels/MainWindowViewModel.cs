@@ -6,7 +6,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using miWFC.ViewModels.Bridge;
 using miWFC.ViewModels.Structs;
@@ -68,7 +68,7 @@ public class MainWindowViewModel : ViewModelBase {
 
     private double _timeStampOffset, _timelineWidth = 600d;
 
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
     private Tuple<string, string>? lastOverlapSelection, lastSimpleSelection;
 
     public Random R = new();
@@ -263,7 +263,7 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.GetMainWindow().GetInputControl().GetCategory()
+                                           !centralDelegator!.GetMainWindow().GetInputControl().GetCategory()
                                                .Contains("Side");
         }
     }
@@ -311,7 +311,7 @@ public class MainWindowViewModel : ViewModelBase {
             OverlappingAdvancedEnabled = AdvancedEnabled && !SimpleModelSelected;
             SimpleAdvancedEnabled = AdvancedEnabled && SimpleModelSelected;
             OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                           !centralManager!.GetMainWindow().GetInputControl().GetCategory()
+                                           !centralDelegator!.GetMainWindow().GetInputControl().GetCategory()
                                                .Contains("Side");
         }
     }
@@ -407,9 +407,9 @@ public class MainWindowViewModel : ViewModelBase {
         get => _selectedCategory;
         set {
             this.RaiseAndSetIfChanged(ref _selectedCategory, value);
-            if (centralManager != null) {
+            if (centralDelegator != null) {
                 OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                               !centralManager!.GetMainWindow().GetInputControl().GetCategory()
+                                               !centralDelegator!.GetMainWindow().GetInputControl().GetCategory()
                                                    .Contains("Side");
             }
 
@@ -484,16 +484,16 @@ public class MainWindowViewModel : ViewModelBase {
      * Logic
      */
 
-    public void SetCentralManager(CentralManager cm) {
+    public void SetCentralDelegator(CentralDelegator cd) {
         lastOverlapSelection = new Tuple<string, string>("Textures", "3Bricks");
         lastSimpleSelection = new Tuple<string, string>("Worlds Top-Down", "Castle");
-        centralManager = cm;
+        centralDelegator = cd;
 
-        InputVM.SetCentralManager(cm);
-        OutputVM.SetCentralManager(cm);
-        PaintingVM.SetCentralManager(cm);
-        MappingVM.SetCentralManager(cm);
-        ItemVM.SetCentralManager(cm);
+        InputVM.SetCentralDelegator(cd);
+        OutputVM.SetCentralDelegator(cd);
+        PaintingVM.SetCentralDelegator(cd);
+        MappingVM.SetCentralDelegator(cd);
+        ItemVM.SetCentralDelegator(cd);
 
         ImageOutWidth = 24;
         ImageOutHeight = 24;
@@ -504,10 +504,10 @@ public class MainWindowViewModel : ViewModelBase {
     /// </summary>
     /// <param name="newTab">Tab index, currently eiter 0 or 1</param>
     public void ChangeModel(int newTab) {
-        centralManager!.GetWFCHandler().SetModelChanging(true);
+        centralDelegator!.GetWFCHandler().SetModelChanging(true);
         SimpleModelSelected = !SimpleModelSelected;
         OverlappingAdvancedEnabledIW = OverlappingAdvancedEnabled &&
-                                       !centralManager!.GetMainWindow().GetInputControl().GetCategory()
+                                       !centralDelegator!.GetMainWindow().GetInputControl().GetCategory()
                                            .Contains("Side");
 
         if (IsPlaying) {
@@ -524,7 +524,7 @@ public class MainWindowViewModel : ViewModelBase {
         int catIndex = changingToSmart
             ? Array.IndexOf(catDataSource, lastOverlapSelection!.Item1)
             : Array.IndexOf(catDataSource, lastSimpleSelection!.Item1);
-        centralManager.GetUIManager().UpdateCategories(catDataSource, catIndex);
+        centralDelegator.GetInterfaceHandler().UpdateCategories(catDataSource, catIndex);
 
         string[] images = Util.GetModelImages(
             changingToSmart ? "overlapping" : "simpletiled",
@@ -533,9 +533,9 @@ public class MainWindowViewModel : ViewModelBase {
         int index = changingToSmart
             ? Array.IndexOf(images, lastOverlapSelection!.Item2)
             : Array.IndexOf(images, lastSimpleSelection!.Item2);
-        centralManager.GetUIManager().UpdateInputImages(images, index);
+        centralDelegator.GetInterfaceHandler().UpdateInputImages(images, index);
         (int[] patternSizeDataSource, int i) = Util.GetImagePatternDimensions(images[index]);
-        centralManager.GetUIManager().UpdatePatternSizes(patternSizeDataSource, i);
+        centralDelegator.GetInterfaceHandler().UpdatePatternSizes(patternSizeDataSource, i);
 
         if (changingToSmart) {
             lastSimpleSelection = new Tuple<string, string>(lastCat, lastImg);
@@ -543,16 +543,16 @@ public class MainWindowViewModel : ViewModelBase {
             lastOverlapSelection = new Tuple<string, string>(lastCat, lastImg);
         }
 
-        centralManager.GetWFCHandler().SetModelChanging(false);
-        centralManager.GetWFCHandler().SetInputChanged("Model change");
-        centralManager.GetMainWindow().GetInputControl().InImgCBChangeHandler(null, null);
+        centralDelegator.GetWFCHandler().SetModelChanging(false);
+        centralDelegator.GetWFCHandler().SetInputChanged("Model change");
+        centralDelegator.GetMainWindow().GetInputControl().InImgCBChangeHandler(null, null);
     }
 
     /// <summary>
     ///     Function called to reset all weights to their default values
     /// </summary>
     public void ResetWeights() {
-        centralManager!.GetWFCHandler().ResetWeights(force: true);
+        centralDelegator!.GetWFCHandler().ResetWeights(force: true);
     }
 
     /// <summary>
@@ -564,7 +564,7 @@ public class MainWindowViewModel : ViewModelBase {
             OutputVM.ToggleAnimation();
         }
 
-        centralManager!.GetUIManager().ShowPopUp(param);
+        centralDelegator!.GetInterfaceHandler().ShowPopUp(param);
     }
 
     /// <summary>
@@ -579,22 +579,22 @@ public class MainWindowViewModel : ViewModelBase {
                     OutputVM.ToggleAnimation();
                 }
 
-                await centralManager!.GetUIManager().SwitchWindow(Windows.PAINTING);
+                await centralDelegator!.GetInterfaceHandler().SwitchWindow(Windows.PAINTING);
                 break;
             case "M":
-                Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
-                await centralManager!.GetUIManager().SwitchWindow(Windows.MAIN,
+                Color[,] mask = centralDelegator!.GetOutputHandler().GetMaskColours();
+                await centralDelegator!.GetInterfaceHandler().SwitchWindow(Windows.MAIN,
                     !(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour));
-                centralManager!.GetInputManager().ResetMask();
+                centralDelegator!.GetOutputHandler().ResetMask();
                 break;
             case "I":
-                if (!centralManager!.GetWFCHandler().IsCollapsed()) {
-                    centralManager.GetUIManager().DispatchError(centralManager.GetMainWindow(), null);
+                if (!centralDelegator!.GetWFCHandler().IsCollapsed()) {
+                    centralDelegator.GetInterfaceHandler().DispatchError(centralDelegator.GetMainWindow(), null);
                 }
 
-                centralManager!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
+                centralDelegator!.GetItemWindow().GetRegionDefineMenu().ResetAllowanceMask();
 
-                await centralManager!.GetUIManager().SwitchWindow(Windows.ITEMS);
+                await centralDelegator!.GetInterfaceHandler().SwitchWindow(Windows.ITEMS);
                 break;
             default:
                 throw new NotImplementedException();
@@ -613,15 +613,15 @@ public class MainWindowViewModel : ViewModelBase {
     /// </summary>
     /// <param name="value">Toggle value</param>
     public void ToggleLoadingAnimation(bool value) {
-        IsLoading = value || centralManager!.GetWFCHandler().IsBrushing();
-        centralManager?.GetMainWindow().InvalidateVisual();
+        IsLoading = value || centralDelegator!.GetWFCHandler().IsBrushing();
+        centralDelegator?.GetMainWindow().InvalidateVisual();
     }
 
     /// <summary>
     ///     Function called when closing the popup on any window
     /// </summary>
     public void CloseInfoPopup() {
-        centralManager!.GetUIManager().HidePopUp();
+        centralDelegator!.GetInterfaceHandler().HidePopUp();
     }
 
     /// <summary>

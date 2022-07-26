@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using ReactiveUI;
 #if DEBUG
@@ -128,9 +128,9 @@ public class TemplateViewModel : ReactiveObject {
     ///     Function to save the current template to the user machine
     /// </summary>
     /// <param name="inputImage">Name of the input image currently selected</param>
-    /// <param name="centralManager">Central manager to re-load all templates</param>
+    /// <param name="centralDelegator">Central delegator to re-load all templates</param>
     /// <returns>Task which completes once the file has been saved and template data has been appended</returns>
-    public async Task Save(string inputImage, CentralManager centralManager) {
+    public async Task Save(string inputImage, CentralDelegator centralDelegator) {
         int templateHash = 0;
         switch (status) {
             case 0:
@@ -169,10 +169,10 @@ public class TemplateViewModel : ReactiveObject {
                 await Util.AppendPictureData(fileName, TemplateDataA, true);
             }
 
-            centralManager.GetPaintingWindow().SetTemplates(Util.GetTemplates(
-                centralManager.GetMainWindowVM().InputImageSelection,
-                centralManager.GetWFCHandler().IsOverlappingModel(),
-                centralManager.GetWFCHandler().GetTileSize()));
+            centralDelegator.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+                centralDelegator.GetMainWindowVM().InputImageSelection,
+                centralDelegator.GetWFCHandler().IsOverlappingModel(),
+                centralDelegator.GetWFCHandler().GetTileSize()));
         }
     }
 

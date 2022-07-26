@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.ViewModels;
 using miWFC.Views;
 
@@ -40,13 +40,13 @@ public class App : Application {
             };
             desktop.MainWindow = mW;
 
-            CentralManager cm = new(mWVM, mW, pW, iW, wMW);
+            CentralDelegator cd = new(mWVM, mW, pW, iW, wMW);
 
-            mW.SetCentralManager(cm);
-            pW.SetCentralManager(cm);
-            iW.SetCentralManager(cm);
-            wMW.SetCentralManager(cm);
-            mWVM.SetCentralManager(cm);
+            mW.SetCentralDelegator(cd);
+            pW.SetCentralDelegator(cd);
+            iW.SetCentralDelegator(cd);
+            wMW.SetCentralDelegator(cd);
+            mWVM.SetCentralDelegator(cd);
 
             desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
         }

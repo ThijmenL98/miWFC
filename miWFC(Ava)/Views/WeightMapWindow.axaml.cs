@@ -6,7 +6,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.ViewModels;
 using miWFC.ViewModels.Structs;
 using static miWFC.Utils.Util;
@@ -20,7 +20,7 @@ namespace miWFC.Views;
 /// </summary>
 public partial class WeightMapWindow : Window {
     private readonly ComboBox _selectedTileCB;
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     private double[,] currentHeatMap = new double[0, 0];
 
@@ -38,7 +38,7 @@ public partial class WeightMapWindow : Window {
 
         KeyDown += KeyDownHandler;
         Closing += (_, e) => {
-            centralManager?.GetUIManager().SwitchWindow(Windows.MAIN, true);
+            centralDelegator?.GetInterfaceHandler().SwitchWindow(Windows.MAIN, true);
             e.Cancel = true;
         };
 
@@ -52,8 +52,8 @@ public partial class WeightMapWindow : Window {
 #endif
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     /*
@@ -69,7 +69,7 @@ public partial class WeightMapWindow : Window {
     /// </summary>
     /// <returns>Selected brush size</returns>
     public int GetPaintBrushSize() {
-        int brushSize = centralManager!.GetMainWindowVM().BrushSize;
+        int brushSize = centralDelegator!.GetMainWindowVM().BrushSize;
         double mappingValue = 13.2d * Math.Exp(0.125 * brushSize) - 15.95d;
         return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
     }
@@ -140,7 +140,7 @@ public partial class WeightMapWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private void KeyDownHandler(object? sender, KeyEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
@@ -170,7 +170,7 @@ public partial class WeightMapWindow : Window {
         (double posX, double posY) = e.GetPosition(e.Source as Image);
         Image imageSource = (sender as Image)!;
 
-        MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+        MainWindowViewModel mainWindowVM = centralDelegator!.GetMainWindowVM();
         int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
 
         double imgWidth = imageSource.DesiredSize.Width - imageSource.Margin.Right - imageSource.Margin.Left;
@@ -249,8 +249,8 @@ public partial class WeightMapWindow : Window {
             }
         }
 
-        centralManager.GetMainWindowVM().MappingVM.HoverImage = CreateBitmapFromData(
-            centralManager!.GetMainWindowVM().ImageOutWidth, centralManager!.GetMainWindowVM().ImageOutHeight, 1,
+        centralDelegator.GetMainWindowVM().MappingVM.HoverImage = CreateBitmapFromData(
+            centralDelegator!.GetMainWindowVM().ImageOutWidth, centralDelegator!.GetMainWindowVM().ImageOutHeight, 1,
             (x, y) => {
                 double dx = (double) x - a;
                 double dy = (double) y - b;
@@ -283,7 +283,7 @@ public partial class WeightMapWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     private void SelectedTileCB_OnSelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
@@ -291,7 +291,7 @@ public partial class WeightMapWindow : Window {
         if (selectedItem != null) {
             TileViewModel selectedTVM = (TileViewModel) selectedItem;
 
-            MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+            MainWindowViewModel mainWindowVM = centralDelegator!.GetMainWindowVM();
             int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
             double[,] maskValues = new double[outputWidth, outputHeight];
 
@@ -324,7 +324,7 @@ public partial class WeightMapWindow : Window {
         if (_selectedTileCB.SelectedItem != null) {
             TileViewModel selectedTVM = (TileViewModel) _selectedTileCB.SelectedItem;
 
-            MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+            MainWindowViewModel mainWindowVM = centralDelegator!.GetMainWindowVM();
             int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
             double[,] maskValues = new double[outputWidth, outputHeight];
 
@@ -359,13 +359,13 @@ public partial class WeightMapWindow : Window {
     /// <param name="newCurrentHeatMap">Current weight mapping</param>
     public void UpdateOutput(double[,] newCurrentHeatMap) {
         currentHeatMap = newCurrentHeatMap;
-        int outWidth = centralManager!.GetMainWindowVM().ImageOutWidth;
-        int outHeight = centralManager!.GetMainWindowVM().ImageOutHeight;
+        int outWidth = centralDelegator!.GetMainWindowVM().ImageOutWidth;
+        int outHeight = centralDelegator!.GetMainWindowVM().ImageOutHeight;
 
         WriteableBitmap outputBitmap
             = CreateBitmapFromData(outWidth, outHeight, 1, (x, y) => GetGradientColor(currentHeatMap[x, y]));
 
-        centralManager!.GetMainWindowVM().MappingVM.CurrentHeatmap = outputBitmap;
+        centralDelegator!.GetMainWindowVM().MappingVM.CurrentHeatmap = outputBitmap;
     }
 
     /// <summary>
@@ -406,11 +406,11 @@ public partial class WeightMapWindow : Window {
     /// </summary>
     /// <param name="force">Whether to force the creation of the bitmap</param>
     private void BrushSize_ValueChanged(bool force) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
-        if (!centralManager.GetWeightMapWindow().IsVisible) {
+        if (!centralDelegator.GetWeightMapWindow().IsVisible) {
             return;
         }
 
@@ -420,8 +420,8 @@ public partial class WeightMapWindow : Window {
         }
 
         if (brushSizeRaw == -1) {
-            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(3, 3, 1, (x, y) =>
-                x == 1 && y == 1 ? GetGradientColor(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue) :
+            centralDelegator!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(3, 3, 1, (x, y) =>
+                x == 1 && y == 1 ? GetGradientColor(centralDelegator!.GetMainWindowVM().MappingVM.HeatmapValue) :
                 (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
             oldBrushSize = brushSizeRaw;
             return;
@@ -463,14 +463,14 @@ public partial class WeightMapWindow : Window {
 
         int centrePoint = maxX - minX;
 
-        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(centrePoint + 3,
+        centralDelegator!.GetMainWindowVM().PaintingVM.BrushSizeImage = CreateBitmapFromData(centrePoint + 3,
             centrePoint + 3, 1,
             (x, y) => {
                 double dx = x - centrePoint / 2d - 1;
                 double dy = y - centrePoint / 2d - 1;
-                Color selected = GetGradientColor(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue);
+                Color selected = GetGradientColor(centralDelegator!.GetMainWindowVM().MappingVM.HeatmapValue);
                 double distance = dx * dx + dy * dy;
-                return distance <= rawBrushSize ? centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled
+                return distance <= rawBrushSize ? centralDelegator!.GetMainWindowVM().MappingVM.HardBrushEnabled
                         ? selected
                         : Color.FromArgb((byte) (255 * (1d - distance / rawBrushSize * 0.85d)), selected.R,
                             selected.G, selected.B) :
@@ -484,15 +484,15 @@ public partial class WeightMapWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void ColourSlider_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
-        if (oldColourValue.Equals(centralManager!.GetMainWindowVM().MappingVM.HeatmapValue)) {
+        if (oldColourValue.Equals(centralDelegator!.GetMainWindowVM().MappingVM.HeatmapValue)) {
             return;
         }
 
-        oldColourValue = centralManager!.GetMainWindowVM().MappingVM.HeatmapValue;
+        oldColourValue = centralDelegator!.GetMainWindowVM().MappingVM.HeatmapValue;
 
         BrushSize_ValueChanged(true);
     }
@@ -504,15 +504,15 @@ public partial class WeightMapWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void AvaloniaObject_OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
-        if (oldHardnessValue.Equals(centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled)) {
+        if (oldHardnessValue.Equals(centralDelegator!.GetMainWindowVM().MappingVM.HardBrushEnabled)) {
             return;
         }
 
-        oldHardnessValue = centralManager!.GetMainWindowVM().MappingVM.HardBrushEnabled;
+        oldHardnessValue = centralDelegator!.GetMainWindowVM().MappingVM.HardBrushEnabled;
 
         BrushSize_ValueChanged(true);
     }

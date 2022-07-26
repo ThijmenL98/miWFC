@@ -1,4 +1,4 @@
-﻿using miWFC.Managers;
+﻿using miWFC.Delegators;
 using ReactiveUI;
 
 // ReSharper disable UnusedMember.Global
@@ -9,7 +9,7 @@ public class InputViewModel : ReactiveObject {
     private readonly MainWindowViewModel mainWindowViewModel;
 
     private bool _inputIsSideView;
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     /*
      * Initializing Functions & Constructor
@@ -37,8 +37,8 @@ public class InputViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _inputIsSideView, value);
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     // Images
@@ -58,7 +58,7 @@ public class InputViewModel : ReactiveObject {
     /// </summary>
     public async void ToggleInputWrapping() {
         mainWindowViewModel.InputWrapping = !mainWindowViewModel.InputWrapping;
-        centralManager!.GetWFCHandler().SetInputChanged("Input Wrapping Change");
-        await centralManager!.GetInputManager().RestartSolution("Input Wrapping Change");
+        centralDelegator!.GetWFCHandler().SetInputChanged("Input Wrapping Change");
+        await centralDelegator!.GetOutputHandler().RestartSolution("Input Wrapping Change");
     }
 }

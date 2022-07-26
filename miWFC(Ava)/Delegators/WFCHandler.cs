@@ -25,14 +25,14 @@ using miWFC.ViewModels.Structs;
 using miWFC.Views;
 using static miWFC.Utils.Util;
 
-namespace miWFC.Managers;
+namespace miWFC.Delegators;
 
 /// <summary>
 ///     Main handler for communicating to and from the algorithm
 /// </summary>
 public class WFCHandler {
     private static HashSet<Color>? currentColors;
-    private readonly CentralManager centralManager;
+    private readonly CentralDelegator centralDelegator;
 
     private List<Color[]> disabledPatterns = new();
 
@@ -66,11 +66,11 @@ public class WFCHandler {
      */
 
 #pragma warning disable CS8618
-    public WFCHandler(CentralManager parent) {
+    public WFCHandler(CentralDelegator parent) {
 #pragma warning restore CS8618
-        centralManager = parent;
-        mainWindowVM = centralManager.GetMainWindowVM();
-        mainWindow = centralManager.GetMainWindow();
+        centralDelegator = parent;
+        mainWindowVM = centralDelegator.GetMainWindowVM();
+        mainWindow = centralDelegator.GetMainWindow();
 
         _isChangingModels = false;
         _isChangingImages = false;
@@ -114,7 +114,7 @@ public class WFCHandler {
 
         if (dbPropagator is {Status: Resolution.DECIDED} && !reset) {
             UpdateWeights();
-            await centralManager.GetInputManager().RestartSolution("Force Reset Decided");
+            await centralDelegator.GetOutputHandler().RestartSolution("Force Reset Decided");
         }
 
         if (reset) {
@@ -130,7 +130,7 @@ public class WFCHandler {
             if (IsOverlappingModel() && (mainWindow.GetInputControl().GetCategory().Contains("Side") ||
                                          (mainWindowVM.InputVM.InputIsSideView &&
                                           mainWindowVM.CustomInputSelected))) {
-                centralManager.GetInputManager().PlaceMarker(false);
+                centralDelegator.GetOutputHandler().PlaceMarker(false);
             }
         }
 
@@ -144,7 +144,7 @@ public class WFCHandler {
         string inputImage = mainWindow.GetInputControl().GetInputImage();
         string category = mainWindow.GetInputControl().GetCategory();
         mainWindowVM.ItemVM.ResetDataGrid();
-        centralManager.GetMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+        centralDelegator.GetMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
             PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         bool inputWrappingEnabled = mainWindowVM.InputWrapping || category.Contains("Side");
 
@@ -164,7 +164,7 @@ public class WFCHandler {
 
                 mainWindowVM.PatternTiles = new ObservableCollection<TileViewModel>(toAdd!);
 
-                centralManager.GetPaintingWindow().SetPaintingPatterns(toAddPaint.ToArray());
+                centralDelegator.GetPaintingWindow().SetPaintingPatterns(toAddPaint.ToArray());
                 break;
             }
             case false when IsOverlappingModel(): {
@@ -208,14 +208,14 @@ public class WFCHandler {
     /// </summary>
     private void InitializeValues() {
         currentBitmap = GetSampleFromPath(mainWindow.GetInputControl().GetInputImage(),
-            centralManager.GetMainWindow().GetInputControl().GetCategory(), out bool isCustomSideView);
+            centralDelegator.GetMainWindow().GetInputControl().GetCategory(), out bool isCustomSideView);
         mainWindowVM.InputVM.InputIsSideView = isCustomSideView;
         mainWindowVM.PatternTiles.Clear();
         mainWindowVM.PaintTiles.Clear();
         toAddPaint = new List<TileViewModel>();
 
-        centralManager.GetInputManager().ResetMask();
-        centralManager.GetUIManager().ResetPatterns();
+        centralDelegator.GetOutputHandler().ResetMask();
+        centralDelegator.GetInterfaceHandler().ResetPatterns();
     }
 
     /// <summary>
@@ -246,7 +246,7 @@ public class WFCHandler {
 
         originalWeights = patternWeights;
 
-        toAdd.AddRange(patternList.Select((t, i) => centralManager.GetUIManager()
+        toAdd.AddRange(patternList.Select((t, i) => centralDelegator.GetInterfaceHandler()
                 .AddPattern(t, patternWeights[i], tileSymmetries, i))
             .Where(nextTVM => nextTVM != null)!);
 
@@ -270,7 +270,7 @@ public class WFCHandler {
                     = (uint) ((c.A << 24) + (c.R << 16) + (c.G << 8) + c.B);
             }
 
-            toAddPaint.Add(new TileViewModel(pattern, index, c, centralManager));
+            toAddPaint.Add(new TileViewModel(pattern, index, c, centralDelegator));
 
             double curWeight = ((OverlappingModel) dbModel).getFrequency(t).Sum();
             total += curWeight;
@@ -386,7 +386,7 @@ public class WFCHandler {
 
                 toAddPaint.Add(
                     new TileViewModel(writeableBitmap, tileWeight, tileCache.Count - 1, rotation, shouldFlip,
-                        centralManager));
+                        centralDelegator));
                 tileCache.Add(myIdx, new Tuple<Color[], Tile>(curCard, new Tile(myIdx)));
 
                 symmetries.Add(myIdx);
@@ -394,7 +394,7 @@ public class WFCHandler {
 
             tileSymmetries.Add(val, symmetries.ToArray());
 
-            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralManager,
+            TileViewModel tvm = new(writeableBitmap, tileWeight, tileCache.Count - 1, val, centralDelegator,
                 cardinality);
             toAdd.Add(tvm);
             toAddPaint.Add(tvm);
@@ -421,7 +421,7 @@ public class WFCHandler {
         dbPropagator = new TilePropagator(dbModel, dbTopology, new TilePropagatorOptions {
             RandomDouble = rand.NextDouble,
             IndexPickerType = IndexPickerType.HEAP_MIN_ENTROPY
-        }, centralManager);
+        }, centralDelegator);
     }
 
     /// <summary>
@@ -578,8 +578,8 @@ public class WFCHandler {
         bool isC = dbPropagator is {Status: Resolution.DECIDED} ||
                    Math.Abs(GetPercentageCollapsed() - 1d) < 0.0001d;
 
-        centralManager.GetMainWindowVM().ItemVM.ItemEditorEnabled
-            = centralManager.GetMainWindow().GetInputControl().GetCategory().Equals("Worlds Top-Down") && isC;
+        centralDelegator.GetMainWindowVM().ItemVM.ItemEditorEnabled
+            = centralDelegator.GetMainWindow().GetInputControl().GetCategory().Equals("Worlds Top-Down") && isC;
 
         return isC;
     }
@@ -623,7 +623,7 @@ public class WFCHandler {
             GenerateAdjacentBitmap(out outputBitmap, grid);
         }
 
-        centralManager.GetUIManager().UpdateTimeStampPosition(percentageCollapsed);
+        centralDelegator.GetInterfaceHandler().UpdateTimeStampPosition(percentageCollapsed);
 
         return outputBitmap;
     }
@@ -717,9 +717,9 @@ public class WFCHandler {
     /// <returns>Weights by tile index</returns>
     // ReSharper disable once UnusedMember.Global
     public double[] GetWeightsAt(int index) {
-        double[] newWeights = new double[centralManager.GetMainWindowVM().PaintTiles.Count];
+        double[] newWeights = new double[centralDelegator.GetMainWindowVM().PaintTiles.Count];
 
-        foreach (TileViewModel tvm in centralManager.GetMainWindowVM().PatternTiles.Reverse()) {
+        foreach (TileViewModel tvm in centralDelegator.GetMainWindowVM().PatternTiles.Reverse()) {
             int xDim = mainWindowVM.ImageOutWidth, yDim = mainWindowVM.ImageOutHeight;
             if (xDim * yDim != tvm.WeightHeatMap.Length) {
                 ResetWeights();
@@ -857,8 +857,8 @@ public class WFCHandler {
             }
         }
 
-        if (centralManager.GetMainWindowVM().IsRunning) {
-            await centralManager.GetInputManager().RestartSolution("patterns");
+        if (centralDelegator.GetMainWindowVM().IsRunning) {
+            await centralDelegator.GetOutputHandler().RestartSolution("patterns");
         }
     }
 
@@ -902,7 +902,7 @@ public class WFCHandler {
     public void UpdateWeights() {
         if (!IsOverlappingModel()) {
             List<double> userWeights
-                = centralManager.GetMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
+                = centralDelegator.GetMainWindowVM().PatternTiles.Select(tvm => tvm.PatternWeight).ToList();
             try {
                 foreach (((int parent, int[] symmetries), int idx) in
                          tileSymmetries.Select((pair, idx) => (pair, idx))) {
@@ -916,7 +916,7 @@ public class WFCHandler {
                 }
             } catch (IndexOutOfRangeException) { }
 
-            foreach (TileViewModel tvm in centralManager.GetMainWindowVM().PatternTiles) {
+            foreach (TileViewModel tvm in centralDelegator.GetMainWindowVM().PatternTiles) {
                 if (tvm.WeightHeatMap.Length == 0) {
                     int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
                     tvm.WeightHeatMap = new double[outputWidth, outputHeight];
@@ -1103,7 +1103,7 @@ public class WFCHandler {
             actionsTaken--;
         }
 
-        centralManager.GetMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
+        centralDelegator.GetMainWindowVM().ItemOverlay = new WriteableBitmap(new PixelSize(1, 1), Vector.One,
             PixelFormat.Bgra8888, AlphaFormat.Unpremul);
         return GetLatestOutputBm();
     }
@@ -1122,7 +1122,7 @@ public class WFCHandler {
         }
 
         mainWindowVM.OutputImage = GetLatestOutputBm();
-        centralManager.GetInputManager().PlaceMarker(false);
+        centralDelegator.GetOutputHandler().PlaceMarker(false);
     }
 
     /// <summary>
@@ -1148,7 +1148,7 @@ public class WFCHandler {
             }
         });
 
-        await centralManager.GetInputManager().RestartSolution("Paint Brush", true);
+        await centralDelegator.GetOutputHandler().RestartSolution("Paint Brush", true);
         int oldInputDictSize = newInputDict.Count;
 
         await Task.Delay(1000);
@@ -1164,7 +1164,7 @@ public class WFCHandler {
                         break;
                     }
 
-                    bool? success = centralManager?.GetInputManager()
+                    bool? success = centralDelegator?.GetOutputHandler()
                         .ProcessClick(key.Item1, key.Item2, imageWidth, imageHeight, idx, true).Result;
 
                     if (success != null && (bool) success) {
@@ -1209,14 +1209,14 @@ public class WFCHandler {
             }
         });
 
-        await centralManager.GetInputManager().RestartSolution("Paint Brush", true);
+        await centralDelegator.GetOutputHandler().RestartSolution("Paint Brush", true);
         int oldInputDictSize = newInputDict.Count;
         await Task.Delay(1);
 
         await Task.Run(() => {
             while (newInputDict.Count > 0) {
                 foreach ((Tuple<int, int> key, int value) in new Dictionary<Tuple<int, int>, int>(newInputDict)) {
-                    bool? success = centralManager?.GetInputManager()
+                    bool? success = centralDelegator?.GetOutputHandler()
                         .ProcessClick(key.Item1, key.Item2, imageWidth, imageHeight, value, true).Result;
 
                     if (success != null && (bool) success) {
@@ -1358,7 +1358,7 @@ public class WFCHandler {
                 }
             }
 
-            await centralManager.GetInputManager().RestartSolution("Override click", true, true);
+            await centralDelegator.GetOutputHandler().RestartSolution("Override click", true, true);
             await Task.Delay(10);
 
             IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
@@ -1394,11 +1394,11 @@ public class WFCHandler {
             mainWindowVM.ToggleLoadingAnimation(false);
 
             for (int i = 0; i < distinctList.Count; i++) {
-                centralManager.GetInputManager().AdvanceStep();
+                centralDelegator.GetOutputHandler().AdvanceStep();
             }
 
             mainWindowVM.OutputImage = GetLatestOutputBm();
-            centralManager.GetInputManager().PlaceMarker(false);
+            centralDelegator.GetOutputHandler().PlaceMarker(false);
             return (returnTrueAlreadyCorrect ? null : GetLatestOutputBm(), true);
         } else {
             IEnumerable<Tile> tilesToSelect = tiles.toArray2d().Cast<Tile>()
@@ -1497,7 +1497,7 @@ public class WFCHandler {
                 }
             }
 
-            await centralManager.GetInputManager().RestartSolution("Override click", true, true);
+            await centralDelegator.GetOutputHandler().RestartSolution("Override click", true, true);
             await Task.Delay(1);
 
             fsqAdj.Enqueue(new Tuple<int, int, int>(a, b, toSet));
@@ -1516,19 +1516,19 @@ public class WFCHandler {
                     mainWindowVM.ToggleLoadingAnimation(false);
                 });
             } catch (TargetException) {
-                mainWindowVM.OutputImage = centralManager.GetInputManager().GetNoResBm();
+                mainWindowVM.OutputImage = centralDelegator.GetOutputHandler().GetNoResBm();
                 return (null, false);
             }
 
             mainWindowVM.OutputImage = GetLatestOutputBm();
-            centralManager.GetInputManager().PlaceMarker(false);
+            centralDelegator.GetOutputHandler().PlaceMarker(false);
 
             status = dbPropagator.Status;
         } else {
             try {
                 status = dbPropagator.selWith(a, b, descrambledIndex);
             } catch (TargetException) {
-                mainWindowVM.OutputImage = centralManager.GetInputManager().GetNoResBm();
+                mainWindowVM.OutputImage = centralDelegator.GetOutputHandler().GetNoResBm();
                 return (null, false);
             }
         }

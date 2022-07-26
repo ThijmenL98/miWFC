@@ -5,7 +5,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using miWFC.DeBroglie.Topo;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using miWFC.ViewModels.Structs;
 using ReactiveUI;
@@ -28,7 +28,7 @@ public class PaintingViewModel : ReactiveObject {
         clickedInCurrentMode;
 
     private ObservableCollection<TemplateViewModel> _templates = new();
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     /*
      * Initializing Functions & Constructor
@@ -118,8 +118,8 @@ public class PaintingViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _templates, value);
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     // Other
@@ -139,8 +139,8 @@ public class PaintingViewModel : ReactiveObject {
 
         clickedInCurrentMode = false;
 
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetInputManager().UpdateMask();
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetOutputHandler().UpdateMask();
     }
 
     /// <summary>
@@ -152,8 +152,8 @@ public class PaintingViewModel : ReactiveObject {
         TemplatePlaceModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetInputManager().UpdateMask();
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetOutputHandler().UpdateMask();
     }
 
     /// <summary>
@@ -165,8 +165,8 @@ public class PaintingViewModel : ReactiveObject {
         TemplatePlaceModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetInputManager().UpdateMask();
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetOutputHandler().UpdateMask();
     }
 
     /// <summary>
@@ -178,44 +178,44 @@ public class PaintingViewModel : ReactiveObject {
         PaintModeEnabled = false;
         PencilModeEnabled = false;
 
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetInputManager().UpdateMask();
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetOutputHandler().UpdateMask();
     }
 
     /// <summary>
     ///     Function called applying the current paint mask
     /// </summary>
     public async Task ApplyPaintMask() {
-        Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
+        Color[,] mask = centralDelegator!.GetOutputHandler().GetMaskColours();
         if (!(mask[0, 0] == Util.negativeColour || mask[0, 0] == Util.positiveColour)) {
-            centralManager!.GetUIManager()
-                .DispatchError(centralManager.GetPaintingWindow(), "No mask has been painted");
+            centralDelegator!.GetInterfaceHandler()
+                .DispatchError(centralDelegator.GetPaintingWindow(), "No mask has been painted");
             return;
         }
 
         mainWindowViewModel.ToggleLoadingAnimation(true);
-        centralManager!.GetMainWindowVM().StepAmount = 1;
+        centralDelegator!.GetMainWindowVM().StepAmount = 1;
 
-        centralManager.GetInputManager().ResetMask();
-        centralManager.GetInputManager().UpdateMask();
-        await centralManager.GetWFCHandler().HandlePaintBrush(mask);
+        centralDelegator.GetOutputHandler().ResetMask();
+        centralDelegator.GetOutputHandler().UpdateMask();
+        await centralDelegator.GetWFCHandler().HandlePaintBrush(mask);
     }
 
     /// <summary>
     ///     Function called applying the current template
     /// </summary>
     public async void CreateTemplate() {
-        Color[,] mask = centralManager!.GetInputManager().GetMaskColours();
+        Color[,] mask = centralDelegator!.GetOutputHandler().GetMaskColours();
 
-        if (centralManager!.GetWFCHandler().IsOverlappingModel()) {
+        if (centralDelegator!.GetWFCHandler().IsOverlappingModel()) {
             await CreateOverlappingTemplate(mask);
         } else {
             await CreateAdjacentTemplate(mask);
         }
 
-        centralManager.GetPaintingWindow().SetTemplates(Templates);
-        centralManager.GetInputManager().ResetMask();
-        centralManager.GetInputManager().UpdateMask();
+        centralDelegator.GetPaintingWindow().SetTemplates(Templates);
+        centralDelegator.GetOutputHandler().ResetMask();
+        centralDelegator.GetOutputHandler().UpdateMask();
     }
 
     /// <summary>
@@ -231,10 +231,10 @@ public class PaintingViewModel : ReactiveObject {
         for (int a = 0; a < mask.GetLength(0); a++) {
             for (int b = 0; b < mask.GetLength(1); b++) {
                 if (mask[a, b] == Colors.White) {
-                    Color atPos = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
+                    Color atPos = centralDelegator!.GetWFCHandler().GetOverlappingOutputAt(a, b);
 
                     if (atPos.A != 255) {
-                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(),
+                        centralDelegator.GetInterfaceHandler().DispatchError(centralDelegator!.GetPaintingWindow(),
                             "Cannot include transparent cells in template");
                         return;
                     }
@@ -261,8 +261,8 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         if (!nonEmpty) {
-            centralManager!.GetUIManager()
-                .DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
+            centralDelegator!.GetInterfaceHandler()
+                .DispatchError(centralDelegator!.GetPaintingWindow(), "There was no template drawn");
             return;
         }
 
@@ -274,7 +274,7 @@ public class PaintingViewModel : ReactiveObject {
             for (int b = minY; b <= maxY; b++) {
                 if (mask[a, b] == Colors.White) {
                     offsetMask[a - minX, b - minY]
-                        = centralManager!.GetWFCHandler().GetOverlappingOutputAt(a, b);
+                        = centralDelegator!.GetWFCHandler().GetOverlappingOutputAt(a, b);
                 } else {
                     offsetMask[a - minX, b - minY] = Colors.Transparent;
                 }
@@ -282,7 +282,7 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         TemplateViewModel tvm = new(Util.ColourArrayToImage(offsetMask), offsetMask);
-        await tvm.Save(mainWindowViewModel.InputImageSelection, centralManager!);
+        await tvm.Save(mainWindowViewModel.InputImageSelection, centralDelegator!);
     }
 
     /// <summary>
@@ -295,12 +295,12 @@ public class PaintingViewModel : ReactiveObject {
 
         bool nonEmpty = false;
 
-        ITopoArray<int> aOutput = centralManager!.GetWFCHandler().GetPropagatorOutputA();
+        ITopoArray<int> aOutput = centralDelegator!.GetWFCHandler().GetPropagatorOutputA();
         for (int a = 0; a < mask.GetLength(0); a++) {
             for (int b = 0; b < mask.GetLength(1); b++) {
                 if (mask[a, b] == Colors.White) {
                     if (aOutput.get(a, b) < 0) {
-                        centralManager.GetUIManager().DispatchError(centralManager!.GetPaintingWindow(),
+                        centralDelegator.GetInterfaceHandler().DispatchError(centralDelegator!.GetPaintingWindow(),
                             "Cannot include transparent cells in template");
                         return;
                     }
@@ -327,8 +327,8 @@ public class PaintingViewModel : ReactiveObject {
         }
 
         if (!nonEmpty) {
-            centralManager.GetUIManager()
-                .DispatchError(centralManager!.GetPaintingWindow(), "There was no template drawn");
+            centralDelegator.GetInterfaceHandler()
+                .DispatchError(centralDelegator!.GetPaintingWindow(), "There was no template drawn");
             return;
         }
 
@@ -348,24 +348,24 @@ public class PaintingViewModel : ReactiveObject {
 
         TemplateViewModel tvm
             = new(
-                Util.ValueArrayToImage(offsetMask, centralManager!.GetWFCHandler().GetTileSize(),
-                    centralManager!.GetWFCHandler().GetTileCache()), offsetMask);
-        await tvm.Save(mainWindowViewModel.InputImageSelection, centralManager!);
+                Util.ValueArrayToImage(offsetMask, centralDelegator!.GetWFCHandler().GetTileSize(),
+                    centralDelegator!.GetWFCHandler().GetTileCache()), offsetMask);
+        await tvm.Save(mainWindowViewModel.InputImageSelection, centralDelegator!);
     }
 
     /// <summary>
     ///     Function called to reset the mask that is being painted on
     /// </summary>
     public void ResetMask() {
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetInputManager().UpdateMask();
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetOutputHandler().UpdateMask();
     }
 
     /// <summary>
     ///     Function called when deleting the current template from the user system
     /// </summary>
     public void DeleteTemplate() {
-        int templateIndex = centralManager!.GetPaintingWindow().GetSelectedTemplateIndex();
+        int templateIndex = centralDelegator!.GetPaintingWindow().GetSelectedTemplateIndex();
         if (templateIndex == -1) {
             return;
         }
@@ -373,17 +373,17 @@ public class PaintingViewModel : ReactiveObject {
         TemplateViewModel tvm = Templates[templateIndex];
         tvm.DeleteFile(mainWindowViewModel.InputImageSelection);
         Templates.Remove(tvm);
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
-            centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
-            centralManager.GetWFCHandler().GetTileSize()));
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+            centralDelegator.GetMainWindowVM().InputImageSelection, centralDelegator.GetWFCHandler().IsOverlappingModel(),
+            centralDelegator.GetWFCHandler().GetTileSize()));
     }
 
     /// <summary>
     ///     Function called when rotating the currently selected template
     /// </summary>
     public void RotateTemplate() {
-        int templateIndex = centralManager!.GetPaintingWindow().GetSelectedTemplateIndex();
+        int templateIndex = centralDelegator!.GetPaintingWindow().GetSelectedTemplateIndex();
         if (templateIndex == -1) {
             return;
         }

@@ -6,7 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using miWFC.ViewModels;
 
@@ -22,7 +22,7 @@ namespace miWFC.ContentControls;
 ///     Separated control for the item addition menu
 /// </summary>
 public partial class RegionDefineMenu : UserControl {
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     private bool[,] maskAllowances;
 
@@ -41,8 +41,8 @@ public partial class RegionDefineMenu : UserControl {
         AvaloniaXamlLoader.Load(this);
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     /*
@@ -54,7 +54,7 @@ public partial class RegionDefineMenu : UserControl {
     /// </summary>
     /// <returns>Selected brush size</returns>
     private int GetPaintBrushSize() {
-        int brushSize = centralManager!.GetMainWindowVM().BrushSize;
+        int brushSize = centralDelegator!.GetMainWindowVM().BrushSize;
         double mappingValue = 13.2d * Math.Exp(0.125 * brushSize) - 15.95d;
         return (int) Math.Round(mappingValue, 0, MidpointRounding.AwayFromZero);
     }
@@ -75,7 +75,7 @@ public partial class RegionDefineMenu : UserControl {
     ///     Reset the user editable mask to its defaults
     /// </summary>
     public void ResetAllowanceMask() {
-        MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+        MainWindowViewModel mainWindowVM = centralDelegator!.GetMainWindowVM();
         maskAllowances = new bool[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
 
         for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
@@ -102,11 +102,11 @@ public partial class RegionDefineMenu : UserControl {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">AvaloniaPropertyChangedEventArgs</param>
     private void BrushSize_ValueChanged(object? sender, AvaloniaPropertyChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
-        if (!centralManager.GetItemWindow().IsVisible) {
+        if (!centralDelegator.GetItemWindow().IsVisible) {
             return;
         }
 
@@ -117,7 +117,7 @@ public partial class RegionDefineMenu : UserControl {
         }
 
         if (brushSizeRaw == -1) {
-            centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
+            centralDelegator!.GetMainWindowVM().PaintingVM.BrushSizeImage = Util.CreateBitmapFromData(3, 3, 1, (x, y) =>
                 x == 1 && y == 1 ? Color.Parse("#424242") :
                 (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent);
             return;
@@ -158,7 +158,7 @@ public partial class RegionDefineMenu : UserControl {
                 return dx * dx + dy * dy <= brushSizeRaw ? Color.Parse("#424242") :
                     (x + y) % 2 == 0 ? Color.Parse("#11000000") : Colors.Transparent;
             });
-        centralManager!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
+        centralDelegator!.GetMainWindowVM().PaintingVM.BrushSizeImage = bm;
     }
 
     /// <summary>
@@ -210,7 +210,7 @@ public partial class RegionDefineMenu : UserControl {
     /// <param name="add">Whether the left mouse button is pressed</param>
     private void HandleMouseClick(double clickX, double clickY, double imgWidth, double imgHeight,
         ILayoutable imageSource, bool add) {
-        MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+        MainWindowViewModel mainWindowVM = centralDelegator!.GetMainWindowVM();
         int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / imgHeight);
 
@@ -244,7 +244,7 @@ public partial class RegionDefineMenu : UserControl {
     /// </summary>
     /// <param name="colors">Mask colours</param>
     private void UpdateMask(bool[,] colors) {
-        MainWindowViewModel mainWindowVM = centralManager!.GetMainWindowVM();
+        MainWindowViewModel mainWindowVM = centralDelegator!.GetMainWindowVM();
         mainWindowVM.ItemVM.RegionImage = Util.CreateBitmapFromData(mainWindowVM.ImageOutWidth,
             mainWindowVM.ImageOutHeight, 1, (x, y) => colors[x, y] ? Util.positiveColour : Util.negativeColour);
     }

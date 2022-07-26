@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using miWFC.ContentControls;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 
 // ReSharper disable UnusedParameter.Local
@@ -15,7 +15,7 @@ namespace miWFC.Views;
 ///     Main window of the application
 /// </summary>
 public partial class MainWindow : Window {
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
     private bool triggered;
 
     public int ChangeAmount = 1;
@@ -29,17 +29,17 @@ public partial class MainWindow : Window {
 
         KeyDown += KeyDownHandler;
         Closing += (_, _) => {
-            centralManager!.GetPaintingWindow().Close();
-            centralManager!.GetItemWindow().Close();
-            centralManager!.GetWeightMapWindow().Close();
+            centralDelegator!.GetPaintingWindow().Close();
+            centralDelegator!.GetItemWindow().Close();
+            centralDelegator!.GetWeightMapWindow().Close();
             Environment.Exit(0);
         };
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
-        this.Find<InputControl>("inputControl").SetCentralManager(cm);
-        this.Find<OutputControl>("outputControl").SetCentralManager(cm);
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
+        this.Find<InputControl>("inputControl").SetCentralDelegator(cd);
+        this.Find<OutputControl>("outputControl").SetCentralDelegator(cd);
     }
 
     /*
@@ -98,12 +98,12 @@ public partial class MainWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">SelectionChangedEventArgs</param>
     private void OnTabChange(object? sender, SelectionChangedEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
         int newTab = (sender as TabControl)!.SelectedIndex;
-        centralManager!.GetMainWindowVM().ChangeModel(newTab);
+        centralDelegator!.GetMainWindowVM().ChangeModel(newTab);
 
         e.Handled = true;
     }
@@ -114,7 +114,7 @@ public partial class MainWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">KeyEventArgs</param>
     private async void KeyDownHandler(object? sender, KeyEventArgs e) {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
 
@@ -122,16 +122,16 @@ public partial class MainWindow : Window {
             case Key.Left:
             case Key.Delete:
             case Key.Back:
-                if (centralManager.GetUIManager().PopUpOpened()) {
-                    centralManager.GetUIManager().HidePopUp();
+                if (centralDelegator.GetInterfaceHandler().PopUpOpened()) {
+                    centralDelegator.GetInterfaceHandler().HidePopUp();
                 } else {
-                    centralManager.GetInputManager().RevertStep();
+                    centralDelegator.GetOutputHandler().RevertStep();
                 }
 
                 e.Handled = true;
                 break;
             case Key.Right:
-                centralManager.GetInputManager().AdvanceStep();
+                centralDelegator.GetOutputHandler().AdvanceStep();
                 e.Handled = true;
                 break;
             case Key.PageDown:
@@ -141,45 +141,45 @@ public partial class MainWindow : Window {
                 e.Handled = true;
                 break;
             case Key.Space:
-                centralManager.GetInputManager().Animate();
+                centralDelegator.GetOutputHandler().Animate();
                 e.Handled = true;
                 break;
             case Key.S:
             case Key.M:
-                centralManager.GetInputManager().PlaceMarker();
+                centralDelegator.GetOutputHandler().PlaceMarker();
                 e.Handled = true;
                 break;
             case Key.E:
-                centralManager.GetInputManager().ExportSolution();
+                centralDelegator.GetOutputHandler().ExportSolution();
                 e.Handled = true;
                 break;
             case Key.I:
-                centralManager.GetInputManager().ImportSolution();
+                centralDelegator.GetOutputHandler().ImportSolution();
                 e.Handled = true;
                 break;
             case Key.L:
-                centralManager.GetInputManager().LoadMarker();
+                centralDelegator.GetOutputHandler().LoadMarker();
                 e.Handled = true;
                 break;
             case Key.R:
-                await centralManager.GetInputManager().RestartSolution("Keydown Restart");
+                await centralDelegator.GetOutputHandler().RestartSolution("Keydown Restart");
                 e.Handled = true;
                 break;
             case Key.P:
-                await centralManager.GetUIManager().SwitchWindow(Windows.PAINTING);
+                await centralDelegator.GetInterfaceHandler().SwitchWindow(Windows.PAINTING);
                 e.Handled = true;
                 break;
             case Key.Escape:
-                if (centralManager.GetUIManager().PopUpOpened()) {
-                    centralManager.GetUIManager().HidePopUp();
+                if (centralDelegator.GetInterfaceHandler().PopUpOpened()) {
+                    centralDelegator.GetInterfaceHandler().HidePopUp();
                 }
 
                 e.Handled = true;
                 break;
             case Key.Z:
                 if ((e.KeyModifiers & KeyModifiers.Control) != 0) {
-                    if (!centralManager.GetUIManager().PopUpOpened()) {
-                        centralManager.GetInputManager().RevertStep();
+                    if (!centralDelegator.GetInterfaceHandler().PopUpOpened()) {
+                        centralDelegator.GetOutputHandler().RevertStep();
                     }
 
                     e.Handled = true;
@@ -202,13 +202,13 @@ public partial class MainWindow : Window {
             return;
         }
 
-        await centralManager!.GetInputManager().RestartSolution("Window activation", true);
+        await centralDelegator!.GetOutputHandler().RestartSolution("Window activation", true);
         triggered = true;
 
-        centralManager!.GetInputManager().ResetMask();
-        centralManager!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
-            centralManager.GetMainWindowVM().InputImageSelection, centralManager.GetWFCHandler().IsOverlappingModel(),
-            centralManager.GetWFCHandler().GetTileSize()));
+        centralDelegator!.GetOutputHandler().ResetMask();
+        centralDelegator!.GetPaintingWindow().SetTemplates(Util.GetTemplates(
+            centralDelegator.GetMainWindowVM().InputImageSelection, centralDelegator.GetWFCHandler().IsOverlappingModel(),
+            centralDelegator.GetWFCHandler().GetTileSize()));
     }
 
     /// <summary>
@@ -218,9 +218,9 @@ public partial class MainWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerPressedEventArgs</param>
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e) {
-        if (centralManager != null && !this.Find<Popup>("infoPopup").IsPointerOverPopup &&
-            centralManager.GetUIManager().PopUpOpened()) {
-            centralManager.GetUIManager().HidePopUp();
+        if (centralDelegator != null && !this.Find<Popup>("infoPopup").IsPointerOverPopup &&
+            centralDelegator.GetInterfaceHandler().PopUpOpened()) {
+            centralDelegator.GetInterfaceHandler().HidePopUp();
         }
     }
 
@@ -230,7 +230,7 @@ public partial class MainWindow : Window {
     /// <param name="sender">UI Origin of function call</param>
     /// <param name="e">PointerEventArgs</param>
     private void InputElement_OnPointerMoved(object? sender, PointerEventArgs e) {
-        centralManager!.GetWFCHandler().IsCollapsed();
+        centralDelegator!.GetWFCHandler().IsCollapsed();
     }
 
     private void InputElement_OnKeyDown(object? sender, KeyEventArgs e) {

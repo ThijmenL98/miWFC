@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using miWFC.Managers;
+using miWFC.Delegators;
 using miWFC.Utils;
 using ReactiveUI;
 
@@ -25,7 +25,7 @@ public class MappingViewModel : ReactiveObject {
     private bool _hardBrushEnabled = true;
 
     private int _heatmapValue = 50;
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     /*
      * Initializing Functions & Constructor
@@ -79,8 +79,8 @@ public class MappingViewModel : ReactiveObject {
         set => this.RaiseAndSetIfChanged(ref _hoverImage, value);
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     // Objects
@@ -97,7 +97,7 @@ public class MappingViewModel : ReactiveObject {
     ///     Function called when resetting the weight mapping
     /// </summary>
     public void ResetWeightMapping() {
-        centralManager!.GetWeightMapWindow().ResetCurrentMapping();
+        centralDelegator!.GetWeightMapWindow().ResetCurrentMapping();
     }
 
     /// <summary>
@@ -143,8 +143,8 @@ public class MappingViewModel : ReactiveObject {
                 });
             }
 
-            centralManager!.GetWeightMapWindow().UpdateOutput(mapValues);
-            centralManager!.GetWeightMapWindow().SetCurrentMapping(mapValues);
+            centralDelegator!.GetWeightMapWindow().UpdateOutput(mapValues);
+            centralDelegator!.GetWeightMapWindow().SetCurrentMapping(mapValues);
         }
     }
 
@@ -167,7 +167,7 @@ public class MappingViewModel : ReactiveObject {
         if (settingsFileName != null) {
             WriteableBitmap exportBitmap = Util.CreateBitmapFromData(mainWindowViewModel.ImageOutWidth,
                 mainWindowViewModel.ImageOutHeight, 1, (x, y) => {
-                    int greyValue = (int) centralManager!.GetWeightMapWindow().GetGradientValue(x, y);
+                    int greyValue = (int) centralDelegator!.GetWeightMapWindow().GetGradientValue(x, y);
                     return Color.FromRgb((byte) greyValue, (byte) greyValue, (byte) greyValue);
                 });
 

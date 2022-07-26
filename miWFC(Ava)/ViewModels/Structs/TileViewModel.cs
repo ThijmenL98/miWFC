@@ -2,7 +2,7 @@
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using miWFC.Managers;
+using miWFC.Delegators;
 using ReactiveUI;
 
 // ReSharper disable UnusedMember.Global
@@ -21,7 +21,7 @@ public class TileViewModel : ReactiveObject {
 
     private readonly int cardin = -1;
 
-    private readonly CentralManager? centralManager;
+    private readonly CentralDelegator? centralDelegator;
 
     private bool _flipDisabled,
         _rotateDisabled,
@@ -43,7 +43,7 @@ public class TileViewModel : ReactiveObject {
      */
 
     // Used for input patterns
-    public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, CentralManager cm,
+    public TileViewModel(WriteableBitmap image, double weight, int index, int rawIndex, CentralDelegator cd,
         int card) {
         PatternImage = image;
         PatternWeight = weight;
@@ -54,7 +54,7 @@ public class TileViewModel : ReactiveObject {
 
         cardin = card;
 
-        centralManager = cm;
+        centralDelegator = cd;
 
         MayFlip = card > 4;
         MayRotate = card > 1;
@@ -70,7 +70,7 @@ public class TileViewModel : ReactiveObject {
 
     // Used for Adjacent Tiles
     public TileViewModel(WriteableBitmap image, double weight, int index, int patternRotation, int patternFlipping,
-        CentralManager cm) {
+        CentralDelegator cd) {
         PatternImage = image;
         PatternIndex = index;
         RawPatternIndex = -1;
@@ -78,7 +78,7 @@ public class TileViewModel : ReactiveObject {
         PatternRotation = patternRotation;
         PatternFlipping = patternFlipping;
 
-        centralManager = cm;
+        centralDelegator = cd;
         DynamicWeight = false;
 
         _patternWeightString = DynamicWeight ? "D" :
@@ -86,13 +86,13 @@ public class TileViewModel : ReactiveObject {
     }
 
     // Used for Overlapping Tiles
-    public TileViewModel(WriteableBitmap image, int index, Color c, CentralManager cm) {
+    public TileViewModel(WriteableBitmap image, int index, Color c, CentralDelegator cd) {
         PatternImage = image;
         PatternIndex = index;
         PatternColour = c;
         PatternRotation = 0;
         PatternFlipping = 1;
-        centralManager = cm;
+        centralDelegator = cd;
         DynamicWeight = false;
 
         _patternWeightString = DynamicWeight ? "D" :
@@ -354,10 +354,10 @@ public class TileViewModel : ReactiveObject {
             case false when !(PatternWeight > 0):
                 return;
             case true:
-                PatternWeight += centralManager!.GetMainWindow().ChangeAmount;
+                PatternWeight += centralDelegator!.GetMainWindow().ChangeAmount;
                 break;
             default:
-                PatternWeight -= centralManager!.GetMainWindow().ChangeAmount;
+                PatternWeight -= centralDelegator!.GetMainWindow().ChangeAmount;
                 PatternWeight = Math.Max(0, PatternWeight);
                 break;
         }
@@ -365,8 +365,8 @@ public class TileViewModel : ReactiveObject {
         PatternWeight = Math.Min(Math.Round(PatternWeight, 1), 250d);
 
         if (!DynamicWeight) {
-            int xDim = centralManager!.GetMainWindowVM().ImageOutWidth,
-                yDim = centralManager!.GetMainWindowVM().ImageOutHeight;
+            int xDim = centralDelegator!.GetMainWindowVM().ImageOutWidth,
+                yDim = centralDelegator!.GetMainWindowVM().ImageOutHeight;
             _weightHeatmap = new double[xDim, yDim];
             for (int i = 0; i < xDim; i++) {
                 for (int j = 0; j < yDim; j++) {
@@ -380,16 +380,16 @@ public class TileViewModel : ReactiveObject {
     ///     Callback when clicking on the weight value of the tile, opening the weight mapping window.
     /// </summary>
     public async void DynamicWeightClick() {
-        await centralManager!.GetUIManager().SwitchWindow(Windows.HEATMAP);
+        await centralDelegator!.GetInterfaceHandler().SwitchWindow(Windows.HEATMAP);
 
-        int xDim = centralManager!.GetMainWindowVM().ImageOutWidth,
-            yDim = centralManager!.GetMainWindowVM().ImageOutHeight;
+        int xDim = centralDelegator!.GetMainWindowVM().ImageOutWidth,
+            yDim = centralDelegator!.GetMainWindowVM().ImageOutHeight;
         if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
-            centralManager.GetWFCHandler().ResetWeights();
+            centralDelegator.GetWFCHandler().ResetWeights();
         }
 
-        centralManager!.GetWeightMapWindow().SetSelectedTile(RawPatternIndex);
-        centralManager!.GetWeightMapWindow().UpdateOutput(_weightHeatmap);
+        centralDelegator!.GetWeightMapWindow().SetSelectedTile(RawPatternIndex);
+        centralDelegator!.GetWeightMapWindow().UpdateOutput(_weightHeatmap);
     }
 
     /// <summary>
@@ -397,8 +397,8 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public async void OnRotateClick() {
         RotateDisabled = !RotateDisabled;
-        await centralManager!.GetInputManager().RestartSolution("Rotate toggle", true);
-        centralManager!.GetWFCHandler().UpdateTransformations();
+        await centralDelegator!.GetOutputHandler().RestartSolution("Rotate toggle", true);
+        centralDelegator!.GetWFCHandler().UpdateTransformations();
     }
 
     /// <summary>
@@ -406,15 +406,15 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public async void OnFlipClick() {
         FlipDisabled = !FlipDisabled;
-        await centralManager!.GetInputManager().RestartSolution("Flip toggle", true);
-        centralManager!.GetWFCHandler().UpdateTransformations();
+        await centralDelegator!.GetOutputHandler().RestartSolution("Flip toggle", true);
+        centralDelegator!.GetWFCHandler().UpdateTransformations();
     }
 
     /// <summary>
     ///     Forward the selection of the current pattern to be used as a host for the currently selected item to the menu
     /// </summary>
     public void ForwardSelectionToggle() {
-        centralManager!.GetItemWindow().GetItemAddMenu().ForwardAllowedTileChange(PatternIndex, ItemAddChecked);
+        centralDelegator!.GetItemWindow().GetItemAddMenu().ForwardAllowedTileChange(PatternIndex, ItemAddChecked);
     }
 
     /// <summary>
@@ -422,7 +422,7 @@ public class TileViewModel : ReactiveObject {
     /// </summary>
     public void TogglePatternAppearance() {
         PatternDisabled = !PatternDisabled;
-        centralManager!.GetWFCHandler().SetPatternDisabled(PatternDisabled, RawPatternIndex);
+        centralDelegator!.GetWFCHandler().SetPatternDisabled(PatternDisabled, RawPatternIndex);
     }
 
     /// <summary>
@@ -437,8 +437,8 @@ public class TileViewModel : ReactiveObject {
             UserRotation %= 360;
         }
 
-        await centralManager!.GetInputManager().RestartSolution("User rotate change", true);
-        centralManager!.GetWFCHandler().UpdateTransformations();
+        await centralDelegator!.GetOutputHandler().RestartSolution("User rotate change", true);
+        centralDelegator!.GetWFCHandler().UpdateTransformations();
     }
 
     /// <summary>
@@ -451,7 +451,7 @@ public class TileViewModel : ReactiveObject {
             UserFlipping = 1;
         }
 
-        await centralManager!.GetInputManager().RestartSolution("User flip change", true);
-        centralManager!.GetWFCHandler().UpdateTransformations();
+        await centralDelegator!.GetOutputHandler().RestartSolution("User flip change", true);
+        centralDelegator!.GetWFCHandler().UpdateTransformations();
     }
 }

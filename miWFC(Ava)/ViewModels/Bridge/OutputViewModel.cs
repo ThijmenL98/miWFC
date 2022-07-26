@@ -1,4 +1,4 @@
-﻿using miWFC.Managers;
+﻿using miWFC.Delegators;
 using ReactiveUI;
 
 // ReSharper disable UnusedMember.Global
@@ -7,7 +7,7 @@ namespace miWFC.ViewModels.Bridge;
 
 public class OutputViewModel : ReactiveObject {
     private readonly MainWindowViewModel mainWindowViewModel;
-    private CentralManager? centralManager;
+    private CentralDelegator? centralDelegator;
 
     /*
      * Initializing Functions & Constructor
@@ -17,8 +17,8 @@ public class OutputViewModel : ReactiveObject {
         mainWindowViewModel = mwvm;
     }
 
-    public void SetCentralManager(CentralManager cm) {
-        centralManager = cm;
+    public void SetCentralDelegator(CentralDelegator cd) {
+        centralDelegator = cd;
     }
 
     /*
@@ -48,7 +48,7 @@ public class OutputViewModel : ReactiveObject {
     /// </summary>
     public void ToggleAnimation() {
         mainWindowViewModel.IsPlaying = !mainWindowViewModel.IsPlaying;
-        centralManager!.GetInputManager().Animate();
+        centralDelegator!.GetOutputHandler().Animate();
     }
 
     /// <summary>
@@ -59,14 +59,14 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.GetInputManager().AdvanceStep();
+        centralDelegator!.GetOutputHandler().AdvanceStep();
     }
 
     /// <summary>
     ///     Function called when placing a marker
     /// </summary>
     public void PlaceMarker() {
-        centralManager!.GetInputManager().PlaceMarker();
+        centralDelegator!.GetOutputHandler().PlaceMarker();
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.GetInputManager().LoadMarker();
+        centralDelegator!.GetOutputHandler().LoadMarker();
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.GetInputManager().RevertStep();
+        centralDelegator!.GetOutputHandler().RevertStep();
     }
 
     /// <summary>
@@ -100,31 +100,31 @@ public class OutputViewModel : ReactiveObject {
         }
 
         mainWindowViewModel.SeamlessOutput = !mainWindowViewModel.SeamlessOutput;
-        await centralManager!.GetInputManager().RestartSolution("Padding Toggle Change");
+        await centralDelegator!.GetOutputHandler().RestartSolution("Padding Toggle Change");
     }
 
     /// <summary>
     ///     Function called when importing an image
     /// </summary>
     public void ImportFromDevice() {
-        centralManager!.GetInputManager().ImportSolution();
+        centralDelegator!.GetOutputHandler().ImportSolution();
     }
 
     /// <summary>
     ///     Function called when exporting an image
     /// </summary>
     public async void ExportToDevice() {
-        if (centralManager == null) {
+        if (centralDelegator == null) {
             return;
         }
         
-        if (centralManager.GetMainWindowVM().ImageOutWidth != (int) centralManager.GetWFCHandler().GetPropagatorSize().Width ||
-            centralManager.GetMainWindowVM().ImageOutHeight != (int) centralManager.GetWFCHandler().GetPropagatorSize().Height) {
-            if (!centralManager.GetMainWindowVM().IsRunning && !centralManager.GetWFCHandler().IsCollapsed()) {
-                await centralManager.GetInputManager().RestartSolution("Export non-equal input");
+        if (centralDelegator.GetMainWindowVM().ImageOutWidth != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width ||
+            centralDelegator.GetMainWindowVM().ImageOutHeight != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height) {
+            if (!centralDelegator.GetMainWindowVM().IsRunning && !centralDelegator.GetWFCHandler().IsCollapsed()) {
+                await centralDelegator.GetOutputHandler().RestartSolution("Export non-equal input");
             } else {
-                centralManager.GetMainWindowVM().ImageOutWidth = (int) centralManager.GetWFCHandler().GetPropagatorSize().Width;
-                centralManager.GetMainWindowVM().ImageOutHeight = (int) centralManager.GetWFCHandler().GetPropagatorSize().Height;
+                centralDelegator.GetMainWindowVM().ImageOutWidth = (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width;
+                centralDelegator.GetMainWindowVM().ImageOutHeight = (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height;
             }
         }
         
@@ -132,7 +132,7 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.GetInputManager().ExportSolution();
+        centralDelegator!.GetOutputHandler().ExportSolution();
     }
 
     /// <summary>
@@ -143,9 +143,9 @@ public class OutputViewModel : ReactiveObject {
             ToggleAnimation();
         }
 
-        centralManager!.GetWFCHandler().ResetWeights(false);
-        centralManager!.GetWFCHandler().UpdateWeights();
+        centralDelegator!.GetWFCHandler().ResetWeights(false);
+        centralDelegator!.GetWFCHandler().UpdateWeights();
 
-        await centralManager!.GetInputManager().RestartSolution("Restart UI call");
+        await centralDelegator!.GetOutputHandler().RestartSolution("Restart UI call");
     }
 }
