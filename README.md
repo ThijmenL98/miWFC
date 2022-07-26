@@ -1,5 +1,7 @@
 # miWFC
 
+If you find this code or the based research useful in your research, please consider citing either the repository or (one of) the papers below.
+
 ## Research Goal
 
 This thesis project analyses and explores how to adapt the WFC algorithm to support and integrate a number of interactive methods that more appropriately suit the usual creative workflow of game level designers and artists. We discuss the workings of methods designed and present results of the evaluation of their implementation in a
