@@ -83,6 +83,8 @@ public partial class RegionDefineMenu : UserControl {
                 maskAllowances[x, y] = true;
             }
         }
+        
+        UpdateMask(maskAllowances);
     }
 
     /// <summary>
@@ -90,6 +92,7 @@ public partial class RegionDefineMenu : UserControl {
     /// </summary>
     public void SetAllowanceMask(bool[,] itemSelectedAppearanceRegion) {
         maskAllowances = itemSelectedAppearanceRegion;
+        UpdateMask(maskAllowances);
     }
 
     /*

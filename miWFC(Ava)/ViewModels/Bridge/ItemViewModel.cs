@@ -503,9 +503,9 @@ public class ItemViewModel : ReactiveObject {
 
         try {
             DisplayName = "";
-            ItemColour = "";
+            ItemColour = "White";
             DependentItemName = "";
-            DepItemColour = "";
+            DepItemColour = "White";
         } catch (DataValidationException) { }
 
         foreach (TileViewModel tvm in mainWindowViewModel.PaintTiles) {
@@ -531,12 +531,12 @@ public class ItemViewModel : ReactiveObject {
         ItemIsDependent = false;
         DepMinDistance = 1;
         DepMaxDistance = 5;
-
+        
         try {
             DisplayName = "";
-            ItemColour = "";
+            ItemColour = "White";
             DependentItemName = "";
-            DepItemColour = "";
+            DepItemColour = "White";
         } catch (DataValidationException) { }
 
         foreach (TileViewModel tvm in mainWindowViewModel.PaintTiles) {
@@ -724,7 +724,8 @@ public class ItemViewModel : ReactiveObject {
                 bool added = false;
                 int retry = 0;
                 List<(int, int)> locToSkip = new();
-                int allowedRetries = allowedAdd.Select(x => spacesLeft[x]).Sum() * 2;
+                int allowedRetries = mainWindowViewModel.ImageOutWidth *
+                                     mainWindowViewModel.ImageOutHeight * 2;
 
                 while (!added) {
                     retry++;

@@ -130,7 +130,7 @@
 								</Panel>
 								<ToolTip.Tip>
 									<StackPanel>
-										<TextBlock TextWrapping="Wrap">Using the value from the list below:</TextBlock>
+										<TextBlock TextWrapping="Wrap">Using the value selected below:</TextBlock>
 										<TextBlock TextWrapping="Wrap">Click to paint a single pixel, hold to draw continuously.</TextBlock>
 									</StackPanel>
 								</ToolTip.Tip>

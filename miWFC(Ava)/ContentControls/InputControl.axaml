@@ -122,9 +122,9 @@
 			          VerticalAlignment="Center" IsVisible="{Binding OverlappingAdvancedEnabled}" />
 
 			<TextBlock Grid.Row="1" Grid.Column="0" TextWrapping="Wrap" Text="Input Wrapping" TextAlignment="Center"
-			           VerticalAlignment="Center" />
+			           VerticalAlignment="Center" IsVisible="{Binding OverlappingAdvancedEnabled}"/>
 
-			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent=""
+			<ToggleSwitch Grid.Row="1" Grid.Column="1" OffContent="" OnContent="" IsVisible="{Binding OverlappingAdvancedEnabled}"
 			              Command="{Binding InputVM.ToggleInputWrapping}" />
 		</Grid>
 

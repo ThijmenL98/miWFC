@@ -52,7 +52,7 @@ public class InterfaceHandler {
     private int patternCount;
     private Dictionary<int, List<Bitmap>> similarityMap = new();
 
-    private bool windowClosed = true;
+    private bool windowClosed = true, isSwitchingWindows;
 
     /*
      * Initializing Functions & Constructor
@@ -268,6 +268,7 @@ public class InterfaceHandler {
     /// <summary>
     ///     Function to shake the window if the user has done something erroneous
     /// </summary>
+    /// 
     /// <param name="window">Window to shake</param>
     /// <param name="errorMessage">The error message to show in a popup</param>
     public async void DispatchError(Window window, string? errorMessage) {
@@ -342,14 +343,22 @@ public class InterfaceHandler {
     /// <summary>
     ///     Function to switch windows
     /// </summary>
+    /// 
     /// <param name="window">Window to switch to</param>
     /// <param name="checkClicked">Whether the user needs to agree to discard or save unsaved work</param>
+    /// 
     /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
     public async Task SwitchWindow(Windows window, bool checkClicked = false) {
+        if (isSwitchingWindows) {
+            return;
+        }
+
+        isSwitchingWindows = true;
+        
         if (mainWindowVM.ImageOutWidth != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width ||
             mainWindowVM.ImageOutHeight != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height) {
             if (!mainWindowVM.IsRunning && !centralDelegator.GetWFCHandler().IsCollapsed()) {
-                await centralDelegator.GetOutputHandler().RestartSolution("Window switch nonequal input");
+                await centralDelegator.GetOutputHandler().RestartSolution("Window switch non-equal input");
             } else {
                 mainWindowVM.ImageOutWidth = (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width;
                 mainWindowVM.ImageOutHeight = (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height;
@@ -425,6 +434,8 @@ public class InterfaceHandler {
         target.Position = source.Position;
 
         centralDelegator.GetInterfaceHandler().HidePopUp();
+
+        isSwitchingWindows = false;
     }
 
     /// <summary>

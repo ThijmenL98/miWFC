@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
@@ -126,7 +128,7 @@ public class MappingViewModel : ReactiveObject {
             WriteableBitmap inputBitmap = WriteableBitmap.Decode(ms);
 
             int inputImageWidth = (int) inputBitmap.Size.Width, inputImageHeight = (int) inputBitmap.Size.Height;
-            double[,] mapValues = new double[inputImageWidth, inputImageHeight];
+            double[,] mapValues = new double[mainWindowViewModel.ImageOutWidth, mainWindowViewModel.ImageOutHeight];
 
             using ILockedFramebuffer? frameBuffer = inputBitmap.Lock();
 
@@ -134,9 +136,9 @@ public class MappingViewModel : ReactiveObject {
                 uint* backBuffer = (uint*) frameBuffer.Address.ToPointer();
                 int stride = frameBuffer.RowBytes;
 
-                Parallel.For(0L, mainWindowViewModel.ImageOutHeight, y => {
+                Parallel.For(0L, Math.Min(mainWindowViewModel.ImageOutHeight, inputImageHeight), y => {
                     uint* dest = backBuffer + (int) y * stride / 4;
-                    for (int x = 0; x < mainWindowViewModel.ImageOutWidth; x++) {
+                    for (int x = 0; x < Math.Min(mainWindowViewModel.ImageOutWidth, inputImageWidth); x++) {
                         int greyValue = (byte) ((dest[x] >> 16) & 0xFF);
                         mapValues[x, y] = greyValue;
                     }

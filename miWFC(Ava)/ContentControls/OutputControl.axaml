@@ -33,48 +33,25 @@
 				</Style>
 			</Grid.Styles>
 
-			<Button Padding="0" Grid.Column="0" Width="80" Margin="0" Command="{Binding OutputVM.ImportFromDevice}">
-				<Button.Styles>
-					<Style Selector="Button:pointerover /template/ ContentPresenter">
-						<Setter Property="Content" Value="{DynamicResource hoverImportKey}" />
-						<Setter Property="Background" Value="Transparent" />
-					</Style>
-					<Style Selector="Button:pressed /template/ ContentPresenter">
-						<Setter Property="Content" Value="{DynamicResource clickImportKey}" />
-						<Setter Property="Background" Value="Transparent" />
-					</Style>
-				</Button.Styles>
-				<Panel>
-					<Image Source="/Assets/Import.png" />
-				</Panel>
-				<ToolTip.Tip>
-					<StackPanel>
-						<TextBlock TextWrapping="Wrap">Import previously generated images using this input images. Partially completed images are allowed.</TextBlock>
-					</StackPanel>
-				</ToolTip.Tip>
-			</Button>
+			<TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="70" TextAlignment="Center">Output Size</TextBlock>
 
-			<TextBlock Grid.Column="1" VerticalAlignment="Center">
-				Output Image Size
-			</TextBlock>
-
-			<Grid Grid.Column="2" RowDefinitions="*, *" ColumnDefinitions="Auto, *">
+			<Grid Grid.Column="1" RowDefinitions="*, *" ColumnDefinitions="Auto, *">
 				<TextBlock Grid.Column="0" Grid.Row="0" Text="Width:" />
 				<NumericUpDown Grid.Row="0" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutWidth}"/>
 				<TextBlock Grid.Column="0" Grid.Row="1" Text="Height:" />
 				<NumericUpDown Grid.Row="1" Grid.Column="1" MaxHeight="10" Value="{Binding ImageOutHeight}" />
 			</Grid>
 
-			<GridSplitter Grid.Column="3" IsEnabled="False" Background="Transparent" />
+			<GridSplitter Grid.Column="2" IsEnabled="False" Background="Transparent" />
 
-			<Grid Grid.Column="3" ColumnDefinitions="Auto, Auto" VerticalAlignment="Center" Margin="15">
+			<Grid Grid.Column="2" ColumnDefinitions="Auto, Auto" VerticalAlignment="Center" Margin="15">
 				<TextBlock Grid.Column="0" TextWrapping="Wrap" Text="Seamless Output" TextAlignment="Center"
 				           MaxWidth="100" />
 				<ToggleSwitch Grid.Column="1" Command="{Binding OutputVM.ToggleSeamlessness}" x:Name="borderPaddingToggle"
 				              OffContent="" OnContent="" />
 			</Grid>
 
-			<Button Padding="0" Grid.Column="4" Width="80" Margin="0" Command="{Binding OutputVM.Restart}">
+			<Button Padding="0" Grid.Column="3" Width="80" Margin="0" Command="{Binding OutputVM.Restart}">
 				<Button.Styles>
 					<Style Selector="Button:pointerover /template/ ContentPresenter">
 						<Setter Property="Content" Value="{DynamicResource hoverRestartKey}" />
@@ -91,6 +68,27 @@
 				<ToolTip.Tip>
 					<StackPanel>
 						<TextBlock TextWrapping="Wrap">Generate a new image</TextBlock>
+					</StackPanel>
+				</ToolTip.Tip>
+			</Button>
+
+			<Button Padding="0" Grid.Column="4" Width="80" Margin="30,0,0,0" Command="{Binding OutputVM.ImportFromDevice}">
+				<Button.Styles>
+					<Style Selector="Button:pointerover /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource hoverImportKey}" />
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+					<Style Selector="Button:pressed /template/ ContentPresenter">
+						<Setter Property="Content" Value="{DynamicResource clickImportKey}" />
+						<Setter Property="Background" Value="Transparent" />
+					</Style>
+				</Button.Styles>
+				<Panel>
+					<Image Source="/Assets/Import.png" />
+				</Panel>
+				<ToolTip.Tip>
+					<StackPanel>
+						<TextBlock TextWrapping="Wrap">Import previously generated images using this input images. Partially completed images are allowed.</TextBlock>
 					</StackPanel>
 				</ToolTip.Tip>
 			</Button>

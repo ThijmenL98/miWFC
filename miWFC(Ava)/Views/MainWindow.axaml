@@ -7,8 +7,8 @@
         xmlns:viewModels="clr-namespace:miWFC.ViewModels"
         xmlns:contentControls="clr-namespace:miWFC.ContentControls"
         xmlns:avaloniaGif="clr-namespace:miWFC.AvaloniaGif"
-        d:DesignHeight="800" d:DesignWidth="1476" MinWidth="1256" MinHeight="660"
-        Width="1476" Height="800" KeyDown="InputElement_OnKeyDown" KeyUp="InputElement_OnKeyUp"
+        d:DesignHeight="800" d:DesignWidth="1510" MinWidth="1256" MinHeight="660"
+        Width="1510" Height="800" KeyDown="InputElement_OnKeyDown" KeyUp="InputElement_OnKeyUp"
         WindowStartupLocation="CenterOwner" Activated="WindowBase_OnActivated"
         PointerPressed="InputElement_OnPointerPressed" PointerMoved="InputElement_OnPointerMoved">
 

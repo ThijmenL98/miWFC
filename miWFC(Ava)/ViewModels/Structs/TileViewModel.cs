@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -384,8 +385,9 @@ public class TileViewModel : ReactiveObject {
 
         int xDim = centralDelegator!.GetMainWindowVM().ImageOutWidth,
             yDim = centralDelegator!.GetMainWindowVM().ImageOutHeight;
-        if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim) {
-            centralDelegator.GetWFCHandler().ResetWeights();
+        
+        if (_weightHeatmap.Length == 0 || _weightHeatmap.Length != xDim * yDim || _weightHeatmap.GetLength(0) != xDim|| _weightHeatmap.GetLength(1) != yDim) {
+            centralDelegator.GetWFCHandler().ResetWeights(force:true);
         }
 
         centralDelegator!.GetWeightMapWindow().SetSelectedTile(RawPatternIndex);

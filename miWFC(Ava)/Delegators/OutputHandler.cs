@@ -116,7 +116,8 @@ public class OutputHandler {
 #if DEBUG
         Trace.WriteLine(@$"Restarting -> {source}");
 #endif
-        if (centralDelegator.GetWFCHandler().IsChangingModels() || centralDelegator.GetWFCHandler().IsChangingImages()) {
+        if (centralDelegator.GetWFCHandler().IsChangingModels() ||
+            centralDelegator.GetWFCHandler().IsChangingImages()) {
             return;
         }
 
@@ -152,7 +153,7 @@ public class OutputHandler {
             // Error caused by multithreading which will be ignored
         } catch (Exception exception) {
             StackTrace st = new(exception, true);
-            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(0)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
 
@@ -191,7 +192,7 @@ public class OutputHandler {
             mainWindowVM.OutputImage = result2;
         } catch (Exception exception) {
             StackTrace st = new(exception, true);
-            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(0)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -222,13 +223,14 @@ public class OutputHandler {
 
             Bitmap? avaloniaBitmap = null;
             int curStep = centralDelegator.GetWFCHandler().GetAmountCollapsed();
+            int whileCounter = 0;
 
             while (centralDelegator.GetWFCHandler().GetAmountCollapsed() >
                    prevAmountCollapsed - mainWindowVM.StepAmount) {
                 for (int i = 0; i < mainWindowVM.StepAmount; i++) {
                     curStep = centralDelegator.GetWFCHandler().GetAmountCollapsed();
 
-                    if (curStep.Equals(0)) {
+                    if (curStep <= 0) {
                         goto exitOuterLoop;
                     }
 
@@ -246,6 +248,12 @@ public class OutputHandler {
                     }
 
                     avaloniaBitmap = centralDelegator.GetWFCHandler().StepBackWfc();
+                }
+
+                whileCounter++;
+
+                if (whileCounter >= 100) {
+                    goto exitOuterLoop;
                 }
             }
 
@@ -266,7 +274,7 @@ public class OutputHandler {
             }
         } catch (Exception exception) {
             StackTrace st = new(exception, true);
-            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(0)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -343,7 +351,7 @@ public class OutputHandler {
         if (savePoints.Count != 0) {
             if (!mainWindowVM.Markers[savePoints.Count - 1].Revertible) {
                 if (centralDelegator.GetWFCHandler().GetAmountCollapsed() == prevAmountCollapsed) {
-                    centralDelegator.GetInterfaceHandler().DispatchError(mainWindow, "Unable to revert further");
+                    centralDelegator.GetInterfaceHandler().DispatchError(mainWindow.IsVisible ? mainWindow : centralDelegator.GetPaintingWindow(), "Unable to revert further");
                     return;
                 }
 
@@ -370,7 +378,7 @@ public class OutputHandler {
             }
         } catch (Exception exception) {
             StackTrace st = new(exception, true);
-            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(0)}");
             mainWindowVM.OutputImage = noResultFoundBM;
         }
     }
@@ -419,7 +427,8 @@ public class OutputHandler {
 
             if (inputImageWidth > maxImageSize || inputImageWidth < 10 || inputImageHeight > maxImageSize ||
                 inputImageHeight < 10 || inputImageWidth % tileSize != 0 || inputImageHeight % tileSize != 0) {
-                centralDelegator.GetInterfaceHandler().DispatchError(mainWindow, "Imported image was of illegal dimensions");
+                centralDelegator.GetInterfaceHandler()
+                    .DispatchError(mainWindow, "Imported image was of illegal dimensions");
                 return;
             }
 
@@ -440,7 +449,8 @@ public class OutputHandler {
                     .Aggregate(true, (current, found) => current && found);
 
                 if (!allowed) {
-                    centralDelegator.GetInterfaceHandler().DispatchError(mainWindow, "Imported image contained illegal colours");
+                    centralDelegator.GetInterfaceHandler()
+                        .DispatchError(mainWindow, "Imported image contained illegal colours");
                     return;
                 }
             }
@@ -494,7 +504,8 @@ public class OutputHandler {
                         }
                     } else if (!foundAtPos.A.Equals(0) && toPaint.A.Equals(255) &&
                                !toPaint.Equals(foundAtPos) && retry == 0) {
-                        centralDelegator.GetInterfaceHandler().DispatchError(mainWindow, "Imported image was not valid");
+                        centralDelegator.GetInterfaceHandler()
+                            .DispatchError(mainWindow, "Imported image was not valid");
                         await RestartSolution("Imported image failure (illegal)", true);
                         return;
                     }
@@ -545,13 +556,14 @@ public class OutputHandler {
                             return;
                         }
                     } else if (foundAtPos != -1 && toSel != foundAtPos) {
-                        centralDelegator.GetInterfaceHandler().DispatchError(mainWindow, "Imported image was not valid");
+                        centralDelegator.GetInterfaceHandler()
+                            .DispatchError(mainWindow, "Imported image was not valid");
                         await RestartSolution("Imported image failure (illegal)", true);
                         return;
                     }
                 }
             }
-        } catch (AggregateException exception) {
+        } catch (AggregateException) {
             centralDelegator.GetInterfaceHandler()
                 .DispatchError(mainWindow, "Imported image did not match the selected input settings");
             await RestartSolution("Imported image failure (mismatch)", true);
@@ -575,7 +587,9 @@ public class OutputHandler {
 
         string? settingsFileName = await sfd.ShowAsync(new Window());
         if (settingsFileName != null) {
-            bool hasItems = mainWindow.GetInputControl().GetCategory().Equals("Worlds Top-Down")
+            bool hasItems = (mainWindow.GetInputControl().GetCategory().Equals("Worlds Top-Down")
+                             || (mainWindow.GetInputControl().GetCategory().Equals("Custom") &&
+                                 !mainWindowVM.InputVM.InputIsSideView))
                             && centralDelegator.GetWFCHandler().IsCollapsed()
                             && mainWindowVM.ItemVM.ItemDataGrid.Count > 0;
 
@@ -685,7 +699,7 @@ public class OutputHandler {
                     }
                 } catch (Exception exception) {
                     StackTrace st = new(exception, true);
-                    Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
+                    Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(0)}");
                     mainWindowVM.OutputImage = noResultFoundBM;
                 }
 
@@ -705,24 +719,29 @@ public class OutputHandler {
     /// <param name="skipUI">Whether to show the output affected by the user click to the user</param>
     /// <returns>Task which is completed upon setting the user selected tile at the clicked location</returns>
     public async Task<bool?> ProcessClick(int a, int b, int imgWidth, int imgHeight, int tileIdx, bool skipUI = false) {
+        int imageCellWidth = mainWindowVM.ImageOutWidth, imageCellHeight = mainWindowVM.ImageOutHeight;
         if (!skipUI) {
-            a = (int) Math.Floor(a * mainWindowVM.ImageOutWidth / (double) imgWidth);
-            b = (int) Math.Floor(b * mainWindowVM.ImageOutHeight / (double) imgHeight);
+            a = (int) Math.Floor(a * imageCellWidth / (double) imgWidth);
+            b = (int) Math.Floor(b * imageCellHeight / (double) imgHeight);
         }
 
-        (WriteableBitmap? bitmap, bool? showPixel)
-            = await centralDelegator.GetWFCHandler().SetTile(a, b, tileIdx, false, skipUI);
+        if (a >= 0 && b >= 0 && a < imageCellWidth && b < imageCellHeight) {
+            (WriteableBitmap? bitmap, bool? showPixel)
+                = await centralDelegator.GetWFCHandler().SetTile(a, b, tileIdx, false, skipUI);
 
-        if (!skipUI && !mainWindowVM.PaintingVM.IsPaintOverrideEnabled) {
-            if (showPixel != null && (bool) showPixel) {
-                mainWindowVM.OutputImage = bitmap!;
-                ProcessHoverAvailability(a, b, imgWidth, imgHeight, tileIdx, true, true);
-            } else {
-                mainWindowVM.OutputImage = centralDelegator.GetWFCHandler().GetLatestOutputBm();
+            if (!skipUI && !mainWindowVM.PaintingVM.IsPaintOverrideEnabled) {
+                if (showPixel != null && (bool) showPixel) {
+                    mainWindowVM.OutputImage = bitmap!;
+                    ProcessHoverAvailability(a, b, imgWidth, imgHeight, tileIdx, true, true);
+                } else {
+                    mainWindowVM.OutputImage = centralDelegator.GetWFCHandler().GetLatestOutputBm();
+                }
             }
+
+            return showPixel;
         }
 
-        return showPixel;
+        return null;
     }
 
     /// <summary>
@@ -798,7 +817,8 @@ public class OutputHandler {
                 if (centralDelegator.GetWFCHandler().IsOverlappingModel()
                         ? availableAtLocC.Contains(centralDelegator.GetWFCHandler()
                             .GetColorFromIndex(tvm.PatternIndex))
-                        : availableAtLocI.Contains(centralDelegator.GetWFCHandler().GetDescrambledIndex(tvm.PatternIndex))
+                        : availableAtLocI.Contains(centralDelegator.GetWFCHandler()
+                            .GetDescrambledIndex(tvm.PatternIndex))
                    ) {
                     tvm.Highlighted = tvm.PatternIndex == selectedIndex;
                     mainWindowVM.HelperTiles.Add(tvm);
@@ -830,7 +850,7 @@ public class OutputHandler {
             };
         }
 
-        Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
+        Color[,] hoverMaskColours = new Color[imgWidth, imgHeight];
 
         int startX, startY, endX, endY;
         if (rotation % 2 == 0) {
@@ -894,15 +914,16 @@ public class OutputHandler {
     /// <param name="overrideSize">Size of the brush, overwritten by the function if not set</param>
     private void UpdateHoverBrushMask(int a, int b, int overrideSize = -2) {
         int brushSize = overrideSize == -2 ? centralDelegator.GetPaintingWindow().GetPaintBrushSize() : overrideSize;
+        
+        int imageCellWidth = mainWindowVM.ImageOutWidth, imageCellHeight = mainWindowVM.ImageOutHeight;
+        Color[,] hoverMaskColours = new Color[imageCellWidth, imageCellHeight];
 
-        Color[,] hoverMaskColours = new Color[mainWindowVM.ImageOutWidth, mainWindowVM.ImageOutHeight];
-
-        if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+        if (a >= 0 && b >= 0 && a < imageCellWidth && b < imageCellHeight) {
             if (brushSize == -1) {
                 hoverMaskColours[a, b] = Colors.Yellow;
             } else {
-                for (int x = 0; x < mainWindowVM.ImageOutWidth; x++) {
-                    for (int y = 0; y < mainWindowVM.ImageOutHeight; y++) {
+                for (int x = 0; x < imageCellWidth; x++) {
+                    for (int y = 0; y < imageCellHeight; y++) {
                         double dx = (double) x - a;
                         double dy = (double) y - b;
                         double distanceSquared = dx * dx + dy * dy;
@@ -927,26 +948,25 @@ public class OutputHandler {
     /// <param name="imgHeight">Height of the image the user clicked on</param>
     /// <param name="add">Whether the additive or subtractive brush is selected</param>
     public void ProcessClickMask(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
-        int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
+        int imageCellWidth = mainWindowVM.ImageOutWidth, imageCellHeight = mainWindowVM.ImageOutHeight;
+        int a = (int) Math.Floor(clickX * imageCellWidth / (double) imgWidth),
             b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
 
         int brushSize = centralDelegator.GetPaintingWindow().GetPaintBrushSize();
 
-        int outputWidth = mainWindowVM.ImageOutWidth, outputHeight = mainWindowVM.ImageOutHeight;
-
-        if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+        if (a >= 0 && b >= 0 && a < imageCellWidth && b < imageCellHeight) {
             if (brushSize == -1) {
                 maskColours[a, b] = add ? positiveColour : negativeColour;
-                for (int x = 0; x < outputWidth; x++) {
-                    for (int y = 0; y < outputHeight; y++) {
+                for (int x = 0; x < imageCellWidth; x++) {
+                    for (int y = 0; y < imageCellHeight; y++) {
                         if (maskColours[x, y] == default) {
                             maskColours[x, y] = add ? negativeColour : positiveColour;
                         }
                     }
                 }
             } else {
-                for (int x = 0; x < outputWidth; x++) {
-                    for (int y = 0; y < outputHeight; y++) {
+                for (int x = 0; x < imageCellWidth; x++) {
+                    for (int y = 0; y < imageCellHeight; y++) {
                         double dx = (double) x - a;
                         double dy = (double) y - b;
                         double distanceSquared = dx * dx + dy * dy;
@@ -973,11 +993,12 @@ public class OutputHandler {
     /// <param name="imgHeight">Height of the image the user clicked on</param>
     /// <param name="add">Whether the user has decided to add or remove from the template outline</param>
     public void ProcessClickTemplateCreation(int clickX, int clickY, int imgWidth, int imgHeight, bool add) {
-        int a = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
-            b = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+        int imageCellWidth = mainWindowVM.ImageOutWidth, imageCellHeight = mainWindowVM.ImageOutHeight;
+        int a = (int) Math.Floor(clickX * imageCellWidth / (double) imgWidth),
+            b = (int) Math.Floor(clickY * imageCellHeight / (double) imgHeight);
 
         const int rawBrushSize = -1;
-        if (a >= 0 && b >= 0 && a < mainWindowVM.ImageOutWidth && b < mainWindowVM.ImageOutHeight) {
+        if (a >= 0 && b >= 0 && a < imageCellWidth && b < imageCellHeight) {
             if (rawBrushSize == -1) {
                 maskColours[a, b] = add ? Colors.White : Color.Parse("#424242");
             }
@@ -999,8 +1020,9 @@ public class OutputHandler {
         bool error = false;
 
         try {
-            int x = (int) Math.Floor(clickX * mainWindowVM.ImageOutWidth / (double) imgWidth),
-                y = (int) Math.Floor(clickY * mainWindowVM.ImageOutHeight / (double) imgHeight);
+            int imageCellWidth = mainWindowVM.ImageOutWidth, imageCellHeight = mainWindowVM.ImageOutHeight;
+            int x = (int) Math.Floor(clickX * imageCellWidth / (double) imgWidth),
+                y = (int) Math.Floor(clickY * imageCellHeight / (double) imgHeight);
 
             int templateIndex = centralDelegator.GetPaintingWindow().GetSelectedTemplateIndex();
             if (templateIndex == -1) {
@@ -1035,7 +1057,7 @@ public class OutputHandler {
             for (int placeX = startX; placeX < endX; placeX++) {
                 for (int placeY = startY; placeY < endY; placeY++) {
                     if (!error) {
-                        if (placeX >= 0 && placeY >= 0 && placeX < imgWidth && placeY < imgHeight) {
+                        if (placeX >= 0 && placeY >= 0 && placeX < imageCellWidth && placeY < imageCellHeight) {
                             int mappedX;
                             int mappedY;
                             if (rotation % 2 == 0) {
@@ -1066,6 +1088,7 @@ public class OutputHandler {
                                             placeCount++;
                                         } else {
                                             error = true;
+                                            Trace.WriteLine("ERROR");
                                         }
                                     } else {
                                         error = !valAt.Equals(toPlace);
@@ -1106,7 +1129,8 @@ public class OutputHandler {
             }
         } catch (Exception exception) {
             StackTrace st = new(exception, true);
-            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(st.FrameCount - 1)}");
+            Trace.WriteLine($"KNOWN Exception caught: {exception.Message} -> {st.GetFrame(0)}");
+            Trace.WriteLine(exception);
             error = true;
         }
 
@@ -1114,7 +1138,10 @@ public class OutputHandler {
             centralDelegator.GetWFCHandler().StepBackWfc(placeCount);
             mainWindowVM.OutputImage = centralDelegator.GetWFCHandler().GetLatestOutputBm();
             centralDelegator.GetInterfaceHandler().DispatchError(centralDelegator.GetPaintingWindow(),
-                "Template was not able to be placed here");
+                "Template was not able to be placed here" 
+                + "\nMake sure settings such as:" 
+                + "\n   Pattern Size - Input Wrapping - Seamless Output"
+                + "\nare similar to values when this template was created");
             return false;
         }
 

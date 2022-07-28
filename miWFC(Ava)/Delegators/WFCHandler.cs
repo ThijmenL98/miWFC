@@ -438,7 +438,7 @@ public class WFCHandler {
         for (int x = 0; x < outputWidth - 1; x++) {
             dbPropagator.select(x, outputHeight - 1, 0, new Tile(currentColors!.ElementAt(groundTileIndex)));
         }
-        
+
         if (inputImage.ToLower().Contains("flower")) {
             for (int r = 0; r < random.Next(1, 5); r++) {
                 int loc = random.Next(0, outputWidth - 1);
@@ -579,7 +579,9 @@ public class WFCHandler {
                    Math.Abs(GetPercentageCollapsed() - 1d) < 0.0001d;
 
         centralDelegator.GetMainWindowVM().ItemVM.ItemEditorEnabled
-            = centralDelegator.GetMainWindow().GetInputControl().GetCategory().Equals("Worlds Top-Down") && isC;
+            = (centralDelegator.GetMainWindow().GetInputControl().GetCategory().Equals("Worlds Top-Down") ||
+               (mainWindow.GetInputControl().GetCategory().Equals("Custom") &&
+                !mainWindowVM.InputVM.InputIsSideView)) && isC;
 
         return isC;
     }
@@ -788,7 +790,7 @@ public class WFCHandler {
     /// <summary>
     ///     Set whether an outer source has changed the input in any way
     /// </summary>
-    /// <param name="source">Source of the change</param>
+    /// <param name="source">Source of the change, debug parameter</param>
     public void SetInputChanged(string source) {
 #if DEBUG
         Trace.WriteLine($"Input changed on {source}");
@@ -796,7 +798,8 @@ public class WFCHandler {
         if (IsChangingModels()) {
             return;
         }
-
+        
+        disabledPatterns = new List<Color[]>();
         inputHasChanged = true;
     }
 
@@ -829,6 +832,9 @@ public class WFCHandler {
     /// <param name="isChanging">Boolean</param>
     public void SetModelChanging(bool isChanging) {
         _isChangingModels = isChanging;
+        if (isChanging) {
+            disabledPatterns = new List<Color[]>();
+        }
     }
 
     /// <summary>
@@ -1623,7 +1629,9 @@ public class WFCHandler {
             }
 
             if (force || tileViewModel.WeightHeatMap.Length == 0 ||
-                tileViewModel.WeightHeatMap.Length != xDim * yDim) {
+                tileViewModel.WeightHeatMap.Length != xDim * yDim
+                || tileViewModel.WeightHeatMap.GetLength(0) != xDim
+                || tileViewModel.WeightHeatMap.GetLength(1) != yDim) {
                 tileViewModel.WeightHeatMap = new double[xDim, yDim];
 
                 for (int i = 0; i < xDim; i++) {
