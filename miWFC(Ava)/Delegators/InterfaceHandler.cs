@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,11 +47,11 @@ public class InterfaceHandler {
     private HashSet<ImageR> curBitmaps = new();
 
     private DispatcherTimer dt = new();
-    private PixelPoint? origPos;
     private int patternCount;
     private Dictionary<int, List<Bitmap>> similarityMap = new();
 
     private bool windowClosed = true, isSwitchingWindows;
+    private long lastWindowSwitch;
 
     /*
      * Initializing Functions & Constructor
@@ -273,14 +272,10 @@ public class InterfaceHandler {
     /// <param name="errorMessage">The error message to show in a popup</param>
     public async void DispatchError(Window window, string? errorMessage) {
         dt.Stop();
-        if (origPos != null) {
-            window.Position = (PixelPoint) origPos;
-        }
 
         dt = new DispatcherTimer();
         int counter = 0;
         int shake = 0;
-        origPos = window.Position;
 
         dt.Tick += delegate {
             PixelPoint curPos = window.Position;
@@ -298,7 +293,6 @@ public class InterfaceHandler {
 
             if (counter == 10) {
                 dt.Stop();
-                window.Position = (PixelPoint) origPos;
             }
         };
 
@@ -349,11 +343,13 @@ public class InterfaceHandler {
     /// 
     /// <exception cref="NotImplementedException">Error caused by a nonexistent window being asked to switch to</exception>
     public async Task SwitchWindow(Windows window, bool checkClicked = false) {
-        if (isSwitchingWindows) {
+        // Check to make sure multiple window switch calls aren't executed in succession
+        if (isSwitchingWindows || DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastWindowSwitch <= 250) {
             return;
         }
 
         isSwitchingWindows = true;
+        lastWindowSwitch = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         
         if (mainWindowVM.ImageOutWidth != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Width ||
             mainWindowVM.ImageOutHeight != (int) centralDelegator.GetWFCHandler().GetPropagatorSize().Height) {
