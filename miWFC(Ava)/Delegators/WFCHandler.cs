@@ -798,7 +798,7 @@ public class WFCHandler {
         if (IsChangingModels()) {
             return;
         }
-        
+
         disabledPatterns = new List<Color[]>();
         inputHasChanged = true;
     }
@@ -1335,8 +1335,7 @@ public class WFCHandler {
             int width = prevOutput.GetLength(0);
             int height = prevOutput.GetLength(1);
 
-            Dictionary<Tuple<int, int>, Color> distinctList = new(), tempList = new();
-            Dictionary<double, List<Tuple<int, int>>> distances = new();
+            Dictionary<Tuple<int, int>, Tuple<Color, double>> distinctList = new();
 
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
@@ -1346,21 +1345,9 @@ public class WFCHandler {
                     Color? toReSet = currentColors!.Contains(value) ? value : null;
 
                     if (toReSet != null) {
-                        tempList[key] = value;
-                        double dist = (a - i) * (a - i) + (b - j) * (b - j);
-
-                        if (!distances.ContainsKey(dist)) {
-                            distances[dist] = new List<Tuple<int, int>>();
-                        }
-
-                        distances[dist].Add(key);
+                        double distSq = (a - i) * (a - i) + (b - j) * (b - j);
+                        distinctList[key] = new Tuple<Color, double>(value, distSq);
                     }
-                }
-            }
-
-            foreach ((double _, List<Tuple<int, int>> keys) in distances.OrderBy(key => key.Key)) {
-                foreach (Tuple<int, int> key in keys) {
-                    distinctList[key] = tempList[key];
                 }
             }
 
@@ -1372,11 +1359,11 @@ public class WFCHandler {
             dbPropagator.select(a, b, 0, tilesToSelect);
 
             for (int retries = 0; retries < 3; retries++) {
-                foreach ((Tuple<int, int> key, Color value) in
-                         new Dictionary<Tuple<int, int>, Color>(distinctList)) {
+                foreach ((Tuple<int, int> key, Tuple<Color, double> value) in
+                         new Dictionary<Tuple<int, int>, Tuple<Color, double>>(distinctList).OrderByDescending(entry => entry.Value.Item2)) {
                     int idx = -1;
                     foreach (TileViewModel tvm in
-                             toAddPaint.Where(tvm => tvm.PatternColour.Equals(value))) {
+                             toAddPaint.Where(tvm => tvm.PatternColour.Equals(value.Item1))) {
                         idx = tvm.PatternIndex;
                         break;
                     }
@@ -1490,7 +1477,7 @@ public class WFCHandler {
             int[,] prevOutput = GetPropagatorOutputA().toArray2d();
             int width = prevOutput.GetLength(0);
             int height = prevOutput.GetLength(1);
-            Dictionary<Tuple<int, int>, int> distinctList = new();
+            Dictionary<Tuple<int, int>, Tuple<int, double>> distinctList = new();
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     Tuple<int, int> key = new(i, j);
@@ -1498,7 +1485,7 @@ public class WFCHandler {
                     bool isCollapsed = value >= 0;
 
                     if (isCollapsed) {
-                        distinctList[key] = value;
+                        distinctList[key] = new Tuple<int, double>(value, (a - i) * (a - i) + (b - j) * (b - j));
                     }
                 }
             }
@@ -1514,9 +1501,8 @@ public class WFCHandler {
 
             try {
                 await Task.Run(() => {
-                    foreach ((Tuple<int, int> key, int value) in
-                             new Dictionary<Tuple<int, int>, int>(distinctList)) {
-                        _ = SetTile(key.Item1, key.Item2, value, true, true).Result;
+                    foreach ((Tuple<int, int> key, Tuple<int, double> valueTuple) in distinctList.OrderByDescending(entry => entry.Value.Item2)) {
+                        _ = SetTile(key.Item1, key.Item2, valueTuple.Item1, true, true).Result;
                     }
 
                     mainWindowVM.ToggleLoadingAnimation(false);
