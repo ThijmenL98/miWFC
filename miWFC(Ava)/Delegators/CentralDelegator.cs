@@ -7,15 +7,15 @@ namespace miWFC.Delegators;
 ///     Central delegator of the application, tying all windows and handlers together for communication of data
 /// </summary>
 public class CentralDelegator {
-    private readonly OutputHandler outputHandler;
     private readonly ItemWindow itemWindow;
-
     private readonly MainWindow mainWindow;
+    private readonly WeightMapWindow weightMapWindow;
+    private readonly PaintingWindow paintingWindow;
 
     private readonly MainWindowViewModel mainWindowViewModel;
-    private readonly PaintingWindow paintingWindow;
+    
+    private readonly OutputHandler outputHandler;
     private readonly InterfaceHandler interfaceHandler;
-    private readonly WeightMapWindow weightMapWindow;
     private readonly WFCHandler wfcHandler;
 
     /*

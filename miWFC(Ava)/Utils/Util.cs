@@ -200,12 +200,12 @@ public static class Util {
     /// <returns>Description</returns>
     public static string GetDescription(string category) {
         return category switch {
-            "Textures" => "Surfaces of multi dimensional objects",
-            "Shapes" => "Basic shapes and patterns",
+            "Textures" => "Surface detailing to apply to 2D/3D models",
+            "Shapes" => "Surfaces of multidimensional objects",
             "Knots" => "Intertwined and/or tangled lines",
             "Fonts" => "Printable or displayable text characters",
             "Worlds Side-View" =>
-                "Worlds as seen from the side (Seamless Output and Input Wrapping have been pre-set due to the nature of these images)",
+                "(Game) Worlds as seen from the side (Seamless Output and Input Wrapping have been pre-set due to the nature of these images)",
             "Worlds Top-Down" => "(Game) Worlds as seen from above",
             "Custom" => "Images uploaded by you yourself!",
             _ => "???"
