@@ -1,19 +1,21 @@
 # miWFC
 
-If you find this code or the based research useful in your research, please consider citing either the repository or (one of) the papers below.
+If you find this code or the based research useful in your own research, please consider citing either the repository or (one of) the papers below.
 
-## Research Goal
+If you wish to use this application for commercial applications, please consider sponsoring this Open-Source project by reviewing the following [GitHub Sponsor Page](https://github.com/sponsors/ThijmenL98).
 
-This thesis project analyses and explores how to adapt the WFC algorithm to support and integrate a number of interactive methods that more appropriately suit the usual creative workflow of game level designers and artists. We discuss the workings of methods designed and present results of the evaluation of their implementation in a
-prototype application.
+This project analyses and explores how to adapt the WFC algorithm to support and integrate a number of interactive methods that more appropriately suit the usual creative workflow of game level designers and artists.
+Through the development of this application, the designed intuitive interactive methods for the WFC advanced features are accessible for everyone. These allows users to tweak WFC to their requirements without the need for programming. 
 
-## Research Description
+## Explanatory Videos
 
-Intuitive design means that when a user sees the design, whether it be an application, device, product, et cetera, they know exactly what to do. All apparent interactive tools should work in a way which feels natural and are, hence, not distracted by confusion of what something might do, whilst using it.
-
-Through the development of an application, a test-bench is created to validate the designed intuitive interactive methods for the WFC advanced features. This allows the user to tweak WFC to their requirements without programming. The interaction design will be required to have a high-level of control with an intuitive interface, real-time visual feedback and algorithm responsiveness. How can the usage be generalized, and offered to dummies (i.e. to everyone)? How can those (advanced) features be encapsulated and controlled through e.g. a set of meaningful ’dials and sliders’?
+[*Explanatory Video 1*](https://youtu.be/J9uxvUgrhBI)
+[*Explanatory Video 2*](https://youtu.be/WdV-NpMpGiA)
+[*Explanatory Video 3*](https://youtu.be/On6uKcH8BY4)
+[*Explanatory Video 4*](https://youtu.be/KJcIXmldq5Y)
 
 ## Publications related to this Repository 
 
-- Paper:  ***miWFC - Designer empowerment through mixed-initiative Wave Function Collapse*** (Link TBD)
-- Thesis: ***Designer empowerment through mixed-initiative Wave Function Collapse*** (Link TBD)
+- Paper: [***miWFC - Designer empowerment through mixed-initiative Wave Function Collapse***](https://doi.org/10.1145/3555858.3563266
+)
+- Thesis: [***Designer empowerment through mixed-initiative Wave Function Collapse***](https://repository.tudelft.nl/islandora/object/uuid:b84ed798-5227-476f-870a-72d1645aa759)
