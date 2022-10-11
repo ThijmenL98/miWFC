@@ -10,9 +10,11 @@ If you wish to use this prototype system for commercial applications, please con
 
 Step 1: Download either the [Windows](https://github.com/ThijmenL98/miWFC/releases/download/v1.0.0/miWFC.-.28.July.-.Windows.zip) or [MacOS](https://github.com/ThijmenL98/miWFC/releases/download/v1.0.0/miWFC.-.28.July.-.Mac.OS.zip) .zip file, also found on [the GitHub releases page, found here](https://github.com/ThijmenL98/miWFC/releases).
 
-Step 2: Watch the Explanatory video's linked below.
+Step 2: Extract ALL files to a separate folder somewhere on your device.
 
-Step 3: Let your imagination free, and enjoy the freedom!
+Step 3: Watch the Explanatory video's linked below.
+
+Step 4: Let your imagination free, and enjoy the freedom!
 
 # Explanatory Videos
 
