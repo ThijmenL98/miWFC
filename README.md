@@ -6,6 +6,12 @@ This research resulted in the prototype miWFC (mixed-initiative WFC), that is ma
 
 If you wish to use this prototype system for commercial applications, please consider sponsoring this Open-Source project by reviewing the following [GitHub Sponsorship Page](https://github.com/sponsors/ThijmenL98).
 
+# How to use miWFC
+
+Step 1: Download either the [Windows](https://github.com/ThijmenL98/miWFC/releases/download/v1.0.0/miWFC.-.28.July.-.Windows.zip) or [MacOS](https://github.com/ThijmenL98/miWFC/releases/download/v1.0.0/miWFC.-.28.July.-.Mac.OS.zip) .zip file, also found on [the GitHub releases page, found here](https://github.com/ThijmenL98/miWFC/releases).
+Step 2: Watch the Explanatory video's linked below.
+Step 3: Let your imagination free, and enjoy the freedom!
+
 # Explanatory Videos
 
 ### Spoken
